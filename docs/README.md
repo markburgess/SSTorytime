@@ -8,15 +8,14 @@ languages N4L and examples of scripting your own programs.
 
 * Install the `postgres` database, `postgres-contrib` extensions, and `psql` shell command line client.
 
-* Install the Go(lang) programming and build environment, and turn off modules
+* Install the Go(lang) programming and build environment
 <pre>
-go env -w GO111MODULE=off
+    cd pkg/SSTorytime ; go mod init SSTorytime
+	cd src ; go mod init main ;
+	cd src ; go mod edit -replace SSTorytime=../pkg/SSTorytime
 </pre>
-(If you are a go expert and can figure out why this is necessary, then let me know, since running the `go mod init` destructions doesn't seem to work for me for a bare bones environment without SDK.)
 
 * [Related series about semantic spacetime](https://mark-burgess-oslo-mb.medium.com/list/semantic-spacetime-and-data-analytics-28e9649c0ade)
-
-
 
 ## Running on a GNU/Linux distribution
 

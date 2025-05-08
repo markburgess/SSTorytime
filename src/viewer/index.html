@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>SSTorytime Simple viewer</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+      });
+    </script>
+    <script
+      type="text/javascript"
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+    ></script>
+  </head>
+  <body>
+    <header>
+      <h2>SSToryGraph</h2>
+    </header>
+
+    <section>
+      <nav>
+        <form id="search">
+          <label for="subject">Search</label>
+          <input type="text" id="name" name="name" value="" />
+
+          <label for="chapter">Chapter</label>
+          <input type="text" id="chapter" name="chapter" />
+
+          <label for="chapter">Filters ...</label>
+          <input type="text" id="context" name="context" />
+          <label for="chapter">Arrow ties</label>
+          <input type="text" id="arrnames" name="arrnames" />
+
+          <input type="submit" id="orbitsubmit" value="Orbits" />
+          <input type="submit" id="pathsubmit" value="Geometry" />
+          <input type="submit" id="seqsubmit" value="Tales" />
+          <input type="submit" id="dec" value="Previous" />
+          <input type="submit" id="browsesubmit" value="Browse" />
+          <input type="submit" id="inc" value="Next" />
+          <input type="submit" id="toc-submit" value="TOC" />
+        </form>
+      </nav>
+
+      <article></article>
+    </section>
+
+    <footer>
+      <p>SSTorytime project sponsored by NLnet.nl</p>
+    </footer>
+
+    <script src="viewer.js"></script>
+  </body>
+</html>

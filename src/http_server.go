@@ -20,9 +20,10 @@ var CTX SST.PoSST
 
 func main() {
 
+	// API
+
 	CTX = SST.Open(true)	
 
-	http.HandleFunc("/",PageHandler)
 	http.HandleFunc("/Orbit", OrbitHandler)
 	http.HandleFunc("/NPtrOrbit", OrbitHandler)
 	http.HandleFunc("/Cone", ConeHandler)
@@ -30,32 +31,23 @@ func main() {
 	http.HandleFunc("/TOC", TableOfContents)
 	http.HandleFunc("/Sequence", SequenceHandler)
 
+	// Static file server for web app
+
+	dir := http.Dir("./viewer")
+	fileServer := http.FileServer(dir)
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/") || r.URL.Path == "" {
+			http.ServeFile(w, r, "./viewer/index.html")
+			return
+		}
+		fileServer.ServeHTTP(w, r)
+	})
+
+	// Start the server
+
 	fmt.Println("Listening at http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
-}
-
-// *********************************************************************
-
-func PageHandler(w http.ResponseWriter, r *http.Request) {
-
-	GenHeader(w,r)
-
-	switch r.Method {
-	case "GET":
-
-		w.Header().Set("Content-Type", "text/html")
-		page,err := os.ReadFile("./page.html")
-
-		if err != nil {
-			fmt.Println("Can't find ./page.html")
-			os.Exit(-1)
-		}
-
-		w.Write(page)
-
-	default:
-		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
-	}
 }
 
 // *********************************************************************

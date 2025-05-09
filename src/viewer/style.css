@@ -86,6 +86,7 @@ article p {
 }
 
 article div {
+  padding: 40px;
   margin-bottom: 10px;
 }
 

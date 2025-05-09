@@ -321,31 +321,42 @@ func SystematicHandler(w http.ResponseWriter, r *http.Request) {
 
 func HandleSystematic(w http.ResponseWriter, r *http.Request,section int,chaptext string,cntstr,arrstr string) {
 
-	chaptext = strings.TrimSpace(chaptext)
+	if arrstr == "" {
 
-	arrnames,_ := SST.Str2Array(arrstr)
-	context,_ := SST.Str2Array(cntstr)
+		w.Header().Set("Content-Type", "application/json")
+		context,_ := SST.Str2Array(cntstr)
+		notes := SST.GetDBPageMap(CTX,chaptext,context,section)
+		jstr := SST.JSONPage(CTX,notes)
+		w.Write([]byte(jstr))
 
-	if section <= 0 {
-		section = 1
-	}
+	} else {
 
-	fmt.Println("Matching...Browse(",section,chaptext,context,arrnames,")",len(arrnames))
+		chaptext = strings.TrimSpace(chaptext)
 
-	var arrows []SST.ArrowPtr
-
-	for a := range arrnames {
-		arr := SST.GetDBArrowByName(CTX,arrnames[a])
-		if arr != 0 {
-			arrows = append(arrows,arr)
+		arrnames,_ := SST.Str2Array(arrstr)
+		context,_ := SST.Str2Array(cntstr)
+		
+		if section <= 0 {
+			section = 1
 		}
+		
+		fmt.Println("Matching...Browse(",section,chaptext,context,arrnames,")",len(arrnames))
+		
+		var arrows []SST.ArrowPtr
+		
+		for a := range arrnames {
+			arr := SST.GetDBArrowByName(CTX,arrnames[a])
+			if arr != 0 {
+				arrows = append(arrows,arr)
+			}
+		}
+		
+		qnodes := SST.GetDBNodeContextsMatchingArrow(CTX,"",chaptext,context,arrows,section)
+		
+		w.Header().Set("Content-Type", "application/json")
+		
+		EncodeBrowsing(w,r,qnodes,arrows,section,chaptext,context)
 	}
-
-	qnodes := SST.GetDBNodeContextsMatchingArrow(CTX,"",chaptext,context,arrows,section)
-
-	w.Header().Set("Content-Type", "application/json")
-
-	EncodeBrowsing(w,r,qnodes,arrows,section,chaptext,context)
 
 	fmt.Printf("Reply Systematic Browser page %d sent\n",section)
 }
@@ -369,10 +380,9 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr
 	for q := range qnodes {
 
 		if !headerdone {
-			multicone += fmt.Sprintf("{ \"section\" : \"%d\",\n",section)
 			multicone += fmt.Sprintf("  \"chapter\" : \"%s\",\n",qnodes[q].Chapter)
 			multicone += fmt.Sprintf("  \"context\" : \"%v\",\n",CleanText(qnodes[q].Context))
-			multicone += fmt.Sprintf("  \"nptrs\" : [ ")
+			multicone += fmt.Sprintf("  \"NPtrs\" : [ ")
 			headerdone = true
 		}
 		
@@ -397,10 +407,13 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr
 		}
 		
 		multicone += thiscone
-	}		
+	}
 
-	multicone += "]\n}\n"
+	if len(multicone) > 0 {
+		multicone += "]\n}\n"
+	}
 	w.Write([]byte(multicone))
+	fmt.Println("here....muticone",multicone)
 }
 
 // *********************************************************************

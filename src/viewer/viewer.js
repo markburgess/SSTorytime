@@ -147,7 +147,7 @@ function IsImage(str, arrow) {
 /***********************************************************/
 
 function IsMath(str) {
-  if (str.includes("\(") && str.includes("\)")) {
+  if (str.includes("(") && str.includes(")")) {
     return true;
   }
 
@@ -254,12 +254,17 @@ function PrintPath(parent, array) {
 /***********************************************************/
 
 function DoHeader(obj) {
+  // Clear the main panel here, as it's common to all
+
   let clearscreen = document.querySelector("article");
   clearscreen.innerHTML = "";
 
+  // Now manage the header
   let header = document.querySelector("header");
   let titlebar = document.createElement("h2");
+  titlebar.textContent = "SSToryGraph";
   titlebar.id = "header_root";
+  header.appendChild(titlebar);
 
   let title = "app";
 
@@ -278,6 +283,8 @@ function DoHeader(obj) {
     if (obj.paths[0] != null) {
       title = obj.paths[0].Title;
     }
+  } else if (obj.Title != null) {
+    title = obj.Title + " :: " + obj.Context + " :: ";
   } else {
     title = obj.chapter + " :: " + obj.context + " :: ";
   }
@@ -289,8 +296,6 @@ function DoHeader(obj) {
   }
 
   titlebar.style.fontSize = "70%";
-
-  header.appendChild(titlebar);
 }
 
 /***********************************************************/
@@ -385,7 +390,7 @@ function ShowEvent(panel, event, counter, direction, skiparrow, anchortag) {
         ngh.Text,
         ngh.Dst.Class,
         ngh.Dst.CPtr,
-        ngh.Ctx,
+        ngh.Ctx
       );
       panel.appendChild(child);
     }
@@ -402,7 +407,7 @@ function ShowEvent(panel, event, counter, direction, skiparrow, anchortag) {
           ngh.Text,
           ngh.Dst.Class,
           ngh.Dst.CPtr,
-          ngh.Ctx,
+          ngh.Ctx
         );
         panel.appendChild(child);
       }
@@ -420,7 +425,7 @@ function ShowEvent(panel, event, counter, direction, skiparrow, anchortag) {
           ngh.Text,
           ngh.Dst.Class,
           ngh.Dst.CPtr,
-          ngh.Ctx,
+          ngh.Ctx
         );
         panel.appendChild(child);
 
@@ -444,7 +449,7 @@ function ShowEvent(panel, event, counter, direction, skiparrow, anchortag) {
           ngh.Text,
           ngh.Dst.Class,
           ngh.Dst.CPtr,
-          ngh.Ctx,
+          ngh.Ctx
         );
         panel.appendChild(child);
       }
@@ -462,7 +467,7 @@ function ShowEvent(panel, event, counter, direction, skiparrow, anchortag) {
           ngh.Text,
           ngh.Dst.Class,
           ngh.Dst.CPtr,
-          ngh.Ctx,
+          ngh.Ctx
         );
         panel.appendChild(child);
       }
@@ -480,7 +485,7 @@ function ShowEvent(panel, event, counter, direction, skiparrow, anchortag) {
           ngh.Text,
           ngh.Dst.Class,
           ngh.Dst.CPtr,
-          ngh.Ctx,
+          ngh.Ctx
         );
         panel.appendChild(child);
       }
@@ -498,7 +503,7 @@ function ShowEvent(panel, event, counter, direction, skiparrow, anchortag) {
           ngh.Text,
           ngh.Dst.Class,
           ngh.Dst.CPtr,
-          ngh.Ctx,
+          ngh.Ctx
         );
         panel.appendChild(child);
       }
@@ -531,8 +536,8 @@ function DoEntireConePanel(obj) {
     let tab = document.createElement("table");
     let row = document.createElement("tr");
     let col1 = document.createElement("td");
-    let hd1 = document.createElement("h2");
-    hd1.textContent = "Between Centrality";
+    let hd1 = document.createElement("h4");
+    hd1.textContent = "Between-ness Centrality Rank";
     col1.appendChild(hd1);
     let lst1 = document.createElement("ol");
 
@@ -544,8 +549,8 @@ function DoEntireConePanel(obj) {
     col1.appendChild(lst1);
 
     let col2 = document.createElement("td");
-    let hd2 = document.createElement("h2");
-    hd2.textContent = "Supernodes";
+    let hd2 = document.createElement("h4");
+    hd2.textContent = "Supernode summary";
     col2.appendChild(hd2);
     let lst2 = document.createElement("ol");
 
@@ -630,34 +635,42 @@ function DoBrowsePanel(obj) {
   panel.id = "main_root";
   section.appendChild(panel);
 
-  for (let nptr of obj.nptrs) {
-    let nclass = nptr.NClass;
-    let ncptr = nptr.NCPtr;
+  if (obj.Title != null) {
+    // PageView
     let item = document.createElement("p");
-    let link = document.createElement("a");
-    link.onclick = function () {
-      sendlinkData(nclass, ncptr);
-    };
-    link.textContent = nptr.Title;
-    item.appendChild(link);
+    item = PrintPath(item, obj.Notes);
+    panel.appendChild(item);
+  } // Conic Arrow search
+  else {
+    for (let nptr of obj.NPtrs) {
+      let nclass = nptr.NClass;
+      let ncptr = nptr.NCPtr;
+      let item = document.createElement("p");
+      let link = document.createElement("a");
+      link.onclick = function () {
+        sendlinkData(nclass, ncptr);
+      };
+      link.textContent = nptr.Title;
+      item.appendChild(link);
 
-    item = PrintPath(item, nptr.Il1);
-    panel.appendChild(item);
-    item = PrintPath(item, nptr.Im1);
-    panel.appendChild(item);
-    item = PrintPath(item, nptr.Im2);
-    panel.appendChild(item);
-    item = PrintPath(item, nptr.Ic2);
-    panel.appendChild(item);
-    item = PrintPath(item, nptr.Ie3);
-    panel.appendChild(item);
-    item = PrintPath(item, nptr.Im3);
-    panel.appendChild(item);
-    item = PrintPath(item, nptr.In0);
-    panel.appendChild(item);
+      item = PrintPath(item, nptr.Il1);
+      panel.appendChild(item);
+      item = PrintPath(item, nptr.Im1);
+      panel.appendChild(item);
+      item = PrintPath(item, nptr.Im2);
+      panel.appendChild(item);
+      item = PrintPath(item, nptr.Ic2);
+      panel.appendChild(item);
+      item = PrintPath(item, nptr.Ie3);
+      panel.appendChild(item);
+      item = PrintPath(item, nptr.Im3);
+      panel.appendChild(item);
+      item = PrintPath(item, nptr.In0);
+      panel.appendChild(item);
+    }
+    let spacer = document.createElement("hr");
+    panel.appendChild(spacer);
   }
-  let spacer = document.createElement("hr");
-  panel.appendChild(spacer);
 }
 
 /***********************************************************/

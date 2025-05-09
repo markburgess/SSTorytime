@@ -1,3 +1,4 @@
+
 //**************************************************************
 //
 // An interface for postgres for graph analytics and semantics
@@ -88,7 +89,6 @@ type NodeArrowNode struct {
 	Wgt float64
 	Ctx []string
 	NTo NodePtr
-  	                  // NOTE: carefully how offsets represent negative SSTtypes
 }
 
 //**************************************************************
@@ -100,6 +100,30 @@ type QNodePtr struct {
 	NPtr    NodePtr
 	Context string  // array in string form
 	Chapter string
+}
+
+//**************************************************************
+
+type PageMap struct {  // Thereis additional intent in the layout
+
+	Chapter string
+	Alias   string
+	Context []string
+	Line    int
+	Path    []Link
+}
+
+type PageView struct {
+	Title   string
+	Context string
+	Notes   [][]WebPath
+}
+
+type WebPath struct {
+	NPtr    NodePtr
+	Arr     ArrowPtr
+	STindex int
+	Name    string
 }
 
 //**************************************************************
@@ -167,6 +191,15 @@ const LINK_TABLE = "CREATE TABLE IF NOT EXISTS NodeArrowNode " +
 	"Wgt      int,     " +
 	"Ctx      text[],  " +
 	"NTo      NodePtr  " +
+	")"
+
+const PAGEMAP_TABLE = "CREATE TABLE IF NOT EXISTS PageMap " +
+	"( " +
+	"Chap     Text,  " +
+	"Alias    Text,  " +
+	"Ctx      Text[]," +
+	"Line     Int,   " +
+	"Path     Link[] " +
 	")"
 
 //**************************************************************
@@ -254,6 +287,8 @@ var (
 	ARROW_LONG_DIR = make(map[string]ArrowPtr)  // Look up long name int referene
 	ARROW_DIRECTORY_TOP ArrowPtr = 0
 	INVERSE_ARROWS = make(map[ArrowPtr]ArrowPtr)
+
+	PAGE_MAP []PageMap
 
 	NODE_DIRECTORY NodeDirectory  // Internal histo-representations
 
@@ -402,6 +437,7 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop function GetNCCStoryStartNodes")
 
 		ctx.DB.QueryRow("drop table Node")
+		ctx.DB.QueryRow("drop table PageMap")
 		ctx.DB.QueryRow("drop table NodeArrowNode")
 		ctx.DB.QueryRow("drop type NodePtr")
 		ctx.DB.QueryRow("drop type Link")
@@ -420,6 +456,11 @@ func Configure(ctx PoSST,load_arrows bool) {
 
 	if !CreateType(ctx,LINK_TYPE) {
 		fmt.Println("Unable to create type as, ",LINK_TYPE)
+		os.Exit(-1)
+	}
+
+	if !CreateTable(ctx,PAGEMAP_TABLE) {
+		fmt.Println("Unable to create table as, ",PAGEMAP_TABLE)
 		os.Exit(-1)
 	}
 
@@ -998,6 +1039,12 @@ func GraphToDB(ctx PoSST) {
 		UploadInverseArrowToDB(ctx,ArrowPtr(arrow))
 	}
 
+	fmt.Println("Storing page map...")
+
+	for line := 0; line < len(PAGE_MAP); line ++ {
+		UploadPageMapEvent(ctx,PAGE_MAP[line])
+	}
+
 	// CREATE INDICES
 
 	fmt.Println("Indexing ....")
@@ -1167,6 +1214,45 @@ func UploadInverseArrowToDB(ctx PoSST,arrow ArrowPtr) {
 	}
 
 	row.Close()
+}
+
+//**************************************************************
+
+func UploadPageMapEvent(ctx PoSST, line PageMap) {
+
+	qstr := fmt.Sprintf("INSERT INTO PageMap (Chap,Alias,Ctx,Line) VALUES ('%s','%s',%s,%d)",line.Chapter,line.Alias,FormatSQLStringArray(line.Context),line.Line)
+
+	row,err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		s := fmt.Sprint("Failed to insert pagemap event",err)
+		
+		if strings.Contains(s,"duplicate key") {
+		} else {
+			fmt.Println(s,"FAILED \n",qstr,err)
+		}
+		row.Close()
+		return
+	}
+
+	row.Close()
+
+	for lnk := 0; lnk < len(line.Path); lnk++ {
+
+		linkval := fmt.Sprintf("(%d, %f, %s, (%d,%d)::NodePtr)",line.Path[lnk].Arr,line.Path[lnk].Wgt,FormatSQLStringArray(line.Path[lnk].Ctx),line.Path[lnk].Dst.Class,line.Path[lnk].Dst.CPtr)
+
+		literal := fmt.Sprintf("%s::Link",linkval)
+		
+		qstr := fmt.Sprintf("UPDATE PageMap SET Path=array_append(Path,%s) WHERE Chap = '%s' AND Line = '%d'",literal,line.Chapter,line.Line)
+		
+		row,err := ctx.DB.Query(qstr)
+		
+		if err != nil {
+			fmt.Println("Failed to append",err,qstr)
+		}
+		
+		row.Close()
+	}
 }
 
 //**************************************************************
@@ -2867,6 +2953,53 @@ func GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory {
 
 // **************************************************************************
 
+func GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap {
+
+	var qstr string
+
+	context := FormatSQLStringArray(cn)
+	chapter := "%"+chap+"%"
+
+	const hits_per_page = 30
+	offset := (page-1) * hits_per_page;
+
+	qstr = fmt.Sprintf("SELECT DISTINCT Chap,Ctx,Line,Path FROM PageMap\n"+
+		"WHERE match_context(Ctx,%s)=true AND lower(Chap) LIKE lower('%s') ORDER BY Line OFFSET %d LIMIT %d",
+		context,chapter,offset,hits_per_page)
+
+	row, err := ctx.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("GetDBPageMap Failed:",err,qstr)
+	}
+
+	var path string
+	var pagemap []PageMap
+	var line int
+	for row.Next() {		
+
+		var event PageMap
+		err = row.Scan(&chap,&context,&line,&path)
+
+		if err != nil {
+			fmt.Println("Error reading GetDBPageMap",err)
+		}
+
+		event.Path = ParseMapLinkArray(path)
+
+		event.Chapter = chap
+		event.Context = ParseSQLArrayString(context)
+		pagemap = append(pagemap,event)
+	}
+
+	row.Close()
+	return pagemap
+}
+
+// **************************************************************************
+// Retrieval
+// **************************************************************************
+
 func CacheNode(n Node) {
 
 	NODE_CACHE[n.NPtr] = AppendTextToDirectory(n,RunErr)
@@ -3771,13 +3904,6 @@ func JSONNodeEvent(ctx PoSST, nptr NodePtr) string {
 
 func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
 
-        type WebPath struct {
-		NPtr    NodePtr
-		Arr     ArrowPtr
-		STindex int
-		Name    string
-	}
-
 	var jstr string = "["
 
 	for p := 0; p < len(cone); p++ {
@@ -3928,6 +4054,60 @@ fmt.Println(qstr)
 	
 	row.Close()
 	return json_toc
+}
+
+// **************************************************************************
+
+func JSONPage(ctx PoSST, maplines []PageMap) string {
+
+	var webnotes PageView
+	var last,lastc string
+
+	for n := 0; n < len(maplines); n++ {
+
+		var path []WebPath
+
+		txtctx := ContextString(maplines[n].Context)
+
+		if last != maplines[n].Chapter || lastc != txtctx {
+			webnotes.Title = maplines[n].Chapter
+			webnotes.Context = txtctx
+			last = maplines[n].Chapter
+			lastc = txtctx
+		}
+		
+		for lnk := 0; lnk < len(maplines[n].Path); lnk++ {
+			
+			text := GetDBNodeByNodePtr(ctx,maplines[n].Path[lnk].Dst)
+			
+			if lnk == 0 {
+				var ws WebPath
+				ws.Name = text.S
+				ws.NPtr = maplines[n].Path[lnk].Dst
+				path = append(path,ws)
+				
+			} else {
+				arr := GetDBArrowByPtr(ctx,maplines[n].Path[lnk].Arr)
+				var wl WebPath
+				wl.Name = arr.Long
+				wl.Arr = maplines[n].Path[lnk].Arr
+				wl.STindex = arr.STAindex
+				path = append(path,wl)
+				
+				var ws WebPath
+				ws.Name = text.S
+				ws.NPtr = maplines[n].Path[lnk].Dst
+				path = append(path,ws)
+				
+			}
+		}
+		webnotes.Notes = append(webnotes.Notes,path)
+	}
+	
+	encoded, _ := json.Marshal(webnotes)
+	jstr := fmt.Sprintf("%s",string(encoded))
+
+	return jstr
 }
 
 // **************************************************************************
@@ -4541,6 +4721,28 @@ func ParseLinkArray(s string) []Link {
 
 //**************************************************************
 
+func ParseMapLinkArray(s string) []Link {
+
+	var array []Link
+
+	s = strings.TrimSpace(s)
+
+	if len(s) <= 2 {
+		return array
+	}
+
+	strarray := strings.Split(s,"\",\"")
+
+	for i := 0; i < len(strarray); i++ {
+		link := ParseSQLLinkString(strarray[i])
+		array = append(array,link)
+	}
+	
+	return array
+}
+
+//**************************************************************
+
 func ParseLinkPath(s string) [][]Link {
 
 	// Each path will start on a new line, with comma sep Link encodings
@@ -4819,6 +5021,26 @@ func RunErr(message string) {
 func EscapeString(s string) string {
 
 	// Don't do this here, move to SQLEscape()
+	return s
+}
+
+
+
+
+
+
+
+//******************************************************************
+
+func ContextString(context []string) string {
+
+	var s string
+
+	for c := 0; c < len(context); c++ {
+
+		s += context[c] + " "
+	}
+
 	return s
 }
 

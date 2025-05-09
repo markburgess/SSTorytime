@@ -87,6 +87,7 @@ var (
 	LINE_ALIAS string = ""
 	LINE_ITEM_COUNTER int = 1
 	LINE_RELN_COUNTER int = 0
+	LINE_PATH []SST.Link
 
 	FWD_ARROW string
 	BWD_ARROW string
@@ -1342,6 +1343,13 @@ func IdempAddLink(from string, frptr SST.NodePtr, link SST.Link,to string, toptr
 		PVerbose("... Relation:",from,"--",SST.ARROW_DIRECTORY[link.Arr].Long,"->",to,link.Ctx)
 	}
 
+        // Build PageMap
+
+	link.Dst = toptr
+	LINE_PATH = append(LINE_PATH,link)
+
+        // Add to graph
+
 	SST.AppendLinkToNode(frptr,link,toptr)
 
 	// Double up the reverse definition for easy indexing of both in/out arrows
@@ -1385,6 +1393,13 @@ func IdempAddNode(s string) (SST.NodePtr,string) {
 	new_nodetext.NPtr.Class = c
 
 	iptr := SST.AppendTextToDirectory(new_nodetext,ParseError)
+
+	// Build page map
+	if LINE_PATH == nil {
+		var leg SST.Link
+		leg.Dst = iptr
+		LINE_PATH = append(LINE_PATH,leg)
+	}
 
 	return iptr,clean_version
 }
@@ -1562,6 +1577,10 @@ func UpdateLastLineCache() {
 		ParseError(ERR_MISSING_EVENT)
 	}
 
+	if CURRENT_FILE != "N4Lconfig.in" {
+		PageMap(SECTION_STATE,CONTEXT_STATE,LINE_PATH,LINE_NUM,LINE_ALIAS)
+	}
+
 	LINE_NUM++
 
 	// If this line was not blank, overwrite previous settings and reset
@@ -1582,8 +1601,43 @@ func UpdateLastLineCache() {
 	LINE_ITEM_COUNTER = 1
 	LINE_RELN_COUNTER = 0
 	LINE_ALIAS = ""
+	LINE_PATH = nil
 
 	LINE_ITEM_STATE = ROLE_BLANK_LINE
+}
+
+//**************************************************************
+
+func PageMap(chapter string,ctxmap map[string]bool,path []SST.Link,line int,alias string) {
+
+	if len(path) == 0 {
+		return
+	}
+
+	var page_event SST.PageMap;
+	var context []string
+	var contextstr string
+
+	for c := range ctxmap {
+		context = append(context,c)
+	}
+
+	sort.Strings(context)
+
+	for c := 0; c < len(context); c++ {
+		contextstr += context[c]
+		if c < len(context)-1 {
+			contextstr += ", "
+		}
+	}
+
+	page_event.Chapter = chapter
+	page_event.Alias = alias
+	page_event.Context = GetContext(nil)
+	page_event.Line = line
+	page_event.Path = path
+
+	SST.PAGE_MAP = append(SST.PAGE_MAP,page_event)
 }
 
 //**************************************************************
@@ -1870,6 +1924,8 @@ func GetContext(ctx []string) []string {
 	for c := range merge {
 		clist = append(clist,c)
 	}
+
+	sort.Strings(clist)
 
 	return clist
 }

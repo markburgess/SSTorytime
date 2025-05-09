@@ -99,8 +99,8 @@
  Get all generalizations 
  Get all specializations
 
- Get all similar  (involves) generalize up/CONTAINED BY then come back down/CONTAINS
-     "            (involves) look for similar/NEAR nodes
+ Get all similar  (how) generalize up/CONTAINED BY then come back down/CONTAINS
+     "            (how) look for similar/NEAR nodes
 
  :: API calls ::
 

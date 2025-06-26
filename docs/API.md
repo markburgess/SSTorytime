@@ -13,7 +13,7 @@ Notable examples:
 
 ## Creating an SST graph from data
 
-See the [example](../src/API_EXAMPLE.go). To make node registration as easy as possible, you can use two functions
+See the [example](../src/API_EXAMPLE_1.go). To make node registration as easy as possible, you can use two functions
 `Vertex()` and `Edge()` to create nodes and links respectively. These names are chosen to distance themselves
 from the underlying `Node` and `Link`naming, by using the more mathematical names for these objects.
 

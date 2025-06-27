@@ -139,7 +139,7 @@ These are used to simplify the importing of packages. Finally, you need to link 
 % mkdir -p ~/go/bin
 % mkdir -p ~/go/src
 % git clone https://github.com/markburgess/SSTorytime
-% ln -s ~/clonedirectory/pkg/SST ~/go/src/SST
+% ln -s $(pwd)/SSTorytime/pkg/SSTorytime ~/go/src/SSTorytime
 </pre>
 The last step links the directory where you will keep the Smart Spacetime code library to the list of libraries that Go knows about. You’ll also need to set a GOPATH environment variable and add the installation directory to your execution path.For Linux (using default bash shell) you edit the file “~/.bashrc” in your home directory using your favourite text editor. It should contain these lines, as per the golang destructions:
 <pre>

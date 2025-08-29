@@ -1,0 +1,30 @@
+-CFEngine notes
+
+CFEngine is used for automating the management of computer systems by autonomous agents. "Rules" in CFEngine are called promises.
+
+-Promise types
+
+In CFEngine, a promise type defines the kind of thing which is being promised. For example, the files type promise centers around managing file presence, content, and attributes while vars type promises hold data.
+
+: access, build_xpath, classes, commands, databases, defaults , delete_attribute, delete_lines , delete_text , delete_tree , field_edits , files , guest_environments , insert_lines , insert_text , insert_tree , measurements , meta , methods , packages , processes , replace_patterns , reports , roles , services , set_attribute , set_text , storage , users , vars :
+
+-Files promise type
+
+- edit_line bundles
+
+edit_line bundle (contains) delete_lines
+                 "          field_edits
+                 "          insert_lines
+                 "          replace_patterns
+
+::edit_line normal ordering::
+
+  meta (comes before) vars
+  vars (comes before) defaults
+  defaults (comes before) classes
+  classes (comes before) delete_lines
+  delete_lines (comes before) field_edits
+  field_edits (comes before) insert_lines
+  insert_lines (comes before) replace_patterns
+  replace_patterns (comes before) reports
+  reports (comes after) replace_patterns

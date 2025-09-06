@@ -2328,6 +2328,8 @@ func AllCaps(s string) bool {
 		}
 	}
 
+	// Don't repeat the same message for multi-line dittos
+
 	if LINE_ITEM_CACHE["THIS"][0] == LINE_ITEM_CACHE["PREV"][0] {
 		return false
 	}

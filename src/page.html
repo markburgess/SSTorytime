@@ -6,8 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-// **************************************************
-
 * {
   box-sizing: border-box;
 }
@@ -18,6 +16,11 @@ body {
 }
 
 /* Style the header */
+page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
 
 header {
   background: navy;
@@ -27,18 +30,87 @@ header {
   font-size: 20px;
   color: white;
 }
+	/* Main Content Area */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-wrap: wrap;
+  padding: 1rem;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .main-content {
+    padding: 1.5rem;
+  }
+}
+
+/* Navigation & Search */
+nav {
+  background: var(--bg-primary);
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+}
+
+#search {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+#search label {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--accent-primary);
+}
+
+#search input[type="text"] {
+  flex-grow: 1;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+#search input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+#search input[type="submit"] {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  background-color: var(--accent-primary);
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+#search input[type="submit"]:hover {
+  background-color: #2980b9;
+}
+
 
 a[title] {
   position: relative;
 }
 
-
 a[title]:hover::after {
   visibility: block;
   content: attr(title);
   display: inline-block;
-  padding: 0.2em 0.6em; 
-  white-space: nowrap; 
+  padding: 0.2em 0.6em;
+  white-space: nowrap;
   background-color: #555;
   color: #fff;
   font-style: normal;
@@ -55,18 +127,16 @@ h1 {
   font-size: 35px;
   color: #4488bb;
   padding: 10px;
-  margin_bottom : 10px;
-  //line-height: 10px;
+  margin-bottom: 10px;
 }
 
 br {
-  padding : 10px;
+  padding: 10px;
   margin-bottom: 30px;
 }
 
 hr {
-
- padding: 10px;
+  padding: 10px;
   margin-top: 30px;
   margin-bottom: 30px;
 }
@@ -76,9 +146,9 @@ hr {
 }
 
 #statcount {
-color: navy;
-margin-left: 100px;
-padding: 5px;
+  color: navy;
+  margin-left: 100px;
+  padding: 5px;
 }
 
 h2 {
@@ -86,8 +156,7 @@ h2 {
   color: #5599cc;
   padding: 20px;
   margin: 0px;
-  margin-bottom : 10px;
-  //line-height: 10px;
+  margin-bottom: 10px;
 }
 
 #topmost_page_title {
@@ -97,11 +166,11 @@ h2 {
   background: navy;
 }
 
-#chapter_notes_heading {   //   In page notes, this is to top of the page header
-   padding: 10px;
-   margin_top : 20px;
-   font-size: 30px;
-   color: slategray;
+#chapter_notes_heading {
+  padding: 10px;
+  margin-top: 20px;
+  font-size: 30px;
+  color: slategray;
 }
 
 /* Create two columns/boxes that floats next to each other */
@@ -113,18 +182,18 @@ nav {
 }
 
 #toc-panel {
-   padding: 15px;
-   margin-left: 10px;
+  padding: 15px;
+  margin-left: 10px;
 }
 
 #toc-submit {
   padding: 15px;
-   float : right;
+  float: right;
 }
 
 #toc-frag {
   padding: 15px;
- color: navy;
+  color: navy;
 }
 
 #toc-elem {
@@ -134,7 +203,7 @@ nav {
   line-height: 150%;
 }
 
-#toc-single{
+#toc-single {
   padding: 15px;
   color: darkorange;
   font-size: 150%;
@@ -149,14 +218,9 @@ nav {
 }
 
 #ditto {
-   padding: 5px;
-   margin-left: 50px;
+  padding: 5px;
+  margin-left: 50px;
 }
-
-// CHECKBOXES ............................................
-
-
-// END CHECKBOXES ............................................
 
 main {
   float: left;
@@ -167,14 +231,13 @@ main {
 }
 
 main p {
-   color: green;
-   //line-height: 15px;
-   padding: 8px;
+  color: green;
+  padding: 8px;
 }
 
 main div {
- padding: 15px;
- margin-bottom: 10px;
+  padding: 15px;
+  margin-bottom: 10px;
   background: #fff;
 }
 
@@ -187,8 +250,8 @@ main img {
 }
 
 main pre {
-   color: green;
-   font-size: 120%;
+  color: green;
+  font-size: 120%;
   background: #fff;
 }
 
@@ -199,27 +262,20 @@ main a {
   background: #fff;
 }
 
-
-// Canvas
-
 pictureframe {
-padding: 10px;
-float: left;
+  padding: 10px;
+  float: left;
   background: #fff;
 }
 
 #radius-1 {
-   margin-left: 50px;
+  margin-left: 50px;
 }
 
 #radius-2 {
-   margin-left: 250px;
-   color: slategray;
-   opacity: 0.8;
-}
-
-#cntxt {
-
+  margin-left: 250px;
+  color: slategray;
+  opacity: 0.8;
 }
 
 #errormesg {
@@ -227,25 +283,25 @@ float: left;
 }
 
 table {
-   background: lightblue;
-   padding: 30px;
-   align: center;
-   border-spacing: 30px;
+  background: lightblue;
+  padding: 30px;
+  align-items: center;
+  border-spacing: 30px;
 }
 
 tr {
-   background: blue;
-   padding: 30px;
+  background: blue;
+  padding: 30px;
 }
 
 td {
-   background: white;
-   padding: 30px;
-   vertical-align: top;
+  background: white;
+  padding: 30px;
+  vertical-align: top;
 }
 
 li {
-   word-spacing: 10px;
+  word-spacing: 10px;
 }
 
 a:hover {
@@ -253,92 +309,96 @@ a:hover {
 }
 
 .arrow {
- color: darkred;
+  color: darkred;
 }
 
 #fwdarr {
- margin: 0px; margin: 0px;
- padding: 5px;
- color : darkgreen;
- margin-left: 50px;
+  margin: 0px;
+  margin: 0px;
+  padding: 5px;
+  color: darkgreen;
+  margin-left: 50px;
 }
 
 #bwdarr {
- margin: 0px;
- padding: 5px;
- color : darkred;
- margin-left: 60px;
+  margin: 0px;
+  padding: 5px;
+  color: darkred;
+  margin-left: 60px;
 }
 
 #arrow-0 {
- color: purple;    /* -express */
+  color: purple; /* -express */
 }
 
-#arrow-1 {        /* -contain */
- color: blue;
+#arrow-1 {
+  /* -contain */
+  color: blue;
 }
 
-#arrow-2 {        /* -leadsto */
- color: darkred;
+#arrow-2 {
+  /* -leadsto */
+  color: darkred;
 }
 
-#arrow-3 {        /* near */
- color: #4488bb;;
+#arrow-3 {
+  /* near */
+  color: #4488bb;
 }
 
-#arrow-4 {        /* +leadsto */
- color: darkred;
+#arrow-4 {
+  /* +leadsto */
+  color: darkred;
 }
 
-#arrow-5 {         /* +contain */
- color: darkblue;
+#arrow-5 {
+  /* +contain */
+  color: darkblue;
 }
 
-#arrow-6 {         /* +express */
- color: purple;
+#arrow-6 {
+  /* +express */
+  color: purple;
 }
 
 #orbital-full-text {
- padding: 10px;
- font-style: italic;
- font-size: 130%;
- margin-left: 40px;
- margin-bottom: 40px;
- color: darkblue;
- text-wrap: balance;
+  padding: 10px;
+  font-style: italic;
+  font-size: 130%;
+  margin-left: 40px;
+  margin-bottom: 40px;
+  color: darkblue;
+  text-wrap: balance;
   background: #fff;
 }
 
 #nptr-chapter-context-helpline {
- margin-left: 60px;
- margin-bottom: 20px;
-  padding 10px;
+  margin-left: 60px;
+  margin-bottom: 20px;
+  padding: 10px;
   background: #fff;
 }
 
-// Arrow hovering tooltips .....................
-
-a:not(.arrow):hover{
+a:not(.arrow):hover {
   color: #999999;
 }
 
 hr {
-color: #cccccc;
-padding: 0px;
+  color: #cccccc;
+  padding: 0px;
 }
 
-i:hover{
+i:hover {
   color: #999999;
 }
 
-h1:not(.arrow):hover{
+h1:not(.arrow):hover {
   color: #777777;
 }
 
-pre:hover{
+pre:hover {
   color: #999999;
-
-// **************************************************
+}
 
 </style>
 

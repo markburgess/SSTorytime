@@ -1,5 +1,7 @@
 
-all:
+all: src/N4L test
+
+src/N4L:
 	(cd src; make)
 	(cd src/demo_pocs; make)
 

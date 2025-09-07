@@ -1,5 +1,5 @@
 
-all: src/N4L.go test
+all:
 	(cd src; make)
 	(cd src/demo_pocs; make)
 
@@ -13,5 +13,3 @@ clean:
 	(cd examples; make clean)
 	(cd src/demo_pocs; make clean)
 
-% : %.go
-	go build $<

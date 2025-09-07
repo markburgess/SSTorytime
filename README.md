@@ -166,4 +166,7 @@ The tool-set consistent of several components, starting with:
 
 * [API_EXAMPLE_3](src/API_EXAMPLE_3.go) - a maze solving example, showing higher functions.
 
+* [API_EXAMPLE_4](src/API_EXAMPLE_4.go) - a path solving example, with loop corrections (quantum style).
+
+
 

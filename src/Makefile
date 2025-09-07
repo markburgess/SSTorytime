@@ -41,3 +41,5 @@ clean:
 	rm -f $(OBJ)
 	rm -f *~ demo_pocs/*~
 
+% : %.go
+	go build $<

@@ -735,7 +735,8 @@ func ShowNotes(ctx SST.PoSST,notes []SST.PageMap) {
 			text := SST.GetDBNodeByNodePtr(ctx,notes[n].Path[lnk].Dst)
 			
 			if lnk == 0 {
-				fmt.Print("\n",text.S," ")
+				fmt.Printf("\n [line %d]: ",notes[n].Line)
+				fmt.Print(text.S," ")
 			} else {
 				arr := SST.GetDBArrowByPtr(ctx,notes[n].Path[lnk].Arr)
 				fmt.Printf("(%s) %s ",arr.Long,text.S)

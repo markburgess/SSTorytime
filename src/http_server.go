@@ -554,7 +554,7 @@ func HandlePageMap(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search S
 
 	UpdateLastSawSection(w,r,notes[0].Chapter)
 
-	//fmt.Println("PAGEMAP NOTES",string(response))
+	fmt.Println("PAGEMAP NOTES",string(response))
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 	fmt.Println("Done/sent pagemap")

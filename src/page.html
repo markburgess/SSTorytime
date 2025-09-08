@@ -1360,8 +1360,10 @@ for (let line = 0; line < array.length; line++)
          if (i == 0 && str == last_line_start)
             { 
             // repeated item, so ditto
-            let newline = document.createElement('br');
+
+            let newline = document.createElement('br'); // don't separate completely
             parent.appendChild(newline);
+
             let text = document.createElement('span');
             text.id = "ditto";
             text.textContent = "         \"        ";
@@ -1380,6 +1382,10 @@ for (let line = 0; line < array.length; line++)
             }
 
    	    // New line has possble new chap/context
+
+            let line_no = document.createElement('span');
+            line_no.textContent = "In notes line " + array[line][i].Line;
+            parent.appendChild(line_no);
 
             chtxt = array[line][i].Chp + ":" + array[line][i].Ctx;
 

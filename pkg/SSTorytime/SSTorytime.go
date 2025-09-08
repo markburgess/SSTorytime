@@ -163,6 +163,7 @@ type WebPath struct {
 	NPtr    NodePtr
 	Arr     ArrowPtr
 	STindex int
+	Line    int     // used for pagemap
 	Name    string
 	Chp     string
 	Ctx     string
@@ -4198,6 +4199,7 @@ func GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap {
 
 		event.Chapter = chap
 		event.Context = ctxptr
+		event.Line = line;
 
 		pagemap = append(pagemap,event)
 	}
@@ -6625,6 +6627,7 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 				ws.NPtr = maplines[n].Path[lnk].Dst
 				ws.XYZ = directory[ws.NPtr]
 				ws.Chp = maplines[n].Chapter
+				ws.Line = maplines[n].Line
 				ws.Ctx = CONTEXT_DIRECTORY[maplines[n].Context].Context
 				path = append(path,ws)
 				

@@ -269,17 +269,17 @@ pictureframe {
 }
 
 #radius-1 {
-  margin-left: 50px;
+  margin-left: clamp(10ch, 10ch + 1vw, 20ch);
 }
 
 #radius-2 {
-  margin-left: 250px;
+  margin-left: clamp(15ch, 15ch + 2vw, 40ch);
   color: slategray;
   opacity: 0.8;
 }
 
 #errormesg {
-  padding: 50px;
+  padding-inline: clamp(10ch, 10ch + 1vw, 20ch);
 }
 
 table {
@@ -1099,8 +1099,8 @@ else
 
    if (str.length < 20)
       {
-      text_link.style.fontSize = '200%';
-      text_link.style.padding = '5px';
+      text_link.style.fontSize = '2rem';
+      text_link.style.paddingInline = 'clamp(1ch, 1ch + 1vw, 3ch)';
       }
 
    text_link.appendChild(spantext);
@@ -1205,8 +1205,8 @@ for (let path = 0; path < array.length; path++)
 
             if (str.length < 20)
                {
-               text.style.fontSize = '150%';
-               text.style.padding = '10px';
+               text.style.fontSize = '1.5rem';
+               text.style.paddingInline = 'clamp(3ch, 3ch + 1vw, 5ch)';
                }
 
             text_link.appendChild(text);

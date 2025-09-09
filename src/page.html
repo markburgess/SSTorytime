@@ -1601,7 +1601,6 @@ checkbox.type = 'checkbox';
 checkbox.id = 'progress-checkbox';
 checkbox.value = '('+nclass+','+ncptr+')';
 
-//BEGIN
  checkbox.addEventListener('change',function() {
  let chapcontext = chap + ":" + context;
  if (checkbox.checked) 
@@ -1609,7 +1608,6 @@ checkbox.value = '('+nclass+','+ncptr+')';
     let ack = sendlastseen("lastnptr",nclass,ncptr,chapcontext);
     }
  });
-//END
 
 let spanner = document.createElement('span');
 spanner.className = 'checkmark';

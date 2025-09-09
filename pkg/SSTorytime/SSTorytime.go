@@ -7029,6 +7029,8 @@ func DecodeSearchField(cmd string) SearchParameters {
 	
 	// parentheses are reserved for unaccenting
 
+	cmd = strings.ToLower(cmd)
+
 	m := regexp.MustCompile("[ \t]+") 
 	cmd = m.ReplaceAllString(cmd," ") 
 

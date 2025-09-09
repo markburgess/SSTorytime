@@ -620,6 +620,7 @@ for (let node_event of obj.Content)
    last_node_event = node_event; // don't link up
    PlotGraphics(node_event,last_node_event);
 
+   // This hr can be removed once we have the grid
    let hr = document.createElement('hr');
    panel.appendChild(hr);
    }
@@ -1037,21 +1038,25 @@ if (arrow == null)
    arrow = "broken arrow"
    }
 
+// BEGIN column_radiusof3 i.e. 2of3 and 3of3 depending on radius variable
+
 let box = document.createElement('div');
 box.id = "radius-" + radius;
 
-if (str.includes("\n")) // preformatted item
+// any arrow comes first
+
+let arrow_link = document.createElement('a');
+arrow_link.textContent = `( ${arrow} )  `;
+arrow_link.id = 'arrow-'+stindex;
+arrow_link.title = STINDICES[stindex];
+arrow_link.class = "tooltip";
+arrow_link.style.fontFamily = 'Verdana';
+box.appendChild(arrow_link);
+
+// Begin print satellite node in column 2of3 or 3of3, depending on radius
+
+if (str.includes("\n")) // preformatted item -> <pre>
    {
-   // any arrow comes first
-
-   let arrow_link = document.createElement('a');
-   arrow_link.textContent = `( ${arrow} )  `;
-   arrow_link.id = 'arrow-'+stindex;
-   arrow_link.title = STINDICES[stindex];
-   arrow_link.class = "tooltip";
-   arrow_link.style.fontFamily = 'Verdana';
-   box.appendChild(arrow_link);
-
    // pre formatted text
 
    let text_link = document.createElement('a');
@@ -1066,20 +1071,9 @@ if (str.includes("\n")) // preformatted item
    }
 else
    {
-   // any arrow comes first
-
-   let arrow_link = document.createElement('a');
-   arrow_link.textContent = `( ${arrow} )  `;
-
-   box.appendChild(arrow_link);
-   arrow_link.id = 'arrow-'+stindex;
-   arrow_link.title = STINDICES[stindex];
-   arrow_link.class = "tooltip";
-   arrow_link.style.fontFamily = 'Verdana';
-
    // now plain text
-
    let text_link = document.createElement('a')
+   let spantext = document.createElement('span')  // replaces <pre>
 
    if (IsURL(str,arrow))
       {
@@ -1100,15 +1094,16 @@ else
       text_link.onclick = function() { sendlinkData(nclass,ncptr); };
       }
 
-   text_link.textContent = str;
-   text_link.className = 'text';
-   text_link.style.fontFamily = 'Times';
+   spantext.textContent = str;
+   spantext.style.fontFamily = 'Times';  // distinguish satellites
 
    if (str.length < 20)
       {
       text_link.style.fontSize = '200%';
       text_link.style.padding = '5px';
       }
+
+   text_link.appendChild(spantext);
    box.appendChild(text_link);
 
    ProgressCheckBox(box,nclass,ncptr,chap,ctx);
@@ -1473,7 +1468,12 @@ return parent
 
 function ShowNodeEvent(panel,event,counter,direction,skiparrow,anchortag)
 {
-let child = document.createElement('content');
+// create a div panel for the orbit root node
+
+let child = document.createElement('div');
+
+child.id = "orbit_column_1of3";  // col 1 spans all 3 columns, full width for full node text
+panel.appendChild(child);
 
 if (event == null)
    {
@@ -1487,6 +1487,8 @@ if (counter == 0)
    {
    text = "--> " + event.Text
    }
+
+// ** BEGIN 1: Here we print the full text for column_1of3 either as pre or p
 
 if (text.includes("\n"))
    {
@@ -1525,6 +1527,8 @@ else
       }
    }
 
+// If this is the root node, we need to add some Nptr, context info in column_1of3
+
 if (counter == 0)
    {
    let setting = document.createElement('span');
@@ -1560,9 +1564,10 @@ CheckSingleCone(panel,child,"[CN]",event.NPtr.Class,event.NPtr.CPtr,2,event.Orbi
 CheckSingleCone(panel,child,"[EP]",event.NPtr.Class,event.NPtr.CPtr,3,event.Orbits[Im3],event.Orbits[Ie3]);
 CheckSingleCone(panel,child,"[NR]",event.NPtr.Class,event.NPtr.CPtr,0,event.Orbits[In0],event.Orbits[In0]);
 
-panel.appendChild(child);
+// END : column_1of3
 
-// Local descriptive property attributes first
+// Next we add the satellite nodes in column_2of3 and column_3of3
+// Each vector from Im3...Ie3, one by one
 
 AddLinkOrbits(panel,child,event,Im3,skiparrow);
 AddLinkOrbits(panel,child,event,Ie3,skiparrow);

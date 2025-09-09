@@ -1505,7 +1505,7 @@ if (text.includes("\n"))
    }
 else
    {
-   let from_link = document.createElement('p');
+   let from_link = document.createElement('span');
    from_link.onclick = function() { sendlinkData(event.NPtr.Class,event.NPtr.CPtr); };
    let from_text = document.createElement(anchortag);
    from_link.nameClass = "text";

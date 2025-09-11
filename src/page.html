@@ -6,8 +6,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f4f7f9;
+  --text-primary: #2c3e50;
+  --text-secondary: #7f8c8d;
+  --header-bg: #2c3e50;
+  --header-text: #ecf0f1;
+  --accent-primary: #3498db;
+  --accent-secondary: #e74c3c;
+  --border-color: #dde4e8;
+}
+
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
@@ -17,33 +31,26 @@ body {
 
 /* Style the header */
 page {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  gap: 1ch;
   min-height: 100vh;
 }
 
 header {
-  background: navy;
-  padding: 5px;
-  width: 100vw;
+  background-color: var(--header-bg);
+  padding: 1rem;
   text-align: center;
-  font-size: 20px;
-  color: white;
+  color: var(--header-text);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-	/* Main Content Area */
+/* Main Content Area */
 .main-content {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  flex-wrap: wrap;
   padding: 1rem;
+  width: 100vw;
   gap: 1.5rem;
-}
-
-@media (min-width: 768px) {
-  .main-content {
-    padding: 1.5rem;
-  }
 }
 
 /* Navigation & Search */
@@ -57,6 +64,8 @@ nav {
 
 #search {
   display: flex;
+  flex: auto;
+  flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
 }
@@ -68,7 +77,7 @@ nav {
 }
 
 #search input[type="text"] {
-  flex-grow: 1;
+  flex: auto;
   padding: 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: 6px;
@@ -99,8 +108,25 @@ nav {
 #search input[type="submit"]:hover {
   background-color: #2980b9;
 }
+/* Canvas & Graphics */
+pictureframe {
+  display: block;
+  width: 100%;
+  background: var(--bg-primary);
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+}
 
-
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 1;
+  background-color: #fff;
+}
+/* Article / Main Display Area */
 a[title] {
   position: relative;
 }
@@ -174,12 +200,6 @@ h2 {
 }
 
 /* Create two columns/boxes that floats next to each other */
-nav {
-  float: left;
-  height: 40px;
-  background: #ccc;
-  padding: 10px;
-}
 
 #toc-panel {
   padding: 15px;
@@ -225,6 +245,8 @@ nav {
 main {
   float: left;
   padding: 0px;
+  display: grid;
+  width: 100vw;
   font-size: 20px;
   background-color: #f1f1f1;
   background: #fff;
@@ -238,6 +260,7 @@ main p {
 main div {
   padding: 15px;
   margin-bottom: 10px;
+  text-wrap: nowrap;
   background: #fff;
 }
 

@@ -22,7 +22,7 @@ technologists rather than scientists. This project makes working with graphs sim
 <li> A distributed index over semantic relationships.
 <li> And more ...
 </ul>
-<a href="https://www.amazon.com/dp/1797773704/ref=sr_1_fkmrnull_1?keywords=smart+space+time+burgess&qid=1551778123&s=gateway&sr=8-1-fkmrnull"><img width="100" style="float: right;" src="https://github.com/markburgess/SSTorytime/blob/main/docs/figs/SmartSpaceTime.jpg"></a>
+<a href="https://www.amazon.com/dp/1797773704/ref=sr_1_fkmrnull_1?keywords=smart+space+time+burgess&qid=1551778123&s=gateway&sr=8-1-fkmrnull"><img width="100" align="right" src="https://github.com/markburgess/SSTorytime/blob/main/docs/figs/SmartSpaceTime.jpg"></a>
 </div>
 
 ## Semantic Spacetime Project (SST)

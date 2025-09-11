@@ -847,7 +847,7 @@ for (let chpblk of obj.Content)
       for (let ctx of chpblk.Single)
          {
          let link = document.createElement('a');
-         link.onclick = function() { sendLinkSearch("any context " + ctx.Text); };
+         link.onclick = function() { sendLinkSearch("any context " + CtxSplice(ctx.Text)); };
  	 link.textContent = "Intentionally emph:: ";
 
          let sitem = document.createElement('span');
@@ -870,7 +870,7 @@ for (let chpblk of obj.Content)
          {
          let link = document.createElement('a');
          let sitem = document.createElement('span');
-         link.onclick = function() { sendLinkSearch("any context "+ctx.Text); };
+         link.onclick = function() { sendLinkSearch("any context " + CtxSplice(ctx.Text)); };
 	 link.textContent = "Ambient context:: ";
          link.id = "toc-frag";
 
@@ -1571,7 +1571,7 @@ if (counter == 0)
 
    let ctxlink = document.createElement('a');
    ctxlink.textContent = '"' + event.Context + '"';
-   ctxlink.onclick = function() { sendLinkSearch("any context \"" + event.Context + "\""); };
+   ctxlink.onclick = function() { sendLinkSearch("any context \"" + CtxSplice(event.Context) + "\""); };
    setting.appendChild(ctxlink);
 
    child.appendChild(setting);
@@ -1990,9 +1990,8 @@ async function sendLinkSearch(search)
 
 function CtxSplice(s)
 {
-//let ret = s.replaceAll(", ",".");
-//return ret;
-return s;
+let ret = s.replaceAll(" . ",".");
+return ret;
 }
 
 /***********************************************************/

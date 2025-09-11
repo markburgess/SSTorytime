@@ -30,7 +30,7 @@ Graphs may be used:
 </ul>
 </div>
 
-## Semantic Spacetime Project (SST)
+## Take part in this Semantic Spacetime Project (SST)
 
  Keywords, tags: Open Source Smart Graph Database API for Postgres, Go(lang) API, Explainability of Knowledge Representation
 

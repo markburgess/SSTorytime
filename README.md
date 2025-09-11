@@ -14,12 +14,17 @@
 Graphs are popular once again, but the technologies for dealing with them are clunky and designed by
 technologists rather than scientists. This project makes working with graphs simple. Graphs may be used as:
 
-* A visualization of processes and maps of space.
-* A map of a process, as with Gant charts and path integrals.
-* A computational device (as a multi-matrix algebra representation). e.g. social networks with centralities and flow patterns.
-* A distributed index over semantic relationships.
-* And more ...
+<div>
+<ul>
+<li> A visualization of processes and maps of space.
+<li> A map of a process, as with Gant charts and path integrals.
+<li> A computational device (as a multi-matrix algebra representation). e.g. social networks with centralities and flow patterns.
+<li> A distributed index over semantic relationships.
+<li> And more ...
+</ul>
 <a href="https://www.amazon.com/dp/1797773704/ref=sr_1_fkmrnull_1?keywords=smart+space+time+burgess&qid=1551778123&s=gateway&sr=8-1-fkmrnull"><img width="100" style="float: right;" src="https://github.com/markburgess/SSTorytime/blob/main/docs/figs/SmartSpaceTime.jpg"></a>
+</div>
+
 ## Semantic Spacetime Project (SST)
 
  Keywords, tags: Open Source Smart Graph Database API for Postgres, Go(lang) API, Explainability of Knowledge Representation

@@ -924,8 +924,8 @@ for (let ls of obj.Content)
       link = document.createElement('a');
       link.onclick = function() { sendLinkSearch("notes "+"\""+ls.Section+"\""); };
 
-      item = document.createElement('h2');
-      item.textContent = counter + ". "+ls.Section;
+      item = document.createElement('strong');
+      item.textContent = counter + ". " + ls.Section;
       link.appendChild(item);
       panel.appendChild(link);
 
@@ -968,7 +968,7 @@ for (let ls of obj.Content)
       nitem.style.color = HeatColour(ls.Freq,ls.Pdelta,70);
       nitem.style.fontSize = '80%';
       nitem.style.backgroundColor = HeatColour(ls.Freq,ls.Pdelta,100);
-      nitem.style.padding = "15px";
+      nitem.style.padding = "5px";
       nlink.appendChild(nitem);
       hmpanel.appendChild(nlink);
       }

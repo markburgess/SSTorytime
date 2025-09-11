@@ -1936,7 +1936,7 @@ async function sendLinkSearch(search)
   // rewrite the search field for clarity
 
   let searchfield = document.getElementById("name");
-  searchfield.innerHTML = search;
+  searchfield.value = search;
 
   fetch(API_SERVER+"/searchN4L", { method: POST_METHOD, body: formData })
    .then(response => {

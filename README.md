@@ -9,6 +9,19 @@
 
 # SSTorytime
 
+## Graphs are the language of spacetime process
+
+Graphs are popular once again, but the technologies for dealing with them are clunky and designed by
+technologists rather than scientists. This project makes working with graphs simple. Graphs may be used as:
+
+* A visualization of processes and maps of space.
+* A map of a process, as with Gant charts and path integrals.
+* A computational device (as a multi-matrix algebra representation). e.g. social networks with centralities and flow patterns.
+* A distributed index over semantic relationships.
+* And more ...
+
+## Semantic Spacetime Project (SST)
+
  Keywords, tags: Open Source Smart Graph Database API for Postgres, Go(lang) API, Explainability of Knowledge Representation
 
 * This is a work in progress during 2025, as part of an [NLnet project](https://nlnet.nl/project/SmartSemanticDataLookup/). It's currently in an R&D phase, so comments are welcome but there is much to be done. This is not an RDF project. <br><br> [HOW **YOU** CAN CONTRIBUTE!](docs/howtocontribute.md)

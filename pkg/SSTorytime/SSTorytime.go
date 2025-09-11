@@ -7102,14 +7102,17 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 
 			switch SomethingLike(cmd_parts[c][p],keywords) {
 
-
 			case CMD_STATS:
 				param.Stats = true
 				continue
 
 			case CMD_CHAPTER, CMD_IN, CMD_CONTENTS:
 				if lenp > p+1 {
-					param.Chapter = cmd_parts[c][p+1]
+					str := cmd_parts[c][p+1]
+					str = strings.TrimSpace(str)
+					str = strings.Trim(str,"'")
+					str = strings.Trim(str,"\"")
+					param.Chapter = str
 					break
 				} else {
 					param.Chapter = "TableOfContents"

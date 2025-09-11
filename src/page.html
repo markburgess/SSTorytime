@@ -847,7 +847,7 @@ for (let chpblk of obj.Content)
       for (let ctx of chpblk.Single)
          {
          let link = document.createElement('a');
-         link.onclick = function() { sendLinkSearch("any context "+ctx.Text); };
+         link.onclick = function() { sendLinkSearch("any context " + ctx.Text); };
  	 link.textContent = "Intentionally emph:: ";
 
          let sitem = document.createElement('span');
@@ -1562,7 +1562,7 @@ if (counter == 0)
 
    let chplink = document.createElement('a');
    chplink.textContent = '"' + event.Chap + '"';
-   chplink.onclick = function() { sendLinkSearch("any chapter \"" + event.Chap) + "\""; };
+   chplink.onclick = function() { sendLinkSearch("any chapter \"" + event.Chap + "\""); };
    setting.appendChild(chplink);
 
    let text2 = document.createElement('i');
@@ -1933,6 +1933,11 @@ async function sendLinkSearch(search)
   let formData = new FormData();
   formData.set("name",search);
 
+  // rewrite the search field for clarity
+
+  let searchfield = document.getElementById("name");
+  searchfield.innerHTML = search;
+
   fetch(API_SERVER+"/searchN4L", { method: POST_METHOD, body: formData })
    .then(response => {
 
@@ -1985,8 +1990,9 @@ async function sendLinkSearch(search)
 
 function CtxSplice(s)
 {
-let ret = s.replaceAll(", ",".");
-return ret;
+//let ret = s.replaceAll(", ",".");
+//return ret;
+return s;
 }
 
 /***********************************************************/

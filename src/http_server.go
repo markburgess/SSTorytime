@@ -368,7 +368,7 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST
 	content := fmt.Sprintf("[ %s ]",array)
 	response := PackageResponse(ctx,search,"Orbits",content)
 	
-	//fmt.Println("REPLY:\n",string(response))
+	fmt.Println("REPLY:\n",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)

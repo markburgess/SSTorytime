@@ -87,7 +87,7 @@ func main() {
 	}
 
 	if search_string == "" {
-		ambient,key,_ := SST.GetContext()
+		ambient,key,_ := SST.GetTimeContext()
 		search_string = "any chapter reminders context " + key + " " + ambient
 	}
 
@@ -749,7 +749,7 @@ func ShowNotes(ctx SST.PoSST,notes []SST.PageMap) {
 
 func ShowTime(ctx SST.PoSST,search SST.SearchParameters) {
 
-	ambient,key,now := SST.GetContext()
+	ambient,key,now := SST.GetTimeContext()
 	now_ctx := SST.UpdateSTMContext(ctx,ambient,key,now,search)
 	SST.ShowContext(ambient,now_ctx,key)
 

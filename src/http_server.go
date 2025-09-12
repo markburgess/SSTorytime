@@ -148,7 +148,7 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 		
 		fmt.Println("\nReceived command:",name)
 		
-		ambient,key,_ := SST.GetContext()
+		ambient,key,_ := SST.GetTimeContext()
 		
 		if len(name) == 0 {
 			name = "any chapter reminders context " + key + " " + ambient
@@ -874,7 +874,7 @@ func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
 
 func PackageResponse(ctx SST.PoSST,search SST.SearchParameters,kind string, jstr string) []byte {
 
-	ambien,key,now := SST.GetContext()
+	ambien,key,now := SST.GetTimeContext()
 	now_ctx := SST.UpdateSTMContext(CTX,ambien,key,now,search)
 
 	intent,_ := json.Marshal(now_ctx)

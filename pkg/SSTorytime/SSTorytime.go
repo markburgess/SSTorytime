@@ -806,7 +806,7 @@ func GetNodeContextString(ctx PoSST,node Node) string {
 	for _,lnk := range node.I[ST_ZERO+LEADSTO] {
 
 		if lnk.Arr == empty {
-			return CONTEXT_DIRECTORY[lnk.Ctx].Context
+			return GetContext(lnk.Ctx)
 		}
 	}
 
@@ -1087,7 +1087,7 @@ func MergeLinkLists(linklist []Link,lnk Link) []Link {
 
 	// Ensure all arrows and contexts in lnk are in list for the appropriate arrows
 
-	new_ctxstr := CONTEXT_DIRECTORY[lnk.Ctx].Context
+	new_ctxstr := GetContext(lnk.Ctx)
 	new_ctxlist := strings.Split(new_ctxstr,",")
 
 	// Check if the arrow is already there to add to its context
@@ -1095,7 +1095,7 @@ func MergeLinkLists(linklist []Link,lnk Link) []Link {
 	for l := range linklist {
 		if linklist[l].Arr == lnk.Arr && linklist[l].Dst == lnk.Dst {
 
-			already_ctxstr := CONTEXT_DIRECTORY[linklist[l].Ctx].Context
+			already_ctxstr := GetContext(linklist[l].Ctx)
 			already_ctxlist := strings.Split(already_ctxstr,",")
 
 			linklist[l].Ctx = MergeContextLists(already_ctxlist,new_ctxlist)
@@ -1364,9 +1364,7 @@ func GraphToDB(ctx PoSST,wait_counter bool) {
 
 	fmt.Println("Storing contexts...")
 
-	for ctxdir := range CONTEXT_DIRECTORY {
-		UploadContextToDB(ctx,CONTEXT_DIRECTORY[ctxdir])
-	}
+	UpdateDBContexts(ctx)
 
 	fmt.Println("Storing page map...")
 
@@ -1721,6 +1719,30 @@ func UploadInverseArrowToDB(ctx PoSST,arrow ArrowPtr) {
 	}
 
 	row.Close()
+}
+
+// ****************************************************************************
+
+func GetContext(contextptr ContextPtr) string {
+
+	exists := int(contextptr) < len(CONTEXT_DIRECTORY)
+
+	if exists {
+		return CONTEXT_DIRECTORY[contextptr].Context
+	}
+
+	return "unknown context"
+}
+
+// **************************************************************************
+
+func UpdateDBContexts(ctx PoSST) {
+
+	ctx.DB.QueryRow("drop table ContextDirectory")
+
+	for ctxdir := range CONTEXT_DIRECTORY {
+		UploadContextToDB(ctx,CONTEXT_DIRECTORY[ctxdir])
+	}
 }
 
 // **************************************************************************
@@ -5707,7 +5729,7 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 			ne.Text = nd.S
 			ne.L = nd.L
 			ne.Chap = nd.Chap
-			ne.Context = CONTEXT_DIRECTORY[axis[lnk].Ctx].Context
+			ne.Context = GetContext(axis[lnk].Ctx)
 			ne.NPtr = axis[lnk].Dst
 			ne.XYZ = directory[ne.NPtr]
 			ne.Orbits = GetNodeOrbit(ctx,axis[lnk].Dst,arrname,limit)
@@ -5799,7 +5821,7 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TO
 						nt.Arrow = arrow.Long
 						nt.STindex = arrow.STAindex
 						nt.Dst = next.Dst
-						nt.Ctx = CONTEXT_DIRECTORY[next.Ctx].Context
+						nt.Ctx = GetContext(next.Ctx)
 						nt.Text = subtxt.S
 						nt.Radius = depth
 
@@ -6553,7 +6575,7 @@ func GetChaptersByChapContext(ctx PoSST,chap string,cn []string,limit int) map[s
 
 			rc := chps[c]
 
-			cn := strings.Split(CONTEXT_DIRECTORY[rcontext].Context,",")
+			cn := strings.Split(GetContext(rcontext),",")
 			ctx_grp := ""
 
 			for s := 0; s < len(cn); s++ {
@@ -6586,7 +6608,7 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 
 		var path []WebPath
 
-		txtctx := CONTEXT_DIRECTORY[maplines[n].Context].Context
+		txtctx := GetContext(maplines[n].Context)
 
 		// Format superheader aggregate summary
 
@@ -6627,7 +6649,7 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 				ws.XYZ = directory[ws.NPtr]
 				ws.Chp = maplines[n].Chapter
 				ws.Line = maplines[n].Line
-				ws.Ctx = CONTEXT_DIRECTORY[maplines[n].Context].Context
+				ws.Ctx = GetContext(maplines[n].Context)
 				path = append(path,ws)
 				
 			} else {// ARROW
@@ -7564,7 +7586,7 @@ func DoNowt(then time.Time) (string,string) {
 
 // ****************************************************************************
 
-func GetContext() (string,string,int64) {
+func GetTimeContext() (string,string,int64) {
 
 	now := time.Now()
 	context,keyslot := DoNowt(now)
@@ -9133,7 +9155,7 @@ func MatchContexts(context1 []string,context2ptr ContextPtr) bool {
 		return true
 	}
 
-	context2 := strings.Split(CONTEXT_DIRECTORY[context2ptr].Context,",")
+	context2 := strings.Split(GetContext(context2ptr),",")
 
 	for c := range context1 {
 

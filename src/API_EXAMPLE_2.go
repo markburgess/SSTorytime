@@ -40,7 +40,7 @@ func main () {
 
 	// Then create a container for all
 
-	created2 := SST.HubJoin(ctx,"mummy_node","",nptrs,"is contained by",nil,nil)
+	created2 := SST.HubJoin(ctx,"mummy_node","",nptrs,"belongs to",nil,nil)
 	fmt.Println("Creates hub node",created2)
 
 	SST.Close(ctx)

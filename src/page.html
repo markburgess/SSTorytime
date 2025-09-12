@@ -126,6 +126,15 @@ canvas {
   aspect-ratio: 2 / 1;
   background-color: #fff;
 }
+.card-view {
+	border-radius: 6px;
+	padding: 1rem 0.5rem;
+	margin-bottom: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
 /* Article / Main Display Area */
 a[title] {
   position: relative;
@@ -1493,6 +1502,8 @@ function ShowNodeEvent(panel,event,counter,direction,skiparrow,anchortag)
 // create a div panel for the orbit root node
 
 let child = document.createElement('div');
+child.setAttribute("class", "card-view");
+
 
 child.id = "orbit_column_1of3";  // col 1 spans all 3 columns, full width for full node text
 panel.appendChild(child);

@@ -63,7 +63,8 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 
 			name :=  SST.GetDBNodeByNodePtr(ctx,start_set[start])
 
-			allnodes := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,maxdepth)
+			const limit = 10
+			allnodes := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,maxdepth,limit)
 			
 			if len(allnodes) > 1 {
 				fmt.Println()
@@ -77,7 +78,7 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 					fmt.Println("     - SSType",SST.STTypeName(sttype)," cone item: ",fullnode.S,", found in",fullnode.Chap)
 				}
 			
-				alt_paths,path_depth := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,maxdepth)
+				alt_paths,path_depth := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,maxdepth,limit)
 				
 				if alt_paths != nil {
 					
@@ -90,30 +91,7 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 				fmt.Printf("     (END %d)\n",start+1)
 			}
 		}
-	}
-	
-	
-	// Now look at the arrow content
-	
-	fmt.Println()
-	fmt.Println("--------------------------------------------------")
-	fmt.Println("checking whether any arrows also match search",searchtext,"(in any context)")
-	fmt.Println("--------------------------------------------------")
-	
-	matching_arrows := SST.GetDBArrowsMatchingArrowName(ctx,searchtext)
-	
-	relns := SST.GetDBNodeArrowNodeMatchingArrowPtrs(ctx,chaptext,context,matching_arrows)
-	
-	for r := range relns {
-		
-		from := SST.GetDBNodeByNodePtr(ctx,relns[r].NFrom)
-		to := SST.GetDBNodeByNodePtr(ctx,relns[r].NTo)
-		arr := SST.ARROW_DIRECTORY[relns[r].Arr].Long
-		wgt := relns[r].Wgt
-		actx := relns[r].Ctx
-		fmt.Println("   See also: ",from.S,"--(",arr,")->",to.S,"\n       (... wgt",wgt,"in the contexts",actx,")\n")
-		
-	}
+	}	
 }
 
 

@@ -1507,9 +1507,8 @@ func HubJoin(ctx PoSST,name,chap string,nptrs []NodePtr,arrow string,context []s
 
 	container := IdempDBAddNode(ctx,to)
 
-	arrowptr,sttype := GetDBArrowsWithArrowName(ctx,arrow)
+	arrowptr,_ := GetDBArrowsWithArrowName(ctx,arrow)
 
-fmt.Println("FIX ME xxxxxxxxxxx",sttype)
 	for nptr := range nptrs {
 
 		var link Link

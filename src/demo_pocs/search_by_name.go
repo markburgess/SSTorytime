@@ -35,8 +35,8 @@ func main() {
 	cntx := []string{ "yes", "thank you", "(food)"}
 	chapter := "chinese"
 	name := "lamb"
-
-	nptrs := SST.GetDBNodePtrMatchingNCC(ctx,name,chapter,cntx,nil)
+	const limit = 10
+	nptrs := SST.GetDBNodePtrMatchingNCC(ctx,name,chapter,cntx,nil,limit)
 
 	fmt.Println("RETURNED",nptrs)
 

@@ -43,7 +43,7 @@ func Page(ctx SST.PoSST,chapter string,context []string,page int) {
 
 	for n := 0; n < len(notes); n++ {
 
-		txtctx := SST.ContextString(notes[n].Context)
+		txtctx := SST.CONTEXT_DIRECTORY[notes[n].Context].Context
 		
 		if last != notes[n].Chapter || lastc != txtctx {
 			fmt.Println("\n\nTitle:", notes[n].Chapter)

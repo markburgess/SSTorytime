@@ -33,7 +33,8 @@ func main() {
 		context := []string{"physics","slits"}
 		chapter := "slit"
 
-		alt_paths,path_depth := SST.GetEntireConePathsAsLinks(ctx,"fwd",nodeptrs[n],maxdepth)
+		const limit = 10
+		alt_paths,path_depth := SST.GetEntireConePathsAsLinks(ctx,"fwd",nodeptrs[n],maxdepth,limit)
 		
 		if alt_paths != nil {
 			

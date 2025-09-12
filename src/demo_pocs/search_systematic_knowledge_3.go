@@ -37,17 +37,14 @@ func main() {
 func Story(ctx SST.PoSST, chapter string,context []string,searchtext string,arrname string) {
 
 	searchtext = strings.TrimSpace(searchtext)
-	stories := SST.GetSequenceContainers(ctx,arrname,searchtext,chapter,context)
+
+	const limit = 10
+	stories := SST.GetSequenceContainers(ctx,arrname,searchtext,chapter,context,limit)
 
 	//for s := range stories {
 
-	if stories[0].Axis == nil {
+	if stories == nil {
 		fmt.Println("\nReturned table of contents, no unique story...\n")
-
-		for s := range stories {
-			fmt.Println(s,stories[s].Title)
-		}
-
 	} else {
 		story,_ := json.Marshal(stories)
 		fmt.Println(string(story))

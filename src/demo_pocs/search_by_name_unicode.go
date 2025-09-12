@@ -35,8 +35,8 @@ func main() {
 	cntx := []string{ "yes", "thank you", "(food)"}
 	chapter := "chinese"
 	name := "(rou)"
-
-	nptrs := SST.GetDBNodePtrMatchingNCC(ctx,name,chapter,cntx,nil)
+	limit := 10
+	nptrs := SST.GetDBNodePtrMatchingNCC(ctx,name,chapter,cntx,nil,limit)
 
 	fmt.Println("\nSearching..in chapter",chapter,"\nin contexts",cntx,"\nfor",name,"\n")
 

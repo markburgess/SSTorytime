@@ -678,6 +678,11 @@ func Configure(ctx PoSST,load_arrows bool) {
 		fmt.Println("Unable to create type as, ",NODEPTR_TYPE)
 		os.Exit(-1)
 	}
+	
+	if !CreateType(ctx,LINK_TYPE) {
+		fmt.Println("Unable to create type as, ",LINK_TYPE)
+		os.Exit(-1)
+	}	
 
 	if !CreateType(ctx,APPOINTMENT_TYPE) {
 		fmt.Println("Unable to create type as, ",APPOINTMENT_TYPE)
@@ -1738,7 +1743,7 @@ func GetContext(contextptr ContextPtr) string {
 
 func UpdateDBContexts(ctx PoSST) {
 
-	ctx.DB.QueryRow("drop table ContextDirectory")
+	ctx.DB.QueryRow("TRUNCATE ContextDirectory")
 
 	for ctxdir := range CONTEXT_DIRECTORY {
 		UploadContextToDB(ctx,CONTEXT_DIRECTORY[ctxdir])

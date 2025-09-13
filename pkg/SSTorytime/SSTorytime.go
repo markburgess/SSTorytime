@@ -656,13 +656,13 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop function lastsawsection(text)")
 		ctx.DB.QueryRow("drop function lastsawnptr(nodeptr)")
 		
-		ctx.DB.QueryRow("drop table Node")
-		ctx.DB.QueryRow("drop table PageMap")
-		ctx.DB.QueryRow("drop table NodeArrowNode")
 		ctx.DB.QueryRow("drop type NodePtr")
 		ctx.DB.QueryRow("drop type Link")
 		ctx.DB.QueryRow("drop type Appointment")
 
+		ctx.DB.QueryRow("drop table Node")
+		ctx.DB.QueryRow("drop table PageMap")
+		ctx.DB.QueryRow("drop table NodeArrowNode")
 		ctx.DB.QueryRow("drop table ArrowDirectory")
 		ctx.DB.QueryRow("drop table ArrowInverses")
 		ctx.DB.QueryRow("drop table ContextDirectory")
@@ -674,6 +674,11 @@ func Configure(ctx PoSST,load_arrows bool) {
 
 	ctx.DB.QueryRow("CREATE EXTENSION unaccent")
 
+	if !CreateType(ctx,LINK_TYPE) {
+		fmt.Println("Unable to create type as, ",LINK_TYPE)
+		os.Exit(-1)
+	}
+
 	if !CreateType(ctx,NODEPTR_TYPE) {
 		fmt.Println("Unable to create type as, ",NODEPTR_TYPE)
 		os.Exit(-1)
@@ -684,8 +689,12 @@ func Configure(ctx PoSST,load_arrows bool) {
 		os.Exit(-1)
 	}
 
-	DefineStoredFunctions(ctx)
+	if !CreateTable(ctx,CONTEXT_DIRECTORY_TABLE) {
+		fmt.Println("Unable to create table as, ",CONTEXT_DIRECTORY_TABLE)
+		os.Exit(-1)
+	}
 
+	DefineStoredFunctions(ctx)
 
 	if !CreateTable(ctx,PAGEMAP_TABLE) {
 		fmt.Println("Unable to create table as, ",PAGEMAP_TABLE)
@@ -704,11 +713,6 @@ func Configure(ctx PoSST,load_arrows bool) {
 
 	if !CreateTable(ctx,ARROW_DIRECTORY_TABLE) {
 		fmt.Println("Unable to create table as, ",ARROW_DIRECTORY_TABLE)
-		os.Exit(-1)
-	}
-
-	if !CreateTable(ctx,CONTEXT_DIRECTORY_TABLE) {
-		fmt.Println("Unable to create table as, ",CONTEXT_DIRECTORY_TABLE)
 		os.Exit(-1)
 	}
 
@@ -1364,7 +1368,7 @@ func GraphToDB(ctx PoSST,wait_counter bool) {
 
 	fmt.Println("Storing contexts...")
 
-	UpdateDBContexts(ctx)
+	UploadContextsToDB(ctx)
 
 	fmt.Println("Storing page map...")
 
@@ -1736,9 +1740,7 @@ func GetContext(contextptr ContextPtr) string {
 
 // **************************************************************************
 
-func UpdateDBContexts(ctx PoSST) {
-
-	ctx.DB.QueryRow("drop table ContextDirectory")
+func UploadContextsToDB(ctx PoSST) {
 
 	for ctxdir := range CONTEXT_DIRECTORY {
 		UploadContextToDB(ctx,CONTEXT_DIRECTORY[ctxdir])

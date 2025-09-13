@@ -163,7 +163,7 @@ sudo su -
 mkdir -p /mnt/pg_ram
 mount -t tmpfs -o size=800M tmpfs /mnt/pg_ram
 chown postgres:postgres /mnt/pg_ram
-systemctl stop postgresql17
+systemctl stop postgresql
 su postgres -
 /usr/lib/postgresql17/bin/initdb -D /mnt/pg_ram/pgdata
 /usr/lib/postgresql17/bin/pg_ctl -D /mnt/pg_ram/pgdata -l /mnt/pg_ram/logfile start

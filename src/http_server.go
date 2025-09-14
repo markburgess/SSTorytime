@@ -430,13 +430,15 @@ func PackageConeFromOrigin(ctx SST.PoSST,nptr SST.NodePtr,nth int,sttype int,cha
 
 	var wpaths [][]SST.WebPath
 
-	const maxlimit = SST.CAUSAL_CONE_MAXLIMIT
-	fcone,countf := SST.GetFwdPathsAsLinks(CTX,nptr,sttype,limit, maxlimit)
+	fcone,count := SST.GetFwdPathsAsLinks(CTX,nptr,sttype,limit, limit)
 	wpaths = append(wpaths,SST.LinkWebPaths(CTX,fcone,nth,chap,context,dimnptr,limit)...)
 
-	bcone,countb := SST.GetFwdPathsAsLinks(CTX,nptr,-sttype,limit,maxlimit)
-	wpaths = append(wpaths,SST.LinkWebPaths(CTX,bcone,nth,chap,context,dimnptr,limit)...)
-	
+	if sttype != 0 {
+		bcone,countb := SST.GetFwdPathsAsLinks(CTX,nptr,-sttype,limit,limit)
+		wpaths = append(wpaths,SST.LinkWebPaths(CTX,bcone,nth,chap,context,dimnptr,limit)...)
+		count += countb
+	}
+
 	wstr,err := json.Marshal(wpaths)
 
 	if wpaths == nil {
@@ -455,7 +457,7 @@ func PackageConeFromOrigin(ctx SST.PoSST,nptr SST.NodePtr,nth int,sttype int,cha
 	jstr += fmt.Sprintf("   \"Title\" : \"%s\",\n",title)  // tbd
 	jstr += fmt.Sprintf("   \"Paths\" : %s\n}",string(wstr))	
 
-	return jstr,countf + countb
+	return jstr,count
 }
 
 //******************************************************************

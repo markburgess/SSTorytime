@@ -378,15 +378,17 @@ func CausalCones(ctx SST.PoSST,nptrs []SST.NodePtr, chap string, context []strin
 				return
 			}
 
-			bcone,_ := SST.GetFwdPathsAsLinks(ctx,nptrs[n],-sttype[st],limit, maxlimit)
+			if sttype[st] != 0 {
+				bcone,_ := SST.GetFwdPathsAsLinks(ctx,nptrs[n],-sttype[st],limit, maxlimit)
+				
+				if bcone != nil {
+					fmt.Printf("%d. ",total)
+					total += ShowCone(ctx,bcone,chap,context,limit)
+				}
 
-			if bcone != nil {
-				fmt.Printf("%d. ",total)
-				total += ShowCone(ctx,bcone,chap,context,limit)
-			}
-
-			if total > limit {
-				return
+				if total > limit {
+					return
+				}
 			}
 		}
 	}

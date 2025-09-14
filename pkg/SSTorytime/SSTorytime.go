@@ -2190,8 +2190,8 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// Basic quick neighbour probe
 
-	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetFwdLinks(start NodePtr,exclude NodePtr[],sttype int,maxlimit int)\n"+
-		"RETURNS Link[] AS $fn$\n" +
+	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetFwdLinks(start NodePtr,exclude NodePtr[],sttype int,maxlimit int)\n")
+	qstr +=	"RETURNS Link[] AS $fn$\n" +
 		"DECLARE \n" +
 		"    neighbours Link[];\n" +
 		"    fwdlinks Link[];\n" +
@@ -2215,7 +2215,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    END LOOP;\n" +
 		"    RETURN neighbours; \n" +
 		"END ;\n" +
-		"$fn$ LANGUAGE plpgsql;\n")
+		"$fn$ LANGUAGE plpgsql;\n"
 	
 	row,err = ctx.DB.Query(qstr)
 	
@@ -2403,6 +2403,8 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    ret_paths Text;\n" +
 		"    appendix Text;\n" +
 		"    tot_path Text;\n"+
+		"    count    int = 0;\n"+
+		"    horizon  int = 0;\n"+
 		"BEGIN\n" +
 
 		"IF depth = maxdepth THEN\n"+
@@ -2411,22 +2413,32 @@ func DefineStoredFunctions(ctx PoSST) {
 		"END IF;\n"+
 
 		"fwdlinks := GetFwdLinks(start.Dst,exclude,sttype, maxlimit);\n" +
+		
+		// limit recursion explosions
+		"horizon := maxlimit - array_length(fwdlinks,1);"+
+
+		"IF horizon < 0 THEN\n"+
+		"  horizon = 0;\n"+
+		"  maxdepth = depth + 1;"+
+		"END IF;\n"+
 
 		"FOREACH lnk IN ARRAY fwdlinks LOOP \n" +
 		"   IF NOT lnk.Dst = ANY(exclude) THEN\n"+
 		"      exclude = array_append(exclude,lnk.Dst);\n" +
-		"      IF lnk IS NULL THEN" +
+		"      IF lnk IS NULL OR count >= maxlimit THEN" +
 		          // set end of path as return val
 		"         ret_paths := Format('%s\n%s',ret_paths,path);\n"+
 		"         RETURN ret_paths;"+
 		"      ELSE\n"+
+		"         count = count + 1;"+
 		          // Add to the path and descend into new link
 		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
-		"         appendix := SumFwdPaths(lnk,tot_path,sttype,depth+1,maxdepth,exclude,maxlimit);\n" +
+		"         appendix := SumFwdPaths(lnk,tot_path,sttype,depth+1,maxdepth,exclude,horizon);\n" +
 		          // when we return, we reached the end of one path
 		"         IF appendix IS NOT NULL THEN\n"+
 	                     // append full path to list of all paths, separated by newlines
 		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
+		"            count = count + regexp_count(appendix,';');"+
 		"         ELSE"+
 		"            ret_paths := Format('%s\n%s',ret_paths,tot_path);"+
 		"         END IF;"+
@@ -2921,6 +2933,8 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    ret_paths Text;\n" +
 		"    appendix Text;\n" +
 		"    tot_path Text;\n"+
+		"    count    int = 0;\n"+
+		"    horizon  int = 0;\n"+
 		"BEGIN\n" +
 
 		"IF depth = maxdepth THEN\n"+
@@ -2968,23 +2982,31 @@ func DefineStoredFunctions(ctx PoSST) {
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"END CASE;\n" +
 
+		"horizon := maxlimit - array_length(fwdlinks,1);"+
+
+		"IF horizon < 0 THEN\n"+
+		"  horizon = 0;\n"+
+		"  maxdepth = depth + 1;"+
+		"END IF;\n"+
+
 		"FOREACH lnk IN ARRAY fwdlinks LOOP \n" +
 		"   IF NOT lnk.Dst = ANY(exclude) THEN\n"+
 		"      exclude = array_append(exclude,lnk.Dst);\n" +
-		"      IF lnk IS NULL THEN\n" +
+		"      IF lnk IS NULL OR count > maxlimit THEN\n" +
 		"         ret_paths := Format('%s\n%s',ret_paths,path);\n"+
 		"      ELSE\n"+
+		"         count = count + 1;"+
 		"         IF context is not NULL AND NOT match_context(lnk.Ctx,context::text[]) THEN\n"+
                 "            CONTINUE;\n"+
                 "         END IF;\n"+
 
 		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
-		"         appendix := SumAllNCPaths(lnk,tot_path,orientation,depth+1,maxdepth,chapter,rm_acc,context,exclude,maxlimit);\n" +
+		"         appendix := SumAllNCPaths(lnk,tot_path,orientation,depth+1,maxdepth,chapter,rm_acc,context,exclude,horizon);\n" +
 
 		"         IF appendix IS NOT NULL THEN\n"+
 		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
+		"            count = count + regexp_count(appendix,';');"+
 		"         ELSE\n"+
-//		"            ret_paths := tot_path;\n"+
 		"            ret_paths := Format('%s\n%s',ret_paths,tot_path);"+
 		"         END IF;\n"+
 		"      END IF;\n"+
@@ -3100,6 +3122,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"        RETURN '{}';\n" +
 		"    END IF;\n" +
 		"    neighbours := ARRAY[]::Link[];\n" +
+
 		"    FOREACH lnk IN ARRAY fwdlinks\n" +
 		"    LOOP\n"+
                 "      IF context is not NULL AND NOT match_context(lnk.Ctx,context) THEN\n"+

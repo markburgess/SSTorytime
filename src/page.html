@@ -1919,7 +1919,7 @@ async function sendlinkData(nclass,ncptr)
   formData.set("ncptr",ncptr);
 
   let searchfield = document.getElementById("name");
-  searchfield.value = "from (",nclass,",",ncptr,")";
+  searchfield.value = "(" + nclass + "," + ncptr + ")";
 
   fetch(API_SERVER+"/searchN4L", { method: POST_METHOD, body: formData })
    .then(response => {

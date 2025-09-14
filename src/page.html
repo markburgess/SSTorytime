@@ -1,2459 +1,2427 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<title>SSTorytime Simple viewer</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<style>
-:root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f4f7f9;
-  --text-primary: #2c3e50;
-  --text-secondary: #7f8c8d;
-  --header-bg: #2c3e50;
-  --header-text: #ecf0f1;
-  --accent-primary: #3498db;
-  --accent-secondary: #e74c3c;
-  --border-color: #dde4e8;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: Arial, Verdana, sans-serif;
-  background: #eee;
-}
-
-/* Style the header */
-page {
-  display: grid;
-  position: relative;
-  gap: 1ch;
-  min-height: 100vh;
-}
-
-header {
-  background-color: var(--header-bg);
-  padding: 1rem;
-  text-align: center;
-  color: var(--header-text);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-/* Main Content Area */
-.main-content {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  padding: 1rem;
-  width: 100vw;
-  gap: 1.5rem;
-}
-
-/* Navigation & Search */
-nav {
-  background: var(--bg-primary);
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--border-color);
-}
-
-#search {
-  display: flex;
-  flex: auto;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-#search label {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: var(--accent-primary);
-}
-
-#search input[type="text"] {
-  flex: auto;
-  padding: 0.75rem;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 1rem;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
-}
-
-#search input[type="text"]:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-}
-
-#search input[type="submit"] {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  background-color: var(--accent-primary);
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: background-color 0.2s;
-}
-
-#search input[type="submit"]:hover {
-  background-color: #2980b9;
-}
-/* Canvas & Graphics */
-pictureframe {
-  display: block;
-  width: 100%;
-  background: var(--bg-primary);
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--border-color);
-}
-
-canvas {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 2 / 1;
-  background-color: #fff;
-}
-.card-view {
-	border-radius: 6px;
-	padding: 1rem 0.5rem;
-	margin-bottom: 0.5rem;
-	display: flex;
-	flex-direction: column;
-	gap: 0.25rem;
-}
-
-/* Article / Main Display Area */
-a[title] {
-  position: relative;
-}
-
-a[title]:hover::after {
-  visibility: block;
-  content: attr(title);
-  display: inline-block;
-  padding: 0.2em 0.6em;
-  white-space: nowrap;
-  background-color: #555;
-  color: #fff;
-  font-style: normal;
-  font-family: sans-serif;
-  font-size: 0.8em;
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translate(-50%, -1em);
-  z-index: 1;
-}
-
-h1 {
-  font-size: 35px;
-  color: #4488bb;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-
-br {
-  padding: 10px;
-  margin-bottom: 30px;
-}
-
-hr {
-  padding: 10px;
-  margin-top: 30px;
-  margin-bottom: 30px;
-}
-
-#current_time_context {
-  color: orange;
-}
-
-#statcount {
-  color: navy;
-  margin-left: 100px;
-  padding: 5px;
-}
-
-h2 {
-  font-size: 30px;
-  color: #5599cc;
-  padding: 20px;
-  margin: 0px;
-  margin-bottom: 10px;
-}
-
-#topmost_page_title {
-  font-size: 150%;
-  color: pink;
-  padding: 10px;
-}
-
-#chapter_notes_heading {
-  padding: 10px;
-  margin-top: 20px;
-  font-size: 30px;
-  color: slategray;
-}
-
-/* Create two columns/boxes that floats next to each other */
-
-#toc-panel {
-  padding: 15px;
-  margin-left: 10px;
-}
-
-#toc-submit {
-  padding: 15px;
-  float: right;
-}
-
-#toc-frag {
-  padding: 15px;
-  color: navy;
-}
-
-#toc-elem {
-  padding: 15px;
-  color: purple;
-  font-size: 150%;
-  line-height: 150%;
-}
-
-#toc-single {
-  padding: 15px;
-  color: darkorange;
-  font-size: 150%;
-  line-height: 150%;
-}
-
-#toc-common {
-  padding: 15px;
-  color: mediumslateblue;
-  font-size: 150%;
-  line-height: 150%;
-}
-
-#ditto {
-  padding: 5px;
-  margin-left: 50px;
-}
-
-main {
-  float: left;
-  padding: 0px;
-  display: grid;
-  width: 100vw;
-  font-size: 20px;
-  background-color: #f1f1f1;
-  background: #fff;
-}
-
-main p {
-  color: green;
-  padding: 8px;
-}
-
-main div {
-  padding: 15px;
-  margin-bottom: 10px;
-  text-wrap: nowrap;
-  background: #fff;
-}
-
-main img {
-  padding: 30px;
-  border-radius: 60%;
-  width: auto;
-  max-height: 400px;
-  float: right;
-}
-
-main pre {
-  color: green;
-  font-size: 90%;
-  background: #fff;
-}
-
-main strong 
-{
-  color: #226699;
-  background: #fff;
-}
-
-main a {
-  padding: 10px;
-  color: darkgreen;
-  margin-top: 5px;
-  background: #fff;
-}
-
-pictureframe {
-  padding: 10px;
-  float: left;
-  background: #fff;
-}
-
-#radius-1 {
-  margin-left: clamp(10ch, 10ch + 1vw, 20ch);
-}
-
-#radius-2 {
-  margin-left: clamp(15ch, 15ch + 2vw, 40ch);
-  color: slategray;
-  opacity: 0.8;
-}
-
-#errormesg {
-  padding-inline: clamp(10ch, 10ch + 1vw, 20ch);
-}
-
-table {
-  background: lightblue;
-  padding: 30px;
-  align-items: center;
-  border-spacing: 30px;
-}
-
-tr {
-  background: blue;
-  padding: 30px;
-}
-
-td {
-  background: white;
-  padding: 30px;
-  vertical-align: top;
-}
-
-li {
-  word-spacing: 10px;
-}
-
-a:hover {
-  color: orange;
-}
-
-.arrow {
-  color: darkred;
-}
-
-#fwdarr {
-  margin: 0px;
-  margin: 0px;
-  padding: 5px;
-  color: darkgreen;
-  margin-left: 50px;
-}
-
-#bwdarr {
-  margin: 0px;
-  padding: 5px;
-  color: darkred;
-  margin-left: 60px;
-}
-
-#arrow-0 {
-  color: purple; /* -express */
-}
-
-#arrow-1 {
-  /* -contain */
-  color: blue;
-}
-
-#arrow-2 {
-  /* -leadsto */
-  color: darkred;
-}
-
-#arrow-3 {
-  /* near */
-  color: #4488bb;
-}
-
-#arrow-4 {
-  /* +leadsto */
-  color: darkred;
-}
-
-#arrow-5 {
-  /* +contain */
-  color: darkblue;
-}
-
-#arrow-6 {
-  /* +express */
-  color: purple;
-}
-
-#orbital-full-text {
-  padding: 10px;
-  font-style: italic;
-  font-size: 130%;
-  margin-left: 40px;
-  margin-bottom: 40px;
-  color: darkblue;
-  text-wrap: balance;
-  background: #fff;
-}
-
-#nptr-chapter-context-helpline {
-  margin-left: 60px;
-  margin-bottom: 20px;
-  padding: 10px;
-  background: #fff;
-}
-
-a:not(.arrow):hover {
-  color: #999999;
-}
-
-hr {
-  color: #cccccc;
-  padding: 0px;
-}
-
-i:hover {
-  color: #999999;
-}
-
-h1:not(.arrow):hover {
-  color: #777777;
-}
-
-pre:hover {
-  color: #999999;
-}
-
-.hipnosis {
-  position: absolute;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 40ch;
-  left: 25%;
-  top: 10%;
-  /* From https://css.glass */
-  aspect-ratio: 1 / 1;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: var(--radius-round);
-  box-shadow: var(--shadow-6);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-
-  transition: transform 1s var(--ease-spring-2) 1s, opacity 1s ease 1s;
-
-  @starting-style {
-    opacity: 0;
-    transform: scale(0);
-  }
-}
-	
-.hipnosis svg {
-  width: 100px;
-  height: 100px;
-  margin: 20px;
-  display: inline-block;
-}
-
-</style>
-
-
-
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
-});
-</script>
-
-
-<script type="text/javascript" id="MathJax-script" async
-  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
-</script>
-</head>
-<body>
-
-
-
-<page>
-<span id="wait"></span>
-<header>
-<h2>SSToryGraph</h2>
-</header>
-<section>
-  <nav>
-<form id="search">
-    <label for="subject">?</label>
-    <input size="100" type="text" id="name" name="name" value="" />
-    <input type="submit" id="gosubmit" value="Go!" />
-</form>
-  </nav>
-  <pictureframe>
-  </pictureframe>
-</section>
-
-<section>
-  <main>
-  </main>
-</section>
-</page>
-<script>
-
-/******************************************************************************************/
-/* MB SSTorytime poc/demo code - to be cleaned up and improved by a (respectful) expert.. */
-/******************************************************************************************/
-
-/***********************************************************/
-// Global configuration
-/***********************************************************/
-
-var API_SERVER = 'http://localhost:8080';
-
-const Im3 = 0;
-const Im2 = 1;
-const Im1 = 2;
-const In0 = 3;
-const Il1 = 4;
-const Ic2 = 5;
-const Ie3 = 6;
-const ST_TOP = 7;
-const ST_ZERO = 3;
-
-const STINDICES = ["is a property expressed by","is contained by","comes from","is near/smimilar to","leads to","contains","expresses property"];
-
-const POST_METHOD = "POST";
-
-/***********************************************************/
-// Graphics config
-/***********************************************************/
-
-var CANVAS = CreateCanvas(); 
-var CTX = CANVAS.getContext("2d");
-
-// Adjust coordinates
-
-let WIDTH = CANVAS.offsetWidth;
-let HEIGHT = CANVAS.offsetHeight;
-
-CANVAS.width = WIDTH;
-
-let ORGX = WIDTH/2;
-let ORGY = HEIGHT/2 + 100;
-let THETA = Math.PI/8;
-let PHI = Math.PI/8;
-let SCALE = 0.9;
-let OBS_X = 1;
-let OBS_Y = 0.5;
-let OBS_Z = -1;
-let VP_X = 0;
-let VP_Y = 4;
-let VP_Z = 8;
-
-/************************************************************/
-// Page renderers
-/************************************************************/
-
-async function FetchPage()
-{
-let requestURL = API_SERVER + "/searchN4L";
-let request = new Request(requestURL);
-let response = await fetch(request);
-let mynote = await response.json();
-
-DoHeader(mynote);
-DoOrbitPanel(mynote) // Start in orbit
-}
-
-/***********************************************************/
-
-function DoHeader(obj) 
-{
-// Clear the main panel here, as it's common to all
-
-let clearscreen = document.querySelector('main');
-clearscreen.innerHTML = "";
-
-// Now manage the header
-
-let header = document.querySelector('header');
-header.innerHTML = "";
-
-let titlebar = document.createElement('h2');
-titlebar.id = "topmost_page_title";
-
-let title = "app";
-
-switch (obj.Response)
-   {
-   case "Orbits":
-      if (obj.Content[0] != null)
-         {
-         title = obj.Content[0].Text;
-         }
-      else
-         {
-         title = obj.Time;
-         }
-      break;
-   case "ConePaths":
-      title = "Local cone paths";
-      break;
-   case "PathSolve":
-      title = "Path solutions";
-      break;
-   case "Sequence":
-      title = "Story sequences ... "+ obj.Content[0].Chapter;
-      break;
-   case "PageMap":
-      title = "Page notes about "+ obj.Content.Title;
-      break;
-   case "TOC":
-      title = "Table of contents";
-      break;
-   case "Arrows":
-      title = "Arrow lookup";
-      break;
-   default:
-      title = "SSToryGraph browser";
-      break;
-   }
-
-if (title.length < 60 || IsMath(title))
-   {
-   titlebar.textContent = title;
-   } 
-else 
-   {
-   titlebar.textContent = title.slice(0,60) + "...";
-   }
-
-header.appendChild(titlebar);
-
-let nowbar = document.createElement('div');
-nowbar.id = "current_time_context";
-nowbar.textContent = obj.Ambient;
-header.appendChild(nowbar);
-
-let ctxbar = document.createElement('p');
-ctxbar.id = "context_history";
-ctxbar.textContent = obj.Intent;
-header.appendChild(ctxbar);
-}
-
-/***********************************************************/
-
-function DoOrbitPanel(obj) 
-{
-let section = document.querySelector('main');
-let panel = document.createElement('span');
-panel.id = "main_content_panel";
-section.appendChild(panel);
-
-console.log("JSON",obj);
-
-// List of events unrelated
-
-if (obj == null)
-   {
-   return;
-   }
-
-CANVAS = CreateCanvas();
-DrawGrid(0,0,1);
-
-const separates = 0
-
-if (obj.Response != "Orbits")
-   {
-   console.log("BAD PROTO")
-   return
-   }
-
-let last_node_event = obj.Content[0];
-
-for (let node_event of obj.Content) 
-   {
-   ShowNodeEvent(panel,node_event,separates,"all","","h1")
-
-   last_node_event = node_event; // don't link up
-   PlotGraphics(node_event,last_node_event);
-
-   // This hr can be removed once we have the grid
-   let hr = document.createElement('hr');
-   panel.appendChild(hr);
-   }
-}
-
-/***********************************************************/
-
-function DoEntireConePanel(obj) 
-{
-let section = document.querySelector('main');
-let panel = document.createElement('div');
-panel.id = "main_content_panel";
-section.appendChild(panel);
-
-CANVAS = CreateCanvas();
-DrawGrid(0,0,1);
-
-// Iterate over the cones from different starting nodes
-
-for (let head_nptr of obj.Content) 
-   {
-   let nclass = head_nptr.NClass;
-   let ncptr = head_nptr.NCPtr;
-
-   let item = document.createElement('h2');
-   let link = document.createElement('a');
-   item.textContent = head_nptr.Title.slice(0,50)+"..";
-   link.onclick = function() { sendlinkData(nclass,ncptr); };
-   item.appendChild(link);
-   panel.appendChild(item);
-   let parent = document.createElement('content');
-
-   parent = PrintPaths(parent,head_nptr.Paths);
-   panel.appendChild(parent);
-
-   // Add the centrality box at bottom of page
-
-   let tab = document.createElement('table');
-   let row = document.createElement('tr');
-   let col1 = document.createElement('td');
-   let hd1 = document.createElement('h4');
-   hd1.textContent = "Between-ness Centrality Rank";
-   col1.appendChild(hd1)
-   let lst1 = document.createElement('ol');
-
-   // For paths solve <a|b>
-
-   if (head_nptr.BTWC != null) 
-      {
-      for (let centrality of head_nptr.BTWC)
-         {
-         let li = document.createElement('li');
-         li.textContent = centrality;
-         lst1.appendChild(li);
-         }
-      col1.appendChild(lst1)
-
-      let col2 = document.createElement('td');
-      let hd2 = document.createElement('h4');
-      hd2.textContent = "Supernode summary";
-      col2.appendChild(hd2)
-      let lst2 = document.createElement('ol');
-
-      for (let snode of head_nptr.Supernodes)
-         {
-         let li = document.createElement('li');
-         li.textContent = snode;
-         lst2.appendChild(li);
-         }
-      col2.appendChild(lst2)
-
-      row.appendChild(col1)
-      row.appendChild(col2)
-
-      tab.appendChild(row);
-      panel.appendChild(tab);
-
-      let hr = document.createElement('hr');
-      panel.appendChild(hr);
-      }
-   }
-}
-
-/***********************************************************/
-
-function DoSeqPanel(obj) 
-{
-let section = document.querySelector('main');
-let panel = document.createElement('div');
-panel.id = "main_content_panel";
-section.appendChild(panel);
-
-CANVAS = CreateCanvas();
-DrawGrid(0,0,1);
-
-let counter = 0;
-let laststory = obj.Content[0]; // arbitrary init
-
-for (let story of obj.Content) 
-   {
-   let item = document.createElement('h2');
-   item.textContent = story.Chap;
-   panel.appendChild(item);
-
-   ShowNodeEvent(panel,story,counter,"fwd","then","span");
-   PlotGraphics(story,laststory);
-   laststory = story;  // link up
-
-   counter++;
-   }
-}
-
-/***********************************************************/
-
-function DoPageMapPanel(obj) 
-{
-let section = document.querySelector('main');
-let panel = document.createElement('div');
-panel.id = "main_content_panel";
-section.appendChild(panel);
-
-CANVAS = CreateCanvas();
-DrawGrid(0,0,1);
-
-let parent = document.createElement('h1');
-parent.textContent = "* Chapter Notes: ";
-parent.id = "chapter_notes_heading";
-panel.appendChild(parent);
-
-let shchap = document.createElement('p');
-shchap.textContent = obj.Content.Title;
-panel.appendChild(shchap)
-
-let thepage = document.createElement('p');
-thepage = PrintNotes(thepage,obj.Content.Notes);
-parent.appendChild(thepage);
-}
-
-/***********************************************************/
-
-function DoTOCPanel(obj) 
-{
-let section = document.querySelector('main');
-let panel = document.createElement('div');
-panel.id = "main_content_panel";
-section.appendChild(panel);
-
-let item = document.createElement('h1');
-item.textContent = "Table of contents and contexts";
-panel.appendChild(item);
-
-CANVAS = CreateCanvas();
-DrawGrid(0,0,1);
-let counter = 0;
-
-for (let chpblk of obj.Content) 
-   {
-   counter++;
-
-   // N. Section/chapter header title
-
-   let link = document.createElement('a');
-    let item = document.createElement('h2');
-    link.onclick = function() { sendLinkSearch("notes chapter "+chpblk.Chapter); };
-    item.textContent = counter + ". " + chpblk.Chapter;
-    link.appendChild(item);
-   panel.appendChild(link);
-
-   Event(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z);
-   Label(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,chpblk.Chapter,12,"gray");
-
-   let chapter_section = document.createElement('p');
-   chapter_section.id = "toc-panel";
-
-   // First do the context groups or ambient parts
-
-   if (chpblk.Context != null)
-      {
-      for (let ctx of chpblk.Context)
-         {
-         let link = document.createElement('a');
-         link.onclick = function() { sendLinkSearch("any context " + CtxSplice(ctx.Text)); };
-         link.id = "toc-frag";
- 	 link.textContent = "Context Set/Grouping:: ";
-
-         let sitem = document.createElement('span');
-         sitem.textContent = ctx.Text;
-         sitem.id = "toc-elem";
-         link.appendChild(sitem)
-
-         chapter_section.appendChild(link);
-
-	 Concept(ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
-	 Contains(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
-         }
+  <head>
+    <title>SSTorytime Simple viewer</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://unpkg.com/open-props" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/open-props/normalize.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/open-props/buttons.min.css"
+    />
+
+    <style>
+      :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f4f7f9;
+        --text-primary: #2c3e50;
+        --text-secondary: #7f8c8d;
+        --header-bg: #2c3e50;
+        --header-text: #ecf0f1;
+        --accent-primary: #3498db;
+        --accent-secondary: #e74c3c;
+        --border-color: #dde4e8;
       }
 
-   //Spacer ?
-
-   if (chpblk.Single != null)
-      {
-      for (let ctx of chpblk.Single)
-         {
-         let link = document.createElement('a');
-         link.onclick = function() { sendLinkSearch("any context " + CtxSplice(ctx.Text)); };
- 	 link.textContent = "Intentionally emph:: ";
-
-         let sitem = document.createElement('span');
-         sitem.textContent = ctx.Text;
-         sitem.id = "toc-single";
-         link.appendChild(sitem)
-
-         chapter_section.appendChild(link);
-
-	 Thing(ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
-	 Near(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
-         }
+      body {
+        display: grid;
+        font-size: clamp(9px, 9px + 1vw, 18px);
+        font-family: Arial, Verdana, sans-serif;
       }
 
-   // Spacer ?
-
-   if (chpblk.Common != null)
-      {
-      for (let ctx of chpblk.Common)
-         {
-         let link = document.createElement('a');
-         let sitem = document.createElement('span');
-         link.onclick = function() { sendLinkSearch("any context " + CtxSplice(ctx.Text)); };
-	 link.textContent = "Ambient context:: ";
-         link.id = "toc-frag";
-
-         sitem.textContent = ctx.Text;
-         sitem.id = "toc-common";
-
-         link.appendChild(sitem)
-         chapter_section.appendChild(link);
-
-	 Thing(ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
-	 Near(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
-         }
+      /* Style the header */
+      page {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        align-items: center;
+        gap: clamp(1rem, 1rem + 1vh, 1.5rem);
       }
 
-   panel.appendChild(chapter_section)
-
-   let spacer = document.createElement('hr');
-   panel.appendChild(spacer);
-   }
-}
-
-/***********************************************************/
-
-function DoStatsPanel(obj) 
-{
-let section = document.querySelector('main');
-let panel = document.createElement('div');
-panel.id = "main_content_panel";
-section.appendChild(panel);
-
-let title = document.createElement('h1');
-title.textContent = "Progress tracker";
-panel.appendChild(title);
-
-CANVAS = CreateCanvas();
-DrawGrid(0,0,1);
-
-let counter = 0;
-let lastsection = "xxx";
-let link;
-let item;
-let last;
-let hmpanel;
-
-for (let ls of obj.Content) 
-   {
-   if (ls.Section != lastsection)
-      {
-      counter++;
-      lastsection = ls.Section;
-      link = document.createElement('a');
-      link.onclick = function() { sendLinkSearch("notes "+"\""+ls.Section+"\""); };
-
-      item = document.createElement('strong');
-      item.textContent = counter + ". " + ls.Section;
-      link.appendChild(item);
-      panel.appendChild(link);
-
-      sec = document.createElement('p');
-      sec.id = "toc-panel";
-
-      let sub1 = document.createElement('i');
-      sub1.textContent = "Last viewed at " + ls.Last;
-      sec.appendChild(sub1);
-
-      let sub2 = document.createElement('i');
-      sub2.textContent = "  total viewing count = " + ls.Freq;
-      sub2.id = "statcount";
-      sec.appendChild(sub2);
-
-      panel.appendChild(sec);
-
-      hmpanel = document.createElement('div');
-      panel.appendChild(hmpanel)
-
-      Concept(ls.XYZ.X,ls.XYZ.Y,ls.XYZ.Z);
-      Label(ls.XYZ.X,ls.XYZ.Y,ls.XYZ.Z,ls.Section,12,"gray");
+      header {
+        padding: clamp(5px, 5px + 1vw, 1rem);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: var(--shadow-3);
+        width: 100svw;
       }
-   else
-      {
-      let nlink = document.createElement('a');
-      let nitem = document.createElement('span');
-      nitem.id = "heatmap";
-
-      if (ls.NPtr.Class < 0)
-         {
-         nlink.onclick = function() { sendLinkSearch("any chapter \""+ls.Section+"\""); };
-         nitem.textContent = "browse";
-         }
-      else
-         {
-         nlink.onclick = function() { sendLinkSearch("("+ls.NPtr.Class+","+ls.NPtr.CPtr+")"); };
-         nitem.textContent = "("+ls.NPtr.Class+","+ls.NPtr.CPtr+")";
-         }
-      nitem.style.color = HeatColour(ls.Freq,ls.Pdelta,70);
-      nitem.style.fontSize = '80%';
-      nitem.style.backgroundColor = HeatColour(ls.Freq,ls.Pdelta,100);
-      nitem.style.padding = "5px";
-      nlink.appendChild(nitem);
-      hmpanel.appendChild(nlink);
-      }
-   }
-}
-
-/***********************************************************/
-
-function DoArrowsPanel(obj) 
-{
-let section = document.querySelector('main');
-let panel = document.createElement('span');
-panel.id = "main_content_panel";
-section.appendChild(panel);
-
-CANVAS = CreateCanvas();
-DrawGrid(0,0,1);
-let counter = 0;
-
-let t = document.createElement('h1');
-t.textContent = "Arrows";
-panel.appendChild(t);
-
-let matches = obj.Content.length;
-
-let angle_increment = Math.PI / matches;
-let angle = 0;
-
-let subpanel = document.createElement('div');
-panel.appendChild(subpanel);
-
-for (let arrow of obj.Content) 
-   {
-   ArrowPair(angle,arrow.ASTtype,arrow.Long,arrow.InvL);
-   angle += angle_increment;
-
-   let a = document.createElement('div');
-   a.textContent = "ArrowPtr = " + arrow.ArrPtr + " (STtype: " + arrow.ASTtype + ")";
-   a.id = 'arrow-'+(arrow.ASTtype + ST_ZERO);
-   subpanel.appendChild(a);
-
-   let ab = document.createElement('p');
-   ab.textContent = "Long name: (" + arrow.Long + ")";
-   ab.id = "fwdarr";
-   //ab.id = 'arrow-'+(arrow.ASTtype + ST_ZERO);
-   ab.style.fontFamily = 'Verdana';
-   a.appendChild(ab);
-
-   let af = document.createElement('p');
-   af.textContent = "Short alias: (" + arrow.Short + ")";
-   af.id = "fwdarr";
-   //af.id = 'arrow-'+(arrow.ASTtype + ST_ZERO);
-   af.style.fontFamily = 'Verdana';
-   a.appendChild(af);
-
-   // Inverse
-   let i = document.createElement('div');
-   i.textContent = "ArrowPtr = " +arrow.InvPtr + ". (STtype: " + arrow.ISTtype + ")";
-   //i.id = 'arrow-'+(arrow.ISTtype + ST_ZERO);
-   subpanel.appendChild(i);
-
-   let iaf = document.createElement('p');
-   iaf.textContent = "Short: " + arrow.InvS;
-   //iaf.id = 'arrow-'+(arrow.ISTtype + ST_ZERO);
-   iaf.id = "bwdarr";
-   iaf.style.fontFamily = 'Verdana';
-   i.appendChild(iaf);
-
-   let ib = document.createElement('p');
-   ib.textContent = "Long: " + arrow.InvL;
-   //ib.id = 'arrow-'+(arrow.ISTtype + ST_ZERO);
-   ib.id = "bwdarr";
-   ib.style.fontFamily = 'Verdana';
-   i.appendChild(ib);
-
-   let hr = document.createElement('hr');
-   subpanel.appendChild(hr);
-   }
-}
-
-/***********************************************************/
-//  Presentation helpers
-/***********************************************************/
-
-function PrintLink(parent,radius,stindex,arrow,str,nclass,ncptr,chap,ctx) 
-{
-if (arrow == null)
-   {
-   arrow = "broken arrow"
-   }
-
-// BEGIN column_radiusof3 i.e. 2of3 and 3of3 depending on radius variable
-
-let box = document.createElement('div');
-box.id = "radius-" + radius;
-
-// any arrow comes first
-
-let arrow_link = document.createElement('a');
-arrow_link.textContent = `( ${arrow} )  `;
-arrow_link.id = 'arrow-'+stindex;
-arrow_link.title = STINDICES[stindex];
-arrow_link.class = "tooltip";
-arrow_link.style.fontFamily = 'Verdana';
-box.appendChild(arrow_link);
-
-// Begin print satellite node in column 2of3 or 3of3, depending on radius
-
-if (str.includes("\n")) // preformatted item -> <pre>
-   {
-   // pre formatted text
-
-   let text_link = document.createElement('a');
-   text_link.onclick = function() { sendlinkData(nclass,ncptr); };
-
-   let pretxt = document.createElement('pre');
-   pretxt.textContent = str;
-
-   text_link.appendChild(pretxt);
-   text_link.className = 'text';
-   box.appendChild(text_link);
-   }
-else
-   {
-   // now plain text
-   let text_link = document.createElement('a')
-   let spantext = document.createElement('span')  // replaces <pre>
-
-   if (IsURL(str,arrow))
-      {
-      text_link.href=str;
-      text_link.target="_blank";
-      text_link.rel="noopener";
-      }
-   else if (IsImage(str,arrow))
-      {
-      let img = document.createElement('img')
-      img.src = str;
-      box.appendChild(img);
-      }
-   else
-      {
-      // THIS IS WHERE WE WANT TO ADD TAB/ORBIT POPUP ON MOUSEOVER ??
-
-      text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+      header div {
+        text-wrap: balance;
+        text-align: center;
+        padding-block: 7px;
       }
 
-   spantext.textContent = str;
-   spantext.style.fontFamily = 'Times';  // distinguish satellites
+      /* Navigation & Search */
 
-   if (str.length < 20)
-      {
-      text_link.style.fontSize = '2rem';
-      text_link.style.paddingInline = 'clamp(1ch, 1ch + 1vw, 3ch)';
+      nav {
+        border-radius: var(--radius-3);
+        box-shadow: var(--shadow-5);
+      }
+      nav form {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        padding: 1ch;
+      }
+      /* Canvas & Graphics */
+
+      canvas {
+        display: flex;
+        max-width: 98vw;
+        margin-inline: 1ch;
+        aspect-ratio: 2 / 1;
+        border-radius: var(--radius-3);
+        border: 1px var(--stone-5) solid;
+        box-shadow: var(--shadow-5);
       }
 
-   text_link.appendChild(spantext);
-   box.appendChild(text_link);
+      .card-view {
+        border-radius: var(--radius-3);
+        padding: 1rem 0.5rem;
+        margin-bottom: 0.5rem;
+        width: 98vw;
+        border: 1px var(--stone-5) solid;
 
-   ProgressCheckBox(box,nclass,ncptr,chap,ctx);
-   }
-
-if (ctx.length > 0)
-   {
-   let cntx = document.createElement('i');
-   cntx.id = "cntxt";
-   cntx.textContent = " context hints: " + ctx;
-   box.appendChild(cntx);
-   }
-
-parent.appendChild(box);
-
-return parent
-}
-
-/***********************************************************/
-
-function PrintPaths(parent,array)
-{
-if (array.length < 1)
-   {
-   return parent;
-   }
-
-let lastx = 0;
-let lasty = 0;
-let lastz = 0;
-let lastarrow = 0;
-
-for (let path = 0; path < array.length; path++)
-   {
-   if (array[path] == null)
-      {
-      continue;
+        box-shadow: var(--shadow-5);
       }
 
-   // The WebPath protocol alternates node-arrow...
+      /* Article / Main Display Area */
+      a[title] {
+        position: relative;
+      }
 
-   for (let i = 0; i < array[path].length; i++)
-      {
-      if (i % 2 == 0) // node
-         {
-         let str = array[path][i].Name;
-         let ncptr = array[path][i].NPtr.CPtr;
-         let nclass = array[path][i].NPtr.NClass;
+      a[title]:hover::after {
+        visibility: block;
+        content: attr(title);
+        display: inline-block;
+        padding: 0.2em 0.6em;
+        white-space: nowrap;
+        font-style: normal;
+        font-family: sans-serif;
+        font-size: 0.8em;
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translate(-50%, -1em);
+        z-index: 1;
+      }
 
-         let xyz = array[path][i].XYZ;
+      h1 {
+        font-size: 35px;
+        color: #4488bb;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
 
-         thisx = xyz.X;
-         thisy = xyz.Y;
-         thisz = xyz.Z;
+      #current_time_context {
+        color: orange;
+      }
 
-         DrawPath(lastarrow,thisx,thisy,thisz,lastx,lasty,lastz);
+      #statcount {
+        color: navy;
+        margin-left: 100px;
+        padding: 5px;
+      }
 
-         if (i < array[path].length-1)
-            {
-            lastx = thisx;
-            lasty = thisy;
-            lastz = thisz;
+      h2 {
+        font-size: 30px;
+        color: #5599cc;
+        padding: 20px;
+        margin: 0px;
+        margin-bottom: 10px;
+      }
+
+      #topmost_page_title {
+        font-size: 150%;
+        color: pink;
+        padding: 10px;
+      }
+
+      #chapter_notes_heading {
+        padding: 10px;
+        margin-top: 20px;
+        font-size: 30px;
+        color: slategray;
+      }
+
+      /* Create two columns/boxes that floats next to each other */
+
+      #toc-panel {
+        padding: 15px;
+        margin-left: 10px;
+      }
+
+      #toc-submit {
+        padding: 15px;
+        float: right;
+      }
+
+      #toc-frag {
+        padding: 15px;
+        color: navy;
+      }
+
+      #toc-elem {
+        padding: 15px;
+        color: purple;
+        font-size: 150%;
+        line-height: 150%;
+      }
+
+      #toc-single {
+        padding: 15px;
+        color: darkorange;
+        font-size: 150%;
+        line-height: 150%;
+      }
+
+      #toc-common {
+        padding: 15px;
+        font-size: 150%;
+        line-height: 150%;
+      }
+
+      main {
+        max-width: 98vw;
+        font-size: clamp(9px, 9px + 1vw, 18px);
+      }
+
+      main p {
+        padding: clamp(3px, 3px + 1vw, 6px);
+      }
+
+      main div {
+        padding: 15px;
+        margin-bottom: 10px;
+        text-wrap: nowrap;
+        overflow-x: clip;
+      }
+
+      main img {
+        padding: 30px;
+        border-radius: 60%;
+        width: auto;
+        max-height: 400px;
+        float: right;
+      }
+
+      main pre {
+        color: green;
+        font-size: 90%;
+      }
+
+      main strong {
+        color: #226699;
+      }
+
+      main a {
+        padding: 10px;
+        color: darkgreen;
+        margin-top: 5px;
+      }
+
+      #radius-1 {
+        margin-left: clamp(7ch, 7ch + 1vw, 17ch);
+      }
+
+      #radius-2 {
+        margin-left: clamp(12ch, 12ch + 1vw, 22ch);
+        color: slategray;
+        opacity: 0.8;
+      }
+
+      #errormesg {
+        padding-inline: clamp(10ch, 10ch + 1vw, 20ch);
+      }
+
+      table {
+        background: lightblue;
+        padding: 30px;
+        align-items: center;
+        border-spacing: 30px;
+      }
+
+      tr {
+        background: blue;
+        padding: 30px;
+      }
+
+      td {
+        background: white;
+        padding: 30px;
+        vertical-align: top;
+      }
+
+      li {
+        word-spacing: 10px;
+      }
+
+      a:hover {
+        color: orange;
+      }
+
+      .arrow {
+        color: darkred;
+      }
+
+      #fwdarr {
+        margin: 0px;
+        margin: 0px;
+        padding: 5px;
+        color: darkgreen;
+        margin-left: 50px;
+      }
+
+      #bwdarr {
+        margin: 0px;
+        padding: 5px;
+        color: darkred;
+        margin-left: 60px;
+      }
+
+      #arrow-0 {
+        color: purple; /* -express */
+      }
+
+      #arrow-1 {
+        /* -contain */
+        color: blue;
+      }
+
+      #arrow-2 {
+        /* -leadsto */
+        color: darkred;
+      }
+
+      #arrow-3 {
+        /* near */
+        color: #4488bb;
+      }
+
+      #arrow-4 {
+        /* +leadsto */
+        color: darkred;
+      }
+
+      #arrow-5 {
+        /* +contain */
+        color: darkblue;
+      }
+
+      #arrow-6 {
+        /* +express */
+        color: purple;
+      }
+
+      #orbital-full-text {
+        padding: 10px;
+        font-style: italic;
+        font-size: 130%;
+        margin-left: 40px;
+        margin-bottom: 40px;
+        color: darkblue;
+        text-wrap: balance;
+      }
+
+      #nptr-chapter-context-helpline {
+        margin-left: 60px;
+        margin-bottom: 20px;
+        padding: 10px;
+      }
+
+      a:not(.arrow):hover {
+        color: #999999;
+      }
+
+      i:hover {
+        color: #999999;
+      }
+
+      h1:not(.arrow):hover {
+        color: #777777;
+      }
+
+      pre:hover {
+        color: #999999;
+      }
+
+      .hipnosis {
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 40lvw;
+        left: 30%;
+        top: 10%;
+        aspect-ratio: 1 / 1;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: var(--radius-round);
+        box-shadow: var(--shadow-6);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+
+        transition:
+          transform 1s var(--ease-spring-2) 1s,
+          opacity 1s ease 1s;
+
+        @starting-style {
+          opacity: 0;
+          transform: scale(0);
+        }
+      }
+
+      .hipnosis svg {
+        width: 100px;
+        height: 100px;
+        margin: 20px;
+        display: inline-block;
+      }
+    </style>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+      });
+    </script>
+
+    <script
+      type="text/javascript"
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+    ></script>
+  </head>
+  <body>
+    <page>
+      <span id="wait"></span>
+      <header>
+        <h2>SSToryGraph</h2>
+      </header>
+      <nav>
+        <form id="search">
+          <label for="subject">?</label>
+          <input size="100" type="text" id="name" name="name" value="" />
+          <input type="submit" id="gosubmit" value="Go!" />
+        </form>
+      </nav>
+
+      <section id="canvas"></section>
+      <section>
+        <main></main>
+      </section>
+    </page>
+    <script>
+      /******************************************************************************************/
+      /* MB SSTorytime poc/demo code - to be cleaned up and improved by a (respectful) expert.. */
+      /******************************************************************************************/
+
+      /***********************************************************/
+      // Global configuration
+      /***********************************************************/
+
+      var API_SERVER = "http://localhost:8080";
+
+      const Im3 = 0;
+      const Im2 = 1;
+      const Im1 = 2;
+      const In0 = 3;
+      const Il1 = 4;
+      const Ic2 = 5;
+      const Ie3 = 6;
+      const ST_TOP = 7;
+      const ST_ZERO = 3;
+
+      const STINDICES = [
+        "is a property expressed by",
+        "is contained by",
+        "comes from",
+        "is near/smimilar to",
+        "leads to",
+        "contains",
+        "expresses property",
+      ];
+
+      const POST_METHOD = "POST";
+
+      /***********************************************************/
+      // Graphics config
+      /***********************************************************/
+
+      var CANVAS = CreateCanvas();
+      var CTX = CANVAS.getContext("2d");
+
+      // Adjust coordinates
+
+      let WIDTH = CANVAS.offsetWidth;
+      let HEIGHT = CANVAS.offsetHeight;
+
+      CANVAS.width = WIDTH;
+
+      let ORGX = WIDTH / 2;
+      let ORGY = HEIGHT / 2 + 100;
+      let THETA = Math.PI / 8;
+      let PHI = Math.PI / 8;
+      let SCALE = 0.9;
+      let OBS_X = 1;
+      let OBS_Y = 0.5;
+      let OBS_Z = -1;
+      let VP_X = 0;
+      let VP_Y = 4;
+      let VP_Z = 8;
+
+      /************************************************************/
+      // Page renderers
+      /************************************************************/
+
+      async function FetchPage() {
+        let requestURL = API_SERVER + "/searchN4L";
+        let request = new Request(requestURL);
+        startHipnotize();
+        let response = await fetch(request);
+        let mynote = await response.json();
+        DoHeader(mynote);
+        DoOrbitPanel(mynote); // Start in orbit
+        stopHipnotize();
+      }
+
+      /***********************************************************/
+
+      function DoHeader(obj) {
+        // Clear the main panel here, as it's common to all
+
+        let clearscreen = document.querySelector("main");
+        clearscreen.innerHTML = "";
+
+        // Now manage the header
+
+        let header = document.querySelector("header");
+        header.innerHTML = "";
+
+        let titlebar = document.createElement("h2");
+        titlebar.id = "topmost_page_title";
+
+        let title = "app";
+
+        switch (obj.Response) {
+          case "Orbits":
+            if (obj.Content[0] != null) {
+              title = obj.Content[0].Text;
+            } else {
+              title = obj.Time;
             }
-         else
-            {
-            lastx = 0;
-            lasty = 0;
-            lastz = 0;
-            }
+            break;
+          case "ConePaths":
+            title = "Local cone paths";
+            break;
+          case "PathSolve":
+            title = "Path solutions";
+            break;
+          case "Sequence":
+            title = "Story sequences ... " + obj.Content[0].Chapter;
+            break;
+          case "PageMap":
+            title = "Page notes about " + obj.Content.Title;
+            break;
+          case "TOC":
+            title = "Table of contents";
+            break;
+          case "Arrows":
+            title = "Arrow lookup";
+            break;
+          default:
+            title = "SSToryGraph browser";
+            break;
+        }
 
-         Event(thisx,thisy,thisz);
-         Label(thisx,thisy,thisz,str.slice(0,25),12,"black");
+        if (title.length < 60 || IsMath(title)) {
+          titlebar.textContent = title;
+        } else {
+          titlebar.textContent = title.slice(0, 60) + "...";
+        }
 
-         if (array[path][i].NPtr != null)
-            {
-            ncptr = array[path][i].NPtr.CPtr;
-            nclass = array[path][i].NPtr.Class;
-            }
+        header.appendChild(titlebar);
 
-         if (str.includes("\n"))
-            {
-            let text_link = document.createElement('a');
-            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+        let nowbar = document.createElement("div");
+        nowbar.id = "current_time_context";
+        nowbar.textContent = obj.Ambient;
+        header.appendChild(nowbar);
 
-            let pre = document.createElement('pre');
-            pre.textContent = str;
-            text_link.appendChild(pre);
-
-            parent.appendChild(text_link);
-            }
-         else
-            {
-            let text_link = document.createElement('a');
-            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
-
-            let text = document.createElement('i');
-            text.textContent = str;
-            text.style.fontFamily = 'Times New Roman';
-
-            if (str.length < 20)
-               {
-               text.style.fontSize = '1.5rem';
-               text.style.paddingInline = 'clamp(3ch, 3ch + 1vw, 5ch)';
-               }
-
-            text_link.appendChild(text);
-            parent.appendChild(text_link);
-            }
-         }
-      else // arrow 
-         {
-         const then = 2 // reserved vectors
-         const prev = 3
-
-         let arrow = array[path][i].Name
-         let arrptr = array[path][i].Arr
-         let stindex = array[path][i].STindex
-
-         lastarrow = stindex - ST_ZERO;
-
-         if (arrptr == then || arrptr == prev)  // represent a privileged sequence for proper time
-            {
-            let newline = document.createElement('p');
-            parent.appendChild(newline);
-            }
-
-         let arrow_link = document.createElement('a');
-         arrow_link.textContent = `( ${arrow} )  `;
-         arrow_link.id = `arrow-`+stindex;
-         arrow_link.class = "tooltip";
-         arrow_link.title = STINDICES[stindex];
-         arrow_link.style.fontFamily = 'Verdana';
-
-         parent.appendChild(arrow_link);
-         }
+        let ctxbar = document.createElement("p");
+        ctxbar.id = "context_history";
+        ctxbar.textContent = obj.Intent;
+        header.appendChild(ctxbar);
       }
 
-   let spacer = document.createElement('hr');
-   parent.appendChild(spacer);
-   }
+      /***********************************************************/
 
-return parent
-}
+      function DoOrbitPanel(obj) {
+        let section = document.querySelector("main");
+        let panel = document.createElement("span");
+        panel.id = "main_content_panel";
+        section.appendChild(panel);
 
-/***********************************************************/
+        console.log("JSON", obj);
 
-function DrawPath(lastarrow,thisx,thisy,thisz,lastx,lasty,lastz)
-{
-if (lastx != 0 || lasty != 0 || lastz != 0)
-   {
-   switch (lastarrow)
-      {
-      case -3:
-         Expresses(thisx,thisy,thisz,lastx,lasty,lastz);
-         break;
-      case -2:
-         Contains(thisx,thisy,thisz,lastx,lasty,lastz);
-         break;
-      case -1:
-         LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
-         break;
-      case 0:
-         LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
-         break;
-      case 1:
-         LeadsTo(lastx,lasty,lastz,thisx,thisy,thisz);
-         break;
-      case 2:
-         Contains(lastx,lasty,lastz,thisx,thisy,thisz);
-         break;
-      case 3:
-         Expresses(lastx,lasty,lastz,thisx,thisy,thisz);
-         break;
-      default:
-         console.log("Bad value",lastarrow);
-      }
-   }
-}
+        // List of events unrelated
 
-/***********************************************************/
+        if (obj == null) {
+          return;
+        }
 
-function PrintNotes(parent,array)
-{
-if (array == null || array.length < 1)
-   {
-   return parent;
-   }
+        CANVAS = CreateCanvas();
+        DrawGrid(0, 0, 1);
 
-let lastx = 0;
-let lasty = 0;
-let lastz = 0;
-let lastarrow = 0;
-let last_line_start = "";
-let chtxt;
+        const separates = 0;
 
-// Line by line
+        if (obj.Response != "Orbits") {
+          console.log("BAD PROTO");
+          return;
+        }
 
-for (let line = 0; line < array.length; line++)
-   {
-   if (array[line] == null)
-      {
-      continue;
+        let last_node_event = obj.Content[0];
+
+        for (let node_event of obj.Content) {
+          ShowNodeEvent(panel, node_event, separates, "all", "", "h1");
+
+          last_node_event = node_event; // don't link up
+          PlotGraphics(node_event, last_node_event);
+
+          // This hr can be removed once we have the grid
+          let hr = document.createElement("hr");
+          panel.appendChild(hr);
+        }
       }
 
-   // The WebPath protocol alternates node-arrow...
+      /***********************************************************/
 
-   for (let i = 0; i < array[line].length; i++)
-      {
-      if (i % 2 == 0) // node
-         {
-         let str = array[line][i].Name;
-         let ncptr = array[line][i].NPtr.CPtr;
-         let nclass = array[line][i].NPtr.NClass;
+      function DoEntireConePanel(obj) {
+        let section = document.querySelector("main");
+        let panel = document.createElement("div");
+        panel.id = "main_content_panel";
+        section.appendChild(panel);
 
-         let xyz = array[line][i].XYZ;
+        CANVAS = CreateCanvas();
+        DrawGrid(0, 0, 1);
 
-         thisx = xyz.X;
-         thisy = xyz.Y;
-         thisz = xyz.Z;
+        // Iterate over the cones from different starting nodes
 
- 	 // Add graphic rendering
+        for (let head_nptr of obj.Content) {
+          let nclass = head_nptr.NClass;
+          let ncptr = head_nptr.NCPtr;
 
-         DrawPath(lastarrow,thisx,thisy,thisz,lastx,lasty,lastz);
+          let item = document.createElement("h2");
+          let link = document.createElement("a");
+          item.textContent = head_nptr.Title.slice(0, 50) + "..";
+          link.onclick = function () {
+            sendlinkData(nclass, ncptr);
+          };
+          item.appendChild(link);
+          panel.appendChild(item);
+          let parent = document.createElement("content");
 
-         if (i < array[line].length-1)
-            {
-            lastx = thisx;
-            lasty = thisy;
-            lastz = thisz;
+          parent = PrintPaths(parent, head_nptr.Paths);
+          panel.appendChild(parent);
+
+          // Add the centrality box at bottom of page
+
+          let tab = document.createElement("table");
+          let row = document.createElement("tr");
+          let col1 = document.createElement("td");
+          let hd1 = document.createElement("h4");
+          hd1.textContent = "Between-ness Centrality Rank";
+          col1.appendChild(hd1);
+          let lst1 = document.createElement("ol");
+
+          // For paths solve <a|b>
+
+          if (head_nptr.BTWC != null) {
+            for (let centrality of head_nptr.BTWC) {
+              let li = document.createElement("li");
+              li.textContent = centrality;
+              lst1.appendChild(li);
             }
-         else
-            {
-            lastx = 0;
-            lasty = 0;
-            lastz = 0;
+            col1.appendChild(lst1);
+
+            let col2 = document.createElement("td");
+            let hd2 = document.createElement("h4");
+            hd2.textContent = "Supernode summary";
+            col2.appendChild(hd2);
+            let lst2 = document.createElement("ol");
+
+            for (let snode of head_nptr.Supernodes) {
+              let li = document.createElement("li");
+              li.textContent = snode;
+              lst2.appendChild(li);
             }
+            col2.appendChild(lst2);
 
-         Event(thisx,thisy,thisz);
-         Label(thisx,thisy,thisz,str.slice(0,25),12,"black");
+            row.appendChild(col1);
+            row.appendChild(col2);
 
-         if (array[line][i].NPtr != null)
-            {
-            ncptr = array[line][i].NPtr.CPtr;
-            nclass = array[line][i].NPtr.Class;
+            tab.appendChild(row);
+            panel.appendChild(tab);
+
+            let hr = document.createElement("hr");
+            panel.appendChild(hr);
+          }
+        }
+      }
+
+      /***********************************************************/
+
+      function DoSeqPanel(obj) {
+        let section = document.querySelector("main");
+        let panel = document.createElement("div");
+        panel.id = "main_content_panel";
+        section.appendChild(panel);
+
+        CANVAS = CreateCanvas();
+        DrawGrid(0, 0, 1);
+
+        let counter = 0;
+        let laststory = obj.Content[0]; // arbitrary init
+
+        for (let story of obj.Content) {
+          let item = document.createElement("h2");
+          item.textContent = story.Chap;
+          panel.appendChild(item);
+
+          ShowNodeEvent(panel, story, counter, "fwd", "then", "span");
+          PlotGraphics(story, laststory);
+          laststory = story; // link up
+
+          counter++;
+        }
+      }
+
+      /***********************************************************/
+
+      function DoPageMapPanel(obj) {
+        let section = document.querySelector("main");
+        let panel = document.createElement("div");
+        panel.id = "main_content_panel";
+        section.appendChild(panel);
+
+        CANVAS = CreateCanvas();
+        DrawGrid(0, 0, 1);
+
+        let parent = document.createElement("h1");
+        parent.textContent = "* Chapter Notes: ";
+        parent.id = "chapter_notes_heading";
+        panel.appendChild(parent);
+
+        let shchap = document.createElement("p");
+        shchap.textContent = obj.Content.Title;
+        panel.appendChild(shchap);
+
+        let thepage = document.createElement("p");
+        thepage = PrintNotes(thepage, obj.Content.Notes);
+        parent.appendChild(thepage);
+      }
+
+      /***********************************************************/
+
+      function DoTOCPanel(obj) {
+        let section = document.querySelector("main");
+        let panel = document.createElement("div");
+        panel.id = "main_content_panel";
+        section.appendChild(panel);
+
+        let item = document.createElement("h1");
+        item.textContent = "Table of contents and contexts";
+        panel.appendChild(item);
+
+        CANVAS = CreateCanvas();
+        DrawGrid(0, 0, 1);
+        let counter = 0;
+
+        for (let chpblk of obj.Content) {
+          counter++;
+
+          // N. Section/chapter header title
+
+          let link = document.createElement("a");
+          let item = document.createElement("h2");
+          link.onclick = function () {
+            sendLinkSearch("notes chapter " + chpblk.Chapter);
+          };
+          item.textContent = counter + ". " + chpblk.Chapter;
+          link.appendChild(item);
+          panel.appendChild(link);
+
+          Event(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z);
+          Label(
+            chpblk.XYZ.X,
+            chpblk.XYZ.Y,
+            chpblk.XYZ.Z,
+            chpblk.Chapter,
+            12,
+            "gray",
+          );
+
+          let chapter_section = document.createElement("p");
+          chapter_section.id = "toc-panel";
+
+          // First do the context groups or ambient parts
+
+          if (chpblk.Context != null) {
+            for (let ctx of chpblk.Context) {
+              let link = document.createElement("a");
+              link.onclick = function () {
+                sendLinkSearch("any context " + CtxSplice(ctx.Text));
+              };
+              link.id = "toc-frag";
+              link.textContent = "Context Set/Grouping:: ";
+
+              let sitem = document.createElement("span");
+              sitem.textContent = ctx.Text;
+              sitem.id = "toc-elem";
+              link.appendChild(sitem);
+
+              chapter_section.appendChild(link);
+
+              Concept(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z);
+              Contains(
+                chpblk.XYZ.X,
+                chpblk.XYZ.Y,
+                chpblk.XYZ.Z,
+                ctx.XYZ.X,
+                ctx.XYZ.Y,
+                ctx.XYZ.Z,
+              );
             }
+          }
 
-         // if the last line starts with the same item, don't repeat it
+          //Spacer ?
 
-         if (i == 0 && str == last_line_start)
-            { 
-            // repeated item, so ditto
+          if (chpblk.Single != null) {
+            for (let ctx of chpblk.Single) {
+              let link = document.createElement("a");
+              link.onclick = function () {
+                sendLinkSearch("any context " + CtxSplice(ctx.Text));
+              };
+              link.textContent = "Intentionally emph:: ";
 
-            let newline = document.createElement('br'); // don't separate completely
-            parent.appendChild(newline);
+              let sitem = document.createElement("span");
+              sitem.textContent = ctx.Text;
+              sitem.id = "toc-single";
+              link.appendChild(sitem);
 
-            let text = document.createElement('span');
-            text.id = "ditto";
-            text.textContent = "         \"        ";
-            text.style.fontFamily = 'Times New Roman';
-            text.style.padding = '10px';
-            parent.appendChild(text);
+              chapter_section.appendChild(link);
+
+              Thing(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z);
+              Near(
+                chpblk.XYZ.X,
+                chpblk.XYZ.Y,
+                chpblk.XYZ.Z,
+                ctx.XYZ.X,
+                ctx.XYZ.Y,
+                ctx.XYZ.Z,
+              );
+            }
+          }
+
+          // Spacer ?
+
+          if (chpblk.Common != null) {
+            for (let ctx of chpblk.Common) {
+              let link = document.createElement("a");
+              let sitem = document.createElement("span");
+              link.onclick = function () {
+                sendLinkSearch("any context " + CtxSplice(ctx.Text));
+              };
+              link.textContent = "Ambient context:: ";
+              link.id = "toc-frag";
+
+              sitem.textContent = ctx.Text;
+              sitem.id = "toc-common";
+
+              link.appendChild(sitem);
+              chapter_section.appendChild(link);
+
+              Thing(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z);
+              Near(
+                chpblk.XYZ.X,
+                chpblk.XYZ.Y,
+                chpblk.XYZ.Z,
+                ctx.XYZ.X,
+                ctx.XYZ.Y,
+                ctx.XYZ.Z,
+              );
+            }
+          }
+
+          panel.appendChild(chapter_section);
+
+          let spacer = document.createElement("hr");
+          panel.appendChild(spacer);
+        }
+      }
+
+      /***********************************************************/
+
+      function DoStatsPanel(obj) {
+        let section = document.querySelector("main");
+        let panel = document.createElement("div");
+        panel.id = "main_content_panel";
+        section.appendChild(panel);
+
+        let title = document.createElement("h1");
+        title.textContent = "Progress tracker";
+        panel.appendChild(title);
+
+        CANVAS = CreateCanvas();
+        DrawGrid(0, 0, 1);
+
+        let counter = 0;
+        let lastsection = "xxx";
+        let link;
+        let item;
+        let last;
+        let hmpanel;
+
+        for (let ls of obj.Content) {
+          if (ls.Section != lastsection) {
+            counter++;
+            lastsection = ls.Section;
+            link = document.createElement("a");
+            link.onclick = function () {
+              sendLinkSearch("notes " + '"' + ls.Section + '"');
+            };
+
+            item = document.createElement("strong");
+            item.textContent = counter + ". " + ls.Section;
+            link.appendChild(item);
+            panel.appendChild(link);
+
+            sec = document.createElement("p");
+            sec.id = "toc-panel";
+
+            let sub1 = document.createElement("i");
+            sub1.textContent = "Last viewed at " + ls.Last;
+            sec.appendChild(sub1);
+
+            let sub2 = document.createElement("i");
+            sub2.textContent = "  total viewing count = " + ls.Freq;
+            sub2.id = "statcount";
+            sec.appendChild(sub2);
+
+            panel.appendChild(sec);
+
+            hmpanel = document.createElement("div");
+            panel.appendChild(hmpanel);
+
+            Concept(ls.XYZ.X, ls.XYZ.Y, ls.XYZ.Z);
+            Label(ls.XYZ.X, ls.XYZ.Y, ls.XYZ.Z, ls.Section, 12, "gray");
+          } else {
+            let nlink = document.createElement("a");
+            let nitem = document.createElement("span");
+            nitem.id = "heatmap";
+
+            if (ls.NPtr.Class < 0) {
+              nlink.onclick = function () {
+                sendLinkSearch('any chapter "' + ls.Section + '"');
+              };
+              nitem.textContent = "browse";
+            } else {
+              nlink.onclick = function () {
+                sendLinkSearch("(" + ls.NPtr.Class + "," + ls.NPtr.CPtr + ")");
+              };
+              nitem.textContent =
+                "(" + ls.NPtr.Class + "," + ls.NPtr.CPtr + ")";
+            }
+            nitem.style.color = HeatColour(ls.Freq, ls.Pdelta, 70);
+            nitem.style.fontSize = "80%";
+            nitem.style.backgroundColor = HeatColour(ls.Freq, ls.Pdelta, 100);
+            nitem.style.padding = "5px";
+            nlink.appendChild(nitem);
+            hmpanel.appendChild(nlink);
+          }
+        }
+      }
+
+      /***********************************************************/
+
+      function DoArrowsPanel(obj) {
+        let section = document.querySelector("main");
+        let panel = document.createElement("span");
+        panel.id = "main_content_panel";
+        section.appendChild(panel);
+
+        CANVAS = CreateCanvas();
+        DrawGrid(0, 0, 1);
+        let counter = 0;
+
+        let t = document.createElement("h1");
+        t.textContent = "Arrows";
+        panel.appendChild(t);
+
+        let matches = obj.Content.length;
+
+        let angle_increment = Math.PI / matches;
+        let angle = 0;
+
+        let subpanel = document.createElement("div");
+        panel.appendChild(subpanel);
+
+        for (let arrow of obj.Content) {
+          ArrowPair(angle, arrow.ASTtype, arrow.Long, arrow.InvL);
+          angle += angle_increment;
+
+          let a = document.createElement("div");
+          a.textContent =
+            "ArrowPtr = " + arrow.ArrPtr + " (STtype: " + arrow.ASTtype + ")";
+          a.id = "arrow-" + (arrow.ASTtype + ST_ZERO);
+          subpanel.appendChild(a);
+
+          let ab = document.createElement("p");
+          ab.textContent = "Long name: (" + arrow.Long + ")";
+          ab.id = "fwdarr";
+          //ab.id = 'arrow-'+(arrow.ASTtype + ST_ZERO);
+          ab.style.fontFamily = "Verdana";
+          a.appendChild(ab);
+
+          let af = document.createElement("p");
+          af.textContent = "Short alias: (" + arrow.Short + ")";
+          af.id = "fwdarr";
+          //af.id = 'arrow-'+(arrow.ASTtype + ST_ZERO);
+          af.style.fontFamily = "Verdana";
+          a.appendChild(af);
+
+          // Inverse
+          let i = document.createElement("div");
+          i.textContent =
+            "ArrowPtr = " + arrow.InvPtr + ". (STtype: " + arrow.ISTtype + ")";
+          //i.id = 'arrow-'+(arrow.ISTtype + ST_ZERO);
+          subpanel.appendChild(i);
+
+          let iaf = document.createElement("p");
+          iaf.textContent = "Short: " + arrow.InvS;
+          //iaf.id = 'arrow-'+(arrow.ISTtype + ST_ZERO);
+          iaf.id = "bwdarr";
+          iaf.style.fontFamily = "Verdana";
+          i.appendChild(iaf);
+
+          let ib = document.createElement("p");
+          ib.textContent = "Long: " + arrow.InvL;
+          //ib.id = 'arrow-'+(arrow.ISTtype + ST_ZERO);
+          ib.id = "bwdarr";
+          ib.style.fontFamily = "Verdana";
+          i.appendChild(ib);
+
+          let hr = document.createElement("hr");
+          subpanel.appendChild(hr);
+        }
+      }
+
+      /***********************************************************/
+      //  Presentation helpers
+      /***********************************************************/
+
+      function PrintLink(
+        parent,
+        radius,
+        stindex,
+        arrow,
+        str,
+        nclass,
+        ncptr,
+        chap,
+        ctx,
+      ) {
+        if (arrow == null) {
+          arrow = "broken arrow";
+        }
+
+        // BEGIN column_radiusof3 i.e. 2of3 and 3of3 depending on radius variable
+
+        let box = document.createElement("div");
+        box.id = "radius-" + radius;
+
+        // any arrow comes first
+
+        let arrow_link = document.createElement("a");
+        arrow_link.textContent = `( ${arrow} )  `;
+        arrow_link.id = "arrow-" + stindex;
+        arrow_link.title = STINDICES[stindex];
+        arrow_link.class = "tooltip";
+        arrow_link.style.fontFamily = "Verdana";
+        box.appendChild(arrow_link);
+
+        // Begin print satellite node in column 2of3 or 3of3, depending on radius
+
+        if (str.includes("\n")) {
+          // preformatted item -> <pre>
+          // pre formatted text
+
+          let text_link = document.createElement("a");
+          text_link.onclick = function () {
+            sendlinkData(nclass, ncptr);
+          };
+
+          let pretxt = document.createElement("pre");
+          pretxt.textContent = str;
+
+          text_link.appendChild(pretxt);
+          text_link.className = "text";
+          box.appendChild(text_link);
+        } else {
+          // now plain text
+          let text_link = document.createElement("a");
+          let spantext = document.createElement("span"); // replaces <pre>
+
+          if (IsURL(str, arrow)) {
+            text_link.href = str;
+            text_link.target = "_blank";
+            text_link.rel = "noopener";
+          } else if (IsImage(str, arrow)) {
+            let img = document.createElement("img");
+            img.src = str;
+            box.appendChild(img);
+          } else {
+            // THIS IS WHERE WE WANT TO ADD TAB/ORBIT POPUP ON MOUSEOVER ??
+
+            text_link.onclick = function () {
+              sendlinkData(nclass, ncptr);
+            };
+          }
+
+          spantext.textContent = str;
+          spantext.style.fontFamily = "Times"; // distinguish satellites
+
+          if (str.length < 20) {
+            text_link.style.fontSize = "200%";
+            text_link.style.paddingInline = "1rem";
+          }
+
+          text_link.appendChild(spantext);
+          box.appendChild(text_link);
+
+          ProgressCheckBox(box, nclass, ncptr, chap, ctx);
+        }
+
+        if (ctx.length > 0) {
+          let cntx = document.createElement("i");
+          cntx.id = "cntxt";
+          cntx.textContent = " context hints: " + ctx;
+          box.appendChild(cntx);
+        }
+
+        parent.appendChild(box);
+
+        return parent;
+      }
+
+      /***********************************************************/
+
+      function PrintPaths(parent, array) {
+        if (array.length < 1) {
+          return parent;
+        }
+
+        let lastx = 0;
+        let lasty = 0;
+        let lastz = 0;
+        let lastarrow = 0;
+
+        for (let path = 0; path < array.length; path++) {
+          if (array[path] == null) {
             continue;
+          }
+
+          // The WebPath protocol alternates node-arrow...
+
+          for (let i = 0; i < array[path].length; i++) {
+            if (i % 2 == 0) {
+              // node
+              let str = array[path][i].Name;
+              let ncptr = array[path][i].NPtr.CPtr;
+              let nclass = array[path][i].NPtr.NClass;
+
+              let xyz = array[path][i].XYZ;
+
+              thisx = xyz.X;
+              thisy = xyz.Y;
+              thisz = xyz.Z;
+
+              DrawPath(lastarrow, thisx, thisy, thisz, lastx, lasty, lastz);
+
+              if (i < array[path].length - 1) {
+                lastx = thisx;
+                lasty = thisy;
+                lastz = thisz;
+              } else {
+                lastx = 0;
+                lasty = 0;
+                lastz = 0;
+              }
+
+              Event(thisx, thisy, thisz);
+              Label(thisx, thisy, thisz, str.slice(0, 25), 12, "black");
+
+              if (array[path][i].NPtr != null) {
+                ncptr = array[path][i].NPtr.CPtr;
+                nclass = array[path][i].NPtr.Class;
+              }
+
+              if (str.includes("\n")) {
+                let text_link = document.createElement("a");
+                text_link.onclick = function () {
+                  sendlinkData(nclass, ncptr);
+                };
+
+                let pre = document.createElement("pre");
+                pre.textContent = str;
+                text_link.appendChild(pre);
+
+                parent.appendChild(text_link);
+              } else {
+                let text_link = document.createElement("a");
+                text_link.onclick = function () {
+                  sendlinkData(nclass, ncptr);
+                };
+
+                let text = document.createElement("i");
+                text.textContent = str;
+                text.style.fontFamily = "Times New Roman";
+
+                if (str.length < 20) {
+                  text.style.fontSize = "150%";
+                  text.style.paddingInline = "O.5rem";
+                }
+
+                text_link.appendChild(text);
+                parent.appendChild(text_link);
+              }
+            } // arrow
+            else {
+              const then = 2; // reserved vectors
+              const prev = 3;
+
+              let arrow = array[path][i].Name;
+              let arrptr = array[path][i].Arr;
+              let stindex = array[path][i].STindex;
+
+              lastarrow = stindex - ST_ZERO;
+
+              if (arrptr == then || arrptr == prev) {
+                // represent a privileged sequence for proper time
+                let newline = document.createElement("p");
+                parent.appendChild(newline);
+              }
+
+              let arrow_link = document.createElement("a");
+              arrow_link.textContent = `( ${arrow} )  `;
+              arrow_link.id = `arrow-` + stindex;
+              arrow_link.class = "tooltip";
+              arrow_link.title = STINDICES[stindex];
+              arrow_link.style.fontFamily = "Verdana";
+
+              parent.appendChild(arrow_link);
             }
+          }
 
-         if (i == 0)
-            {
-            if (line != 0)
-               {   
-               let spacer = document.createElement('hr');
-               parent.appendChild(spacer);
+          let spacer = document.createElement("hr");
+          parent.appendChild(spacer);
+        }
+
+        return parent;
+      }
+
+      /***********************************************************/
+
+      function DrawPath(lastarrow, thisx, thisy, thisz, lastx, lasty, lastz) {
+        if (lastx != 0 || lasty != 0 || lastz != 0) {
+          switch (lastarrow) {
+            case -3:
+              Expresses(thisx, thisy, thisz, lastx, lasty, lastz);
+              break;
+            case -2:
+              Contains(thisx, thisy, thisz, lastx, lasty, lastz);
+              break;
+            case -1:
+              LeadsTo(thisx, thisy, thisz, lastx, lasty, lastz);
+              break;
+            case 0:
+              LeadsTo(thisx, thisy, thisz, lastx, lasty, lastz);
+              break;
+            case 1:
+              LeadsTo(lastx, lasty, lastz, thisx, thisy, thisz);
+              break;
+            case 2:
+              Contains(lastx, lasty, lastz, thisx, thisy, thisz);
+              break;
+            case 3:
+              Expresses(lastx, lasty, lastz, thisx, thisy, thisz);
+              break;
+            default:
+              console.log("Bad value", lastarrow);
+          }
+        }
+      }
+
+      /***********************************************************/
+
+      function PrintNotes(parent, array) {
+        if (array == null || array.length < 1) {
+          return parent;
+        }
+
+        let lastx = 0;
+        let lasty = 0;
+        let lastz = 0;
+        let lastarrow = 0;
+        let last_line_start = "";
+        let chtxt;
+
+        // Line by line
+
+        for (let line = 0; line < array.length; line++) {
+          if (array[line] == null) {
+            continue;
+          }
+
+          // The WebPath protocol alternates node-arrow...
+
+          for (let i = 0; i < array[line].length; i++) {
+            if (i % 2 == 0) {
+              // node
+              let str = array[line][i].Name;
+              let ncptr = array[line][i].NPtr.CPtr;
+              let nclass = array[line][i].NPtr.NClass;
+
+              let xyz = array[line][i].XYZ;
+
+              thisx = xyz.X;
+              thisy = xyz.Y;
+              thisz = xyz.Z;
+
+              // Add graphic rendering
+
+              DrawPath(lastarrow, thisx, thisy, thisz, lastx, lasty, lastz);
+
+              if (i < array[line].length - 1) {
+                lastx = thisx;
+                lasty = thisy;
+                lastz = thisz;
+              } else {
+                lastx = 0;
+                lasty = 0;
+                lastz = 0;
+              }
+
+              Event(thisx, thisy, thisz);
+              Label(thisx, thisy, thisz, str.slice(0, 25), 12, "black");
+
+              if (array[line][i].NPtr != null) {
+                ncptr = array[line][i].NPtr.CPtr;
+                nclass = array[line][i].NPtr.Class;
+              }
+
+              // if the last line starts with the same item, don't repeat it
+
+              if (i == 0 && str == last_line_start) {
+                // repeated item, so ditto
+
+                let newline = document.createElement("br"); // don't separate completely
+                parent.appendChild(newline);
+
+                let text = document.createElement("span");
+                text.id = "ditto";
+                text.textContent = '         "        ';
+                text.style.fontFamily = "Times New Roman";
+                text.style.padding = "8px";
+                parent.appendChild(text);
+                continue;
+              }
+
+              if (i == 0) {
+                if (line != 0) {
+                  let spacer = document.createElement("hr");
+                  parent.appendChild(spacer);
+                }
+
+                // New line has possble new chap/context
+
+                let line_no = document.createElement("span");
+                line_no.textContent = "In notes line " + array[line][i].Line;
+                parent.appendChild(line_no);
+
+                chtxt = array[line][i].Chp + ":" + array[line][i].Ctx;
+
+                if (chtxt.length > 4) {
+                  let sec = document.createElement("h2");
+                  sec.textContent = 'From: "' + chtxt + '"';
+                  parent.appendChild(sec);
+                }
+              }
+
+              if (i == 0) {
+                last_line_start = str;
+              }
+
+              // Subsequent items on same line
+
+              if (str.includes("\n")) {
+                let text_link = document.createElement("a");
+                text_link.onclick = function () {
+                  sendlinkData(nclass, ncptr);
+                };
+                let pre = document.createElement("pre");
+                pre.textContent = str;
+                text_link.appendChild(pre);
+                parent.appendChild(text_link);
+              } else {
+                let text_link = document.createElement("a");
+
+                // THIS IS WHERE WE WANT TO ADD TAB/ ORBITPOPUP ON MOUSEOVER
+
+                text_link.onclick = function () {
+                  sendlinkData(nclass, ncptr);
+                };
+
+                let text = document.createElement("span");
+                text.textContent = str;
+                text.style.fontFamily = "Times New Roman";
+
+                if (str.length < 20) {
+                  text.style.fontSize = "150%";
+                  text.style.padding = "10px";
+                }
+
+                text_link.appendChild(text);
+                parent.appendChild(text_link);
+              }
+
+              ProgressCheckBox(
+                parent,
+                nclass,
+                ncptr,
+                array[line][i].Chp,
+                array[line][i].Ctx,
+              );
+            } // arrow
+            else {
+              const then = 2; // reserved vectors
+              const prev = 3;
+
+              let arrow = array[line][i].Name;
+              let arrptr = array[line][i].Arr;
+              let stindex = array[line][i].STindex;
+
+              lastarrow = stindex - ST_ZERO;
+
+              if (arrptr == then || arrptr == prev) {
+                // represent a privileged sequence for proper time
+                let newline = document.createElement("p");
+                parent.appendChild(newline);
+              }
+
+              let arrow_link = document.createElement("a");
+              arrow_link.textContent = `( ${arrow} )  `;
+              arrow_link.id = `arrow-` + stindex;
+              arrow_link.class = "tooltip";
+              arrow_link.title = STINDICES[stindex];
+              arrow_link.style.fontFamily = "Verdana";
+
+              parent.appendChild(arrow_link);
             }
+          }
+        }
 
-   	    // New line has possble new chap/context
+        return parent;
+      }
 
-            let line_no = document.createElement('span');
-            line_no.textContent = "In notes line " + array[line][i].Line;
-            parent.appendChild(line_no);
+      /***********************************************************/
 
-            chtxt = array[line][i].Chp + ":" + array[line][i].Ctx;
+      function ShowNodeEvent(
+        panel,
+        event,
+        counter,
+        direction,
+        skiparrow,
+        anchortag,
+      ) {
+        // create a div panel for the orbit root node
 
-            if (chtxt.length > 4)
-               {
-               let sec = document.createElement('h2');
-               sec.textContent = "From: \"" + chtxt + "\"";
-               parent.appendChild(sec);
-               }
+        let child = document.createElement("div");
+        child.setAttribute("class", "card-view");
+
+        child.id = "orbit_column_1of3"; // col 1 spans all 3 columns, full width for full node text
+        panel.appendChild(child);
+
+        if (event == null) {
+          return;
+        }
+
+        let text = counter + ". " + event.Text;
+        let nptrtxt = "(" + event.NPtr.Class + "," + event.NPtr.CPtr + ")";
+
+        if (counter == 0) {
+          text = "--> " + event.Text;
+        }
+
+        // ** BEGIN 1: Here we print the full text for column_1of3 either as pre or p
+
+        if (text.includes("\n")) {
+          let from_link = document.createElement("a");
+          from_link.onclick = function () {
+            sendlinkData(event.NPtr.Class, event.NPtr.CPtr);
+          };
+
+          let from_text = document.createElement("pre");
+          from_text.nameClass = "text";
+          from_text.textContent = text;
+          from_link.nameClass = "text";
+          from_link.appendChild(from_text);
+
+          child.appendChild(from_link);
+        } else {
+          let from_link = document.createElement("span");
+          from_link.onclick = function () {
+            sendlinkData(event.NPtr.Class, event.NPtr.CPtr);
+          };
+          let from_text = document.createElement(anchortag);
+          from_link.nameClass = "text";
+          from_link.appendChild(from_text);
+
+          child.appendChild(from_link);
+
+          if (!IsMath(event.Text)) {
+            from_text.textContent = event.Text.slice(0, 70) + "...";
+            let small_tot_text = document.createElement("div");
+            small_tot_text.textContent = text;
+            small_tot_text.id = "orbital-full-text";
+            child.appendChild(small_tot_text);
+          } else {
+            from_text.textContent = text; // event.Text;
+          }
+        }
+
+        // If this is the root node, we need to add some Nptr, context info in column_1of3
+
+        if (counter == 0) {
+          let setting = document.createElement("span");
+          setting.id = "nptr-chapter-context-helpline";
+
+          let text1 = document.createElement("i");
+          text1.textContent = "with NPtr " + nptrtxt + ", in chapter ";
+          setting.appendChild(text1);
+
+          let chplink = document.createElement("a");
+          chplink.textContent = '"' + event.Chap + '"';
+          chplink.onclick = function () {
+            sendLinkSearch('any chapter "' + event.Chap + '"');
+          };
+          setting.appendChild(chplink);
+
+          let text2 = document.createElement("i");
+          text2.textContent = ", context ";
+          setting.appendChild(text2);
+
+          let ctxlink = document.createElement("a");
+          ctxlink.textContent = '"' + event.Context + '"';
+          ctxlink.onclick = function () {
+            sendLinkSearch('any context "' + CtxSplice(event.Context) + '"');
+          };
+          setting.appendChild(ctxlink);
+
+          child.appendChild(setting);
+        }
+
+        ProgressCheckBox(
+          child,
+          event.NPtr.Class,
+          event.NPtr.CPtr,
+          event.Chap,
+          event.Context,
+        );
+
+        // See what pathways we are part of and add notes
+
+        CheckSingleCone(
+          panel,
+          child,
+          "[LT]",
+          event.NPtr.Class,
+          event.NPtr.CPtr,
+          1,
+          event.Orbits[Im1],
+          event.Orbits[Il1],
+        );
+        CheckSingleCone(
+          panel,
+          child,
+          "[CN]",
+          event.NPtr.Class,
+          event.NPtr.CPtr,
+          2,
+          event.Orbits[Im2],
+          event.Orbits[Ic2],
+        );
+        CheckSingleCone(
+          panel,
+          child,
+          "[EP]",
+          event.NPtr.Class,
+          event.NPtr.CPtr,
+          3,
+          event.Orbits[Im3],
+          event.Orbits[Ie3],
+        );
+        CheckSingleCone(
+          panel,
+          child,
+          "[NR]",
+          event.NPtr.Class,
+          event.NPtr.CPtr,
+          0,
+          event.Orbits[In0],
+          event.Orbits[In0],
+        );
+
+        // END : column_1of3
+
+        // Next we add the satellite nodes in column_2of3 and column_3of3
+        // Each vector from Im3...Ie3, one by one
+
+        AddLinkOrbits(panel, child, event, Im3, skiparrow);
+        AddLinkOrbits(panel, child, event, Ie3, skiparrow);
+
+        // Then any equivalents
+
+        AddLinkOrbits(panel, child, event, In0, skiparrow);
+
+        // Then containment
+
+        AddLinkOrbits(panel, child, event, Im2, skiparrow);
+        AddLinkOrbits(panel, child, event, Ic2, skiparrow);
+
+        // Lastly, from-->to
+
+        AddLinkOrbits(panel, child, event, Im1, skiparrow);
+        AddLinkOrbits(panel, child, event, Il1, skiparrow);
+      }
+
+      /***********************************************************/
+
+      function ProgressCheckBox(container, nclass, ncptr, chap, context) {
+        // Create a label for the checkbox
+        let label = document.createElement("label");
+        label.className = "checkbox";
+        label.textContent = "";
+
+        let checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = "progress-checkbox";
+        checkbox.value = "(" + nclass + "," + ncptr + ")";
+
+        checkbox.addEventListener("change", function () {
+          let chapcontext = chap + ":" + context;
+          if (checkbox.checked) {
+            let ack = sendlastseen("lastnptr", nclass, ncptr, chapcontext);
+          }
+        });
+
+        let spanner = document.createElement("span");
+        spanner.className = "checkmark";
+
+        label.appendChild(checkbox);
+        label.appendChild(spanner);
+        container.appendChild(label);
+      }
+
+      /***********************************************************/
+      // Busy wheel of time...
+      /***********************************************************/
+
+      /***********************************************************/
+      // Render line link list by STtype
+      /***********************************************************/
+
+      function AddLinkOrbits(panel, child, event, sttype, skiparrow) {
+        if (event.Orbits[sttype] != null) {
+          for (let ngh of event.Orbits[sttype]) {
+            if (skiparrow != ngh.Arrow) {
+              child = PrintLink(
+                child,
+                ngh.Radius,
+                ngh.STindex,
+                ngh.Arrow,
+                ngh.Text,
+                ngh.Dst.Class,
+                ngh.Dst.CPtr,
+                event.Chap,
+                ngh.Ctx,
+              );
+              panel.appendChild(child);
+
+              if (sttype == Im3 && IsImage(event.Text, ngh.Arrow)) {
+                let img = document.createElement("img");
+                img.src = event.Text;
+                panel.appendChild(img);
+              }
             }
+          }
+        }
+      }
 
-         if (i == 0)
-            {
-            last_line_start = str;
-            }
+      /***********************************************************/
+      // Checks and tests
+      /***********************************************************/
 
-         // Subsequent items on same line
+      function CheckCones(panel, docpart, name, bwd, fwd) {
+        if (bwd[0] != null && fwd[0] != null) {
+          // we are in the middle of a cone
+          let nptrs = "";
 
-         if (str.includes("\n"))
-            {
-            let text_link = document.createElement('a');
-            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
-            let pre = document.createElement('pre');
-            pre.textContent = str;
-            text_link.appendChild(pre);
-            parent.appendChild(text_link);
-            }
-         else
-            {
-            let text_link = document.createElement('a');
+          for (let b of bwd) {
+            let np = "(" + b.Dst.Class + "," + b.Dst.CPtr + ") ";
+            nptrs = nptrs + np;
+          }
 
-            // THIS IS WHERE WE WANT TO ADD TAB/ ORBITPOPUP ON MOUSEOVER
+          for (let f of fwd) {
+            let np = "(" + f.Dst.Class + "," + f.Dst.CPtr + ") ";
+            nptrs = nptrs + np;
+          }
 
-            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+          let link = document.createElement("a");
+          link.textContent = name;
+          link.onclick = function () {
+            sendLinkSearch("from " + nptrs);
+          };
+          docpart.id = "cone_button";
+          docpart.appendChild(link);
+        }
 
-            let text = document.createElement('span');
-            text.textContent = str;
-            text.style.fontFamily = 'Times New Roman';
+        panel.appendChild(docpart);
+      }
 
-            if (str.length < 20)
-               {
-               text.style.fontSize = '150%';
-               text.style.padding = '10px';
-               }
+      /***********************************************************/
 
-            text_link.appendChild(text);
-            parent.appendChild(text_link);
-            }
+      function CheckSingleCone(
+        panel,
+        docpart,
+        name,
+        nclass,
+        nptr,
+        arrow,
+        bwd,
+        fwd,
+      ) {
+        if (bwd[0] != null && fwd[0] != null) {
+          // we are in the middle of a cone
+          let link = document.createElement("a");
+          link.textContent = name;
+          link.onclick = function () {
+            sendLinkSearch(
+              "from " + "(" + nclass + "," + nptr + ") arrow " + arrow,
+            );
+          };
+          docpart.id = "cone_button";
+          docpart.appendChild(link);
+        }
+      }
 
-         ProgressCheckBox(parent,nclass,ncptr,array[line][i].Chp,array[line][i].Ctx);
-         }
-      else // arrow 
+      /***********************************************************/
+
+      function IsImage(str, arrow) {
+        if (arrow == "has image" || arrow == "is an image for") {
+          if (str.slice(0, 6) == "http:/" || str.slice(0, 7) == "https:/") {
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+      /***********************************************************/
+
+      function IsMath(str) {
+        if (str.includes("\(") && str.includes("\)")) {
+          return true;
+        }
+
+        return false;
+      }
+
+      /***********************************************************/
+
+      function IsURL(str, arrow) {
+        if (arrow == "has URL") {
+          if (str.slice(0, 6) == "http:/" || str.slice(0, 7) == "https:/") {
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+      /***********************************************************/
+      // handlers
+      /***********************************************************
+
+      // Disable ENTER submission
+
+      window.addEventListener('keydown',function(event)
          {
-         const then = 2 // reserved vectors
-         const prev = 3
-
-         let arrow = array[line][i].Name
-         let arrptr = array[line][i].Arr
-         let stindex = array[line][i].STindex
-
-         lastarrow = stindex - ST_ZERO;
-
-         if (arrptr == then || arrptr == prev)  // represent a privileged sequence for proper time
+         if(event.keyCode == 13)
             {
-            let newline = document.createElement('p');
-            parent.appendChild(newline);
+            event.preventDefault();
+            return false;
+            }
+         });
+
+      /***********************************************************/
+
+      function SearchHandler() {
+        let form = document.querySelector("#search");
+
+        async function sendsearchData() {
+          let formData = new FormData(form);
+
+          fetch(API_SERVER + "/searchN4L", {
+            method: POST_METHOD,
+            body: formData,
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("network returns error");
+              }
+
+              return response.json();
+            })
+            .then((resp) => {
+              let prevh = document.getElementById("topmost_page_title");
+
+              if (prevh != null) {
+                prevh.remove();
+              }
+
+              let prevm = document.getElementById("main");
+
+              if (prevm != null) {
+                prevm.remove();
+              }
+
+              DoHeader(resp);
+
+              switch (resp.Response) {
+                case "Orbits":
+                  DoOrbitPanel(resp);
+                  break;
+                case "ConePaths":
+                  DoEntireConePanel(resp);
+                  break;
+                case "PathSolve":
+                  DoEntireConePanel(resp);
+                  break;
+                case "Sequence":
+                  DoSeqPanel(resp);
+                  break;
+                case "PageMap":
+                  DoPageMapPanel(resp);
+                  break;
+                case "TOC":
+                  DoTOCPanel(resp);
+                  break;
+                case "Arrows":
+                  DoArrowsPanel(resp);
+                  break;
+                case "STAT":
+                  DoStatsPanel(resp);
+                  break;
+              }
+
+              MathJax.typeset();
+            })
+
+            .catch((error) => {
+              // Handle error
+              console.log("error ", error);
+              let section = document.querySelector("main");
+              let text = document.createElement("h2");
+              section.textContent = "No results (perhaps no connection)";
+              section.id = "errormesg";
+              section.appendChild(text);
+            });
+        }
+
+        // Take over form submission
+        ((button = document.getElementById("gosubmit")),
+          button.addEventListener("click", (event) => {
+            event.preventDefault();
+            sendsearchData();
+          }));
+      }
+
+      /***********************************************************/
+
+      async function sendlinkData(nclass, ncptr) {
+        let formData = new FormData();
+        formData.set("nclass", nclass);
+        formData.set("ncptr", ncptr);
+
+        fetch(API_SERVER + "/searchN4L", {
+          method: POST_METHOD,
+          body: formData,
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("network returns error");
             }
 
-         let arrow_link = document.createElement('a');
-         arrow_link.textContent = `( ${arrow} )  `;
-         arrow_link.id = `arrow-`+stindex;
-         arrow_link.class = "tooltip";
-         arrow_link.title = STINDICES[stindex];
-         arrow_link.style.fontFamily = 'Verdana';
-
-         parent.appendChild(arrow_link);
-         }
-      }
-   }
-
-return parent
-}
-
-/***********************************************************/
-
-function ShowNodeEvent(panel,event,counter,direction,skiparrow,anchortag)
-{
-// create a div panel for the orbit root node
-
-let child = document.createElement('div');
-child.setAttribute("class", "card-view");
-
-
-child.id = "orbit_column_1of3";  // col 1 spans all 3 columns, full width for full node text
-panel.appendChild(child);
-
-if (event == null)
-   {
-   return;
-   }
-
-let text = counter + ". " + event.Text;
-let nptrtxt = "(" + event.NPtr.Class + "," + event.NPtr.CPtr + ")";
-
-if (counter == 0)
-   {
-   text = "--> " + event.Text
-   }
-
-// ** BEGIN 1: Here we print the full text for column_1of3 either as pre or p
-
-if (text.includes("\n"))
-   {
-   let from_link = document.createElement('a');
-   from_link.onclick = function() { sendlinkData(event.NPtr.Class,event.NPtr.CPtr); };
-
-   let from_text = document.createElement('pre');
-   from_text.nameClass = "text";
-   from_text.textContent = text;
-   from_link.nameClass = "text";
-   from_link.appendChild(from_text);
-
-   child.appendChild(from_link);
-   }
-else
-   {
-   let from_link = document.createElement('span');
-   from_link.onclick = function() { sendlinkData(event.NPtr.Class,event.NPtr.CPtr); };
-   let from_text = document.createElement(anchortag);
-   from_link.nameClass = "text";
-   from_link.appendChild(from_text);
-
-   child.appendChild(from_link);
-
-   if (!IsMath(event.Text))
-      {
-      from_text.textContent = event.Text.slice(0,70) + "...";
-      let small_tot_text = document.createElement('div');
-      small_tot_text.textContent = text;
-      small_tot_text.id = "orbital-full-text";
-      child.appendChild(small_tot_text);
-      }
-   else 
-      {
-      from_text.textContent = text; // event.Text;
-      }
-   }
-
-// If this is the root node, we need to add some Nptr, context info in column_1of3
-
-if (counter == 0)
-   {
-   let setting = document.createElement('span');
-   setting.id = "nptr-chapter-context-helpline";
-
-   let text1 = document.createElement('i');
-   text1.textContent = "with NPtr " + nptrtxt + ", in chapter "
-   setting.appendChild(text1);
-
-   let chplink = document.createElement('a');
-   chplink.textContent = '"' + event.Chap + '"';
-   chplink.onclick = function() { sendLinkSearch("any chapter \"" + event.Chap + "\""); };
-   setting.appendChild(chplink);
-
-   let text2 = document.createElement('i');
-   text2.textContent = ", context ";
-   setting.appendChild(text2);
-
-   let ctxlink = document.createElement('a');
-   ctxlink.textContent = '"' + event.Context + '"';
-   ctxlink.onclick = function() { sendLinkSearch("any context \"" + CtxSplice(event.Context) + "\""); };
-   setting.appendChild(ctxlink);
-
-   child.appendChild(setting);
-   }
-
-ProgressCheckBox(child,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
-
-// See what pathways we are part of and add notes
-
-CheckSingleCone(panel,child,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1,event.Orbits[Im1],event.Orbits[Il1]);
-CheckSingleCone(panel,child,"[CN]",event.NPtr.Class,event.NPtr.CPtr,2,event.Orbits[Im2],event.Orbits[Ic2]);
-CheckSingleCone(panel,child,"[EP]",event.NPtr.Class,event.NPtr.CPtr,3,event.Orbits[Im3],event.Orbits[Ie3]);
-CheckSingleCone(panel,child,"[NR]",event.NPtr.Class,event.NPtr.CPtr,0,event.Orbits[In0],event.Orbits[In0]);
-
-// END : column_1of3
-
-// Next we add the satellite nodes in column_2of3 and column_3of3
-// Each vector from Im3...Ie3, one by one
-
-AddLinkOrbits(panel,child,event,Im3,skiparrow);
-AddLinkOrbits(panel,child,event,Ie3,skiparrow);
-
-// Then any equivalents
-
-AddLinkOrbits(panel,child,event,In0,skiparrow);
-
-// Then containment
-
-AddLinkOrbits(panel,child,event,Im2,skiparrow);
-AddLinkOrbits(panel,child,event,Ic2,skiparrow);
-
-// Lastly, from-->to
-
-AddLinkOrbits(panel,child,event,Im1,skiparrow);
-AddLinkOrbits(panel,child,event,Il1,skiparrow);
-}
-
-/***********************************************************/
-
-function ProgressCheckBox(container,nclass,ncptr,chap,context)
-{
-// Create a label for the checkbox
-let label = document.createElement('label');
-label.className = "checkbox";
-label.textContent = '';
-
-let checkbox = document.createElement('input');
-checkbox.type = 'checkbox';
-checkbox.id = 'progress-checkbox';
-checkbox.value = '('+nclass+','+ncptr+')';
-
- checkbox.addEventListener('change',function() {
- let chapcontext = chap + ":" + context;
- if (checkbox.checked) 
-    {
-    let ack = sendlastseen("lastnptr",nclass,ncptr,chapcontext);
-    }
- });
-
-let spanner = document.createElement('span');
-spanner.className = 'checkmark';
-
-label.appendChild(checkbox);
-label.appendChild(spanner);
-container.appendChild(label);
-}
-
-/***********************************************************/
-// Busy wheel of time...
-/***********************************************************/
-
-/***********************************************************/
-// Render line link list by STtype
-/***********************************************************/
-
-function AddLinkOrbits(panel,child,event,sttype,skiparrow)
-{
-if (event.Orbits[sttype] != null)
-   {
-   for (let ngh of event.Orbits[sttype]) 
-      {
-      if (skiparrow != ngh.Arrow)
-         {
-         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,event.Chap,ngh.Ctx);
-         panel.appendChild(child);
-
-         if (sttype == Im3 && IsImage(event.Text,ngh.Arrow))
-            {
-            let img = document.createElement('img')
-            img.src = event.Text;
-            panel.appendChild(img);
-            }
-         }
-      }
-   }
-}
-
-/***********************************************************/
-// Checks and tests
-/***********************************************************/
-
-function CheckCones(panel,docpart,name,bwd,fwd)
-{
-if (bwd[0] != null && fwd[0] != null) // we are in the middle of a cone
-   {
-   let nptrs = "";
-
-   for (let b of bwd)
-      {
-      let np = "("+b.Dst.Class+","+b.Dst.CPtr+") "
-      nptrs = nptrs + np;
-      }
-
-   for (let f of fwd)
-      {
-      let np = "("+f.Dst.Class+","+f.Dst.CPtr+") "
-      nptrs = nptrs + np;
-      }
-
-   let link = document.createElement('a');
-   link.textContent = name;
-   link.onclick = function() { sendLinkSearch("from "+nptrs); };
-   docpart.id = "cone_button"
-   docpart.appendChild(link);
-   }
-
-panel.appendChild(docpart);
-}
-
-/***********************************************************/
-
-function CheckSingleCone(panel,docpart,name,nclass,nptr,arrow,bwd,fwd)
-{
-if (bwd[0] != null && fwd[0] != null) // we are in the middle of a cone
-   {
-   let link = document.createElement('a');
-   link.textContent = name;
-   link.onclick = function() { sendLinkSearch("from "+"("+nclass+","+nptr+") arrow " + arrow + "," + "-" + arrow); };
-   docpart.id = "cone_button"
-   docpart.appendChild(link);
-   }
-}
-
-/***********************************************************/
-
-function IsImage(str,arrow)
-{
-if (arrow == "has image" || arrow == "is an image for")
-   {
-   if (str.slice(0,6) == "http:/" || str.slice(0,7) == "https:/")
-      {
-      return true;
-      }
-   }
-
-return false
-}
-
-/***********************************************************/
-
-function IsMath(str)
-{
-if (str.includes("\(") && str.includes("\)"))
-   {
-   return true;
-   }
-
-return false
-}
-
-/***********************************************************/
-
-function IsURL(str,arrow)
-{
-if (arrow == "has URL")
-   {
-   if (str.slice(0,6) == "http:/" || str.slice(0,7) == "https:/")
-      {
-      return true;
-      }
-   }
-
-return false
-}
-
-/***********************************************************/
-// handlers
-/***********************************************************
-
-// Disable ENTER submission
-
-window.addEventListener('keydown',function(event)
-   {
-   if(event.keyCode == 13) 
-      {
-      event.preventDefault();
-      return false;
-      }
-   });
-
-/***********************************************************/
-
-function SearchHandler()
-{
-let form = document.querySelector("#search");
-
-async function sendsearchData() {
-
-  let formData = new FormData(form);
-
-  fetch(API_SERVER+"/searchN4L", { method: POST_METHOD, body: formData })
-   .then(response => {
-
-    if (!response.ok) {
-      throw new Error('network returns error');
-    }
-
-    return response.json();
-
-  })
-    .then((resp) => {
-
-      let prevh = document.getElementById("topmost_page_title");
-
-      if (prevh != null) 
-         {
-         prevh.remove();
-         }
-
-      let prevm = document.getElementById("main");
-
-      if (prevm != null) 
-         {
-         prevm.remove();
-         }
-
-      DoHeader(resp);
-
-      switch (resp.Response)
-         {
-         case "Orbits":
+            //let newWindow = window.open('about:blank', '_blank');  How??
+
+            return response.json();
+          })
+          .then((resp) => {
+            DoHeader(resp);
             DoOrbitPanel(resp);
-            break;
-         case "ConePaths":
-            DoEntireConePanel(resp);
-            break;
-         case "PathSolve":
-            DoEntireConePanel(resp);
-            break;
-         case "Sequence":
-            DoSeqPanel(resp);
-            break;
-         case "PageMap":
-            DoPageMapPanel(resp);
-            break;
-            case "TOC":
-            DoTOCPanel(resp);
-            break;
-         case "Arrows":
-            DoArrowsPanel(resp);
-            break;
-         case "STAT":
-            DoStatsPanel(resp);
-            break;
-         }
-
-      MathJax.typeset();
-
-    })
-
-    .catch((error) => {
-      // Handle error
-      console.log("error ", error);
-     let section = document.querySelector('main');
-     let text = document.createElement('h2');
-     section.textContent = "No results (perhaps no connection)";
-     section.id = "errormesg"
-     section.appendChild(text);
-
-   });
-}
-
-// Take over form submission
-button = document.getElementById('gosubmit'),
-button.addEventListener("click", (event) => { event.preventDefault();  sendsearchData(); });
-}
-
-/***********************************************************/
-
-async function sendlinkData(nclass,ncptr)
-{
-  let formData = new FormData();
-  formData.set("nclass",nclass);
-  formData.set("ncptr",ncptr);
-
-  let searchfield = document.getElementById("name");
-  searchfield.value = "(" + nclass + "," + ncptr + ")";
-
-  fetch(API_SERVER+"/searchN4L", { method: POST_METHOD, body: formData })
-   .then(response => {
-
-    if (!response.ok) {
-      throw new Error('network returns error');
-    }
-
-  //let newWindow = window.open('about:blank', '_blank');  How??
-
-    return response.json();
-
-  })
-    .then((resp) => {
-
-      DoHeader(resp);
-      DoOrbitPanel(resp);
-      MathJax.typeset();
-    })
-
-    .catch((error) => {
-      // Handle error
-      console.log("error ", error);
-    });
-}
-
-/***********************************************************/
-
-async function sendlastseen(name,nclass,ncptr,chapcontext)
-{
-   let formData = new FormData();
-   formData.set("nclass",nclass);
-   formData.set("ncptr",ncptr);
-   formData.set("name",name);
-   formData.set("chapcontext",chapcontext);
-
-   fetch(API_SERVER+"/searchN4L", { method: POST_METHOD, body: formData })
-    .then(response => {
-
-    if (!response.ok) 
-       {
-       throw new Error('network returns error');
-       }
-
-    return response.json();
-    })
-    .then((resp) => {
-
-	console.log("LASTSAW ACK",resp.Content);
-	return;
-
-    })
-
-    .catch((error) => {
-      // Handle error
-      console.log("error ", error);
-    });
- 
-}
-
-/***********************************************************/
-
-async function sendLinkSearch(search)
-{
-  let formData = new FormData();
-  formData.set("name",search);
-
-  // rewrite the search field for clarity
-
-  let searchfield = document.getElementById("name");
-  searchfield.value = search;
-
-  // start loader
-
-  fetch(API_SERVER+"/searchN4L", { method: POST_METHOD, body: formData })
-   .then(response => {
-
-    if (!response.ok) {
-      throw new Error('network returns error');
-    }
-
-    return response.json();
-
-  })
-    .then((resp) => {
-
-      // stop loader
-
-      DoHeader(resp);
-
-      switch (resp.Response)
-         {
-         case "Orbits":
-            DoOrbitPanel(resp);
-            break;
-         case "ConePaths":
-            DoEntireConePanel(resp);
-            break;
-         case "PathSolve":
-            DoEntireConePanel(resp);
-            break;
-         case "Sequence":
-            DoSeqPanel(resp);
-            break;
-	 case "PageMap":
-	    DoPageMapPanel(resp);
-            break;
-	 case "TOC":
-	    DoTOCPanel(resp);
-            break;
-         case "Arrows":
-            DoArrowsPanel(resp);
-            break;
-         }
-
-      MathJax.typeset();
-    })
-
-    .catch((error) => {
-      // Handle error
-      console.log("error ", error);
-    });
-}
-
-/***********************************************************/
-
-function CtxSplice(s)
-{
-let ret = s.replaceAll(" . ",".");
-return ret;
-}
-
-/***********************************************************/
-// Graphics Drawing
-/***********************************************************/
-
-function HeatColour(freq,pdelta,sat)  // pdelta is measured in seconds --> HSL
-{
-const hottest = 100;
-const coldest = 3600 * 24 * 7 - hottest;
-
-let hue = (pdelta-hottest)/coldest * 230;
-
-let saturation = sat;
-
-let lightness = 40 + freq * 2;
-
-if (hue < 0)
-   {
-   hue = 0;
-   }
-
-if (hue > 230)
-   {
-   hue = 230;
-   }
-
-if (lightness > 100)
-   {
-   lightness = 100;
-   }
-
-let hsl = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-
-return hsl; 
-}
-
-/***********************************************************/
-
-function PlotGraphics(event,lastevent)
-{
-let tx = event.XYZ.X;
-let ty = event.XYZ.Y;
-let tz = event.XYZ.Z;
-
-Event(tx,ty,tz);
-Label(tx,ty,tz,event.Text.slice(0,25),12,"black");
-
-if (lastevent != event)
-   {
-   let lx = lastevent.XYZ.X;
-   let ly = lastevent.XYZ.Y;
-   let lz = lastevent.XYZ.Z;
-
-   LeadsTo(lx,ly,lz,tx,ty,tz)
-   }
-
-// Now look at orbits
-
-for (let ngh of event.Orbits[Il1])
-   {
-   Event(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   LeadsTo(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   }
-for (let ngh of event.Orbits[Im1])
-   {
-   Event(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   LeadsTo(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
-   }
-for (let ngh of event.Orbits[Ic2])
-   {
-   Thing(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   Contains(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   }
-for (let ngh of event.Orbits[Im2])
-   {
-   Thing(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   Contains(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
-   }
-for (let ngh of event.Orbits[Ie3])
-   {
-   Concept(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   Expresses(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   }
-for (let ngh of event.Orbits[Im3])
-   {
-   Concept(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   Expresses(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
-   }
-for (let ngh of event.Orbits[In0])
-   {
-   Event(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   Near(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   }
-}
-
-/***********************************************************/
-
-function ArrowPair(angle,type,fwd,bwd)
-{
-x = 0.5 * Math.cos(angle);
-y = 0.5 * Math.sin(angle);
-
-switch (type)
-   {
-   case 0:
-	Near(0,0,0,x,y,0);
-	Near(0,0,0,-x,-y,0);
-      break;
-   case 1:
-   case -1:
-	LeadsTo(0,0,0,x,y,0);
-	LeadsTo(0,0,0,-x,-y,0);
-      break;
-   case 2:
-   case -2:
-	Contains(0,0,0,x,y,0);
-	Contains(0,0,0,-x,-y,0);
-      break;
-   case 3:
-   case -3:
-	Expresses(0,0,0,x,y,0);
-	Expresses(0,0,0,-x,-y,0);
-      break;
-   }
-
-const size = "12";
-const colour = "black";
-
-Label(x,y,0,fwd,size,colour)
-Label(-x,-y,0,bwd,size,colour)
-}
-
-/***********************************************************/
-/* GRAPHICS PANE                                           */
-/***********************************************************/
-
-function DrawWelcomeImage()
-{
-DrawGrid(0,0,1);
-return;
-let orbit = 0.5;
-let x0 = 0
-let y0 = 0
-
-for (let z = 1; z > -1.0; z -= orbit) 
-   {
-   LeadsTo(x0,y0,z,0,0,z+orbit);
-   Event(x0,y0,z,10);
-
-   Label(x0,y0,z,"SST event "+z,16,"darkblue");
-
-   for (let a = 0; a < 2*Math.PI; a += Math.PI/6) 
-      {
-      let x = orbit * Math.cos(a);
-      let y = orbit * Math.sin(a);
-      Concept(x,y,z,6);
-      Expresses(0,0,z,x,y,z);
+            MathJax.typeset();
+          })
+
+          .catch((error) => {
+            // Handle error
+            console.log("error ", error);
+          });
       }
-   }
-}
 
-/***********************************************************/
+      /***********************************************************/
 
-function DrawGrid(x,z,length)
-{
-CTX.save();
-for (let xi = -length; xi <= length; xi += 0.1) 
-   {
-   SST_Line(xi,0,-length,xi,0,length,'lightgrey',1);
-   }
+      async function sendlastseen(name, nclass, ncptr, chapcontext) {
+        let formData = new FormData();
+        formData.set("nclass", nclass);
+        formData.set("ncptr", ncptr);
+        formData.set("name", name);
+        formData.set("chapcontext", chapcontext);
 
-for (let zi = -length; zi <= length; zi += 0.1) 
-   {
-   SST_Line(-length,0,zi,length,0,zi,'lightgrey',1);
-   }
+        fetch(API_SERVER + "/searchN4L", {
+          method: POST_METHOD,
+          body: formData,
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("network returns error");
+            }
 
-SST_Line(-length/2,0,0,0,0,0,'lightgrey',1);
-SST_Line(0,0,-length/2,0,0,0,'lightgrey',1);
-SST_Line(0,-length/2,0,0,length,0,'lightgrey',1);
+            return response.json();
+          })
+          .then((resp) => {
+            console.log("LASTSAW ACK", resp.Content);
+            return;
+          })
 
-CTX.restore();
-}
+          .catch((error) => {
+            // Handle error
+            console.log("error ", error);
+          });
+      }
 
-// *************************************************
+      /***********************************************************/
 
-function CreateCanvas() 
-{
-let oldcanvas = document.getElementById("myCanvas");
+      async function sendLinkSearch(search) {
+        let formData = new FormData();
+        formData.set("name", search);
 
-if (oldcanvas != null)
-   {
-   oldcanvas.remove();
-   }
+        // rewrite the search field for clarity
 
-let parent = document.querySelector('pictureframe');
-canvas = document.createElement("canvas");
-canvas.id = "myCanvas";
-canvas.width = window.innerWidth;
-canvas.height = window.innerWidth/2;
-//canvas.style.position = "relative";
-canvas.style.border = "1px solid";
-CTX = canvas.getContext("2d");
-parent.height = window.innerWidth/2;
-parent.appendChild(canvas);
-CTX.beginPath();
-return canvas;
-}
+        let searchfield = document.getElementById("name");
+        searchfield.value = search;
 
-// *************************************************
+        fetch(API_SERVER + "/searchN4L", {
+          method: POST_METHOD,
+          body: formData,
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("network returns error");
+            }
 
-function Label(x,y,z,text,size,colour)
-{
-CTX.save();
-let font = "bold "+size+"px Arial";
-xr = Tx(x,y,z) + 30;
-yr = Ty(x,y,z);
-CTX.beginPath();
-let w = CTX.measureText(text).width;
-let h = parseInt(font,size);
-CTX.fillStyle = 'white';
-CTX.fillRect(xr,yr,w+5,-h);
-CTX.font = font;
-CTX.fillStyle = colour;
-CTX.fillText(text,xr,yr);
-CTX.restore();
-}
+            return response.json();
+          })
+          .then((resp) => {
+            DoHeader(resp);
 
-// *************************************************
+            switch (resp.Response) {
+              case "Orbits":
+                DoOrbitPanel(resp);
+                break;
+              case "ConePaths":
+                DoEntireConePanel(resp);
+                break;
+              case "PathSolve":
+                DoEntireConePanel(resp);
+                break;
+              case "Sequence":
+                DoSeqPanel(resp);
+                break;
+              case "PageMap":
+                DoPageMapPanel(resp);
+                break;
+              case "TOC":
+                DoTOCPanel(resp);
+                break;
+              case "Arrows":
+                DoArrowsPanel(resp);
+                break;
+            }
 
-function Horizon(x,y,z)
-{
-return Math.sqrt((x-OBS_X)*(x-OBS_X)+(y-OBS_Y)*(y-OBS_Y)+(z-OBS_Z)*(z-OBS_Z));
-}
+            MathJax.typeset();
+          })
 
-// *************************************************
+          .catch((error) => {
+            // Handle error
+            console.log("error ", error);
+          });
+      }
 
-function Alpha(x,y,z)
-{
-let alpha = 1.5/Math.sqrt((x-OBS_X)*(x-OBS_X)+(y-OBS_Y)*(y-OBS_Y)+(z-OBS_Z)*(z-OBS_Z));
+      /***********************************************************/
 
-if (alpha > 1)
-   {
-   return 1;
-   }
+      function CtxSplice(s) {
+        let ret = s.replaceAll(" . ", ".");
+        return ret;
+      }
 
-if (alpha < 0.1)
-   {
-   return 0.1;
-   }
-}
+      /***********************************************************/
+      // Graphics Drawing
+      /***********************************************************/
 
-// *************************************************
+      function HeatColour(freq, pdelta, sat) {
+        // pdelta is measured in seconds --> HSL
+        const hottest = 100;
+        const coldest = 3600 * 24 * 7 - hottest;
 
-function Tx(x,y,z) 
-{
-let scale = SCALE * WIDTH / (1 + 1.2 * Horizon(x,y,z));
+        let hue = ((pdelta - hottest) / coldest) * 230;
 
-let xt = ORGX + scale * (x * Math.cos(THETA) + z * Math.cos(PHI));
-return xt;
-}
+        let saturation = sat;
 
-// *************************************************
+        let lightness = 40 + freq * 2;
 
-function Ty(x,y,z) 
-{
-let scale = SCALE * WIDTH / (1 + 1.5 * Horizon(x,y,z));
+        if (hue < 0) {
+          hue = 0;
+        }
 
-let yt = HEIGHT - ORGY - scale * (y + z * Math.sin(PHI) - x * Math.sin(THETA));
-return yt;
-}
+        if (hue > 230) {
+          hue = 230;
+        }
 
-// *************************************************
+        if (lightness > 100) {
+          lightness = 100;
+        }
 
-function LeadsTo(x0,y0,z0,xp,yp,zp)
-{
-//Arrow(x0,y0,z0,xp,yp,zp,"rgba(0,250,0,1)",3);
-Arrow(x0,y0,z0,xp,yp,zp,"darkred",3);
-}
+        let hsl = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 
-// *************************************************
+        return hsl;
+      }
 
-function Contains(x0,y0,z0,xp,yp,zp)
-{
-//Arrow(x0,y0,z0,xp,yp,zp,"rgba(60,60,60,1)",2);
-Arrow(x0,y0,z0,xp,yp,zp,"lightblue",2);
-}
+      /***********************************************************/
 
-// *************************************************
+      function PlotGraphics(event, lastevent) {
+        let tx = event.XYZ.X;
+        let ty = event.XYZ.Y;
+        let tz = event.XYZ.Z;
 
-function Expresses(x0,y0,z0,xp,yp,zp)
-{
-//Arrow(x0,y0,z0,xp,yp,zp,"rgba(106,236,255,1)",2);
-Arrow(x0,y0,z0,xp,yp,zp,"orange",2);
-}
+        Event(tx, ty, tz);
+        Label(tx, ty, tz, event.Text.slice(0, 25), 12, "black");
 
-// *************************************************
+        if (lastevent != event) {
+          let lx = lastevent.XYZ.X;
+          let ly = lastevent.XYZ.Y;
+          let lz = lastevent.XYZ.Z;
 
-function Near(x0,y0,z0,xp,yp,zp)
-{
-//Arrow(x0,y0,z0,xp,yp,zp,"rgba(20,20,20,1)",1);
-Arrow(x0,y0,z0,xp,yp,zp,"darkgrey",1);
-}
+          LeadsTo(lx, ly, lz, tx, ty, tz);
+        }
 
-// *************************************************
+        // Now look at orbits
 
-function Event(x,y,z) 
-{
-Node(x,y,z,6,"darkred","red");
-}
+        for (let ngh of event.Orbits[Il1]) {
+          Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+          LeadsTo(
+            ngh.OOO.X,
+            ngh.OOO.Y,
+            ngh.OOO.Z,
+            ngh.XYZ.X,
+            ngh.XYZ.Y,
+            ngh.XYZ.Z,
+          );
+        }
+        for (let ngh of event.Orbits[Im1]) {
+          Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+          LeadsTo(
+            ngh.XYZ.X,
+            ngh.XYZ.Y,
+            ngh.XYZ.Z,
+            ngh.OOO.X,
+            ngh.OOO.Y,
+            ngh.OOO.Z,
+          );
+        }
+        for (let ngh of event.Orbits[Ic2]) {
+          Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+          Contains(
+            ngh.OOO.X,
+            ngh.OOO.Y,
+            ngh.OOO.Z,
+            ngh.XYZ.X,
+            ngh.XYZ.Y,
+            ngh.XYZ.Z,
+          );
+        }
+        for (let ngh of event.Orbits[Im2]) {
+          Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+          Contains(
+            ngh.XYZ.X,
+            ngh.XYZ.Y,
+            ngh.XYZ.Z,
+            ngh.OOO.X,
+            ngh.OOO.Y,
+            ngh.OOO.Z,
+          );
+        }
+        for (let ngh of event.Orbits[Ie3]) {
+          Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+          Expresses(
+            ngh.OOO.X,
+            ngh.OOO.Y,
+            ngh.OOO.Z,
+            ngh.XYZ.X,
+            ngh.XYZ.Y,
+            ngh.XYZ.Z,
+          );
+        }
+        for (let ngh of event.Orbits[Im3]) {
+          Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+          Expresses(
+            ngh.XYZ.X,
+            ngh.XYZ.Y,
+            ngh.XYZ.Z,
+            ngh.OOO.X,
+            ngh.OOO.Y,
+            ngh.OOO.Z,
+          );
+        }
+        for (let ngh of event.Orbits[In0]) {
+          Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+          Near(
+            ngh.OOO.X,
+            ngh.OOO.Y,
+            ngh.OOO.Z,
+            ngh.XYZ.X,
+            ngh.XYZ.Y,
+            ngh.XYZ.Z,
+          );
+        }
+      }
 
-// *************************************************
+      /***********************************************************/
 
-function Thing(x,y,z) 
-{
-Node(x,y,z,4,"darkgreen","lightgreen");
-}
+      function ArrowPair(angle, type, fwd, bwd) {
+        x = 0.5 * Math.cos(angle);
+        y = 0.5 * Math.sin(angle);
 
-// *************************************************
+        switch (type) {
+          case 0:
+            Near(0, 0, 0, x, y, 0);
+            Near(0, 0, 0, -x, -y, 0);
+            break;
+          case 1:
+          case -1:
+            LeadsTo(0, 0, 0, x, y, 0);
+            LeadsTo(0, 0, 0, -x, -y, 0);
+            break;
+          case 2:
+          case -2:
+            Contains(0, 0, 0, x, y, 0);
+            Contains(0, 0, 0, -x, -y, 0);
+            break;
+          case 3:
+          case -3:
+            Expresses(0, 0, 0, x, y, 0);
+            Expresses(0, 0, 0, -x, -y, 0);
+            break;
+        }
 
-function Concept(x,y,z) 
-{
-Node(x,y,z,4,"darkblue","lightblue");
-}
+        const size = "12";
+        const colour = "black";
 
-// *************************************************
+        Label(x, y, 0, fwd, size, colour);
+        Label(-x, -y, 0, bwd, size, colour);
+      }
 
-function Node(x,y,z,r,col1,col2)
-{
-CTX.save();
-CTX.beginPath();
-let x0 = Tx(x,y,z);
-let y0 = Ty(x,y,z);
-r = r * 1.6 / Horizon(x,y,z);
+      /***********************************************************/
+      /* GRAPHICS PANE                                           */
+      /***********************************************************/
 
-let grad = CTX.createLinearGradient(x0,y0,x0+r,y0+r);
+      function DrawWelcomeImage() {
+        DrawGrid(0, 0, 1);
+        return;
+        let orbit = 0.5;
+        let x0 = 0;
+        let y0 = 0;
 
-grad.addColorStop(0,col2);
-grad.addColorStop(1,col1);
+        for (let z = 1; z > -1.0; z -= orbit) {
+          LeadsTo(x0, y0, z, 0, 0, z + orbit);
+          Event(x0, y0, z, 10);
 
-//CTX.globalAlpha = 1-Alpha(x,y,x)/3;
-CTX.arc(x0, y0, r, 0, Math.PI*2);
-CTX.fillStyle = grad;
-CTX.fill();
-CTX.restore();
-}
+          Label(x0, y0, z, "SST event " + z, 16, "darkblue");
 
-// *************************************************
+          for (let a = 0; a < 2 * Math.PI; a += Math.PI / 6) {
+            let x = orbit * Math.cos(a);
+            let y = orbit * Math.sin(a);
+            Concept(x, y, z, 6);
+            Expresses(0, 0, z, x, y, z);
+          }
+        }
+      }
 
-function Arrow(x0,y0,z0,xp,yp,zp,colour,thickness)
-{
-CTX.save();
-SST_Line(x0,y0,z0,xp,yp,zp,colour,thickness);
+      /***********************************************************/
 
-let frx = Tx(x0,y0,z0);
-let fry = Ty(x0,y0,z0);
-let tox = Tx(xp,yp,zp);
-let toy = Ty(xp,yp,zp);
-let scale = (1.1-zp);
-let angle = Math.atan2(toy-fry,tox-frx);
-let headangle = Math.PI/12;
-let headlen = 20 * scale;
-let noderadius = 10 * scale;
+      function DrawGrid(x, z, length) {
+        CTX.save();
+        for (let xi = -length; xi <= length; xi += 0.1) {
+          SST_Line(xi, 0, -length, xi, 0, length, "lightgrey", 1);
+        }
 
-CTX.beginPath();
-CTX.strokeStyle = colour;
-CTX.lineWidth = thickness;
-CTX.moveTo(tox-noderadius*Math.cos(angle),toy-noderadius*Math.sin(angle));
-CTX.lineTo(tox-headlen*Math.cos(angle-headangle),toy-headlen*Math.sin(angle-headangle));
-CTX.moveTo(tox-noderadius*Math.cos(angle),toy-noderadius*Math.sin(angle));
-CTX.lineTo(tox-headlen*Math.cos(angle+headangle),toy-headlen*Math.sin(angle+headangle));
-CTX.stroke();
-CTX.beginPath();
-CTX.restore();
-}
+        for (let zi = -length; zi <= length; zi += 0.1) {
+          SST_Line(-length, 0, zi, length, 0, zi, "lightgrey", 1);
+        }
 
-// *************************************************
+        SST_Line(-length / 2, 0, 0, 0, 0, 0, "lightgrey", 1);
+        SST_Line(0, 0, -length / 2, 0, 0, 0, "lightgrey", 1);
+        SST_Line(0, -length / 2, 0, 0, length, 0, "lightgrey", 1);
 
-function SST_Line(x0,y0,z0,xp,yp,zp,colour,thickness)
-{
-CTX.save();
-CTX.beginPath();
-let xb = Tx(x0,y0,z0);
-let yb = Ty(x0,y0,z0);
-let xe = Tx(xp,yp,zp);
-let ye = Ty(xp,yp,zp);
+        CTX.restore();
+      }
 
-//CTX.globalAlpha = 1;
-CTX.moveTo(xb,yb);
-CTX.lineTo(xe,ye);
-CTX.strokeStyle = colour;
-CTX.lineWidth = thickness;
-CTX.stroke();
-CTX.closePath();
-CTX.beginPath();
-CTX.restore();
-}
+      // *************************************************
 
-// Waiting Effect functions *****************************************************************
-	
-function startHipnotize() {
-  const el = document.getElementById("wait");
-  if (el) {
-    el.innerHTML = `<div class="hipnosis">
+      function CreateCanvas() {
+        let oldcanvas = document.getElementById("myCanvas");
+
+        if (oldcanvas != null) {
+          oldcanvas.remove();
+        }
+
+        let parent = document.getElementById("canvas");
+        let canvas = document.createElement("canvas");
+        canvas.id = "myCanvas";
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerWidth / 2;
+        //canvas.style.position = "relative";
+        // canvas.style.border = "1px solid";
+        CTX = canvas.getContext("2d");
+        // parent.height = window.innerWidth / 2;
+        parent.appendChild(canvas);
+        CTX.beginPath();
+        return canvas;
+      }
+
+      // *************************************************
+
+      function Label(x, y, z, text, size, colour) {
+        CTX.save();
+        let font = "bold " + size + "px Arial";
+        xr = Tx(x, y, z) + 30;
+        yr = Ty(x, y, z);
+        CTX.beginPath();
+        let w = CTX.measureText(text).width;
+        let h = parseInt(font, size);
+        CTX.fillStyle = "white";
+        CTX.fillRect(xr, yr, w + 5, -h);
+        CTX.font = font;
+        CTX.fillStyle = colour;
+        CTX.fillText(text, xr, yr);
+        CTX.restore();
+      }
+
+      // *************************************************
+
+      function Horizon(x, y, z) {
+        return Math.sqrt(
+          (x - OBS_X) * (x - OBS_X) +
+            (y - OBS_Y) * (y - OBS_Y) +
+            (z - OBS_Z) * (z - OBS_Z),
+        );
+      }
+
+      // *************************************************
+
+      function Alpha(x, y, z) {
+        let alpha =
+          1.5 /
+          Math.sqrt(
+            (x - OBS_X) * (x - OBS_X) +
+              (y - OBS_Y) * (y - OBS_Y) +
+              (z - OBS_Z) * (z - OBS_Z),
+          );
+
+        if (alpha > 1) {
+          return 1;
+        }
+
+        if (alpha < 0.1) {
+          return 0.1;
+        }
+      }
+
+      // *************************************************
+
+      function Tx(x, y, z) {
+        let scale = (SCALE * WIDTH) / (1 + 1.2 * Horizon(x, y, z));
+
+        let xt = ORGX + scale * (x * Math.cos(THETA) + z * Math.cos(PHI));
+        return xt;
+      }
+
+      // *************************************************
+
+      function Ty(x, y, z) {
+        let scale = (SCALE * WIDTH) / (1 + 1.5 * Horizon(x, y, z));
+
+        let yt =
+          HEIGHT - ORGY - scale * (y + z * Math.sin(PHI) - x * Math.sin(THETA));
+        return yt;
+      }
+
+      // *************************************************
+
+      function LeadsTo(x0, y0, z0, xp, yp, zp) {
+        //Arrow(x0,y0,z0,xp,yp,zp,"rgba(0,250,0,1)",3);
+        Arrow(x0, y0, z0, xp, yp, zp, "darkred", 3);
+      }
+
+      // *************************************************
+
+      function Contains(x0, y0, z0, xp, yp, zp) {
+        //Arrow(x0,y0,z0,xp,yp,zp,"rgba(60,60,60,1)",2);
+        Arrow(x0, y0, z0, xp, yp, zp, "lightblue", 2);
+      }
+
+      // *************************************************
+
+      function Expresses(x0, y0, z0, xp, yp, zp) {
+        //Arrow(x0,y0,z0,xp,yp,zp,"rgba(106,236,255,1)",2);
+        Arrow(x0, y0, z0, xp, yp, zp, "orange", 2);
+      }
+
+      // *************************************************
+
+      function Near(x0, y0, z0, xp, yp, zp) {
+        //Arrow(x0,y0,z0,xp,yp,zp,"rgba(20,20,20,1)",1);
+        Arrow(x0, y0, z0, xp, yp, zp, "darkgrey", 1);
+      }
+
+      // *************************************************
+
+      function Event(x, y, z) {
+        Node(x, y, z, 6, "darkred", "red");
+      }
+
+      // *************************************************
+
+      function Thing(x, y, z) {
+        Node(x, y, z, 4, "darkgreen", "lightgreen");
+      }
+
+      // *************************************************
+
+      function Concept(x, y, z) {
+        Node(x, y, z, 4, "darkblue", "lightblue");
+      }
+
+      // *************************************************
+
+      function Node(x, y, z, r, col1, col2) {
+        CTX.save();
+        CTX.beginPath();
+        let x0 = Tx(x, y, z);
+        let y0 = Ty(x, y, z);
+        r = (r * 1.6) / Horizon(x, y, z);
+
+        let grad = CTX.createLinearGradient(x0, y0, x0 + r, y0 + r);
+
+        grad.addColorStop(0, col2);
+        grad.addColorStop(1, col1);
+
+        //CTX.globalAlpha = 1-Alpha(x,y,x)/3;
+        CTX.arc(x0, y0, r, 0, Math.PI * 2);
+        CTX.fillStyle = grad;
+        CTX.fill();
+        CTX.restore();
+      }
+
+      // *************************************************
+
+      function Arrow(x0, y0, z0, xp, yp, zp, colour, thickness) {
+        CTX.save();
+        SST_Line(x0, y0, z0, xp, yp, zp, colour, thickness);
+
+        let frx = Tx(x0, y0, z0);
+        let fry = Ty(x0, y0, z0);
+        let tox = Tx(xp, yp, zp);
+        let toy = Ty(xp, yp, zp);
+        let scale = 1.1 - zp;
+        let angle = Math.atan2(toy - fry, tox - frx);
+        let headangle = Math.PI / 12;
+        let headlen = 20 * scale;
+        let noderadius = 10 * scale;
+
+        CTX.beginPath();
+        CTX.strokeStyle = colour;
+        CTX.lineWidth = thickness;
+        CTX.moveTo(
+          tox - noderadius * Math.cos(angle),
+          toy - noderadius * Math.sin(angle),
+        );
+        CTX.lineTo(
+          tox - headlen * Math.cos(angle - headangle),
+          toy - headlen * Math.sin(angle - headangle),
+        );
+        CTX.moveTo(
+          tox - noderadius * Math.cos(angle),
+          toy - noderadius * Math.sin(angle),
+        );
+        CTX.lineTo(
+          tox - headlen * Math.cos(angle + headangle),
+          toy - headlen * Math.sin(angle + headangle),
+        );
+        CTX.stroke();
+        CTX.beginPath();
+        CTX.restore();
+      }
+
+      // *************************************************
+
+      function SST_Line(x0, y0, z0, xp, yp, zp, colour, thickness) {
+        CTX.save();
+        CTX.beginPath();
+        let xb = Tx(x0, y0, z0);
+        let yb = Ty(x0, y0, z0);
+        let xe = Tx(xp, yp, zp);
+        let ye = Ty(xp, yp, zp);
+
+        //CTX.globalAlpha = 1;
+        CTX.moveTo(xb, yb);
+        CTX.lineTo(xe, ye);
+        CTX.strokeStyle = colour;
+        CTX.lineWidth = thickness;
+        CTX.stroke();
+        CTX.closePath();
+        CTX.beginPath();
+        CTX.restore();
+      }
+      // Waiting Effect functions *****************************************************************
+
+      function startHipnotize() {
+        const el = document.getElementById("wait");
+        if (el) {
+          el.innerHTML = `<div class="hipnosis">
     <svg version="1.1" id="L1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
       <circle fill="none" stroke="#fff" stroke-width="6" stroke-miterlimit="15" stroke-dasharray="14.2472,14.2472" cx="50" cy="50" r="47">
         <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="5s" from="0 50 50" to="360 50 50" repeatCount="indefinite" />
@@ -2480,34 +2448,22 @@ function startHipnotize() {
       </g>
     </svg>
   </div>`;
-  }
-}
+        }
+      }
 
-function stopHipnotize() {
-  const el = document.getElementById("wait");
-  if (el) {
-    el.innerHTML = "";
-  }
-}
+      function stopHipnotize() {
+        const el = document.getElementById("wait");
+        if (el) {
+          el.innerHTML = "";
+        }
+      }
 
+      /***********************************************************/
+      // Main program starts here
+      /***********************************************************/
 
-/***********************************************************/
-// Main program starts here
-/***********************************************************/
-
-FetchPage();
-SearchHandler();
-
-</script>
-
-
-</body>
+      FetchPage();
+      SearchHandler();
+    </script>
+  </body>
 </html>
-
-
-
-
-
-
-
-

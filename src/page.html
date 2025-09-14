@@ -351,19 +351,18 @@
       }
 
       .hipnosis {
-        position: absolute;
+         position: absolute;
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 40lvw;
-        left: 30%;
-        top: 10%;
-        aspect-ratio: 1 / 1;
+        width: 100lvw;
+        height: 100%;
+        inset: 0;
         background: rgba(0, 0, 0, 0.2);
-        border-radius: var(--radius-round);
-        box-shadow: var(--shadow-6);
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        overflow: hidden;
+
 
         transition:
           transform 1s var(--ease-spring-2) 1s,
@@ -381,6 +380,11 @@
         margin: 20px;
         display: inline-block;
       }
+       #wait {
+        height: 1px;
+        overflow: hidden;
+      }
+
     </style>
 
     <script type="text/x-mathjax-config">

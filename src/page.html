@@ -1992,6 +1992,8 @@ async function sendLinkSearch(search)
   let searchfield = document.getElementById("name");
   searchfield.value = search;
 
+  // start loader
+
   fetch(API_SERVER+"/searchN4L", { method: POST_METHOD, body: formData })
    .then(response => {
 
@@ -2003,6 +2005,8 @@ async function sendLinkSearch(search)
 
   })
     .then((resp) => {
+
+      // stop loader
 
       DoHeader(resp);
 

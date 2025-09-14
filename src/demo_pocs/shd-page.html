@@ -570,13 +570,13 @@
       /************************************************************/
 
       async function FetchPage() {
-        // let requestURL = API_SERVER + "/searchN4L";
-        // let request = new Request(requestURL);
-        // let response = await fetch(request);
-        // let mynote = await response.json();
+        let requestURL = API_SERVER + "/searchN4L";
+        let request = new Request(requestURL);
+        let response = await fetch(request);
+        let mynote = await response.json();
 
-        DoHeader(testObj);
-        DoOrbitPanel(testObj); // Start in orbit
+        DoHeader(mynote);
+        DoOrbitPanel(mynote); // Start in orbit
       }
 
       /***********************************************************/

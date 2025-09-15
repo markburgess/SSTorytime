@@ -3032,27 +3032,27 @@ func DefineStoredFunctions(ctx PoSST) {
         // A more detailed path search that includes checks for chapter/context boundaries (NC/C functions)
         // with a start set of more than one node
 
-	qstr = "CREATE OR REPLACE FUNCTION AllSuperNCPathsAsLinks(start NodePtr[],chapter text,rm_acc boolean,context text[],orientation text,maxdepth INT)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION AllSuperNCPathsAsLinks(start NodePtr[],chapter text,rm_acc boolean,context text[],orientation text,maxdepth INT,maxlimit int)\n"+
 		"RETURNS Text AS $fn$\n" +
 		"DECLARE\n" +
 		"   root Text;\n" +
 		"   path Text;\n"+
-		"   node NodePtr;"+
+		"   node NodePtr;\n"+
 		"   summary_path Text[];\n"+
 		"   exclude NodePtr[] = start;\n" +
 		"   ret_paths Text;\n" +
-		"   startlnk Link;"+
+		"   startlnk Link;\n"+
 		"BEGIN\n" +
 
 		// Aggregate array of starting set
 		"FOREACH node IN ARRAY start LOOP\n"+
 		"   startlnk := GetSingletonAsLink(node);\n"+
-		"   path := Format('%s',startlnk::Text);"+
-		"   root := SumAllNCPaths(startlnk,path,orientation,1,maxdepth,chapter,rm_acc,context,exclude,maxdepth);" +
+		"   path := Format('%s',startlnk::Text);\n"+
+		"   root := SumAllNCPaths(startlnk,path,orientation,1,maxdepth,chapter,rm_acc,context,exclude,maxlimit);\n" +
 		"   ret_paths := Format('%s\n%s',ret_paths,root);\n"+
 		"END LOOP;"+
 
-		"RETURN ret_paths; \n" +
+		"RETURN ret_paths;\n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
 
@@ -4424,7 +4424,7 @@ func GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodeP
 		rm_acc = "true"
 	}
 
-	qstr := fmt.Sprintf("select AllSuperNCPathsAsLinks(%s,'%s',%s,%s,'%s',%d);",FormatSQLNodePtrArray(start),chapter,rm_acc,FormatSQLStringArray(context),orientation,depth)
+	qstr := fmt.Sprintf("select AllSuperNCPathsAsLinks(%s,'%s',%s,%s,'%s',%d,%d);",FormatSQLNodePtrArray(start),chapter,rm_acc,FormatSQLStringArray(context),orientation,depth,limit)
 
 	row, err := ctx.DB.Query(qstr)
 

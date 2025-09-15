@@ -205,19 +205,6 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	// This is analogous to searchN4L
 
-	fmt.Println("Your starting expression generated this set: ",line,"\n")
-	fmt.Println(" - start set:",SL(search.Name))
-	fmt.Println(" -      from:",SL(search.From))
-	fmt.Println(" -        to:",SL(search.To))
-	fmt.Println(" -   chapter:",search.Chapter)
-	fmt.Println(" -   context:",SL(search.Context))
-	fmt.Println(" -    arrows:",SL(search.Arrows))
-	fmt.Println(" -    pagenr:",search.PageNr)
-	fmt.Println(" - sequence/story:",search.Sequence)
-	fmt.Println(" - limit/range/depth:",search.Range)
-	fmt.Println(" - show stats:",search.Stats)
-	fmt.Println()
-
 	// OPTIONS *********************************************
 
 	name := search.Name != nil
@@ -245,6 +232,19 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 			limit = 10
 		}
 	}
+
+	fmt.Println("Your starting expression generated this set: ",line,"\n")
+	fmt.Println(" - start set:",SL(search.Name))
+	fmt.Println(" -      from:",SL(search.From))
+	fmt.Println(" -        to:",SL(search.To))
+	fmt.Println(" -   chapter:",search.Chapter)
+	fmt.Println(" -   context:",SL(search.Context))
+	fmt.Println(" -    arrows:",SL(search.Arrows))
+	fmt.Println(" -    pagenr:",search.PageNr)
+	fmt.Println(" - sequence/story:",search.Sequence)
+	fmt.Println(" - limit/range/depth:",limit)
+	fmt.Println(" - show stats:",search.Stats)
+	fmt.Println()
 
 	nodeptrs := SST.SolveNodePtrs(CTX,search.Name,search.Chapter,search.Context,arrowptrs,limit)
 	leftptrs := SST.SolveNodePtrs(CTX,search.From,search.Chapter,search.Context,arrowptrs,limit)
@@ -433,7 +433,7 @@ func PackageConeFromOrigin(ctx SST.PoSST,nptr SST.NodePtr,nth int,sttype int,cha
 
 	var wpaths [][]SST.WebPath
 
-	fcone,count := SST.GetFwdPathsAsLinks(CTX,nptr,sttype,limit, limit)
+	fcone,count := SST.GetFwdPathsAsLinks(CTX,nptr,sttype,limit,limit)
 	wpaths = append(wpaths,SST.LinkWebPaths(CTX,fcone,nth,chap,context,dimnptr,limit)...)
 
 	if sttype != 0 {
@@ -499,7 +499,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftpt
 		}
 
 		solutions,_ = SST.WaveFrontsOverlap(CTX,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
-
+		fmt.Println("solutions",solutions)
 		if len(solutions) > 0 {
 			// format paths
 			var jstr string

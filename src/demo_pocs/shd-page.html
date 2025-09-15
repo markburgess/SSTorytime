@@ -37,6 +37,7 @@
       page {
         display: flex;
         flex-direction: column;
+        position: relative;
         align-items: center;
         gap: clamp(1rem, 1rem + 1vh, 1.5rem);
       }
@@ -348,6 +349,42 @@
       pre:hover {
         color: #999999;
       }
+
+      .hipnosis {
+         position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100lvw;
+        height: 100%;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        overflow: hidden;
+
+
+        transition:
+          transform 1s var(--ease-spring-2) 1s,
+          opacity 1s ease 1s;
+
+        @starting-style {
+          opacity: 0;
+          transform: scale(0);
+        }
+      }
+
+      .hipnosis svg {
+        width: 100px;
+        height: 100px;
+        margin: 20px;
+        display: inline-block;
+      }
+       #wait {
+        height: 1px;
+        overflow: hidden;
+      }
+
     </style>
 
     <script type="text/x-mathjax-config">
@@ -365,13 +402,14 @@
   </head>
   <body>
     <page>
+      <span id="wait"></span>
       <header>
         <h2>SSToryGraph</h2>
       </header>
       <nav>
         <form id="search">
-          <label for="name">?</label>
-          <input type="text" id="name" name="name" value="" />
+          <label for="subject">?</label>
+          <input size="100" type="text" id="name" name="name" value="" />
           <input type="submit" id="gosubmit" value="Go!" />
         </form>
       </nav>
@@ -385,132 +423,7 @@
       /******************************************************************************************/
       /* MB SSTorytime poc/demo code - to be cleaned up and improved by a (respectful) expert.. */
       /******************************************************************************************/
-      let testObj = {
-        Response: "Orbits",
-        Content: [
-          {
-            Text: "human brain",
-            L: 11,
-            Chap: "neuroscience brain",
-            Context: "brain parts etc,brain structure",
-            NPtr: { Class: 2, CPtr: 603 },
-            XYZ: { X: 0.4, Y: 0, Z: 0, R: 0, Lat: 0, Lon: 0 },
-            Orbits: [
-              [],
-              [],
-              [],
-              [],
-              [],
-              [
-                {
-                  Radius: 1,
-                  Arrow: "consists of",
-                  STindex: 5,
-                  Dst: { Class: 1, CPtr: 3640 },
-                  Ctx: "",
-                  Text: "midbrain",
-                  XYZ: {
-                    X: 0.6598076211353316,
-                    Y: -0.15,
-                    Z: 0,
-                    R: 0,
-                    Lat: 0,
-                    Lon: 0,
-                  },
-                  OOO: { X: 0.4, Y: 0, Z: 0, R: 0, Lat: 0, Lon: 0 },
-                },
-                {
-                  Radius: 1,
-                  Arrow: "consists of",
-                  STindex: 5,
-                  Dst: { Class: 1, CPtr: 3641 },
-                  Ctx: "",
-                  Text: "hindbrain",
-                  XYZ: {
-                    X: 0.40000000000000013,
-                    Y: 0.3,
-                    Z: 0,
-                    R: 0,
-                    Lat: 0,
-                    Lon: 0,
-                  },
-                  OOO: { X: 0.4, Y: 0, Z: 0, R: 0, Lat: 0, Lon: 0 },
-                },
-                {
-                  Radius: 1,
-                  Arrow: "consists of",
-                  STindex: 5,
-                  Dst: { Class: 1, CPtr: 3639 },
-                  Ctx: "",
-                  Text: "forebrain",
-                  XYZ: {
-                    X: 0.14019237886466834,
-                    Y: -0.1499999999999998,
-                    Z: 0,
-                    R: 0,
-                    Lat: 0,
-                    Lon: 0,
-                  },
-                  OOO: { X: 0.4, Y: 0, Z: 0, R: 0, Lat: 0, Lon: 0 },
-                },
-                {
-                  Radius: 2,
-                  Arrow: "location involved in",
-                  STindex: 0,
-                  Dst: { Class: 1, CPtr: 3643 },
-                  Ctx: "brain parts etc,brain structure",
-                  Text: "hypothalamus",
-                  XYZ: {
-                    X: 0.2267949192431122,
-                    Y: -0.0999999999999998,
-                    Z: 0,
-                    R: 0,
-                    Lat: 0,
-                    Lon: 0,
-                  },
-                  OOO: {
-                    X: 0.14019237886466834,
-                    Y: -0.1499999999999998,
-                    Z: 0,
-                    R: 0,
-                    Lat: 0,
-                    Lon: 0,
-                  },
-                },
-                {
-                  Radius: 2,
-                  Arrow: "location involved in",
-                  STindex: 0,
-                  Dst: { Class: 1, CPtr: 3645 },
-                  Ctx: "brain parts etc,brain structure",
-                  Text: "thalamus",
-                  XYZ: {
-                    X: 0.05358983848622448,
-                    Y: -0.19999999999999982,
-                    Z: 0,
-                    R: 0,
-                    Lat: 0,
-                    Lon: 0,
-                  },
-                  OOO: {
-                    X: 0.14019237886466834,
-                    Y: -0.1499999999999998,
-                    Z: 0,
-                    R: 0,
-                    Lat: 0,
-                    Lon: 0,
-                  },
-                },
-              ],
-              [],
-            ],
-          },
-        ],
-        Time: "Wed:Hr14:Qu3-Min30_35",
-        Intent: "human brain",
-        Ambient:
-          "N_Autumn, S_Spring, Afternoon, Wednesday, Day10, September, Yr2025, Hr14, Qu3",
-      };
+
       /***********************************************************/
       // Global configuration
       /***********************************************************/
@@ -572,11 +485,12 @@
       async function FetchPage() {
         let requestURL = API_SERVER + "/searchN4L";
         let request = new Request(requestURL);
+        startHipnotize();
         let response = await fetch(request);
         let mynote = await response.json();
-
         DoHeader(mynote);
         DoOrbitPanel(mynote); // Start in orbit
+        stopHipnotize();
       }
 
       /***********************************************************/
@@ -690,6 +604,7 @@
       /***********************************************************/
 
       function DoEntireConePanel(obj) {
+
         let section = document.querySelector("main");
         let panel = document.createElement("div");
         panel.id = "main_content_panel";
@@ -707,11 +622,14 @@
           let item = document.createElement("h2");
           let link = document.createElement("a");
           item.textContent = head_nptr.Title.slice(0, 50) + "..";
+
           link.onclick = function () {
             sendlinkData(nclass, ncptr);
           };
+
           item.appendChild(link);
           panel.appendChild(item);
+
           let parent = document.createElement("content");
 
           parent = PrintPaths(parent, head_nptr.Paths);
@@ -792,8 +710,10 @@
       /***********************************************************/
 
       function DoPageMapPanel(obj) {
+
         let section = document.querySelector("main");
-        let panel = document.createElement("div");
+
+        let panel = document.createElement("p");
         panel.id = "main_content_panel";
         section.appendChild(panel);
 
@@ -809,7 +729,8 @@
         shchap.textContent = obj.Content.Title;
         panel.appendChild(shchap);
 
-        let thepage = document.createElement("p");
+        let thepage = document.createElement("div");
+//	thepage.setAttribute("class", "card-view");
         thepage = PrintNotes(thepage, obj.Content.Notes);
         parent.appendChild(thepage);
       }
@@ -1131,6 +1052,8 @@
         // BEGIN column_radiusof3 i.e. 2of3 and 3of3 depending on radius variable
 
         let box = document.createElement("div");
+        box.setAttribute("class", "card-view");
+
         box.id = "radius-" + radius;
 
         // any arrow comes first
@@ -1358,9 +1281,13 @@
       /***********************************************************/
 
       function PrintNotes(parent, array) {
+
         if (array == null || array.length < 1) {
           return parent;
         }
+
+        let child = document.createElement("div");
+        child.setAttribute("class", "card-view");
 
         let lastx = 0;
         let lasty = 0;
@@ -1419,7 +1346,7 @@
                 // repeated item, so ditto
 
                 let newline = document.createElement("br"); // don't separate completely
-                parent.appendChild(newline);
+                child.appendChild(newline);
 
                 let text = document.createElement("span");
                 text.id = "ditto";
@@ -1432,8 +1359,11 @@
 
               if (i == 0) {
                 if (line != 0) {
-                  let spacer = document.createElement("hr");
-                  parent.appendChild(spacer);
+                  //let spacer = document.createElement("hr");
+                  //child.appendChild(spacer);
+                parent.appendChild(child);
+                child = document.createElement("div");
+                child.setAttribute("class", "card-view");
                 }
 
                 // New line has possble new chap/context
@@ -1447,7 +1377,7 @@
                 if (chtxt.length > 4) {
                   let sec = document.createElement("h2");
                   sec.textContent = 'From: "' + chtxt + '"';
-                  parent.appendChild(sec);
+                  child.appendChild(sec);
                 }
               }
 
@@ -1465,7 +1395,7 @@
                 let pre = document.createElement("pre");
                 pre.textContent = str;
                 text_link.appendChild(pre);
-                parent.appendChild(text_link);
+                child.appendChild(text_link);
               } else {
                 let text_link = document.createElement("a");
 
@@ -1485,11 +1415,11 @@
                 }
 
                 text_link.appendChild(text);
-                parent.appendChild(text_link);
+                child.appendChild(text_link);
               }
 
               ProgressCheckBox(
-                parent,
+                child,
                 nclass,
                 ncptr,
                 array[line][i].Chp,
@@ -1509,7 +1439,7 @@
               if (arrptr == then || arrptr == prev) {
                 // represent a privileged sequence for proper time
                 let newline = document.createElement("p");
-                parent.appendChild(newline);
+                child.appendChild(newline);
               }
 
               let arrow_link = document.createElement("a");
@@ -1519,11 +1449,12 @@
               arrow_link.title = STINDICES[stindex];
               arrow_link.style.fontFamily = "Verdana";
 
-              parent.appendChild(arrow_link);
+              child.appendChild(arrow_link);
             }
           }
         }
 
+        parent.appendChild(child);
         return parent;
       }
 
@@ -1953,15 +1884,20 @@
       /***********************************************************/
 
       async function sendlinkData(nclass, ncptr) {
+
         let formData = new FormData();
         formData.set("nclass", nclass);
         formData.set("ncptr", ncptr);
+
+        startHipnotize();
 
         fetch(API_SERVER + "/searchN4L", {
           method: POST_METHOD,
           body: formData,
         })
           .then((response) => {
+
+            stopHipnotize();
             if (!response.ok) {
               throw new Error("network returns error");
             }
@@ -2024,6 +1960,8 @@
         let searchfield = document.getElementById("name");
         searchfield.value = search;
 
+        startHipnotize();
+
         fetch(API_SERVER + "/searchN4L", {
           method: POST_METHOD,
           body: formData,
@@ -2036,6 +1974,9 @@
             return response.json();
           })
           .then((resp) => {
+
+            stopHipnotize();
+
             DoHeader(resp);
 
             switch (resp.Response) {
@@ -2505,6 +2446,47 @@
         CTX.closePath();
         CTX.beginPath();
         CTX.restore();
+      }
+      // Waiting Effect functions *****************************************************************
+
+      function startHipnotize() {
+        const el = document.getElementById("wait");
+        if (el) {
+          el.innerHTML = `<div class="hipnosis">
+    <svg version="1.1" id="L1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
+      <circle fill="none" stroke="#fff" stroke-width="6" stroke-miterlimit="15" stroke-dasharray="14.2472,14.2472" cx="50" cy="50" r="47">
+        <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="5s" from="0 50 50" to="360 50 50" repeatCount="indefinite" />
+      </circle>
+      <circle fill="none" stroke="#fff" stroke-width="1" stroke-miterlimit="10" stroke-dasharray="10,10" cx="50" cy="50" r="39">
+        <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="5s" from="0 50 50" to="-360 50 50" repeatCount="indefinite" />
+      </circle>
+      <g fill="#fff">
+        <rect x="30" y="35" width="5" height="30">
+          <animateTransform attributeName="transform" dur="1s" type="translate" values="0 5 ; 0 -5; 0 5" repeatCount="indefinite" begin="0.1" />
+        </rect>
+        <rect x="40" y="35" width="5" height="30">
+          <animateTransform attributeName="transform" dur="1s" type="translate" values="0 5 ; 0 -5; 0 5" repeatCount="indefinite" begin="0.2" />
+        </rect>
+        <rect x="50" y="35" width="5" height="30">
+          <animateTransform attributeName="transform" dur="1s" type="translate" values="0 5 ; 0 -5; 0 5" repeatCount="indefinite" begin="0.3" />
+        </rect>
+        <rect x="60" y="35" width="5" height="30">
+          <animateTransform attributeName="transform" dur="1s" type="translate" values="0 5 ; 0 -5; 0 5" repeatCount="indefinite" begin="0.4" />
+        </rect>
+        <rect x="70" y="35" width="5" height="30">
+          <animateTransform attributeName="transform" dur="1s" type="translate" values="0 5 ; 0 -5; 0 5" repeatCount="indefinite" begin="0.5" />
+        </rect>
+      </g>
+    </svg>
+  </div>`;
+        }
+      }
+
+      function stopHipnotize() {
+        const el = document.getElementById("wait");
+        if (el) {
+          el.innerHTML = "";
+        }
       }
 
       /***********************************************************/

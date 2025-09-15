@@ -569,8 +569,6 @@
         panel.id = "main_content_panel";
         section.appendChild(panel);
 
-        console.log("JSON", obj);
-
         // List of events unrelated
 
         if (obj == null) {
@@ -604,8 +602,9 @@
       /***********************************************************/
 
       function DoEntireConePanel(obj) {
+
         let section = document.querySelector("main");
-        let panel = document.createElement("div");
+        let panel = document.createElement("span");
         panel.id = "main_content_panel";
         section.appendChild(panel);
 
@@ -621,11 +620,14 @@
           let item = document.createElement("h2");
           let link = document.createElement("a");
           item.textContent = head_nptr.Title.slice(0, 50) + "..";
+
           link.onclick = function () {
             sendlinkData(nclass, ncptr);
           };
+
           item.appendChild(link);
           panel.appendChild(item);
+
           let parent = document.createElement("content");
 
           parent = PrintPaths(parent, head_nptr.Paths);
@@ -706,35 +708,42 @@
       /***********************************************************/
 
       function DoPageMapPanel(obj) {
+
         let section = document.querySelector("main");
-        let panel = document.createElement("div");
+
+        let panel = document.createElement("span");
         panel.id = "main_content_panel";
         section.appendChild(panel);
 
         CANVAS = CreateCanvas();
         DrawGrid(0, 0, 1);
 
-        let parent = document.createElement("h1");
-        parent.textContent = "* Chapter Notes: ";
-        parent.id = "chapter_notes_heading";
-        panel.appendChild(parent);
+	// Major header
 
-        let shchap = document.createElement("p");
-        shchap.textContent = obj.Content.Title;
-        panel.appendChild(shchap);
+        let title = document.createElement("h1");
+        title.textContent = "* Chapter Notes: ";
+        title.id = "chapter_notes_heading";
+        panel.appendChild(title);
 
-        let thepage = document.createElement("p");
-        thepage = PrintNotes(thepage, obj.Content.Notes);
-        parent.appendChild(thepage);
+        // Chapter name
+
+        let chapter_name = document.createElement("span");
+        chapter_name.textContent = obj.Content.Title;
+        panel.appendChild(chapter_name);
+
+        panel = PrintNotes(panel, obj.Content.Notes);        
       }
 
       /***********************************************************/
 
       function DoTOCPanel(obj) {
+
         let section = document.querySelector("main");
-        let panel = document.createElement("div");
+
+        let panel = document.createElement("span");
         panel.id = "main_content_panel";
         section.appendChild(panel);
+
 
         let item = document.createElement("h1");
         item.textContent = "Table of contents and contexts";
@@ -748,6 +757,9 @@
           counter++;
 
           // N. Section/chapter header title
+          let chapter_section = document.createElement("div");
+          chapter_section.setAttribute("class", "card-view");
+          chapter_section.id = "toc-panel";
 
           let link = document.createElement("a");
           let item = document.createElement("h2");
@@ -756,7 +768,7 @@
           };
           item.textContent = counter + ". " + chpblk.Chapter;
           link.appendChild(item);
-          panel.appendChild(link);
+          chapter_section.appendChild(link);
 
           Event(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z);
           Label(
@@ -768,8 +780,6 @@
             "gray",
           );
 
-          let chapter_section = document.createElement("p");
-          chapter_section.id = "toc-panel";
 
           // First do the context groups or ambient parts
 
@@ -829,8 +839,6 @@
               );
             }
           }
-
-          // Spacer ?
 
           if (chpblk.Common != null) {
             for (let ctx of chpblk.Common) {
@@ -1045,6 +1053,8 @@
         // BEGIN column_radiusof3 i.e. 2of3 and 3of3 depending on radius variable
 
         let box = document.createElement("div");
+        box.setAttribute("class", "card-view");
+
         box.id = "radius-" + radius;
 
         // any arrow comes first
@@ -1272,9 +1282,14 @@
       /***********************************************************/
 
       function PrintNotes(parent, array) {
+
         if (array == null || array.length < 1) {
           return parent;
         }
+
+        let child = document.createElement("div");
+        child.setAttribute("class", "card-view");
+        child.id = "orbit_column_1of3"; // col 1 spans all 3 columns, full width for full node text
 
         let lastx = 0;
         let lasty = 0;
@@ -1333,7 +1348,7 @@
                 // repeated item, so ditto
 
                 let newline = document.createElement("br"); // don't separate completely
-                parent.appendChild(newline);
+                child.appendChild(newline);
 
                 let text = document.createElement("span");
                 text.id = "ditto";
@@ -1346,8 +1361,11 @@
 
               if (i == 0) {
                 if (line != 0) {
-                  let spacer = document.createElement("hr");
-                  parent.appendChild(spacer);
+                  //let spacer = document.createElement("hr");
+                  //child.appendChild(spacer);
+                parent.appendChild(child);
+                child = document.createElement("div");
+                child.setAttribute("class", "card-view");
                 }
 
                 // New line has possble new chap/context
@@ -1361,7 +1379,7 @@
                 if (chtxt.length > 4) {
                   let sec = document.createElement("h2");
                   sec.textContent = 'From: "' + chtxt + '"';
-                  parent.appendChild(sec);
+                  child.appendChild(sec);
                 }
               }
 
@@ -1379,7 +1397,7 @@
                 let pre = document.createElement("pre");
                 pre.textContent = str;
                 text_link.appendChild(pre);
-                parent.appendChild(text_link);
+                child.appendChild(text_link);
               } else {
                 let text_link = document.createElement("a");
 
@@ -1399,11 +1417,11 @@
                 }
 
                 text_link.appendChild(text);
-                parent.appendChild(text_link);
+                child.appendChild(text_link);
               }
 
               ProgressCheckBox(
-                parent,
+                child,
                 nclass,
                 ncptr,
                 array[line][i].Chp,
@@ -1423,7 +1441,7 @@
               if (arrptr == then || arrptr == prev) {
                 // represent a privileged sequence for proper time
                 let newline = document.createElement("p");
-                parent.appendChild(newline);
+                child.appendChild(newline);
               }
 
               let arrow_link = document.createElement("a");
@@ -1433,11 +1451,12 @@
               arrow_link.title = STINDICES[stindex];
               arrow_link.style.fontFamily = "Verdana";
 
-              parent.appendChild(arrow_link);
+              child.appendChild(arrow_link);
             }
           }
         }
 
+        parent.appendChild(child);
         return parent;
       }
 
@@ -1455,7 +1474,6 @@
 
         let child = document.createElement("div");
         child.setAttribute("class", "card-view");
-
         child.id = "orbit_column_1of3"; // col 1 spans all 3 columns, full width for full node text
         panel.appendChild(child);
 
@@ -1697,7 +1715,7 @@
           let link = document.createElement("a");
           link.textContent = name;
           link.onclick = function () {
-            sendLinkSearch("from " + nptrs);
+            sendLinkSearch("from " + nptrs + " limit 30");
           };
           docpart.id = "cone_button";
           docpart.appendChild(link);
@@ -1724,7 +1742,7 @@
           link.textContent = name;
           link.onclick = function () {
             sendLinkSearch(
-              "from " + "(" + nclass + "," + nptr + ") arrow " + arrow,
+              "from " + "(" + nclass + "," + nptr + ") arrow " + arrow + " limit 30",
             );
           };
           docpart.id = "cone_button";
@@ -1774,7 +1792,7 @@
 
       window.addEventListener('keydown',function(event)
          {
-         if(event.keyCode == 13)
+         if (event.keyCode == 13)
             {
             event.preventDefault();
             return false;
@@ -1784,16 +1802,22 @@
       /***********************************************************/
 
       function SearchHandler() {
+
         let form = document.querySelector("#search");
 
         async function sendsearchData() {
           let formData = new FormData(form);
+
+          startHipnotize();
 
           fetch(API_SERVER + "/searchN4L", {
             method: POST_METHOD,
             body: formData,
           })
             .then((response) => {
+
+              stopHipnotize();
+
               if (!response.ok) {
                 throw new Error("network returns error");
               }
@@ -1867,15 +1891,20 @@
       /***********************************************************/
 
       async function sendlinkData(nclass, ncptr) {
+
         let formData = new FormData();
         formData.set("nclass", nclass);
         formData.set("ncptr", ncptr);
+
+        startHipnotize();
 
         fetch(API_SERVER + "/searchN4L", {
           method: POST_METHOD,
           body: formData,
         })
           .then((response) => {
+
+            stopHipnotize();
             if (!response.ok) {
               throw new Error("network returns error");
             }
@@ -1938,6 +1967,8 @@
         let searchfield = document.getElementById("name");
         searchfield.value = search;
 
+        startHipnotize();
+
         fetch(API_SERVER + "/searchN4L", {
           method: POST_METHOD,
           body: formData,
@@ -1950,6 +1981,9 @@
             return response.json();
           })
           .then((resp) => {
+
+            stopHipnotize();
+
             DoHeader(resp);
 
             switch (resp.Response) {

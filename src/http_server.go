@@ -239,7 +239,11 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	if search.Range > 0 {
 		limit = search.Range
 	} else {
-		limit = 10
+		if from || to {
+			limit = 30 // many paths make hard work
+		} else {
+			limit = 10
+		}
 	}
 
 	nodeptrs := SST.SolveNodePtrs(CTX,search.Name,search.Chapter,search.Context,arrowptrs,limit)
@@ -258,7 +262,6 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	}
 
 	if (context || chapter) && !name && !sequence && !pagenr && !(from || to) {
-
 		ShowChapterContexts(w,r,CTX,search,limit)
 		return
 	}
@@ -554,7 +557,9 @@ func HandlePageMap(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search S
 	jstr := SST.JSONPage(CTX,notes)
 	response := PackageResponse(ctx,search,"PageMap",jstr)
 
-	UpdateLastSawSection(w,r,notes[0].Chapter)
+	if notes != nil {
+		UpdateLastSawSection(w,r,notes[0].Chapter)
+	}
 
 	//fmt.Println("PAGEMAP NOTES",string(response))
 	w.Header().Set("Content-Type", "application/json")

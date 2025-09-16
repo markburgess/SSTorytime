@@ -241,7 +241,8 @@
       }
 
       #radius-2 {
-        margin-left: clamp(12ch, 12ch + 1vw, 22ch);
+        margin-left: clamp(7ch, 7ch + 1vw, 17ch);
+        //margin-left: clamp(12ch, 12ch + 1vw, 22ch);
         color: slategray;
         opacity: 0.8;
       }
@@ -1081,22 +1082,30 @@
 
         // any arrow comes first
 
-	let prefix = "L" + radius + " . .  ╠═▹  ";
+	let prefix = " . .  " + "╠═▹  ";
 
 	for (let indent = 0; indent < radius; indent++)
            {
-           prefix = ' . . . . ' + prefix;
+           prefix = ' . . . . . ' + prefix;
            }
 
+        if (radius == 2)
+           {
+           prefix =  " . . . . . . .  ║ . . .  " + prefix;
+           }
+
+        let hier_pre = document.createElement("span");
+	hier_pre.textContent = prefix;
+        box.appendChild(hier_pre);
+
         let arrow_link = document.createElement("a");
-        arrow_link.textContent = prefix + " ( " + arrow + " )  ";
+        arrow_link.textContent = " ( " + arrow + " )  ";
         arrow_link.id = "arrow-" + stindex;
         arrow_link.title = STINDICES[stindex];
         arrow_link.class = "tooltip";
         arrow_link.style.fontFamily = "Verdana";
         box.appendChild(arrow_link);
 
-        // Begin print satellite node in column 2of3 or 3of3, depending on radius
 
         if (str.includes("\n")) {
           // preformatted item -> <pre>

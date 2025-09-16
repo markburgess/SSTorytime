@@ -115,11 +115,16 @@
         font-size: 35px;
         color: #4488bb;
         padding: 10px;
+        text-wrap: nowrap;
         margin-bottom: 10px;
       }
 
       #current_time_context {
         color: orange;
+      }
+
+      #ditto {
+        margin-left: 40px;
       }
 
       #statcount {
@@ -131,8 +136,9 @@
       h2 {
         font-size: 30px;
         color: #5599cc;
-        padding: 20px;
+        padding: 10px;
         margin: 0px;
+        text-wrap: nowrap;
         margin-bottom: 10px;
       }
 
@@ -1359,7 +1365,7 @@
 
                 let text = document.createElement("span");
                 text.id = "ditto";
-                text.textContent = '         "        ';
+                text.textContent = ' . . . .  .   " . . . . .   ';
                 text.style.fontFamily = "Times New Roman";
                 text.style.padding = "8px";
                 child.appendChild(text);

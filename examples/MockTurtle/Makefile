@@ -1,7 +1,7 @@
 
 
-all: ../../src/N4L-db
-	../../src/N4L-db -u mockturtle.n4l
+all: ../../src/N4L
+	../../src/N4L -u mockturtle.n4l
 
 clean:
 	rm -f *_test_log *~

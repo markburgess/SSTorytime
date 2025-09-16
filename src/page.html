@@ -162,36 +162,36 @@
       /* Create two columns/boxes that floats next to each other */
 
       #toc-panel {
-        padding: 15px;
+        padding: 10px;
         margin-left: 10px;
       }
 
       #toc-submit {
-        padding: 15px;
+        padding: 10px;
         float: right;
       }
 
       #toc-frag {
-        padding: 15px;
+        padding: 10px;
         color: navy;
       }
 
       #toc-elem {
-        padding: 15px;
+        padding: 10px;
         color: purple;
         font-size: 150%;
         line-height: 150%;
       }
 
       #toc-single {
-        padding: 15px;
+        padding: 10px;
         color: darkorange;
         font-size: 150%;
         line-height: 150%;
       }
 
       #toc-common {
-        padding: 15px;
+        padding: 10px;
         font-size: 150%;
         line-height: 150%;
       }
@@ -206,10 +206,12 @@
       }
 
       main div {
-        padding: 15px;
-        margin-bottom: 10px;
-//        text-wrap: nowrap;
+        padding: 10px;
         overflow-x: clip;
+      }
+
+      hr {
+padding : 2px;
       }
 
       main img {
@@ -242,7 +244,6 @@
 
       #radius-2 {
         margin-left: clamp(7ch, 7ch + 1vw, 17ch);
-        //margin-left: clamp(12ch, 12ch + 1vw, 22ch);
         color: slategray;
         opacity: 0.8;
       }
@@ -631,6 +632,10 @@
           let nclass = head_nptr.NClass;
           let ncptr = head_nptr.NCPtr;
 
+          let card = document.createElement("div");
+          card.setAttribute("class", "card-view");
+  	  panel.appendChild(card);
+
           let item = document.createElement("h2");
           let link = document.createElement("a");
           item.textContent = head_nptr.Title.slice(0, 50) + "..";
@@ -640,12 +645,9 @@
           };
 
           item.appendChild(link);
-          panel.appendChild(item);
+          card.appendChild(item);
 
-          let parent = document.createElement("content");
-
-          parent = PrintPaths(parent, head_nptr.Paths);
-          panel.appendChild(parent);
+          card = PrintPaths(card, head_nptr.Paths);
 
           // Add the centrality box at bottom of page
 
@@ -653,8 +655,10 @@
           let row = document.createElement("tr");
           let col1 = document.createElement("td");
           let hd1 = document.createElement("h4");
-          hd1.textContent = "Between-ness Centrality Rank";
+
+          hd1.textContent = "Betweenness Centrality Rank";
           col1.appendChild(hd1);
+
           let lst1 = document.createElement("ol");
 
           // For paths solve <a|b>
@@ -684,7 +688,7 @@
             row.appendChild(col2);
 
             tab.appendChild(row);
-            panel.appendChild(tab);
+            card.appendChild(tab);
 
             let hr = document.createElement("hr");
             panel.appendChild(hr);
@@ -1268,7 +1272,7 @@
               }
 
               let arrow_link = document.createElement("a");
-              arrow_link.textContent = "( ${arrow} )  ";
+              arrow_link.textContent = `( ${arrow} )  `;
               arrow_link.id = `arrow-` + stindex;
               arrow_link.class = "tooltip";
               arrow_link.title = STINDICES[stindex];
@@ -2287,7 +2291,7 @@
         let parent = document.getElementById("canvas");
         let canvas = document.createElement("canvas");
         canvas.id = "myCanvas";
-        canvas.width = window.innerWidth;
+        canvas.width = window.innerWidth ;
         canvas.height = window.innerWidth / 2;
         CTX = canvas.getContext("2d");
         parent.appendChild(canvas);

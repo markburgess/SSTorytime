@@ -3710,7 +3710,7 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 
 	// This ony works if we insert non-null arrays in initialization
 	cols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
-	qstr := fmt.Sprintf("select L,S,Chap,%s from Node where NPtr='(%d,%d)'::NodePtr",cols,db_nptr.Class,db_nptr.CPtr)
+	qstr := fmt.Sprintf("select L,S,Chap,%s from Node where NPtr='(%d,%d)'::NodePtr AND NOT L=0",cols,db_nptr.Class,db_nptr.CPtr)
 
 	row, err := ctx.DB.Query(qstr)
 

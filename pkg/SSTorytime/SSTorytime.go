@@ -674,13 +674,13 @@ func Configure(ctx PoSST,load_arrows bool) {
 
 	ctx.DB.QueryRow("CREATE EXTENSION unaccent")
 
-	if !CreateType(ctx,LINK_TYPE) {
-		fmt.Println("Unable to create type as, ",LINK_TYPE)
+	if !CreateType(ctx,NODEPTR_TYPE) {
+		fmt.Println("Unable to create type as, ",NODEPTR_TYPE)
 		os.Exit(-1)
 	}
 
-	if !CreateType(ctx,NODEPTR_TYPE) {
-		fmt.Println("Unable to create type as, ",NODEPTR_TYPE)
+	if !CreateType(ctx,LINK_TYPE) {
+		fmt.Println("Unable to create type as, ",LINK_TYPE)
 		os.Exit(-1)
 	}
 

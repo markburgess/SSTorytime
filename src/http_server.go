@@ -491,6 +491,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftpt
 			right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(CTX,"fwd",rightptrs,rdepth,chapter,context,maxdepth)
 
 			if Lnum == 0 || Rnum == 0 {
+				fmt.Println("No paths")
 				response := PackageResponse(ctx,search,"PathSolve","")	
 				w.Header().Set("Content-Type", "application/json")
 				w.Write(response)
@@ -499,7 +500,9 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftpt
 		}
 
 		solutions,_ = SST.WaveFrontsOverlap(CTX,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
+
 		fmt.Println("solutions",solutions)
+
 		if len(solutions) > 0 {
 			// format paths
 			var jstr string
@@ -541,8 +544,9 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftpt
 	}
 	
 	fmt.Println("No paths satisfy constraints")
-	response := PackageResponse(ctx,search,"PathSolve","")
+	response := PackageResponse(ctx,search,"PathSolve","[]")
 
+	//fmt.Println("PATHSOLVE NOTES",string(response))
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 	fmt.Println("Done/sent path solve")

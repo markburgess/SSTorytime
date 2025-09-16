@@ -2132,7 +2132,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	
 	for st := -EXPRESS; st <= EXPRESS; st++ {
 		qstr += fmt.Sprintf("WHEN %d THEN\n"+
-			"     SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start LIMIT maxlimit;\n",st,STTypeDBChannel(st));
+			"     SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start AND NOT L=0 LIMIT maxlimit;\n",st,STTypeDBChannel(st));
 	}
 	qstr += "ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
 		"END CASE;\n" +
@@ -3148,7 +3148,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   CASE sttype \n"
 	for st := -EXPRESS; st <= EXPRESS; st++ {
 		qstr += fmt.Sprintf("WHEN %d THEN\n"+
-			"     SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start AND UnCmp(Chap,rm_acc) LIKE lower(chapter) LIMIT maxlimit;\n",st,STTypeDBChannel(st));
+			"     SELECT %s INTO fwdlinks FROM Node WHERE NOT L=0 AND Nptr=start AND UnCmp(Chap,rm_acc) LIKE lower(chapter) LIMIT maxlimit;\n",st,STTypeDBChannel(st));
 	}
 	
 	qstr += "ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +

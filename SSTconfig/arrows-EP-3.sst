@@ -180,6 +180,7 @@
  + takes place at time      (when)      - a time involved in       (time of)
  + has perpetrator          (perp-by)   - is a perpetrator of      (perp-of)
  + has a victim             (victim)    - is the role of victim of (victim-of)
+ + using weapon             (weapon)    - is weapon used in/for    (weapon-for)
 
  + has purpose or intent    (intention) - is the purpose or intention of (is-intention)
 

@@ -56,13 +56,20 @@ you curate.
 ## For instance...
 
 You might want to look up something ad hoc:
+
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/front.png 'Testing a web interface')
 
 You might want to be prompted for reminders:
+
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/reminder.png 'Testing a web interface')
 
 You might be surveying the breadth of your knowledge:
+
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/TOC.png 'Testing a web interface')
+
+Or just curious about something:
+
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/sailing.png 'Testing a web interface')
 
 ## The concept
 

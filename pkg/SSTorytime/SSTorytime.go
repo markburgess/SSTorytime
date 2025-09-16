@@ -9468,6 +9468,10 @@ func IsExactMatch(org string) (bool,string) {
 
 	org = strings.TrimSpace(org)
 
+	if len(org) == 0 {
+		return false,org
+	}
+
 	if org[0] == '!' && org[len(org)-1] == '!' {
 
 		return true,strings.Trim(org,"!")

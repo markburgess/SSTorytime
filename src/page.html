@@ -3,7 +3,7 @@
   <head>
     <title>SSTorytime Simple viewer</title>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://unpkg.com/open-props" />
     <link
       rel="stylesheet"
@@ -70,6 +70,7 @@
         align-items: center;
         padding: 1ch;
       }
+
       /* Canvas & Graphics */
 
       canvas {
@@ -93,6 +94,7 @@
       }
 
       /* Article / Main Display Area */
+
       a[title] {
         position: relative;
       }
@@ -573,7 +575,7 @@
 
       function DoOrbitPanel(obj) {
         let section = document.querySelector("main");
-        let panel = document.createElement("span");
+        let panel = document.createElement("i");
         panel.id = "main_content_panel";
         section.appendChild(panel);
 
@@ -2268,10 +2270,7 @@
         canvas.id = "myCanvas";
         canvas.width = window.innerWidth;
         canvas.height = window.innerWidth / 2;
-        //canvas.style.position = "relative";
-        // canvas.style.border = "1px solid";
         CTX = canvas.getContext("2d");
-        // parent.height = window.innerWidth / 2;
         parent.appendChild(canvas);
         CTX.beginPath();
         return canvas;

@@ -50,6 +50,7 @@
         box-shadow: var(--shadow-3);
         width: 100svw;
       }
+
       header div {
         text-wrap: balance;
         text-align: center;
@@ -62,6 +63,7 @@
         border-radius: var(--radius-3);
         box-shadow: var(--shadow-5);
       }
+
       nav form {
         display: flex;
         gap: 1rem;
@@ -561,7 +563,7 @@
         nowbar.textContent = obj.Ambient;
         header.appendChild(nowbar);
 
-        let ctxbar = document.createElement("p");
+        let ctxbar = document.createElement("div");
         ctxbar.id = "context_history";
         ctxbar.textContent = obj.Intent;
         header.appendChild(ctxbar);
@@ -586,14 +588,16 @@
 
         const separates = 0;
 
-        if (obj.Response != "Orbits") {
-          console.log("BAD PROTO");
-          return;
-        }
+      if (obj.Content.length == 0)
+         {
+         panel.textContent = "No result";
+         return;
+         }
 
         let last_node_event = obj.Content[0];
 
         for (let node_event of obj.Content) {
+
           ShowNodeEvent(panel, node_event, separates, "all", "", "h1");
 
           last_node_event = node_event; // don't link up

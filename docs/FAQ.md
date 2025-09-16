@@ -24,6 +24,8 @@ This is probably a result of certain words and phrases belonging to more than on
 
 Path solving is a potentially exponential process. Without some constraints it could take a very long time. You can restrict the time significantly by specifying precise start and end nodes, e.g. write `from !a1! to !b6!` to match the precise a1 (not a substring of many possibilities. You can also use a context `from a1 to b4 context connection`. See also 'Why are the results different each time?'
 
+By default, SSTorytime will also try to search all possible path types. Narrative links are neary always arrow type 1 (leads to), so you can try to limit by arrow too `from door arrow 1`.
+
 * **Why are the results different each time?**
 
 Lookup in a database is not a deterministic process. The database may select different values on each search and return them in a different order. The default number of data returned is 10 items. If there are many possible matches, the probability of getting the same 10 will decrease with more possibilities. You can also increase the number of matches `mysearch limit 20`. The more you constrain your search the more likely you are to get the same answer each time. 

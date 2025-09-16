@@ -391,4 +391,12 @@ It's not rocket science, unless of course it is rocket science.
 
 </pre>
 
+## Tracking Your Progress
+
+Currently under development is a new feature.
+As you start to use the tool more, you can use the checkboxes to click and leave a trace of what you've worked
+on. This will be traced and give feedback on your learning goals.
+
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/progresstracker.png 'Testing a web interface')
+
 

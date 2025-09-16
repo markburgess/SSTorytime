@@ -87,7 +87,7 @@
         border-radius: var(--radius-3);
         padding: 1rem 0.5rem;
         margin-bottom: 0.5rem;
-        width: 98vw;
+        width: 92vw;
         border: 1px var(--stone-5) solid;
 
         box-shadow: var(--shadow-5);
@@ -723,7 +723,7 @@
 
         let section = document.querySelector("main");
 
-        let panel = document.createElement("span");
+        let panel = document.createElement("div");
         panel.id = "main_content_panel";
         section.appendChild(panel);
 
@@ -891,6 +891,7 @@
 
       function DoStatsPanel(obj) {
         let section = document.querySelector("main");
+
         let panel = document.createElement("div");
         panel.id = "main_content_panel";
         section.appendChild(panel);
@@ -908,8 +909,10 @@
         let item;
         let last;
         let hmpanel;
+        let card;
 
         for (let ls of obj.Content) {
+
           if (ls.Section != lastsection) {
             counter++;
             lastsection = ls.Section;
@@ -918,10 +921,14 @@
               sendLinkSearch("notes " + '"' + ls.Section + '"');
             };
 
+            card = document.createElement("div");
+	    card.setAttribute("class", "card-view");
+            panel.appendChild(card);
+
             item = document.createElement("strong");
             item.textContent = counter + ". " + ls.Section;
             link.appendChild(item);
-            panel.appendChild(link);
+            card.appendChild(link);
 
             sec = document.createElement("p");
             sec.id = "toc-panel";
@@ -935,14 +942,16 @@
             sub2.id = "statcount";
             sec.appendChild(sub2);
 
-            panel.appendChild(sec);
+            card.appendChild(sec);
 
             hmpanel = document.createElement("div");
-            panel.appendChild(hmpanel);
+            card.appendChild(hmpanel);
 
             Concept(ls.XYZ.X, ls.XYZ.Y, ls.XYZ.Z);
             Label(ls.XYZ.X, ls.XYZ.Y, ls.XYZ.Z, ls.Section, 12, "gray");
+
           } else {
+
             let nlink = document.createElement("a");
             let nitem = document.createElement("span");
             nitem.id = "heatmap";

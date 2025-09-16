@@ -453,7 +453,7 @@ func PackageConeFromOrigin(ctx SST.PoSST,nptr SST.NodePtr,nth int,sttype int,cha
 		os.Exit(-1)
 	}
 
-	title := SST.GetDBNodeByNodePtr(ctx,nptr).S
+	title := SST.EscapeString(SST.GetDBNodeByNodePtr(ctx,nptr).S)
 
 	jstr := fmt.Sprintf(" { \"NClass\" : %d,\n",nptr.Class)
 	jstr += fmt.Sprintf("   \"NCPtr\" : %d,\n",nptr.CPtr)

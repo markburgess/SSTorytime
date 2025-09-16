@@ -210,10 +210,6 @@
         overflow-x: clip;
       }
 
-      hr {
-padding : 2px;
-      }
-
       main img {
         padding: 30px;
         border-radius: 60%;
@@ -1176,6 +1172,7 @@ padding : 2px;
       /***********************************************************/
 
       function PrintPaths(parent, array) {
+
         if (array.length < 1) {
           return parent;
         }
@@ -1184,8 +1181,10 @@ padding : 2px;
         let lasty = 0;
         let lastz = 0;
         let lastarrow = 0;
+        let newpath;
 
         for (let path = 0; path < array.length; path++) {
+
           if (array[path] == null) {
             continue;
           }
@@ -1193,6 +1192,14 @@ padding : 2px;
           // The WebPath protocol alternates node-arrow...
 
           for (let i = 0; i < array[path].length; i++) {
+
+          if (i == 0)
+             {
+             newpath = document.createElement("div");
+             newpath.setAttribute("class", "card-view");
+             parent.appendChild(newpath)
+             }
+
             if (i % 2 == 0) {
               // node
               let str = array[path][i].Name;
@@ -1235,14 +1242,14 @@ padding : 2px;
                 pre.textContent = str;
                 text_link.appendChild(pre);
 
-                parent.appendChild(text_link);
+                newpath.appendChild(text_link);
               } else {
                 let text_link = document.createElement("a");
                 text_link.onclick = function () {
                   sendlinkData(nclass, ncptr);
                 };
 
-                let text = document.createElement("i");
+                let text = document.createElement("span");
                 text.textContent = str;
                 text.style.fontFamily = "Times New Roman";
 
@@ -1252,7 +1259,7 @@ padding : 2px;
                 }
 
                 text_link.appendChild(text);
-                parent.appendChild(text_link);
+                newpath.appendChild(text_link);
               }
             } // arrow
             else {
@@ -1268,7 +1275,7 @@ padding : 2px;
               if (arrptr == then || arrptr == prev) {
                 // represent a privileged sequence for proper time
                 let newline = document.createElement("p");
-                parent.appendChild(newline);
+                newpath.appendChild(newline);
               }
 
               let arrow_link = document.createElement("a");
@@ -1278,12 +1285,9 @@ padding : 2px;
               arrow_link.title = STINDICES[stindex];
               arrow_link.style.fontFamily = "Verdana";
 
-              parent.appendChild(arrow_link);
+              newpath.appendChild(arrow_link);
             }
           }
-
-          let spacer = document.createElement("hr");
-          parent.appendChild(spacer);
         }
 
         return parent;

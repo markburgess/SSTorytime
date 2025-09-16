@@ -1059,8 +1059,15 @@
 
         // any arrow comes first
 
+	let prefix = "L" + radius + " . .  ╠═▹  ";
+
+	for (let indent = 0; indent < radius; indent++)
+           {
+           prefix = ' . . . . ' + prefix;
+           }
+
         let arrow_link = document.createElement("a");
-        arrow_link.textContent = `( ${arrow} )  `;
+        arrow_link.textContent = prefix + " ( " + arrow + " )  ";
         arrow_link.id = "arrow-" + stindex;
         arrow_link.title = STINDICES[stindex];
         arrow_link.class = "tooltip";
@@ -1230,7 +1237,7 @@
               }
 
               let arrow_link = document.createElement("a");
-              arrow_link.textContent = `( ${arrow} )  `;
+              arrow_link.textContent = "( ${arrow} )  ";
               arrow_link.id = `arrow-` + stindex;
               arrow_link.class = "tooltip";
               arrow_link.title = STINDICES[stindex];

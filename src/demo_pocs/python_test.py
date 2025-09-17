@@ -99,6 +99,10 @@ class SST:
         return arrowptr,sttype
 
     #
+    def RegisterContext(conn,context):
+        ctxptr = 99
+        return ctxptr
+    #    
 
     def STIndexToSTType(sti):        
         return sti - 3
@@ -116,15 +120,18 @@ class SST:
 
         pg_rows = curs.fetchall()
         conn.commit()
-        return pg_rows[0]
+        return pg_rows[0][0]
 
     #
     
     def Edge(conn,n1,arrowname,n2,context,weight):
         print("MAKE EDGE",n1,arrowname,n2,context,weight)
         arr,sttype = SST.GetDBArrowsWithArrowName(conn,arrowname)
-        print("ret",a,s)
-
+        print("ret",arr,sttype)
+        ctxptr = SST.RegisterContext(conn,context)
+        link = f"({arr},{weight},{ctxptr},{n2}::NodePtr)"
+        print("DSTLINK",link)
+        
 #	var link Link
 #	link.Arr = arrowptr
 #	link.Dst = to.NPtr
@@ -176,7 +183,7 @@ if ok:
     v1 = SST.Vertex(ctx,"first node","examples chapter")
     v2 = SST.Vertex(ctx,"second node","examples chapter")
 
-    print("v1",v1)
+    print(f"v1 {v1}")
     print("v2",v2)
     context = ["freddy","physics"]
 

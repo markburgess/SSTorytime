@@ -211,9 +211,11 @@ END;"    (ex)  A recursive search in SQL
 "UploadNodeToDB(ctx PoSST, org Node)"  (use-for) uploading an existing Node in memory to postgres
 "UploadArrowToDB(ctx PoSST,arrow ArrowPtr)" (use-for) uploading an arrow definition from memory to postgres
 "UploadInverseArrowToDB(ctx PoSST,arrow ArrowPtr)" (use-for) uploading an inverse arrow definition
+
 "UploadPageMapEvent(ctx PoSST, line PageMap)" (use-for) uploading a PageMap structure from memory to postgres
 
 "IdempDBAddLink(ctx PoSST,from Node,link Link,to Node)" (use-for) entry point for adding a link to a node in postgres
+
 "CreateDBNodeArrowNode(ctx PoSST, org NodePtr, dst Link, sttype int) bool" (use-for) adding a NodeArrowNode secondary/derived structure to postgres
 
  -::database upload functions::
@@ -253,7 +255,8 @@ END;"    (ex)  A recursive search in SQL
  -::database retrieve structural parts::
  +::path integral:::
 
-"GetPathsAndSymmetries(ctx PoSST,start_set,end_set []NodePtr,chapter string,context []string,maxdepth int) [][]Link" (use-for) retrieve solution paths between a starting set and and final set like +'<final|start>' in generalized way
+ "GetPathsAndSymmetries(ctx PoSST,start_set,end_set []NodePtr,chapter string,context []string,maxdepth int) [][]Link" (use-for) retrieve solution paths between a starting set and and final set like %'<final|start>' in generalized way
+
 "GetPathTransverseSuperNodes(ctx PoSST,solutions [][]Link,maxdepth int) [][]NodePtr" (use-for) establish the nodes that play idential roles in a set of paths from +'<final|start>' to see which nodes are redundant
 
   -::path integral:::

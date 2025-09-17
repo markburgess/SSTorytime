@@ -1636,6 +1636,9 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 
 	token = strings.TrimSpace(token)
 
+	count := strings.Count(token,"\n")
+	LINE_NUM += count
+
 	return token,pos
 }
 
@@ -1648,6 +1651,7 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 	// Quoted strings are tricky
 
 	if IsQuote(stop) {
+
 		var is_end bool
 
 		if pos+1 >= len(src) {

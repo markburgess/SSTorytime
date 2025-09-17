@@ -286,8 +286,8 @@ const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
 	"NPtr      NodePtr,        \n" +
 	"L         int,            \n" +
 	"S         text,           \n" +
-	"Search TSVECTOR GENERATED ALWAYS AS (to_tsvector('english',S)) STORED,\n" +
-	"UnSearch TSVECTOR GENERATED ALWAYS AS (to_tsvector('english',sst_unaccent(S))) STORED,\n" +
+	"Search    TSVECTOR GENERATED ALWAYS AS (to_tsvector('english',S)) STORED,\n" +
+	"UnSearch  TSVECTOR GENERATED ALWAYS AS (to_tsvector('english',sst_unaccent(S))) STORED,\n" +
 	"Chap      text,           \n" +
 	I_MEXPR+"  Link[],         \n" + // Im3
 	I_MCONT+"  Link[],         \n" + // Im2

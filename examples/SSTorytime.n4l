@@ -50,7 +50,7 @@ Sometimes you might see chapters that you didn't select showing up in searches. 
  What role should times play? Precise times are irrelevant because they never repeat. Coarse grains of time like "monday morning" do repeat and may be relevant in finding intended information. But how do we record the time? Is it the time at which information
 was written, uploaded, or when something actually happened? The technology can't guess this for you, because it needs to be intentional. The ambient time isn't necessarily relevant.
 
- SSTorytime shows you the ambient time in a coarse grained form after every search, so that you can copy and paste this into context tags if you want to be able to use it later. If you make a search without any search terms, you will see any items that are labelled in a matching time. So, if you have specific %to-do/%todo / to do lists for specific times, these will pop up by themselves.
+ SSTorytime shows you the ambient time in a coarse grained form after every search, so that you can copy and paste this into context tags if you want to be able to use it later. If you make a search without any search terms, you will see any items that are labelled in a matching time. So, if you have specific %"to-do"/%todo / to do lists for specific times, these will pop up by themselves.
 
  -:: _sequence_ ::
 
@@ -102,7 +102,7 @@ was written, uploaded, or when something actually happened? The technology can't
   context (means) a collection of signals that identify a scenario, like a scene description language
   factoid (means) a nugget of meaningful information contributing to knowledge
 
-  a text source of document (consists) paragraphs (consists) sentences (consists) punctuated fragments (consists) %n-grams
+  a text source of document (consists) paragraphs (consists) sentences (consists) punctuated fragments (consists) %"n-grams"
 
   punctuated fragments (used for) ranking the %intentionality or importance of text
   sentences   (used for) %factoids and partial %knowledge (ex) factoid

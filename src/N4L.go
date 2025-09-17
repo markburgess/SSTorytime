@@ -1517,6 +1517,10 @@ func IdempAddLink(from string, frptr SST.NodePtr, link SST.Link,to string, toptr
 
         // Add to graph
 
+	if from == "" || to == "" {
+		ParseError(ERR_MISSING_ITEM_SOMEWHERE)
+	}
+
 	SST.AppendLinkToNode(frptr,link,toptr)
 
 	// Double up the reverse definition for easy indexing of both in/out arrows

@@ -1792,6 +1792,10 @@ func UploadContextToDB(ctx PoSST,contextstring string,ptr ContextPtr) ContextPtr
 	a := SQLEscape(contextstring)
 	b := ptr
 
+	if len(contextstring) == 0 {
+		return -1
+	}
+
 	// Make sure neither a nor b are previously defined
 
 	qstr := fmt.Sprintf("SELECT IdempInsertContext('%s',%d)",a,b)
@@ -4593,7 +4597,7 @@ func DownloadArrowsFromDB(ctx PoSST) {
 
 	row, err = ctx.DB.Query(qstr)
 	
-	if err != nil {
+	if err != nil {    
 		fmt.Println("QUERY Download Inverses Failed",err)
 	}
 

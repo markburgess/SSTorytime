@@ -43,7 +43,7 @@ func AddStory(ctx SST.PoSST) {
 
 	SST.Edge(ctx,n1,"then",n2,context,w)
 
-	// bifurcation!
+	// Vertex / Edge API users are not allowed to define new arrows
 
 	SST.Edge(ctx,n2,"then",n3,context,w/2)
 	SST.Edge(ctx,n2,"then",n5,context,w/2)

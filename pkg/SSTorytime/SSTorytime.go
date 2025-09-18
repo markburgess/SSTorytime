@@ -748,6 +748,8 @@ func RegisterContext(parse_state map[string]bool,context []string) ContextPtr {
 		var cd ContextDirectory
 		cd.Context = ctxstr
 		cd.Ptr = CONTEXT_TOP
+	fmt.Println("REG",CONTEXT_TOP,cd)
+
 		CONTEXT_DIRECTORY = append(CONTEXT_DIRECTORY,cd)
 		CONTEXT_DIR[ctxstr] = CONTEXT_TOP
 		ctxptr = CONTEXT_TOP
@@ -763,6 +765,8 @@ func TryContext(ctx PoSST,context []string) ContextPtr {
 
 	ctxstr := CompileContextString(context)
 
+	RegisterContext(nil,context)
+
 	// Call db directly, without the local cache
 	str,ctxptr := GetDBContextByName(ctx,ctxstr)
 
@@ -770,7 +774,6 @@ func TryContext(ctx PoSST,context []string) ContextPtr {
 		ctxptr = UploadContextToDB(ctx,ctxstr,-1)
 	}
 
-	RegisterContext(nil,context)
 	return ctxptr
 }
 
@@ -2024,15 +2027,14 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    cptr INT = 0;\n" +
 		"    found int=-99;\n" +
 		"BEGIN\n" +
-
-		"SELECT Context,CtxPtr INTO found FROM ContextDirectory WHERE Context=constr AND CtxPtr=conptr;\n"+
-		"IF found = -99 THEN\n"+
+		"IF conptr=-1 THEN\n"+
+		"   SELECT Context,CtxPtr INTO found FROM ContextDirectory WHERE Context=constr AND CtxPtr=conptr;\n"+
 		"   SELECT max(CtxPtr) INTO cptr FROM ContextDirectory;\n"+
 		"   INSERT INTO ContextDirectory (Context,CtxPtr) VALUES (constr,cptr+1);\n"+
 		"   RETURN cptr+1;\n" +
 		"END IF;\n"+
 		"   INSERT INTO ContextDirectory (Context,CtxPtr) VALUES (constr,conptr);\n"+
-		"   RETURN found;\n" +
+		"   RETURN conptr;\n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;";
 

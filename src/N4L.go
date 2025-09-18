@@ -1158,7 +1158,7 @@ func SkipWhiteSpace(src []rune, pos int) int {
 
 func AddMandatory() {
 
-	SST.RegisterContext(nil,nil)
+	//SST.RegisterContext(nil,nil)
 
 	// empty link for orphans to retain context
 

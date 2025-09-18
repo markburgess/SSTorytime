@@ -9,7 +9,7 @@
 
 # SSTorytime
 
-<span style="color: red;">CHANGE: commands now use \ </span> (see [searchN4L](docs/searchN4L.md)).
+**CHANGE: commands now use \ in front, .e.g \from a1 \to s2</span> (see [searchN4L](docs/searchN4L.md))**
 
 ## Graphs are the language of spacetime process
 

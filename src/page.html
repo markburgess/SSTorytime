@@ -7,30 +7,24 @@
     <link rel="stylesheet" href="https://unpkg.com/open-props" />
     <link
       rel="stylesheet"
-      href="https://unpkg.com/open-props/normalize.min.css"
+      href="https://unpkg.com/open-props/normalize.light.min.css"
     />
     <link
       rel="stylesheet"
-      href="https://unpkg.com/open-props/buttons.min.css"
+      href="https://unpkg.com/open-props/buttons.light.min.css"
     />
 
     <style>
-      :root {
-        --bg-primary: #ffffff;
-        --bg-secondary: #f4f7f9;
-        --text-primary: #2c3e50;
-        --text-secondary: #7f8c8d;
-        --header-bg: #2c3e50;
-        --header-text: #ecf0f1;
-        --accent-primary: #3498db;
-        --accent-secondary: #e74c3c;
-        --border-color: #dde4e8;
+      hr {
+        mariin: 0;
+        padding: 0;
+        height: 0;
       }
 
       body {
         display: grid;
         font-size: clamp(9px, 9px + 1vw, 18px);
-        font-family: Arial, Verdana, sans-serif;
+        font-family: var(--font-system-ui);
       }
 
       /* Style the header */
@@ -51,21 +45,34 @@
         width: 100svw;
       }
 
-      header div {
-        text-wrap: balance;
+      header h2 {
+        text-wrap: wrap;
         text-align: center;
-        padding-block: 7px;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 5;
+      }
+
+      header div {
+        text-wrap: pretty;
+        text-align: center;
+        padding-block: 1ch;
+        font-size: 1.5ch;
+        max-width: 90svw;
       }
 
       /* Navigation & Search */
 
       nav {
         border-radius: var(--radius-3);
-        box-shadow: var(--shadow-5);
+        box-shadow: var(--shadow-3);
       }
 
       nav form {
-        display: flex;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        min-width: 80svw;
         gap: 1rem;
         align-items: center;
         padding: 1ch;
@@ -75,22 +82,25 @@
 
       canvas {
         display: flex;
-        max-width: 98vw;
-        margin-inline: 1ch;
+        height: auto;
+        vertical-align: auto;
+        background-size: cover;
+        max-width: 95svw !important;
+        margin-inline: 1ch !important;
         aspect-ratio: 2 / 1;
         border-radius: var(--radius-3);
         border: 1px var(--stone-5) solid;
-        box-shadow: var(--shadow-5);
+        box-shadow: var(--shadow-3);
       }
 
       .card-view {
         border-radius: var(--radius-3);
         padding: 1rem 0.5rem;
         margin-bottom: 0.5rem;
-        width: 92vw;
-        border: 1px var(--stone-5) solid;
+        width: 95svw;
+        border: 1px var(--stone-4) solid;
 
-        box-shadow: var(--shadow-5);
+        box-shadow: var(--shadow-2);
       }
 
       /* Article / Main Display Area */
@@ -116,15 +126,15 @@
       }
 
       h1 {
-        font-size: 35px;
+        font-size: var(--font-size-fluid-1);
         color: #4488bb;
-        padding: 10px;
-        text-wrap: nowrap;
-        margin-bottom: 10px;
+        padding: 2ch;
+        text-wrap: balance;
+        min-width: 60svw;
       }
 
       #current_time_context {
-        color: orange;
+        color: var(--yellow-8);
       }
 
       #ditto {
@@ -138,18 +148,16 @@
       }
 
       h2 {
-        font-size: 30px;
+        font-size: var(--font-size-5);
         color: #5599cc;
-        padding: 10px;
-        margin: 0px;
-        text-wrap: nowrap;
-        margin-bottom: 10px;
+        padding-block: 1ch;
+        margin: 0;
+        margin-bottom: 0.5ch;
       }
 
       #topmost_page_title {
-        font-size: 150%;
-        color: pink;
-        padding: 10px;
+        font-size: var(--font-size-fluid-1);
+        color: var(--pink-5);
       }
 
       #chapter_notes_heading {
@@ -340,7 +348,7 @@
       #nptr-chapter-context-helpline {
         margin-left: 60px;
         margin-bottom: 20px;
-        padding: 10px;
+        padding-block: 10px;
       }
 
       a:not(.arrow):hover {
@@ -352,15 +360,16 @@
       }
 
       h1:not(.arrow):hover {
-        color: #777777;
+        color: var(--gray-7);
+        text-shadow: var(--shadow-2);
       }
 
       pre:hover {
-        color: #999999;
+        color: var(--gray-7);
       }
 
       .hipnosis {
-         position: absolute;
+        position: absolute;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -371,7 +380,6 @@
         backdrop-filter: blur(6px);
         -webkit-backdrop-filter: blur(6px);
         overflow: hidden;
-
 
         transition:
           transform 1s var(--ease-spring-2) 1s,
@@ -389,11 +397,16 @@
         margin: 20px;
         display: inline-block;
       }
-       #wait {
-        height: 1px;
+      #wait {
+        height: 0;
         overflow: hidden;
+        z-index: 7;
       }
-
+      footer {
+        height: 3ch;
+        min-width: 100svw;
+        background-color: var(--gray-3);
+      }
     </style>
 
     <script type="text/x-mathjax-config">
@@ -410,15 +423,15 @@
     ></script>
   </head>
   <body>
+    <span id="wait"></span>
     <page>
-      <span id="wait"></span>
       <header>
         <h2>SSToryGraph</h2>
       </header>
       <nav>
         <form id="search">
-          <label for="subject">?</label>
-          <input size="100" type="text" id="name" name="name" value="" />
+          <label for="name">?</label>
+          <input type="text" id="name" name="name" value="" />
           <input type="submit" id="gosubmit" value="Go!" />
         </form>
       </nav>
@@ -427,6 +440,7 @@
       <section>
         <main></main>
       </section>
+      <footer></footer>
     </page>
     <script>
       /******************************************************************************************/
@@ -685,9 +699,6 @@
 
             tab.appendChild(row);
             card.appendChild(tab);
-
-            let hr = document.createElement("hr");
-            panel.appendChild(hr);
           }
         }
       }
@@ -883,9 +894,6 @@
           }
 
           panel.appendChild(chapter_section);
-
-          let spacer = document.createElement("hr");
-          panel.appendChild(spacer);
         }
       }
 
@@ -1048,9 +1056,6 @@
           ib.id = "bwdarr";
           ib.style.fontFamily = "Verdana";
           i.appendChild(ib);
-
-          let hr = document.createElement("hr");
-          subpanel.appendChild(hr);
         }
       }
 
@@ -1406,8 +1411,7 @@
 
               if (i == 0) {
                 if (line != 0) {
-                  //let spacer = document.createElement("hr");
-                  //child.appendChild(spacer);
+                  
                 parent.appendChild(child);
                 child = document.createElement("div");
                 child.setAttribute("class", "card-view");

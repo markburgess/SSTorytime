@@ -210,7 +210,7 @@ func main() {
 			fmt.Println("\nUploading to a pre-existing chapter might corrupt the data. You can remove it first with removeN4L or force using -force. It's recommended to rebuilt everything unless replacing the last added chapter(s) for reminders.")
 
 		} else {
-			fmt.Println("Uploading nodes..")
+			fmt.Println("\n\nUploading nodes..")
 			SST.GraphToDB(ctx,true)
 		}
 

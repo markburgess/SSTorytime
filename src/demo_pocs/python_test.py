@@ -34,6 +34,9 @@ class Node:
     
 class SST:
 
+    # We do not allow Vertex/Edge users to define arrows.
+    ARROW_DIRECTORY = []
+
     def __init__(self):
         return
 
@@ -44,7 +47,8 @@ class SST:
         except:
             print("failed")
             return False,conn
-        
+
+  #  // Download arrows and contexts
         return True,conn
 
     #

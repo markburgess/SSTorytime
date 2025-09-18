@@ -738,17 +738,69 @@ func Close(ctx PoSST) {
 // In memory representation structures
 // **************************************************************************
 
-func RegisterContext(parse_state map[string]bool,ctx []string) ContextPtr {
+func RegisterContext(parse_state map[string]bool,context []string) ContextPtr {
+
+	ctxstr := NormalizeContextString(parse_state,context)
+
+	ctxptr,exists := CONTEXT_DIR[ctxstr] 
+
+	if !exists {
+		var cd ContextDirectory
+		cd.Context = ctxstr
+		cd.Ptr = CONTEXT_TOP
+		CONTEXT_DIRECTORY = append(CONTEXT_DIRECTORY,cd)
+		CONTEXT_DIR[ctxstr] = CONTEXT_TOP
+		ctxptr = CONTEXT_TOP
+		CONTEXT_TOP++
+	}
+
+	return ctxptr
+}
+
+// **************************************************************************
+
+func TryContext(ctx PoSST,context []string) ContextPtr {
+
+	ctxstr := CompileContextString(context)
+
+	// Call db directly, without the local cache
+	str,ctxptr := GetDBContextByName(ctx,ctxstr)
+
+	if ctxptr == -1 || str != ctxstr {
+		ctxptr = UploadContextToDB(ctx,ctxstr,-1)
+	}
+
+	return ctxptr
+}
+
+// **************************************************************************
+
+func CompileContextString(context []string) string {
+
+	// Ensure idempotence
+
+	var merge = make(map[string]int)
+
+	for c := range context {
+		merge[context[c]]++
+	}
+
+	return List2String(Map2List(merge))	
+}
+
+// **************************************************************************
+
+func NormalizeContextString(contextmap map[string]bool,ctx []string) string {
+
+	// Mitigate combinatoric explosion
 
 	var merge = make(map[string]bool)
 	var clist []string
 
-	// Since this is a shared resouce, when we extend, 
-	// we can't delete the old, only add a new and hope for
-	// no combinatoric explosion
-
-	if parse_state != nil {
-		for c := range parse_state {
+	// Merge sources into single map
+	
+	if contextmap != nil {
+		for c := range contextmap {
 			merge[c] = true
 		}
 	}
@@ -767,22 +819,7 @@ func RegisterContext(parse_state map[string]bool,ctx []string) ContextPtr {
 		}
 	}
 
-	// Mitigate combinatoric explosion
-	ctxstr := List2String(clist)
-
-	ctxptr,exists := CONTEXT_DIR[ctxstr] 
-
-	if !exists {
-		var cd ContextDirectory
-		cd.Context = ctxstr
-		cd.Ptr = CONTEXT_TOP
-		CONTEXT_DIRECTORY = append(CONTEXT_DIRECTORY,cd)
-		CONTEXT_DIR[ctxstr] = CONTEXT_TOP
-		ctxptr = CONTEXT_TOP
-		CONTEXT_TOP++
-	}
-
-	return ctxptr
+	return List2String(clist)
 }
 
 // **************************************************************************
@@ -1743,35 +1780,35 @@ func GetContext(contextptr ContextPtr) string {
 func UploadContextsToDB(ctx PoSST) {
 
 	for ctxdir := range CONTEXT_DIRECTORY {
-		UploadContextToDB(ctx,CONTEXT_DIRECTORY[ctxdir])
+		UploadContextToDB(ctx,CONTEXT_DIRECTORY[ctxdir].Context,CONTEXT_DIRECTORY[ctxdir].Ptr)
 	}
 }
 
 // **************************************************************************
 
-func UploadContextToDB(ctx PoSST,ctxdir ContextDirectory) {
+func UploadContextToDB(ctx PoSST,contextstring string,ptr ContextPtr) ContextPtr {
 
-	a := SQLEscape(ctxdir.Context)
-	b := ctxdir.Ptr
+	a := SQLEscape(contextstring)
+	b := ptr
 
 	// Make sure neither a nor b are previously defined
 
-	qstr := fmt.Sprintf("INSERT INTO ContextDirectory (Context,CtxPtr) SELECT '%s',%d WHERE NOT EXISTS (SELECT Context,CtxPtr FROM ContextDirectory WHERE Context = '%s' OR CtxPtr = %d)",a,b,a,b)
+	qstr := fmt.Sprintf("SELECT IdempInsertContext('%s',%d)",a,b)
 
 	row,err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		s := fmt.Sprint("Failed to insert",err)
-		
-		if strings.Contains(s,"duplicate key") {
-		} else {
-			fmt.Println(s,"FAILED \n",qstr,err)
-		}
-		return
+		fmt.Println("FAILED \n",qstr,err)
+	}
+
+	var cptr ContextPtr
+
+	for row.Next() {		
+		err = row.Scan(&cptr)
 	}
 
 	row.Close()
-
+	return cptr
 }
 
 //**************************************************************
@@ -1963,6 +2000,29 @@ func DefineStoredFunctions(ctx PoSST) {
 		"     INSERT INTO Node (Nptr.Chan,Nptr.Cptr,L,S,chap) VALUES (iszchani,icptri+1,iLi,iSi,ichapi);" +
 		"  END IF;\n" +
 		"  RETURN QUERY SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi;\n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;";
+
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
+	// Insert Context from API
+
+	qstr = "CREATE OR REPLACE FUNCTION IdempInsertContext(constr text,conptr int)\n" +
+		"RETURNS int AS $fn$ " +
+		"DECLARE \n" +
+		"    cptr INT = 0;" +
+		"BEGIN\n" +
+		"IF NOT EXISTS (SELECT Context,CtxPtr FROM ContextDirectory WHERE Context = constr OR CtxPtr = conptr) THEN\n"+
+		"   SELECT max(CtxPtr) INTO cptr FROM ContextDirectory;\n"+
+		"   INSERT INTO ContextDirectory (Context,CtxPtr) VALUES (constr,cptr+1);\n"+
+		"END IF;\n"+
+		"  RETURN cptr+1;\n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;";
 
@@ -3514,7 +3574,7 @@ func GetDBChaptersMatchingName(ctx PoSST,src string) []string {
 
 // **************************************************************************
 
-func GetDBContextsMatchingName(ctx PoSST,src string) []string {
+func GetDBContextByName(ctx PoSST,src string) (string,ContextPtr) {
 
 	var qstr string
 
@@ -3522,39 +3582,56 @@ func GetDBContextsMatchingName(ctx PoSST,src string) []string {
 
 	if remove_accents {
 		search := stripped
-		qstr = fmt.Sprintf("SELECT DISTINCT Context FROM ContextDirectory WHERE match_context(unaccent(Context),'{%s}')",search)
+		qstr = fmt.Sprintf("SELECT DISTINCT Context,CtxPtr FROM ContextDirectory WHERE Context='%s'",search)
 	} else {
 		search := src
-		qstr = fmt.Sprintf("SELECT DISTINCT Context FROM ContextDirectory WHERE match_context(Ctx,'{%s}')",search)
+		qstr = fmt.Sprintf("SELECT DISTINCT Context,CtxPtr FROM ContextDirectory WHERE Context='%s'",search)
 	}
+
+	row, err := ctx.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("QUERY GetDBContextByName",err)
+	}
+
+	var whole string
+	var ptr int
+
+	// Assume unique match for this, to be fixed elsewhere
+
+	for row.Next() {
+		err = row.Scan(&whole,&ptr)
+	}
+	row.Close()
+
+	return whole,ContextPtr(ptr)
+
+}
+
+// **************************************************************************
+
+func GetDBContextByPtr(ctx PoSST,ptr ContextPtr) (string,ContextPtr) {
+
+	qstr := fmt.Sprintf("SELECT DISTINCT Context,CtxPtr FROM ContextDirectory WHERE CtxPtr=%d",ptr)
 
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY GetDBContextssMatchingName",err)
+		fmt.Println("QUERY GetDBContextssByPtr",err)
 	}
 
-	var whole string
-	var retval []string
-	var idemp = make(map[string]int)
+	var retctx string
+	var retptr int
 
-	for row.Next() {		
-		err = row.Scan(&whole)
-		a := ParseSQLArrayString(whole)
-		for i := range a {
-			idemp[a[i]]++
-		}
-	}
+	// Assume unique match for this, to be fixed elsewhere
 
-	for s := range idemp {
-		retval = append(retval,s)
+	for row.Next() {
+		err = row.Scan(&retctx,&retptr)
 	}
 
 	row.Close()
 
-	sort.Strings(retval)
-	return retval
-
+	return retctx,ContextPtr(retptr)
 }
 
 // **************************************************************************

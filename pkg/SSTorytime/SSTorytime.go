@@ -748,8 +748,6 @@ func RegisterContext(parse_state map[string]bool,context []string) ContextPtr {
 		var cd ContextDirectory
 		cd.Context = ctxstr
 		cd.Ptr = CONTEXT_TOP
-	fmt.Println("REG",CONTEXT_TOP,cd)
-
 		CONTEXT_DIRECTORY = append(CONTEXT_DIRECTORY,cd)
 		CONTEXT_DIR[ctxstr] = CONTEXT_TOP
 		ctxptr = CONTEXT_TOP

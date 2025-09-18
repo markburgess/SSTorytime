@@ -3583,7 +3583,7 @@ func GetDBContextByName(ctx PoSST,src string) (string,ContextPtr) {
 
 	if remove_accents {
 		search := stripped
-		qstr = fmt.Sprintf("SELECT DISTINCT Context,CtxPtr FROM ContextDirectory WHERE Context='%s'",search)
+		qstr = fmt.Sprintf("SELECT DISTINCT Context,CtxPtr FROM ContextDirectory WHERE unaccent(Context)='%s'",search)
 	} else {
 		search := src
 		qstr = fmt.Sprintf("SELECT DISTINCT Context,CtxPtr FROM ContextDirectory WHERE Context='%s'",search)
@@ -7106,30 +7106,30 @@ type STM struct {
 
 const (
 
-	CMD_ON = "on"
-	CMD_FOR = "for"
-	CMD_ABOUT = "about"
-	CMD_NOTES = "notes"
-	CMD_BROWSE = "browse"
-	CMD_PAGE = "page"
-	CMD_PATH = "path"
-	CMD_SEQ1 = "sequence"
-	CMD_SEQ2 = "seq"
-	CMD_FROM = "from"
-	CMD_TO = "to"
-	CMD_CTX = "ctx"
-	CMD_CONTEXT = "context"
-	CMD_AS = "as"
-	CMD_CHAPTER = "chapter"
-	CMD_CONTENTS = "contents"
-	CMD_SECTION = "section"
-	CMD_IN = "in"
-	CMD_ARROW = "arrow"
-	CMD_LIMIT = "limit"
-	CMD_DEPTH = "depth"
-	CMD_RANGE = "range"
-	CMD_DISTANCE = "distance"
-	CMD_STATS = "stats"
+	CMD_ON = "\\on"
+	CMD_FOR = "\\for"
+	CMD_ABOUT = "\\about"
+	CMD_NOTES = "\\notes"
+	CMD_BROWSE = "\\browse"
+	CMD_PAGE = "\\page"
+	CMD_PATH = "\\path"
+	CMD_SEQ1 = "\\sequence"
+	CMD_SEQ2 = "\\seq"
+	CMD_FROM = "\\from"
+	CMD_TO = "\\to"
+	CMD_CTX = "\\ctx"
+	CMD_CONTEXT = "\\context"
+	CMD_AS = "\\as"
+	CMD_CHAPTER = "\\chapter"
+	CMD_CONTENTS = "\\contents"
+	CMD_SECTION = "\\section"
+	CMD_IN = "\\in"
+	CMD_ARROW = "\\arrow"
+	CMD_LIMIT = "\\limit"
+	CMD_DEPTH = "\\depth"
+	CMD_RANGE = "\\range"
+	CMD_DISTANCE = "\\distance"
+	CMD_STATS = "\\stats"
 )
 
 //******************************************************************
@@ -7480,7 +7480,7 @@ func SomethingLike(s string,keywords []string) string {
 
 func IsCommand(s string,list []string) bool {
 
-	const min_sense = 4
+	const min_sense = 5
 
 	for w := range list {
 		if list[w] == s {

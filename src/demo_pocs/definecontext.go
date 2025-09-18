@@ -33,6 +33,9 @@ func main() {
 	str,ptr = SST.GetDBContextByPtr(ctx,newptr2)
 	fmt.Println("confirming",ptr,"=",str)
 
+	fmt.Println("DIRECTORY CACHE",SST.CONTEXT_DIRECTORY[newptr1])
+	fmt.Println("DIRECTORY CACHE",SST.CONTEXT_DIRECTORY[newptr2])
+
 	SST.Close(ctx)	
 }
 

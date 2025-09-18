@@ -770,6 +770,7 @@ func TryContext(ctx PoSST,context []string) ContextPtr {
 		ctxptr = UploadContextToDB(ctx,ctxstr,-1)
 	}
 
+	RegisterContext(nil,context)
 	return ctxptr
 }
 
@@ -1492,7 +1493,7 @@ func Edge(ctx PoSST,from Node,arrow string,to Node,context []string,weight float
 	link.Arr = arrowptr
 	link.Dst = to.NPtr
 	link.Wgt = weight
-	link.Ctx = RegisterContext(nil,context)
+	link.Ctx = TryContext(ctx,context)
 
 	IdempDBAddLink(ctx,from,link,to)
 
@@ -1554,7 +1555,7 @@ func HubJoin(ctx PoSST,name,chap string,nptrs []NodePtr,arrow string,context []s
 		link.Arr = arrowptr
 		link.Dst = container.NPtr
 		link.Wgt = weight[nptr]
-		link.Ctx = RegisterContext(nil,context)
+		link.Ctx = TryContext(ctx,context)
 		from := GetDBNodeByNodePtr(ctx,nptrs[nptr])
 		IdempDBAddLink(ctx,from,link,container)
 	}

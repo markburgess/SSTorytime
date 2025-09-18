@@ -116,3 +116,12 @@ if $DB_TEST_PROG > /dev/null;
    else 
       echo -e "5. ${RED} causal cone consistency, try rebuilding ${END}"
 fi
+
+DB_TEST_PROG="../src/demo_pocs/definecontext"
+
+if $DB_TEST_PROG > /dev/null; 
+   then 
+      echo -e "5. ${GREEN} Context cache synchronisation ${END}"
+   else 
+      echo -e "5. ${RED} Context cache failure ${END}"
+fi

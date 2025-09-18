@@ -68,17 +68,17 @@ For example, the files type promise centers around managing file presence, conte
 
  :: editing files,  edit_line, normal ordering ::
 
-   // the * annotation makes "editfiles meta" a special case of meta
+   // the ** annotation makes "editfiles meta" a special case of meta
 
-   editfiles *meta             (sh-precede)  vars
-   editfiles *vars             (sh-precede)  defaults
-   editfiles *defaults         (sh-precede)  classes
-   editfiles *classes          (sh-precede)  delete_lines
-   editfiles *delete_lines     (sh-precede)  field_edits
-   editfiles *field_edits      (sh-precede)  insert_lines
-   editfiles *insert_lines     (sh-precede)  replace_patterns
-   editfiles *replace_patterns (sh-precede)  reports
-   editfiles *reports          (comes after) replace_patterns
+   editfiles **meta             (sh-precede)  vars
+   editfiles **vars             (sh-precede)  defaults
+   editfiles **defaults         (sh-precede)  classes
+   editfiles **classes          (sh-precede)  delete_lines
+   editfiles **delete_lines     (sh-precede)  field_edits
+   editfiles **field_edits      (sh-precede)  insert_lines
+   editfiles **insert_lines     (sh-precede)  replace_patterns
+   editfiles **replace_patterns (sh-precede)  reports
+   editfiles **reports          (comes after) replace_patterns
 
 
   #####################################################

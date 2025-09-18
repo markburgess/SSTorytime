@@ -9,6 +9,8 @@
 
 # SSTorytime
 
+<span style="color: red;">CHANGE: commands now use \ </span> (see [searchN4L](docs/searchN4L.md)).
+
 ## Graphs are the language of spacetime process
 
 Graphs are popular once again, but the technologies for dealing with them are clunky and designed by

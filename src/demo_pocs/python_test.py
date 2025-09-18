@@ -36,6 +36,7 @@ class SST:
 
     # We do not allow Vertex/Edge users to define arrows.
     ARROW_DIRECTORY = []
+    INVERSE_ARROWS = []
 
     def __init__(self):
         return
@@ -48,7 +49,24 @@ class SST:
             print("failed")
             return False,conn
 
-  #  // Download arrows and contexts
+        # Download arrows and contexts
+
+        curs = conn.cursor()
+        curs.execute("SELECT STAindex,Long,Short,ArrPtr FROM ArrowDirectory ORDER BY ArrPtr")
+        pg_rows = curs.fetchall()
+        conn.commit()
+        for pg_row in pg_rows:
+            arrow = ( pg_row[0],pg_row[1],pg_row[2],pg_row[3] )
+            SST.ARROW_DIRECTORY.append(arrow)
+
+        curs = conn.cursor()
+        curs.execute("SELECT Plus,Minus FROM ArrowInverses ORDER BY Plus")
+        pg_rows = curs.fetchall()
+        conn.commit()
+        for pg_row in pg_rows:
+            arrow = ( pg_row[0],pg_row[1] )
+            SST.INVERSE_ARROWS.append(arrow)
+
         return True,conn
 
     #
@@ -61,6 +79,25 @@ class SST:
     def SQLEscape(s):
         return s.replace("'","\\'")
 
+    #
+
+    def STTypeDBChannel(sttype):
+        match sttype:
+            case -3:
+                return "Im3"
+            case -2:
+                return "Im2"
+            case -1:
+                return "Im1"
+            case 0:
+                return "In0"
+            case 1:
+                return "Il1"
+            case 2:
+                return "Ic2"
+            case 3:
+                return "Ie3"
+            
     #
     
     def NChannel(s):
@@ -103,8 +140,48 @@ class SST:
         return arrowptr,sttype
 
     #
-    def RegisterContext(conn,context):
-        ctxptr = 99
+
+    def NormalizeContext(array):
+        adict = {}
+        ordered = ""
+        for part in array:
+            adict[part] = 1
+        akeys = list(adict.keys())
+        akeys.sort()
+        for index,part in enumerate(akeys):
+            ordered += part
+            if index < len(part)-1:
+                ordered = ordered + ","
+        return ordered
+
+    #
+    
+    def GetDBContextByName(conn,ctxstr):
+        curs = conn.cursor()
+        cmd = f"SELECT DISTINCT Context,CtxPtr FROM ContextDirectory WHERE Context='{ctxstr}'"
+        curs.execute(cmd)
+        pg_rows = curs.fetchall()
+        conn.commit()
+        if 'pg_rows' in locals():
+            return pg_rows[0][0],pg_rows[0][1]
+        else:
+            return "",-1
+    #
+
+    def UploadContextToDB(conn,ctxstr,cptr):
+        curs = conn.cursor()
+        cmd = f"SELECT IdempInsertContext('{ctxstr}',{cptr})"
+        curs.execute(cmd)
+        pg_rows = curs.fetchall()
+        conn.commit()        
+
+    #
+    
+    def TryContext(conn,context):
+        ctxstr = SST.NormalizeContext(context)
+        str,ctxptr = SST.GetDBContextByName(conn,ctxstr)
+        if ctxptr == -1 or str != ctxstr:
+            ctxptr = SST.UploadContextToDB(ctx,ctxstr,-1)
         return ctxptr
     #    
 
@@ -121,7 +198,6 @@ class SST:
         curs = conn.cursor()
         args =f"{l},{channel},'{es}','{ec}'"
         curs.execute("SELECT IdempAppendNode("+args+")")
-
         pg_rows = curs.fetchall()
         conn.commit()
         return pg_rows[0][0]
@@ -129,34 +205,26 @@ class SST:
     #
     
     def Edge(conn,n1,arrowname,n2,context,weight):
-        print("MAKE EDGE",n1,arrowname,n2,context,weight)
+        #print("MAKE EDGE",n1,arrowname,n2,context,weight)
         arr,sttype = SST.GetDBArrowsWithArrowName(conn,arrowname)
         print("ret",arr,sttype)
-        ctxptr = SST.RegisterContext(conn,context)
-        link = f"({arr},{weight},{ctxptr},{n2}::NodePtr)"
-        print("DSTLINK",link)
+        ctxptr = SST.TryContext(conn,context)
+        link = f"({arr},{weight},{ctxptr},{n2}::NodePtr)"        
+        SST.AppendDBLinkToNode(ctx,n1,link,sttype)
+
+    def AppendDBLinkToNode(ctx,frptr,link,sttype):
+        Ix = SST.STTypeDBChannel(sttype)
+        cmd = f"UPDATE NODE SET {Ix}=array_append({Ix},{link}) WHERE NPtr='{link[3]}' AND (Ix IS NULL OR NOT {link} = ANY(Ix))",        
         
-#	var link Link
-#	link.Arr = arrowptr
-#	link.Dst = to.NPtr
-#	link.Wgt = weight
-#	link.Ctx = RegisterContext(nil,context)
-
-
-#	AppendDBLinkToNode(ctx,frptr,link,sttype)
 #	var invlink Link
 #	invlink.Arr = INVERSE_ARROWS[link.Arr]
 #	invlink.Wgt = link.Wgt
-#	invlink.Dst = frptr
 #	AppendDBLinkToNode(ctx,toptr,invlink,-sttype)
-
-#	linkval := fmt.Sprintf("(%d, %f, %d, (%d,%d)::NodePtr)",lnk.Arr,lnk.Wgt,lnk.Ctx,lnk.Dst.Class,lnk.Dst.CPtr)
-
 #	literal := fmt.Sprintf("%s::Link",linkval)
 
-#	link_table := STTypeDBChannel(sttype)
 
-#	qstr := fmt.Sprintf("UPDATE NODE SET %s=array_append(%s,%s) WHERE (NPtr).CPtr = '%d' AND (NPtr).Chan = '%d' AND (%s IS NULL OR NOT %s = ANY(%s))",
+
+
 #		link_table,
 #		link_table,
 #		literal,
@@ -189,7 +257,7 @@ if ok:
 
     print(f"v1 {v1}")
     print("v2",v2)
-    context = ["freddy","physics"]
+    context = ['dunnum', 'cotton', 'pickin','lumberjack']
 
     SST.Edge(ctx,v1,"then",v2,context,1)
 
@@ -203,6 +271,8 @@ print("--",n1)
 #
 
 friends = ['john', 'pat', 'gary', 'michael']
+
+print("......",SST.NormalizeContext(friends))
 
 for i, name in enumerate(friends):
     

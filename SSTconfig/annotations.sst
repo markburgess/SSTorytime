@@ -9,7 +9,9 @@
  = (involves)
  * (is a special case of)
 
+ # Longer matches should come first to ensure we don't pick up the substring instead
+
+ >> (is an example of)
  > (has actor/subject role)
  < (has affected object role)
 
- >> (is an example of)

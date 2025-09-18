@@ -9,7 +9,8 @@
 
 # SSTorytime
 
-### !! LATEST CHANGE: commands now use \ in front, .e.g \from a1 \to s2</span> (see [searchN4L](docs/searchN4L.md)) !!
+[!NOTE]
+LATEST CHANGE: commands now use \ in front, .e.g \from a1 \to s2</span> (see [searchN4L](docs/searchN4L.md))
 
 ## Graphs are the language of spacetime process
 

@@ -2021,13 +2021,18 @@ func DefineStoredFunctions(ctx PoSST) {
 	qstr = "CREATE OR REPLACE FUNCTION IdempInsertContext(constr text,conptr int)\n" +
 		"RETURNS int AS $fn$ " +
 		"DECLARE \n" +
-		"    cptr INT = 0;" +
+		"    cptr INT = 0;\n" +
+		"    found int=-99;\n" +
 		"BEGIN\n" +
-		"IF NOT EXISTS (SELECT Context,CtxPtr FROM ContextDirectory WHERE Context = constr OR CtxPtr = conptr) THEN\n"+
+
+		"SELECT Context,CtxPtr INTO found FROM ContextDirectory WHERE Context=constr AND CtxPtr=conptr;\n"+
+		"IF found = -99 THEN\n"+
 		"   SELECT max(CtxPtr) INTO cptr FROM ContextDirectory;\n"+
 		"   INSERT INTO ContextDirectory (Context,CtxPtr) VALUES (constr,cptr+1);\n"+
+		"   RETURN cptr+1;\n" +
 		"END IF;\n"+
-		"  RETURN cptr+1;\n" +
+		"   INSERT INTO ContextDirectory (Context,CtxPtr) VALUES (constr,conptr);\n"+
+		"   RETURN found;\n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;";
 

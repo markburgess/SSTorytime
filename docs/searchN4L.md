@@ -14,21 +14,21 @@ The tool recognizes a number of words. This is a mixed blessing. The interpreter
 accidentally misunderstand your search words for commands. You can always quote search terms
 to protect them.
 
-- `on` `for` `about`
-- `note` or `page`
+- `\on` `\for` `\about`
+- `\note` or `\page`
 
-- `path` or `seq`
-- -  `from`
-- -  `to`
+- `\path` or `\seq`
+- -  `\from`
+- -  `\to`
 
-- `context` or `ctx`
-- `as`
+- `\context` or `\ctx`
+- `\as`
 
-- `chapter` or `section` or `in`
+- `\chapter` or `\section` or `\in`
 
-- `arrow`
+- `\arrow`
 
-- `limit` or `depth` or `range` or `distance`
+- `\limit` or `\depth` or `\range` or `\distance`
 
 
 SSToryline allows you to use node addresses, called NPtr-s, which are coordinates looking like `(a,b)`. These are shown in searches

@@ -32,7 +32,7 @@ General word search
  :: Table of contents ::
 
 Find a chapter 
-  " (e.g.) \chapters
+  " (e.g.) \chapters  \limit 50
   " (e.g.) \chapter mychapter
 
 

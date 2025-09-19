@@ -1,0 +1,66 @@
+
+- SSTorytime search examples
+
+ :: Word search , _sequence_ ::
+
+Search for a precise word (e.g.) Just type: !a1!
+      "                   (e.g.) Just type: "ephemeral or persistent"
+      "                   (e.g.) 'Use the NPtr address: (4,4138)'
+
+Search for any combination of a set of words (e.g.) Just type:  word1 word2 word3 \limit 25
+     "                                       (e.g.) Just type:  recipe fish soup
+
+
+Search for any combination of a set of words in a chapter
+
+  " (e.g.)  word1 word2 word3 \chapter dictionary
+  " (e.g.)  recipe fish soup  \chapter "my recipes"
+
+Search for any combination of a set of words in named context, any chapter
+
+  " (e.g.)  word1 word2 word3 \context "weird words"
+  " (e.g.)  recipe fish soup  \chapter food
+
+General word search
+
+  " (e.g.)  word1 word2 word3 \chapter "my chapter" yourchapter \context "weird words"
+  " (e.g.)  recipe fish soup  \chapter food \context food, recipes, dishes
+
+ -:: _sequence_ ::
+
+
+ :: Table of contents ::
+
+Find a chapter 
+  " (e.g.) \chapters
+  " (e.g.) \chapter mychapter
+
+
+ :: Notes view::
+
+ Print original notes from a chapter
+
+  " (e.g.) \notes mychapter
+  " (e.g.) \notes \on brain
+
+ :: Stories and sequences ::
+
+Listing an entire story/sequence
+  " (e.g.) '\story (wuya)'
+  " (e.g.) \story Mary
+  " (e.g.) \sequence "create a pod"
+
+
+ :: paths, solutions ::
+
+Solving for paths from A to B
+  " (e.g.) \paths \from start \to target
+  " (e.g.) \from !a1! \to b6
+
+
+ :: arrows ::
+
+Lookup an arrow
+  " (e.g.) \arrow succeed
+  " (e.g.) \arrow 1
+  " (e.g.) \arrow 232

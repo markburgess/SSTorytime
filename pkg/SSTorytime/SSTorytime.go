@@ -742,6 +742,10 @@ func RegisterContext(parse_state map[string]bool,context []string) ContextPtr {
 
 	ctxstr := NormalizeContextString(parse_state,context)
 
+	if len(ctxstr) == 0 {
+		return 0
+	}
+
 	ctxptr,exists := CONTEXT_DIR[ctxstr] 
 
 	if !exists {
@@ -763,13 +767,12 @@ func TryContext(ctx PoSST,context []string) ContextPtr {
 
 	ctxstr := CompileContextString(context)
 
-	RegisterContext(nil,context)
-
 	// Call db directly, without the local cache
 	str,ctxptr := GetDBContextByName(ctx,ctxstr)
 
 	if ctxptr == -1 || str != ctxstr {
 		ctxptr = UploadContextToDB(ctx,ctxstr,-1)
+		RegisterContext(nil,context)
 	}
 
 	return ctxptr
@@ -1792,10 +1795,6 @@ func UploadContextToDB(ctx PoSST,contextstring string,ptr ContextPtr) ContextPtr
 
 	a := SQLEscape(contextstring)
 	b := ptr
-
-	if len(contextstring) == 0 {
-		return -1
-	}
 
 	// Make sure neither a nor b are previously defined
 
@@ -4646,19 +4645,17 @@ func DownloadContextsFromDB(ctx PoSST) {
 		c.Context = context
 		c.Ptr = ptr
 
-		CONTEXT_DIRECTORY = append(CONTEXT_DIRECTORY,c)
-		CONTEXT_DIR[context] = CONTEXT_TOP
-
 		if c.Ptr != CONTEXT_TOP {
 			fmt.Println(ERR_MEMORY_DB_CONTEXT_MISMATCH,c,CONTEXT_TOP)
 			os.Exit(-1)
 		}
 
+		CONTEXT_DIRECTORY = append(CONTEXT_DIRECTORY,c)
+		CONTEXT_DIR[context] = CONTEXT_TOP
 		CONTEXT_TOP++
 	}
 
 	row.Close()
-
 }
 
 // **************************************************************************

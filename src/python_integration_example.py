@@ -82,6 +82,42 @@ class SST:
 
     #
 
+    def FormatSQLArray(context):
+        array = ""
+        for i,c in enumerate(context):
+            s = SST.SQLEscape(c)
+            array += f"\"{s}\""
+            if i < len(context)-1:
+                array += ","
+
+        strarray = "{" + array + "}"
+        return strarray
+    #
+
+    def ParseSQLLinkArray(arraystr):
+        strarray = arraystr.split(";")
+        array = []
+        for i,c in enumerate(strarray):
+            if len(c) > 0:
+                c = c.replace("\"","")
+                qtuple = c[1:len(c)-1]
+                ftup = qtuple.split(",")
+                link = (ftup[0],ftup[1],ftup[2],ftup[3]+","+ftup[4])
+                array.append(link)
+        return array
+
+    #
+    
+    def ParseSQLPathArray(arraystr):
+        strarray = arraystr.split("\n")
+        patharray = []
+        for i,c in enumerate(strarray):
+            path = SST.ParseSQLLinkArray(c)
+            if len(path) > 0:
+                patharray.append(path)
+        return patharray
+    #
+
     def STTypeDBChannel(sttype):
         match sttype:
             case -3:
@@ -238,39 +274,56 @@ class SST:
         curs.execute(icmd)
         conn.commit()
 
-#######################################################
+    #
+        
+    def GetFwdPathsAsLinks(conn,nptr,sttype,depth,maxlimit):
 
-class Link:
-    
-    def __init__(self,arrow,weight,context,nptr):
-        self.Arr = arrow
-        self.Wgt = weight
-        self.Ctx = context
-        self.Dst = nptr
-
+        cmd = f"SELECT FwdPathsAsLinks from FwdPathsAsLinks('{nptr}',{sttype},{depth},{maxlimit})"
+        curs = conn.cursor()
+        curs.execute(cmd)
+        pg_rows = curs.fetchall()
+        conn.commit()
+        for pg_row in pg_rows:
+            links = SST.ParseSQLPathArray(pg_row[0])
+        return links
+        
 #######################################################
 # Main
 #######################################################
 
 ok,ctx = SST.Open("sstoryline","sst_1234","sstoryline","localhost")
 
-if ok:
+if not ok:
+    print("Couldn't open database")
+    exit()
+    
+v1 = SST.Vertex(ctx,"first node","examples chapter")
+v2 = SST.Vertex(ctx,"second node","examples chapter")
 
-    v1 = SST.Vertex(ctx,"first node","examples chapter")
-    v2 = SST.Vertex(ctx,"second node","examples chapter")
+context = ['dunnum', 'cotton', 'pickin','lumberjack']
 
-    context = ['dunnum', 'cotton', 'pickin','lumberjack']
+SST.Edge(ctx,v1,"then",v2,context,1.0)
 
-    SST.Edge(ctx,v1,"then",v2,context,1.0)
+fetch1 = SST.GetDBNodeByNodePtr(ctx,v1)
+print("RESULT v1:",fetch1)
 
+fetch2 = SST.GetDBNodeByNodePtr(ctx,v2)
+print("RESULT v2:",fetch2)
 
 # Access class and instance variables
 
+print("------- Now search for paths in examples --------")
 
-print("\nNode (1,2) = tuple",SST.GetDBNodeByNodePtr(ctx,"(1,2)"))
-print("\nNode (3,5) = tuple",SST.GetDBNodeByNodePtr(ctx,"(3,5)"))
+leadsto = 1
 
-#
+link_paths = SST.GetFwdPathsAsLinks(ctx,"(1,0)",leadsto,10,100)
+
+for path in link_paths:
+    print("Path: ",end="")
+    for leg in path:
+        node = SST.GetDBNodeByNodePtr(ctx,leg[3])
+        print(leg[3],"=",node[0],end=", ")
+    print("\n")
 
 
 SST.Close(ctx)

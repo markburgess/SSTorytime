@@ -2029,9 +2029,13 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   SELECT max(CtxPtr) INTO cptr FROM ContextDirectory;\n"+
 		"   INSERT INTO ContextDirectory (Context,CtxPtr) VALUES (constr,cptr+1);\n"+
 		"   RETURN cptr+1;\n" +
-		"END IF;\n"+
+		"END IF;\n" +
+		"IF NOT EXISTS (SELECT CtxPtr FROM ContextDirectory WHERE CtxPtr=conptr OR Context=constr) THEN\n" +
 		"   INSERT INTO ContextDirectory (Context,CtxPtr) VALUES (constr,conptr);\n"+
 		"   RETURN conptr;\n" +
+		"END IF;"+
+		"SELECT CtxPtr INTO cptr FROM ContextDirectory WHERE CtxPtr=conptr OR Context=constr;\n"+
+		"RETURN cptr;\n"+
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;";
 

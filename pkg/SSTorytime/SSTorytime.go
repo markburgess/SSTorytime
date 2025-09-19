@@ -9439,7 +9439,11 @@ func Waiting(output bool,total int) {
 
 	if SILLINESS {
 		if SILLINESS_COUNTER % interval != 0 {
-			fmt.Print(".")
+			if SILLINESS_COUNTER % 2 != 0 {
+				fmt.Print(".")
+			} else {
+				fmt.Print(" ")
+			}
 		} else {
 			fmt.Print(string(propaganda[SILLINESS_POS]))
 			SILLINESS_POS++
@@ -9449,7 +9453,11 @@ func Waiting(output bool,total int) {
 			}
 		}
 	} else {
-		fmt.Print(".")
+		if SILLINESS_COUNTER % 2 != 0 {
+			fmt.Print(".")
+		} else {
+			fmt.Print(" ")
+		}
 	}
 
 	if SILLINESS_COUNTER % (len(propaganda)*interval*interval) == 0 {

@@ -170,15 +170,20 @@ class SST:
 
     def UploadContextToDB(conn,ctxstr,cptr):
         curs = conn.cursor()
+        if len(ctxstr) == 0:
+            return
         cmd = f"SELECT IdempInsertContext('{ctxstr}',{cptr})"
         curs.execute(cmd)
         pg_rows = curs.fetchall()
         conn.commit()        
-
+        return
+    
     #
     
     def TryContext(conn,context):
         ctxstr = SST.NormalizeContext(context)
+        if len(ctxstr) == 0:
+            return
         str,ctxptr = SST.GetDBContextByName(conn,ctxstr)
         if ctxptr == -1 or str != ctxstr:
             ctxptr = SST.UploadContextToDB(ctx,ctxstr,-1)
@@ -193,8 +198,7 @@ class SST:
         es = SST.SQLEscape(name)
         ec = SST.SQLEscape(chapter)
         channel = SST.NChannel(name)
-        l = len(name)
-        
+        l = len(name)        
         curs = conn.cursor()
         args =f"{l},{channel},'{es}','{ec}'"
         curs.execute("SELECT IdempAppendNode("+args+")")
@@ -209,31 +213,22 @@ class SST:
         arr,sttype = SST.GetDBArrowsWithArrowName(conn,arrowname)
         print("ret",arr,sttype)
         ctxptr = SST.TryContext(conn,context)
-        link = f"({arr},{weight},{ctxptr},{n2}::NodePtr)"        
+        link = f"({arr},{weight},{ctxptr},{n2}::NodePtr)"
         SST.AppendDBLinkToNode(ctx,n1,link,sttype)
 
+    #
+    
     def AppendDBLinkToNode(ctx,frptr,link,sttype):
         Ix = SST.STTypeDBChannel(sttype)
-        cmd = f"UPDATE NODE SET {Ix}=array_append({Ix},{link}) WHERE NPtr='{link[3]}' AND (Ix IS NULL OR NOT {link} = ANY(Ix))",        
-        
-#	var invlink Link
-#	invlink.Arr = INVERSE_ARROWS[link.Arr]
-#	invlink.Wgt = link.Wgt
-#	AppendDBLinkToNode(ctx,toptr,invlink,-sttype)
-#	literal := fmt.Sprintf("%s::Link",linkval)
+        cmd = f"UPDATE NODE SET {Ix}=array_append({Ix},{link}) WHERE NPtr='{frptr}' AND (Ix IS NULL OR NOT {link} = ANY(Ix))",        
 
+        invarr = SST.INVERSE_ARROWS[arr]
+        invlink = f"({invarr},{weight},{ctxptr},{link[3]}::NodePtr)"
+        invIx = SST.STTypeDBChannel(-sttype)
+        icmd = f"UPDATE NODE SET {invIx}=array_append({invIx},{invlink}) WHERE NPtr='{link[3]}' AND (invIx IS NULL OR NOT {invlink} = ANY(invIx))",        
 
-
-
-#		link_table,
-#		link_table,
-#		literal,
-#		n1ptr.CPtr,
-#		n1ptr.Class,
-#		link_table,
-#		literal,
-#		link_table)
-
+        print("FWD",cmd)
+        print("BWD",icmd)
 
 #######################################################
 

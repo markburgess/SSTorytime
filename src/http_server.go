@@ -129,7 +129,7 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 		ncptr := r.FormValue("ncptr")
 		chapcontext := r.FormValue("chapcontext")
 		
-		if name == "lastnptr" {
+		if name == "\\lastnptr" {
 			if chapcontext != "" && chapcontext != "any" {
 				UpdateLastSawSection(w,r,chapcontext)
 			}
@@ -151,7 +151,7 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 		ambient,key,_ := SST.GetTimeContext()
 		
 		if len(name) == 0 {
-			name = "any chapter reminders context " + key + " " + ambient
+			name = "any \\chapter reminders \\context " + key + " " + ambient
 		}
 		
 		search := SST.DecodeSearchField(name)

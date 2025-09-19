@@ -789,7 +789,7 @@
           let link = document.createElement("a");
           let item = document.createElement("h2");
           link.onclick = function () {
-            sendLinkSearch("notes chapter " + chpblk.Chapter);
+            sendLinkSearch("\\notes \\chapter " + chpblk.Chapter);
           };
           item.textContent = counter + ". " + chpblk.Chapter;
           link.appendChild(item);
@@ -812,7 +812,7 @@
             for (let ctx of chpblk.Context) {
               let link = document.createElement("a");
               link.onclick = function () {
-                sendLinkSearch("any context " + CtxSplice(ctx.Text));
+                sendLinkSearch("any \\context " + CtxSplice(ctx.Text));
               };
               link.id = "toc-frag";
               link.textContent = "Context Set/Grouping:: ";
@@ -842,7 +842,7 @@
             for (let ctx of chpblk.Single) {
               let link = document.createElement("a");
               link.onclick = function () {
-                sendLinkSearch("any context " + CtxSplice(ctx.Text));
+                sendLinkSearch("any \\context " + CtxSplice(ctx.Text));
               };
               link.textContent = "Intentionally emph:: ";
 
@@ -870,7 +870,7 @@
               let link = document.createElement("a");
               let sitem = document.createElement("span");
               link.onclick = function () {
-                sendLinkSearch("any context " + CtxSplice(ctx.Text));
+                sendLinkSearch("any \\context " + CtxSplice(ctx.Text));
               };
               link.textContent = "Ambient context:: ";
               link.id = "toc-frag";
@@ -928,7 +928,7 @@
             lastsection = ls.Section;
             link = document.createElement("a");
             link.onclick = function () {
-              sendLinkSearch("notes " + '"' + ls.Section + '"');
+              sendLinkSearch("\\notes " + '"' + ls.Section + '"');
             };
 
             card = document.createElement("div");
@@ -968,7 +968,7 @@
 
             if (ls.NPtr.Class < 0) {
               nlink.onclick = function () {
-                sendLinkSearch('any chapter "' + ls.Section + '"');
+                sendLinkSearch('any \\chapter "' + ls.Section + '"');
               };
               nitem.textContent = "browse";
             } else {
@@ -1587,7 +1587,7 @@
           let chplink = document.createElement("a");
           chplink.textContent = '"' + event.Chap + '"';
           chplink.onclick = function () {
-            sendLinkSearch('any chapter "' + event.Chap + '"');
+            sendLinkSearch('any \\chapter "' + event.Chap + '"');
           };
           setting.appendChild(chplink);
 
@@ -1598,7 +1598,7 @@
           let ctxlink = document.createElement("a");
           ctxlink.textContent = '"' + event.Context + '"';
           ctxlink.onclick = function () {
-            sendLinkSearch('any context "' + CtxSplice(event.Context) + '"');
+            sendLinkSearch('any \\context "' + CtxSplice(event.Context) + '"');
           };
           setting.appendChild(ctxlink);
 
@@ -1695,7 +1695,7 @@
         checkbox.addEventListener("change", function () {
           let chapcontext = chap + ":" + context;
           if (checkbox.checked) {
-            let ack = sendlastseen("lastnptr", nclass, ncptr, chapcontext);
+            let ack = sendlastseen("\\lastnptr", nclass, ncptr, chapcontext);
           }
         });
 
@@ -1764,7 +1764,7 @@
           let link = document.createElement("a");
           link.textContent = name;
           link.onclick = function () {
-            sendLinkSearch("from " + nptrs + " limit 30");
+            sendLinkSearch("\\from " + nptrs + " limit 30");
           };
           docpart.id = "cone_button";
           docpart.appendChild(link);

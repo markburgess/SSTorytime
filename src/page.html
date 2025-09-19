@@ -1426,9 +1426,9 @@
                 chtxt = array[line][i].Chp + ":" + array[line][i].Ctx;
 
                 if (chtxt.length > 4) {
-                  let sec = document.createElement("h2");
-                  sec.textContent = 'From: "' + chtxt + '"';
-                  child.appendChild(sec);
+                  let sec = document.createElement("i");
+                  sec.textContent = '  from: "' + chtxt + '"';
+                  parent.appendChild(sec);
                 }
               }
 

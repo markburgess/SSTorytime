@@ -7121,6 +7121,8 @@ const (
 	CMD_PATH = "\\path"
 	CMD_SEQ1 = "\\sequence"
 	CMD_SEQ2 = "\\seq"
+	CMD_STORY = "\\story"
+	CMD_STORIES = "\\stories"
 	CMD_FROM = "\\from"
 	CMD_TO = "\\to"
 	CMD_CTX = "\\ctx"
@@ -7147,7 +7149,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 	var keywords = []string{ 
 		CMD_NOTES, CMD_BROWSE, CMD_PATH,
 		CMD_PATH,CMD_FROM,CMD_TO,
-		CMD_SEQ1,CMD_SEQ2,
+		CMD_SEQ1,CMD_SEQ2,CMD_STORY,CMD_STORIES,
 		CMD_CONTEXT,CMD_CTX,CMD_AS,
 		CMD_CHAPTER,CMD_IN,CMD_SECTION,CMD_CONTENTS,
 		CMD_ARROW,
@@ -7376,7 +7378,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 					continue
 				}
 
-			case CMD_PATH,CMD_SEQ1,CMD_SEQ2:
+			case CMD_PATH,CMD_SEQ1,CMD_SEQ2,CMD_STORY,CMD_STORIES:
 				param.Sequence = true
 				continue
 

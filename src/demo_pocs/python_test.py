@@ -64,8 +64,9 @@ class SST:
         pg_rows = curs.fetchall()
         conn.commit()
         for pg_row in pg_rows:
-            arrow = ( pg_row[0],pg_row[1] )
-            SST.INVERSE_ARROWS.append(arrow)
+            plus = pg_row[0]
+            minus = pg_row[1]
+            SST.INVERSE_ARROWS.append(minus)
 
         return True,conn
 
@@ -162,7 +163,7 @@ class SST:
         curs.execute(cmd)
         pg_rows = curs.fetchall()
         conn.commit()
-        if 'pg_rows' in locals():
+        if pg_rows:
             return pg_rows[0][0],pg_rows[0][1]
         else:
             return "",-1
@@ -209,26 +210,33 @@ class SST:
     #
     
     def Edge(conn,n1,arrowname,n2,context,weight):
-        #print("MAKE EDGE",n1,arrowname,n2,context,weight)
         arr,sttype = SST.GetDBArrowsWithArrowName(conn,arrowname)
-        print("ret",arr,sttype)
         ctxptr = SST.TryContext(conn,context)
-        link = f"({arr},{weight},{ctxptr},{n2}::NodePtr)"
-        SST.AppendDBLinkToNode(ctx,n1,link,sttype)
+        link = (arr,weight,ctxptr,n2)
+        SST.AppendDBLinkToNode(conn,n1,link,sttype)
 
     #
     
-    def AppendDBLinkToNode(ctx,frptr,link,sttype):
+    def AppendDBLinkToNode(conn,frptr,link,sttype):
+        arr = link[0]
+        weight = link[1]
+        ctxptr = link[2]
+        dst = link[3]
+        txtlink = f"({arr},{weight},{ctxptr},{dst}::NodePtr)::Link"
         Ix = SST.STTypeDBChannel(sttype)
-        cmd = f"UPDATE NODE SET {Ix}=array_append({Ix},{link}) WHERE NPtr='{frptr}' AND (Ix IS NULL OR NOT {link} = ANY(Ix))",        
+
+        cmd = f"UPDATE NODE SET {Ix}=array_append({Ix},{txtlink}) WHERE NPtr='{frptr}'::NodePtr AND ({Ix} IS NULL OR NOT {txtlink} = ANY({Ix}))"
+        curs = conn.cursor()
+        curs.execute(cmd)
+        conn.commit()
 
         invarr = SST.INVERSE_ARROWS[arr]
-        invlink = f"({invarr},{weight},{ctxptr},{link[3]}::NodePtr)"
+        invlink = f"({invarr},{weight},{ctxptr},{frptr}::NodePtr)::Link"
         invIx = SST.STTypeDBChannel(-sttype)
-        icmd = f"UPDATE NODE SET {invIx}=array_append({invIx},{invlink}) WHERE NPtr='{link[3]}' AND (invIx IS NULL OR NOT {invlink} = ANY(invIx))",        
-
-        print("FWD",cmd)
-        print("BWD",icmd)
+        icmd = f"UPDATE NODE SET {invIx}=array_append( {invIx} , {invlink} ) WHERE NPtr='{dst}'::NodePtr AND ( {invIx} IS NULL OR NOT {invlink} = ANY({invIx}) )"
+        curs = conn.cursor()
+        curs.execute(icmd)
+        conn.commit()
 
 #######################################################
 
@@ -247,31 +255,22 @@ class Link:
 ok,ctx = SST.Open("sstoryline","sst_1234","sstoryline","localhost")
 
 if ok:
+
     v1 = SST.Vertex(ctx,"first node","examples chapter")
     v2 = SST.Vertex(ctx,"second node","examples chapter")
 
-    print(f"v1 {v1}")
-    print("v2",v2)
     context = ['dunnum', 'cotton', 'pickin','lumberjack']
 
-    SST.Edge(ctx,v1,"then",v2,context,1)
+    SST.Edge(ctx,v1,"then",v2,context,1.0)
 
 
 # Access class and instance variables
 
-n1 = SST.GetDBNodeByNodePtr(ctx,"(3,4)")
-n2 = SST.GetDBNodeByNodePtr(ctx,"(3,5)")
-print("--",n1)
+
+print("\nNode (1,2) = tuple",SST.GetDBNodeByNodePtr(ctx,"(1,2)"))
+print("\nNode (3,5) = tuple",SST.GetDBNodeByNodePtr(ctx,"(3,5)"))
 
 #
 
-friends = ['john', 'pat', 'gary', 'michael']
-
-print("......",SST.NormalizeContext(friends))
-
-for i, name in enumerate(friends):
-    
-    print (f"iteration {i} is {name}")  # the f fills in the vars
-    print ("name:",i,name)
 
 SST.Close(ctx)

@@ -789,7 +789,7 @@
           let link = document.createElement("a");
           let item = document.createElement("h2");
           link.onclick = function () {
-            sendLinkSearch("\\notes \\chapter " + chpblk.Chapter);
+            sendLinkSearch("\\notes \\chapter \"" + chpblk.Chapter +"\"");
           };
           item.textContent = counter + ". " + chpblk.Chapter;
           link.appendChild(item);

@@ -204,7 +204,9 @@ The tool-set consistent of several components, starting with:
 
 * [API_EXAMPLE_4](src/API_EXAMPLE_4.go) - a path solving example, with loop corrections (quantum style).
 
-* [python_integration_example.py](src/python_integration_example.py) - a basic Python interface (TBD)
+* [python_integration_example.py](src/python_integration_example.py) - a basic Python example
+
+* [SSTorytime.py](src/SSTorytime.py) - Includable Python interface for SSTorytime, basic functions (TBD)
 
 
 

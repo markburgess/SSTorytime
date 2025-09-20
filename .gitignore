@@ -18,6 +18,7 @@ dotest*
 /tests/load/*.log
 
 /configure_flags.env
+__pycache__/
 
 N4L
 N4L-db

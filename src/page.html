@@ -1322,39 +1322,43 @@
         return parent;
       }
 
-      /***********************************************************/
+/***********************************************************/
 
-      function DrawPath(lastarrow, thisx, thisy, thisz, lastx, lasty, lastz) {
-        if (lastx != 0 || lasty != 0 || lastz != 0) {
-          switch (lastarrow) {
-            case -3:
-              Expresses(thisx, thisy, thisz, lastx, lasty, lastz);
-              break;
-            case -2:
+function DrawPath(lastarrow, thisx, thisy, thisz, lastx, lasty, lastz) 
+{
+
+if (lastx != 0 || lasty != 0 || lastz != 0) 
+   {
+   switch (lastarrow) 
+      {
+      case -3:
+          Expresses(thisx, thisy, thisz, lastx, lasty, lastz);
+          break;
+      case -2:
               Contains(thisx, thisy, thisz, lastx, lasty, lastz);
               break;
-            case -1:
+      case -1:
               LeadsTo(thisx, thisy, thisz, lastx, lasty, lastz);
               break;
-            case 0:
+      case 0:
               LeadsTo(thisx, thisy, thisz, lastx, lasty, lastz);
               break;
-            case 1:
+      case 1:
               LeadsTo(lastx, lasty, lastz, thisx, thisy, thisz);
               break;
-            case 2:
+      case 2:
               Contains(lastx, lasty, lastz, thisx, thisy, thisz);
               break;
-            case 3:
+      case 3:
               Expresses(lastx, lasty, lastz, thisx, thisy, thisz);
               break;
-            default:
+      default:
               console.log("Bad value", lastarrow);
-          }
-        }
       }
+   }
+}
 
-      /***********************************************************/
+/***********************************************************/
 
 function PrintNotes(parent, array) 
 {
@@ -1370,7 +1374,8 @@ if (array == null || array.length < 1)
 let lastx = 0;
 let lasty = 0;
 let lastz = 0;
-let lastarrow = 0;
+let sttype = 0;
+let lastline = 0;
 let last_line_start = "";
 
 let chtxt;
@@ -1409,20 +1414,20 @@ for (let line = 0; line < array.length; line++)
 
          // Add graphic rendering
 
-         DrawPath(lastarrow, thisx, thisy, thisz, lastx, lasty, lastz);
-
-         if (i < array[line].length - 1) 
+         if (i == 0 && str == last_line_start && line > 0)
             {
-            lastx = thisx;
-            lasty = thisy;
-            lastz = thisz;
-            } 
-         else
-            {
-            lastx = 0;
-            lasty = 0;
-            lastz = 0;
+            // Connect lines in order
+            let prx = array[lastline][i].XYZ;
+            let pry = array[lastline][i].XYZ;
+            let prz = array[lastline][i].XYZ;
+            DrawPath(sttype, thisx, thisy, thisz, prx, pry, prz);
             }
+
+         DrawPath(sttype, thisx, thisy, thisz, lastx, lasty, lastz);
+
+         lastx = thisx;
+         lasty = thisy;
+         lastz = thisz;
 
          Event(thisx, thisy, thisz);
          Label(thisx, thisy, thisz, str.slice(0, 25), 12, "black");
@@ -1453,6 +1458,8 @@ for (let line = 0; line < array.length; line++)
             {
             // New line has possble new chap/context
 
+            lastline = line;
+
             let line_no = document.createElement("span");
             line_no.textContent = "At line " + array[line][i].Line;
             parent.appendChild(line_no);
@@ -1481,6 +1488,8 @@ for (let line = 0; line < array.length; line++)
 
          // Subsequent items on same line inside a card 
 
+         // if pre-formatted
+
          if (str.includes("\n")) 
             {
             let text_link = document.createElement("a");
@@ -1502,8 +1511,8 @@ for (let line = 0; line < array.length; line++)
             }
 
          ProgressCheckBox(subline,nclass,ncptr,array[line][i].Chp,array[line][i].Ctx);
-         } // arrow
-      else 
+         }
+      else // arrow 
          {
          const then = 2; // reserved vectors
          const prev = 3;
@@ -1512,7 +1521,7 @@ for (let line = 0; line < array.length; line++)
          let arrptr = array[line][i].Arr;
          let stindex = array[line][i].STindex;
 
-         lastarrow = stindex - ST_ZERO;
+         sttype = stindex - ST_ZERO;
 
          if (arrptr == then || arrptr == prev) 
             {

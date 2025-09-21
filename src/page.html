@@ -92,6 +92,27 @@
         border: 1px var(--stone-5) solid;
         box-shadow: var(--shadow-3);
       }
+      
+      .card-note {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        margin-bottom: 1ch;
+        font-family: var(--font-rounded-sans) !important;
+        font-size: var(--font-size-fluid-0);
+        border-radius: var(--radius-3);
+        box-shadow: var(shadow-1);
+        border: 1px var(--gray-3) solid;
+        color: var(--gray-11) !important;
+      }
+
+      .card-note > * {
+        font-family: var(--font-rounded-sans);
+        font-stretch: expanded;
+        font-weight: var(--font-weight-5);
+        color: var(--gray-10) !important;
+      }
+		
 
       .card-view {
         border-radius: var(--radius-3);
@@ -148,9 +169,10 @@
       }
 
       h2 {
-        font-size: var(--font-size-5);
+        font-size: var(--font-size-4);
         color: #5599cc;
         padding-block: 1ch;
+        max-width: 60ch;
         margin: 0;
         margin-bottom: 0.5ch;
       }
@@ -347,6 +369,9 @@
 
       #nptr-chapter-context-helpline {
         margin-left: 60px;
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
         margin-bottom: 20px;
         padding-block: 10px;
       }
@@ -1338,7 +1363,7 @@
         }
 
         let child = document.createElement("div");
-        child.setAttribute("class", "card-view");
+        child.setAttribute("class", "card-note");
         child.id = "orbit_column_1of3"; // col 1 spans all 3 columns, full width for full node text
 
         let lastx = 0;
@@ -1397,8 +1422,8 @@
               if (i == 0 && str == last_line_start) {
                 // repeated item, so ditto
 
-                let newline = document.createElement("br"); // don't separate completely
-                child.appendChild(newline);
+                // let newline = document.createElement("br"); // don't separate completely
+                // child.appendChild(newline); // NOTE: for your consideration 
 
                 let text = document.createElement("span");
                 text.id = "ditto";
@@ -1414,7 +1439,7 @@
                   
                 parent.appendChild(child);
                 child = document.createElement("div");
-                child.setAttribute("class", "card-view");
+                child.setAttribute("class", "card-note");
                 }
 
                 // New line has possble new chap/context
@@ -1458,11 +1483,11 @@
 
                 let text = document.createElement("span");
                 text.textContent = str;
-                text.style.fontFamily = "Times New Roman";
+                //  text.style.fontFamily = "Times New Roman";
 
                 if (str.length < 20) {
-                  text.style.fontSize = "150%";
-                  text.style.padding = "10px";
+                 // text.style.fontSize = "150%";
+                 // text.style.padding = "10px";
                 }
 
                 text_link.appendChild(text);

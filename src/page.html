@@ -1451,6 +1451,21 @@ for (let line = 0; line < array.length; line++)
             }
          else if (i == 0)
             {
+            // New line has possble new chap/context
+
+            let line_no = document.createElement("span");
+            line_no.textContent = "At line " + array[line][i].Line;
+            parent.appendChild(line_no);
+
+            chtxt = array[line][i].Chp + ":" + array[line][i].Ctx;
+
+            if (chtxt.length > 4) 
+               {
+               let sec = document.createElement("i");
+               sec.textContent = '  From: "' + chtxt + '"';
+               parent.appendChild(sec);
+               }
+
             child = document.createElement("div");
             child.setAttribute("class", "card-view");
             parent.appendChild(child);
@@ -1458,7 +1473,6 @@ for (let line = 0; line < array.length; line++)
             subline.setAttribute("class", "line-view");
             child.append(subline);
             }
-
 
          if (i == 0) // update current
             {

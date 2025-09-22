@@ -7188,6 +7188,7 @@ const (
 	CMD_AS = "\\as"
 	CMD_CHAPTER = "\\chapter"
 	CMD_CONTENTS = "\\contents"
+	CMD_TOC = "\\toc"
 	CMD_SECTION = "\\section"
 	CMD_IN = "\\in"
 	CMD_ARROW = "\\arrow"
@@ -7196,6 +7197,8 @@ const (
 	CMD_RANGE = "\\range"
 	CMD_DISTANCE = "\\distance"
 	CMD_STATS = "\\stats"
+	CMD_REMIND = "\\remind"
+	CMD_HELP = "\\help"
 )
 
 //******************************************************************
@@ -7209,12 +7212,14 @@ func DecodeSearchField(cmd string) SearchParameters {
 		CMD_PATH,CMD_FROM,CMD_TO,
 		CMD_SEQ1,CMD_SEQ2,CMD_STORY,CMD_STORIES,
 		CMD_CONTEXT,CMD_CTX,CMD_AS,
-		CMD_CHAPTER,CMD_IN,CMD_SECTION,CMD_CONTENTS,
+		CMD_CHAPTER,CMD_IN,CMD_SECTION,CMD_CONTENTS,CMD_TOC,
 		CMD_ARROW,
 		CMD_ON,CMD_ABOUT,CMD_FOR,
 		CMD_PAGE,
 		CMD_LIMIT,CMD_RANGE,CMD_DISTANCE,CMD_DEPTH,
 		CMD_STATS,
+		CMD_REMIND,
+		CMD_HELP,
         }
 	
 	// parentheses are reserved for unaccenting
@@ -7296,7 +7301,12 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				param.Stats = true
 				continue
 
-			case CMD_CHAPTER, CMD_IN, CMD_CONTENTS:
+			case CMD_HELP:
+				param.Chapter = "SSTorytime help"
+				param.Name = []string{"any"}
+				continue
+
+			case CMD_CHAPTER, CMD_SECTION, CMD_IN, CMD_CONTENTS, CMD_TOC:
 				if lenp > p+1 {
 					str := cmd_parts[c][p+1]
 					str = strings.TrimSpace(str)

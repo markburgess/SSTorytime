@@ -1,5 +1,44 @@
 
-- SSTorytime search examples
+- SSTorytime help and search examples
+
+ :: help ::
+
+ Type commands to search, e.g. "monitoring signal" or brain (url) "https://github.com/markburgess/SSTorytime/blob/main/docs/search_examples.md"
+
+ Commands are signified with a backslash e.g. "\command", but on a command line, you need to escape them with two blackslashes \\command.
+
+ :: Commands ::
+
+	\on        (means) on, about, or for a subject, e.g. \notes \on brain
+	\for       (means)    "
+	\about     (means)    "
+	\in        (means)    "
+	\notes     (means) show the notes as you wrote them in N4L
+	\browse    (means)    "
+	\page      (means)    "
+	\path      (means) solve for a continguous path
+	\sequence  (means) look for notes with _sequence_ stories
+	\seq       (means)    "
+	\story     (means)    "
+	\stories   (means)    "
+	\from      (means) search for paths from some starting point, e.g. \from !start!, \from b3
+	\to        (means) search for paths going to some point, e.g.  \to b3, \to target
+	\ctx       (means) specify a context to filter results,  e.g.  any \context Monday
+	\context   (means)     "
+	\as        (means)     "
+	\chapter   (means) specify a chapter to restrict the search
+	\section   (means)     "
+	\contents  (means) show a table of contents
+	\toc       (means)     "
+	\arrow     (means) restrict by arrow type, name, or number
+	\limit     (means) specificy the maximum search results
+	\depth     (means) specify the depth of path search
+	\range     (means)    "
+	\distance  (means)    "
+	\stats     (means) Show statistics of usage, as determined by visitation and checkbox clicks
+	\remind    (means) Show reminders from reminders.n4l
+	\help      (means) Show this help
+ 
 
  :: Word search , _sequence_ ::
 

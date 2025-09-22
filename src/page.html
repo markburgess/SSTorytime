@@ -1364,7 +1364,7 @@ if (array == null || array.length < 1)
 let lastx = 0;
 let lasty = 0;
 let lastz = 0;
-let sttype = 0;
+let sttype = 3;
 let lastline = 0;
 let last_line_start = "";
 
@@ -1404,16 +1404,19 @@ for (let line = 0; line < array.length; line++)
 
          // Add graphic rendering
 
-         if (i == 0 && str == last_line_start && line > 0)
+         if (i == 0 && line > 0)
             {
             // Connect lines in order
-            let prx = array[lastline][i].XYZ;
-            let pry = array[lastline][i].XYZ;
-            let prz = array[lastline][i].XYZ;
-            DrawPath(sttype, thisx, thisy, thisz, prx, pry, prz);
+            let prx = array[lastline][0].XYZ.X;
+            let pry = array[lastline][0].XYZ.Y;
+            let prz = array[lastline][0].XYZ.Z;
+            DrawPath(sttype, prx, pry, prz, thisx, thisy, thisz);
             }
 
-         DrawPath(sttype, thisx, thisy, thisz, lastx, lasty, lastz);
+         if (i > 0)
+            {
+            DrawPath(sttype,lastx, lasty, lastz, thisx, thisy, thisz);
+            }
 
          lastx = thisx;
          lasty = thisy;
@@ -2427,7 +2430,7 @@ let toy = Ty(xp, yp, zp);
 let scale = 1.1 - zp;
 let angle = Math.atan2(toy - fry, tox - frx);
 let headangle = Math.PI / 12;
-let headlen = 20 * scale;
+let headlen = 12 * scale;
 let noderadius = 10 * scale;
 
 CTX.beginPath();

@@ -647,8 +647,8 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop function empty_path")
 		ctx.DB.QueryRow("drop function match_arrows")
 		ctx.DB.QueryRow("drop function ArrowInList")
-		ctx.DB.QueryRow("drop function GetStoryStartNodes")
 		ctx.DB.QueryRow("drop function GetNCCStoryStartNodes")
+		ctx.DB.QueryRow("drop function GetStoryStartNodes")
 		ctx.DB.QueryRow("drop function GetAppointments")
 		ctx.DB.QueryRow("drop function UnCmp")
 		ctx.DB.QueryRow("drop function DeleteChapter")
@@ -2875,39 +2875,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	row.Close()
 
-	// ***********************************
-	// Find the start of story paths, where outgoing nodes match but no incoming
-	// This means we've reached the top of a hierarchy
-	// ***********************************
-
-	// Find the node that sit's at the start/top of a causal chain
-
-	qstr =  "CREATE OR REPLACE FUNCTION GetStoryStartNodes(arrow int,inverse int,sttype int)\n"+
-		"RETURNS NodePtr[] AS $fn$\n"+
-		"DECLARE \n"+
-		"   retval nodeptr[] = ARRAY[]::nodeptr[];\n"+
-		"BEGIN\n"+
-		"   CASE sttype \n"
-	
-	for st := -EXPRESS; st <= EXPRESS; st++ {
-		qstr += fmt.Sprintf("WHEN %d THEN\n"+
-			"   SELECT array_agg(Nptr) into retval FROM Node WHERE ArrowInList(arrow,%s) AND NOT ArrowInList(inverse,%s);\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
-	}
-	qstr += "ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
-		"END CASE;\n" +
-		"    RETURN retval; \n" +
-		"END ;\n" +
-		"$fn$ LANGUAGE plpgsql;\n"
-
-	row,err = ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("FAILED \n",qstr,err)
-	}
-
-	row.Close()
-
-	// HELPER
+	//
 
 	qstr =  "CREATE OR REPLACE FUNCTION UnCmp(value text,unacc boolean)\n"+
 		"RETURNS text AS $fn$\n"+
@@ -2934,51 +2902,46 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// Find the node that sits at the start/top of a causal chain
 
-	qstr =  "CREATE OR REPLACE FUNCTION GetNCCStoryStartNodes(nodes NodePtr[],arrow int,inverse int,sttype int,maxlimit int)\n"+
-		"RETURNS NodePtr[] AS $fn$\n"+
+	qstr =  "CREATE OR REPLACE FUNCTION IsStoryStartNode(this NodePtr,arrow int,inverse int,sttype int,maxlimit int)\n"+
+		"RETURNS boolean AS $fn$\n"+
 		"DECLARE \n"+
-		"   retval NodePtr[] = ARRAY[]::nodeptr[];\n"+
 		"   fwd    Link[];\n"+
 		"   bwd    Link[];\n"+
 		"   lnk    Link;\n"+
-		"   n      Node;\n"+
+		"   nd      Node;\n"+
 		"   a      int;\n"+
 		"   st     int;\n"+
 		"   okf    boolean;\n"+
-		"   notokb boolean;\n"+
 		"BEGIN\n"+
 
-		"FOREACH n IN ARRAY nodes LOOP\n"+
-		"   CASE sttype \n"
+		"CASE sttype \n"
 	for st := -EXPRESS; st <= EXPRESS; st++ {
 		qstr += fmt.Sprintf("   WHEN %d THEN\n"+
-			"            SELECT %s,%s INTO fwd,bwd FROM Node WHERE NOT L=0 AND NPtr=n LIMIT maxlimit;\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
+			"            SELECT %s,%s INTO fwd,bwd FROM Node WHERE NOT L=0 AND NPtr=this LIMIT maxlimit;\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
 	}
 	
-	qstr += "         ELSE RAISE EXCEPTION 'No such sttype %', st;\n" +
-		"   END CASE;\n" +
-		"   FOREACH lnk IN ARRAY fwd LOOP\n"+
-		"      IF lnk.Arr = arrow THEN"+
-		"         okf = true;\n"+
+	qstr += "      ELSE RAISE EXCEPTION 'No such sttype %', st;\n" +
+		"END CASE;\n" +
+
+		// Do we find arrow but NOT inverse
+
+		"FOREACH lnk IN ARRAY fwd LOOP\n"+
+		"   IF lnk.Arr = arrow THEN"+
+		"      okf = true;\n"+
+		"   END IF;"+
+		"END LOOP;\n" +
+
+		"IF st = 0 THEN\n"+
+		"   RETURN okf;\n"+
+		"ELSE\n"+
+		"   FOREACH lnk IN ARRAY bwd LOOP\n"+
+		"      IF lnk.Arr = inverse THEN"+
+		"         RETURN false;\n"+
 		"      END IF;"+
 		"   END LOOP;\n" +
-		"   IF st = 0 THEN\n"+
-		"      retval = array_append(retval,n)"+
-		"      EXIT;\n"+
-		"   ELSE\n"+
-		"      FOREACH lnk IN ARRAY bwd LOOP\n"+
-		"         IF lnk.Arr = inv THEN"+
-		"            notokb = true;\n"+
-		"            EXIT;\n"+
-		"         END IF;"+
-		"      END LOOP;\n" +
-		"      IF okf AND NOT notokb THEN\n"+
-		"         retval = array_append(retval,n)"+
-		"         EXIT;\n"+
-		"      END IF;\n"+
-		"   END IF;\n"+
-		"END LOOP;\n"+
-		"RETURN retval;\n" +
+		"   RETURN okf;"+
+		"END IF;\n"+
+		"RETURN false;\n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
 
@@ -3983,36 +3946,40 @@ func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]
 
 func GetNCCNodesStartingStoriesForArrow(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []NodePtr {
 
-	n := FormatSQLNodePtrArray(nodeptrs)
-
 	var matches []NodePtr
 
 	// Need to take each arrow type at a time
 
-	for a := 0; a < len(arrowptrs); a++ {
+	for _,n := range nodeptrs {
 
-		inv := INVERSE_ARROWS[arrowptrs[a]]
+		for a := 0; a < len(arrowptrs); a++ {
 
-		qstr := fmt.Sprintf("select GetNCCStoryStartNodes('%s',%d,%d,%d,%d)",n,arrowptrs[a],inv,sttypes[a],limit)
+			inv := INVERSE_ARROWS[arrowptrs[a]]
 
-		row,err := ctx.DB.Query(qstr)
-		
-		if err != nil {
-			fmt.Println("GetNodesNCCStartingStoriesForArrow failed\n",qstr,err)
-			return nil
+			qstr := fmt.Sprintf("select IsStoryStartNode('(%d,%d)'::NodePtr,%d,%d,%d,%d)",n.Class,n.CPtr,arrowptrs[a],inv,sttypes[a],limit)
+			fmt.Println(qstr)
+			row,err := ctx.DB.Query(qstr)
+			
+			if err != nil {
+				fmt.Println("GetNodesNCCStartingStoriesForArrow failed\n",qstr,err)
+				return nil
+			}
+			
+			var yesno bool
+			
+			for row.Next() {		
+				err = row.Scan(&yesno)
+			}
+
+			if yesno {
+				matches = append(matches,n)
+			}
+			
+			row.Close()
 		}
-		
-		var nptrstring string
-		
-		for row.Next() {		
-			err = row.Scan(&nptrstring)
-			//match := ParseSQLNPtrArray(nptrstring)
-			//matches = append(matches,match...)
-		}
-		
-		row.Close()
 	}
 
+	fmt.Println("GOT ",matches)
 	return matches
 }
 

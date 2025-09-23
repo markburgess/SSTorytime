@@ -436,7 +436,10 @@
 
     <script type="text/x-mathjax-config">
       MathJax.Hub.Config({
-        tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+        tex2jax: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            displayMath: [['$$','$$'], ['\\[','\\]']],
+}
       });
     </script>
 
@@ -568,7 +571,7 @@ let title = "app";
 switch (obj.Response) 
    {
    case "Orbits":
-       if (obj.Content[0] != null) 
+       if (obj.Content != null && obj.Content[0] != null) 
           {
           title = obj.Content[0].Text;
           }
@@ -584,7 +587,14 @@ switch (obj.Response)
             title = "Path solutions";
             break;
    case "Sequence":
-            title = "Story sequences ... " + obj.Content[0].Chapter;
+            if (obj.Content != null && obj.Content[0] != null)
+               {
+               title = "Story sequences ... " + obj.Content[0].Chapter;
+               }
+            else
+               {
+               title = "Story sequences ... "
+               }
             break;
    case "PageMap":
             title = "Page notes about " + obj.Content.Title;
@@ -757,16 +767,24 @@ section.appendChild(panel);
 CANVAS = CreateCanvas();
 DrawGrid(0, 0, 1);
 
-let counter = 0;
+let counter = 1;
 let laststory = obj.Content[0]; // arbitrary init
+
+console.log("xxx",obj);
 
 for (let story of obj.Content) 
    {
-   let item = document.createElement("h2");
-   item.textContent = story.Chap;
-   panel.appendChild(item);
+   if (counter == 1)
+      {
+      let item = document.createElement("h2");
+      item.textContent = story.Chap;
+      panel.appendChild(item);
+      let citem = document.createElement("span");
+      citem.textContent = "XXXXXXX" + story.axis.Context;
+      panel.appendChild(citem);
+      }
 
-   ShowNodeEvent(panel, story, counter, "fwd", "then", "span");
+   ShowSequenceItem(panel, story, counter, "fwd", "then", "span");
    PlotGraphics(story, laststory);
    laststory = story; // link up
 
@@ -1440,6 +1458,7 @@ for (let line = 0; line < array.length; line++)
             subline.setAttribute("class", "line-view");
             child.append(subline);
             let text = document.createElement("span");
+            //text.style.cssText = "display: inline-block;";
             text.id = "ditto";
             text.textContent = ' . . . .  .   " . . . . .   ';
             text.style.fontFamily = "Times New Roman";
@@ -1498,6 +1517,7 @@ for (let line = 0; line < array.length; line++)
             text_link.onclick = function () { sendlinkData(nclass, ncptr); };
 
             let text = document.createElement("span");
+            //text.style.cssText = "display: inline-block;";
             text.textContent = str;
             text_link.appendChild(text);
             subline.appendChild(text_link);
@@ -1663,6 +1683,66 @@ AddLinkOrbits(panel, child, event, Ic2, skiparrow);
 
 AddLinkOrbits(panel, child, event, Im1, skiparrow);
 AddLinkOrbits(panel, child, event, Il1, skiparrow);
+}
+
+/***********************************************************/
+
+function ShowSequenceItem(panel,event,counter,direction,skiparrow,anchortag)
+{
+// create a div panel for the orbit root node
+
+let child = document.createElement("div");
+child.setAttribute("class", "card-view");
+panel.appendChild(child);
+
+if (event == null) 
+   {
+   return;
+   }
+
+let text = counter + ". " + event.Text;
+let nptrtxt = "(" + event.NPtr.Class + "," + event.NPtr.CPtr + ")";
+
+// ** BEGIN 1: Here we print the full text for column_1of3 either as pre or p
+
+if (text.includes("\n")) 
+   {
+   let from_link = document.createElement("a");
+   from_link.onclick = function () 
+      {
+      sendlinkData(event.NPtr.Class, event.NPtr.CPtr);
+      };
+
+   let from_text = document.createElement("pre");
+   from_text.nameClass = "text";
+   from_text.textContent = text;
+   from_link.nameClass = "text";
+   from_link.appendChild(from_text);
+
+   child.appendChild(from_link);
+   } 
+else 
+   {
+   let from_link = document.createElement("span");
+   from_link.onclick = function () { sendlinkData(event.NPtr.Class, event.NPtr.CPtr); };
+   let from_text = document.createElement(anchortag);
+   from_link.nameClass = "text";
+   from_link.appendChild(from_text);
+
+   child.appendChild(from_link);
+
+   from_text.textContent = text + "    "
+   }
+
+
+ProgressCheckBox(child,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context,);
+
+// See what pathways we are part of and add notes
+
+CheckSingleCone(panel,child,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1,event.Orbits[Im1],event.Orbits[Il1]);
+CheckSingleCone(panel,child,"[CN]",event.NPtr.Class,event.NPtr.CPtr,2,event.Orbits[Im2],event.Orbits[Ic2]);
+CheckSingleCone(panel,child,"[EP]",event.NPtr.Class,event.NPtr.CPtr,3,event.Orbits[Im3],event.Orbits[Ie3]);
+CheckSingleCone(panel,child,"[NR]",event.NPtr.Class,event.NPtr.CPtr,0,event.Orbits[In0],event.Orbits[In0]);
 }
 
 /***********************************************************/

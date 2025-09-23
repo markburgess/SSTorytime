@@ -3663,7 +3663,7 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowP
 	nm = SQLEscape(nm)
 	chap = SQLEscape(chap)
 
-	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L LIMIT %d",NodeWhereString(nm,chap,cn,arrow),limit)
+	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY NPtr,L LIMIT %d",NodeWhereString(nm,chap,cn,arrow),limit)
 
 	row, err := ctx.DB.Query(qstr)
 
@@ -4016,6 +4016,7 @@ func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,name,chapter stri
 
 	qstr = fmt.Sprintf("select GetNCCStoryStartNodes(%d,%d,%d,'%s','%s',%s,%s,%s)",arrowptr,INVERSE_ARROWS[arrowptr],sttype,nm,chp,cntx,rm_nm,rm_ch)
 
+	fmt.Println("QTRS",qstr)
 	row,err := ctx.DB.Query(qstr)
 
 	if err != nil {
@@ -4046,6 +4047,13 @@ func GetDBArrowsWithArrowName(ctx PoSST,s string) (ArrowPtr,int) {
 		DownloadArrowsFromDB(ctx)
 	}
 
+	s = strings.Trim(s,"!")
+
+	if s == "" {
+		fmt.Println("No such arrow found in database:",s)
+		return 0,0
+	}
+
 	for a := range ARROW_DIRECTORY {
 		if s == ARROW_DIRECTORY[a].Long || s == ARROW_DIRECTORY[a].Short {
 			sttype := STIndexToSTType(ARROW_DIRECTORY[a].STAindex)
@@ -4067,9 +4075,23 @@ func GetDBArrowsMatchingArrowName(ctx PoSST,s string) []ArrowPtr {
 		DownloadArrowsFromDB(ctx)
 	}
 
-	for a := range ARROW_DIRECTORY {
-		if SimilarString(ARROW_DIRECTORY[a].Long,s) || SimilarString(ARROW_DIRECTORY[a].Short,s) {
-			list = append(list,ARROW_DIRECTORY[a].Ptr)
+	trimmed := strings.Trim(s,"!")
+
+	if trimmed == "" {
+		return list
+	}
+
+	if trimmed != s {
+		for a := range ARROW_DIRECTORY {
+			if ARROW_DIRECTORY[a].Long==trimmed || ARROW_DIRECTORY[a].Short==trimmed {
+				list = append(list,ARROW_DIRECTORY[a].Ptr)
+			}
+		}
+	} else {
+		for a := range ARROW_DIRECTORY {
+			if SimilarString(ARROW_DIRECTORY[a].Long,s) || SimilarString(ARROW_DIRECTORY[a].Short,s) {
+				list = append(list,ARROW_DIRECTORY[a].Ptr)
+			}
 		}
 	}
 
@@ -4082,6 +4104,12 @@ func GetDBArrowByName(ctx PoSST,name string) ArrowPtr {
 
 	if ARROW_DIRECTORY_TOP == 0 {
 		DownloadArrowsFromDB(ctx)
+	}
+
+	name = strings.Trim(name,"!")
+
+	if name == "" {
+		return 0
 	}
 
 	ptr, ok := ARROW_SHORT_DIR[name]
@@ -4169,6 +4197,7 @@ func ArrowPtrFromArrowsNames(ctx PoSST,arrows []string) ([]ArrowPtr,[]int) {
 				if arrowptr > 0 {
 					arrdir := GetDBArrowByPtr(ctx,arrowptr)
 					arr = append(arr,arrdir.Ptr)
+					stt = append(stt,STIndexToSTType(arrdir.STAindex))
 				}
 			}
 		} else {
@@ -4180,6 +4209,7 @@ func ArrowPtrFromArrowsNames(ctx PoSST,arrows []string) ([]ArrowPtr,[]int) {
 				// whatever remains can only be an arrowpointer
 				arrdir := GetDBArrowByPtr(ctx,ArrowPtr(number))
 				arr = append(arr,arrdir.Ptr)
+				stt = append(stt,STIndexToSTType(arrdir.STAindex))
 			}
 		}
 	}
@@ -5892,8 +5922,11 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 		for lnk := 0; lnk < len(axis); lnk++ {
 			
 			// Now add the orbit at this node, not including the axis
+
 			var ne NodeEvent
+
 			nd := GetDBNodeByNodePtr(ctx,axis[lnk].Dst)
+
 			ne.Text = nd.S
 			ne.L = nd.L
 			ne.Chap = nd.Chap

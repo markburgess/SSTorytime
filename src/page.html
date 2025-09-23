@@ -124,6 +124,17 @@
         box-shadow: var(--shadow-2);
       }
 
+		  .line-view {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1ch;
+        align-items: center;
+      }
+      .line-view.checkbox {
+        height: auto;
+        align-items: center;
+      }
+
       /* Article / Main Display Area */
 
       a[title] {
@@ -1517,6 +1528,7 @@ for (let line = 0; line < array.length; line++)
             text_link.onclick = function () { sendlinkData(nclass, ncptr); };
 
             let text = document.createElement("span");
+            text.setAttribute("class", "line-view");
             //text.style.cssText = "display: inline-block;";
             text.textContent = str;
             text_link.appendChild(text);

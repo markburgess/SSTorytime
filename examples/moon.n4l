@@ -1,0 +1,38 @@
+
+- Moon tidal effect
+
+  :: moon , tides ::
+
+The tides raised by the Moon are dragged ahead of the line of centres due to the "friction" of the contintental ocean floors. This means the Moon exerts a braking torque on the Earth. The loss of spin angular momentum is transferred to the Moon's orbital momentum.
+
+ :: some constants ::
+
+ Moment of Inertia of the Earth (has value) "\( I = 8.1 \times 10^{37} kgm^2\)"
+ Radius of the Moon             (has value) "\( R = 3.8 \times 10^{8} m\)"
+ Mass of the Moon               (has value) "\( m = 7.4 \times 10^{22} kg\)"
+ Mass of the Earth              (has value) "\( M = 6 \times 10^{24} kg\)"
+
+ :: calculation, _sequence_ ::
+
+# Note, we have to put \[ \] in quotes
+
+"The total angular momentum \(L\) of the Earth-Moon system is approximately constant. \[ L_{\rm TOT} = I\omega_{\rm earth} + \mu R^2 \omega_{\rm moon} \] where \(\mu\) is the reduced mass \[ \mu = \frac{mM}{m+M} = 7.4 \times 10^{22} kg \]"
+
+"\(R\) and \(\omega\) are related by Kepler's Law: \[ \omega_{\rm Moon}^2 R^3 = GM\] thus the total angular momentum is \[ L_{\rm tot} = I \omega_E + \mu R^{\frac{1}{2}} \sqrt{GM} \]"
+
+"To invoke the conservation of momentum, differentiate %wrt time \(d/dt = 0\) \[ 0 = I\dot\omega_E + \frac{1}{2}\mu R^{\frac{1}{2}} \sqrt{GM} \frac{dR}{dt}\]"
+
+"Substuting from Kepler's law \[ I\dot\omega_E +  \frac{1}{2}\mu R\omega_M \frac{dR}{dt}  = 0 \]"
+
+"But \[ \dot \omega_E = - \frac{2\pi}{T^2} = -\omega_E \frac{\dot T}{T}\] where \(\dot T = dT/dt\), so the rate of increase of distance between Earth and Moon is \[ \frac{dR}{dt} = - \frac{2I}{\mu R} \left( \frac{\omega_E}{\omega_M} \right) \cdot \left( \frac{\dot T}{T} \right) \]"
+
+"From historical observations, the rate at which our day in lengthening is about \(2ms\) per century \( = 2 \times 10^{-5} \) seconds per year."
+
+"Rate of distance (increase) \[   \frac{dR}{dt} = \frac{2 \times 8.1 \times 10^{37}}{7.4 \times 10^{22} \times 3.8 \times 10^8} \left( \frac{27}{1} \times \frac{2 \times 10^{-5}}{3600 \times 24} \right) \] as the moon's orbit is about 27 days and the number of seconds in a day is about \(60 \times 60 \times 24\)."
+ " (note) There are some approximations and measurement uncertainties,
+
+"Rate of distance (increase) \( = 0.036\) m/year, or 3.6 centimetres per year. (note) This can be measured by laser reflection off the Moon."
+
+:: notes::
+
+wrt (means) with respect to

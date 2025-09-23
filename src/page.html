@@ -781,8 +781,6 @@ DrawGrid(0, 0, 1);
 let counter = 1;
 let laststory = obj.Content[0]; // arbitrary init
 
-console.log("xxx",obj);
-
 for (let story of obj.Content) 
    {
    if (counter == 1)
@@ -791,7 +789,7 @@ for (let story of obj.Content)
       item.textContent = story.Chap;
       panel.appendChild(item);
       let citem = document.createElement("span");
-      citem.textContent = "XXXXXXX";
+      citem.textContent = "In the context:   " + story.Context;
       panel.appendChild(citem);
       }
 

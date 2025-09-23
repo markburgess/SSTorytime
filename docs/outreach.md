@@ -11,6 +11,8 @@ encouraging news.
 
 ## Articles about Semantic Spacetime by others
 
+* [A γ(3,4) Semantic Spacetime Agent](https://github.com/kzk2000/sstt-agent/tree/master) - Semantic Spacetime applied to LLMs
+
 * [Semantic Spacetime: Understanding Graph Relationships in Knowledge Representation](https://ai.plainenglish.io/semantic-spacetime-understanding-graph-relationships-in-knowledge-representation-1175cab8282d)
 
 * [Semantic Space Time for AI Agent Memory — Space and Coordinates](https://ai.plainenglish.io/semantic-space-time-for-ai-agent-memory-space-and-coordinates-2194b93ef74d)

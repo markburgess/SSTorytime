@@ -324,7 +324,7 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	// Look for axial trails following a particular arrow, like _sequence_ 
 
 	if name && sequence || sequence && arrows {
-		HandleStories(w,r,CTX,search,limit)
+		HandleStories(w,r,CTX,search,nodeptrs,arrowptrs,sttype,limit)
 		return
 	}
 
@@ -573,38 +573,27 @@ func HandlePageMap(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search S
 
 //******************************************************************
 
-func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,limit int) {
+func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,nodeptrs []SST.NodePtr,arrowptrs []SST.ArrowPtr,sttypes []int,limit int) {
 
-	name := search.Name
-	arrows := search.Arrows
-	chapter := search.Chapter
-	context := search.Context
-
-	if arrows == nil {
-		arrows = []string{"then"}
+	if arrowptrs == nil {
+		arrowptrs,sttypes = SST.ArrowPtrFromArrowsNames(CTX,[]string{"!then!"})
 	}
 
 	fmt.Println("Solver/handler: HandleStories()")
 
-	var jarray string
+	stories := SST.GetSequenceContainers(ctx,nodeptrs,arrowptrs,sttypes,limit)
 
-	for n := range name {
-		for a := range arrows {
-			stories := SST.GetSequenceContainers(ctx,arrows[a],name[n],chapter,context,limit)
+	jarray := ""
 
-			for s := range stories {
-				var jstory string
-
-				for a := 0; a < len(stories[s].Axis); a++ {
-					jstr := JSONStoryNodeEvent(stories[s].Axis[a])
-					jstory += fmt.Sprintf("%s,",jstr)
-				}
-				jstory = strings.Trim(jstory,",")
-				jarray += fmt.Sprintf("[%s],",jstory)
-			}
-			break
+	for s := range stories {
+		var jstory string
+		
+		for a := 0; a < len(stories[s].Axis); a++ {
+			jstr := JSONStoryNodeEvent(stories[s].Axis[a])
+			jstory += fmt.Sprintf("%s,",jstr)
 		}
-		break
+		jstory = strings.Trim(jstory,",")
+		jarray += fmt.Sprintf("[%s],",jstory)
 	}
 
 	if jarray == "" {
@@ -614,11 +603,12 @@ func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search S
 	data := strings.Trim(jarray,",")
 	response := PackageResponse(ctx,search,"Sequence",data)
 
-	//fmt.Println("Sequence...",string(response))
+	fmt.Println("Sequence...",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 	fmt.Println("Done/sent sequence")
+
 }
 
 // *********************************************************************
@@ -822,6 +812,7 @@ func JSONStoryNodeEvent(en SST.NodeEvent) string {
 	c,_ := json.Marshal(en.Chap)
 	chap := SST.EscapeString(string(c))
 	jstr += fmt.Sprintf("\"Chap\": \"%s\",\n",chap)
+	jstr += fmt.Sprintf("\"Context\": \"%s\",\n",SST.EscapeString(en.Context))
 	jstr += fmt.Sprintf("\"NPtr\": { \"Class\": \"%d\", \"CPtr\" : \"%d\"},\n",en.NPtr.Class,en.NPtr.CPtr)
 	jxyz,_ := json.Marshal(en.XYZ)
 	jstr += fmt.Sprintf("\"XYZ\": %s,\n",jxyz)

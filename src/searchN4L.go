@@ -290,7 +290,7 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	// Look for axial trails following a particular arrow, like _sequence_ 
 
 	if name && sequence || sequence && arrows {
-		ShowStories(ctx,search.Arrows,search.Name,search.Chapter,search.Context,limit)
+		ShowStories(ctx,nodeptrs,arrowptrs,sttype,limit)
 		ShowTime(ctx,search)
 		return
 	}
@@ -579,42 +579,33 @@ func ShowChapterContexts(ctx SST.PoSST,chap string,context []string,limit int) {
 
 //******************************************************************
 
-func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,context []string,limit int) {
+func ShowStories(ctx SST.PoSST,nodeptrs []SST.NodePtr,arrowptrs []SST.ArrowPtr,sttypes []int,limit int) {
+
+	fmt.Println("Solver/handler: HandleStories()")
+
+	if arrowptrs == nil {
+		arrowptrs,sttypes = SST.ArrowPtrFromArrowsNames(ctx,[]string{"!then!"})
+	}
 	
-	if arrows == nil {
-		arrows = []string{"then"}
-	}
+	stories := SST.GetSequenceContainers(ctx,nodeptrs,arrowptrs,sttypes,limit)
 
-	if VERBOSE {
-		fmt.Println("Solver/handler: GetSequenceContainers()")
-	}
-
-	for n := range name {
-		for a := range arrows {
-
-			stories := SST.GetSequenceContainers(ctx,arrows[a],name[n],chapter,context,limit)
-
-			for s := range stories {
-				// if there is no unique match, the data contain a list of alternatives
-				if stories[s].Axis == nil {
-					fmt.Printf("%3d. %s\n",s,stories[s].Chapter)
-				} else {
-					fmt.Printf("The following story/sequence \"%s\"\n\n",stories[s].Chapter)
-					for ev := range stories[s].Axis {
-						fmt.Printf("\n%3d. %s\n",ev,stories[s].Axis[ev].Text)
-
-						SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,SST.EXPRESS,1)
-						SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,-SST.EXPRESS,1)
-						SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,-SST.CONTAINS,1)
-						SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,SST.LEADSTO,1)
-						SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,-SST.LEADSTO,1)
-						SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,SST.NEAR,1)
-					}
-				}
+	for s := range stories {
+		// if there is no unique match, the data contain a list of alternatives
+		if stories[s].Axis == nil {
+			fmt.Printf("%3d. %s\n",s,stories[s].Chapter)
+		} else {
+			fmt.Printf("The following story/sequence \"%s\"\n\n",stories[s].Chapter)
+			for ev := range stories[s].Axis {
+				fmt.Printf("\n%3d. %s\n",ev,stories[s].Axis[ev].Text)
+				
+				SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,SST.EXPRESS,1)
+				SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,-SST.EXPRESS,1)
+				SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,-SST.CONTAINS,1)
+				SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,SST.LEADSTO,1)
+				SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,-SST.LEADSTO,1)
+				SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,SST.NEAR,1)
 			}
-			break
 		}
-		break
 	}
 }
 

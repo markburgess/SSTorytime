@@ -2934,20 +2934,23 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// Find the node that sits at the start/top of a causal chain
 
-	qstr =  "CREATE OR REPLACE FUNCTION GetNCCStoryStartNodes(arrow int,inverse int,sttype int,name text,chapter text,context text[],rm_nm boolean, rm_ch boolean)\n"+
+	qstr =  "CREATE OR REPLACE FUNCTION GetNCCStoryStartNodes(nodes NodePtr[],arrows int[],sttype int[],limit int)\n"+
 		"RETURNS NodePtr[] AS $fn$\n"+
 		"DECLARE \n"+
-		"   retval nodeptr[] = ARRAY[]::nodeptr[];\n"+
-		"   lowname text = lower(name);"+
-		"   lowchap text = lower(chapter);"+
+		"   retval   NodePtr[] = ARRAY[]::nodeptr[];\n"+
+		"   m3 Link[];\n"+
+		"   m2 Link[];\n"+
+		"   m1 Link[];\n"+
+		"   n0 Link[];\n"+
+		"   l1 Link[];\n"+
+		"   c2 Link[];\n"+
+		"   e3 Link[];\n"+
 		"BEGIN\n"+
-		"     CASE sttype \n"
-	for st := -EXPRESS; st <= EXPRESS; st++ {
-		qstr += fmt.Sprintf("WHEN %d THEN\n"+
-			"     SELECT array_agg(Nptr) into retval FROM Node WHERE (UnCmp(S,rm_nm) LIKE lower(name)) AND (UnCmp(Chap,rm_ch) LIKE lower(chapter)) AND ArrowInContextList(arrow,%s,context) AND NOT ArrowInContextList(inverse,%s,context);\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
-	}
-	qstr += "        ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
-		"     END CASE;\n" +
+
+		"FOR n IN ARRAY nodes LOOP\n"+
+		"   SELECT Im3,Im2,Im1,In0,Il1,Ic2,Ie3 FROM Node where Nptr=n;"+
+		"   IF "+
+		"END LOOP;"+
 		"  RETURN retval; \n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
@@ -3951,70 +3954,13 @@ func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]
 
 // **************************************************************************
 
-func GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) ([]NodePtr,int) {
+func GetNCCNodesStartingStoriesForArrow(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []NodePtr {
 
-	// Find the head / starting node matching an arrow sequence.
-	// It has outgoing (+sttype) but not incoming (-sttype) arrow
+	n := FormatSQLNodePtrArray(nodeptrs)
+	a := FormatSQLIntArray(Arrow2Int(arrowptrs))
+	s := FormatSQLIntArray(sttypes)
 
-	var matches []NodePtr
-
-	arrowptr,sttype := GetDBArrowsWithArrowName(ctx,arrow)
-
-	qstr := fmt.Sprintf("select GetStoryStartNodes(%d,%d,%d)",arrowptr,INVERSE_ARROWS[arrowptr],sttype)
-		
-	row,err := ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("GetNodesStartingStoriesForArrow failed\n",qstr,err)
-		return nil,0
-	}
-	
-	var nptrstring string
-	
-	for row.Next() {		
-		err = row.Scan(&nptrstring)
-		matches = ParseSQLNPtrArray(nptrstring)
-	}
-	
-	row.Close()
-
-	return matches,sttype
-}
-
-// **************************************************************************
-
-func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,name,chapter string,context []string) []NodePtr {
-
-	// Filtered version of function
-	// Find the head / starting node matching an arrow sequence.
-	// It has outgoing (+sttype) but not incoming (-sttype) arrow
-
-	var matches []NodePtr
-	var qstr string
-
-	arrowptr,sttype := GetDBArrowsWithArrowName(ctx,arrow)
-
-	remove_name_accents,nm_stripped := IsBracketedSearchTerm(name)
-	remove_chap_accents,chap_stripped := IsBracketedSearchTerm(chapter)
-
-	chp := "%"+chap_stripped+"%"
-	nm := "%"+nm_stripped+"%"
-	cntx := FormatSQLStringArray(context)
-
-	rm_nm := "false"
-	rm_ch := "false"
-
-	if remove_name_accents {
-		rm_nm = "true"
-	}
-
-	if remove_chap_accents {
-		rm_ch = "true"
-	}
-
-	// look for _title_ in context
-
-	qstr = fmt.Sprintf("select GetNCCStoryStartNodes(%d,%d,%d,'%s','%s',%s,%s,%s)",arrowptr,INVERSE_ARROWS[arrowptr],sttype,nm,chp,cntx,rm_nm,rm_ch)
+	qstr := fmt.Sprintf("select GetNCCStoryStartNodes('%s','%s','%s',%d)",n,a,s,limit)
 
 	fmt.Println("QTRS",qstr)
 	row,err := ctx.DB.Query(qstr)
@@ -4025,11 +3971,12 @@ func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,name,chapter stri
 	}
 	
 	var nptrstring string
+	var matches []NodePtr
 
 	for row.Next() {		
 		err = row.Scan(&nptrstring)
-		match := ParseSQLNPtrArray(nptrstring)
-		matches = append(matches,match...)
+		//match := ParseSQLNPtrArray(nptrstring)
+		//matches = append(matches,match...)
 	}
 	
 	row.Close()
@@ -5894,18 +5841,14 @@ func IdempAddNote(list []Orbit, item Orbit) []Orbit {
 //
 // **************************************************************************
 
-func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,context []string, limit int) []Story {
+func GetSequenceContainers(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []Story {
 
 	var stories []Story
 
-	if arrname == "" {
-		arrname = "then"
-	}
+	openings := GetNCCNodesStartingStoriesForArrow(ctx,nodeptrs,arrowptrs,sttypes,limit)
 
-	var count int
-
-	arrowptr,_ := GetDBArrowsWithArrowName(ctx,arrname)
-	openings := GetNCCNodesStartingStoriesForArrow(ctx,arrname,search,chapter,context)
+	arrname := ""
+	count := 0
 
 	for nth := range openings {
 
@@ -5915,7 +5858,7 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 
 		story.Chapter = node.Chap
 
-		axis := GetLongestAxialPath(ctx,openings[nth],arrowptr)
+		axis := GetLongestAxialPath(ctx,openings[nth],arrowptrs[0])
 
 		directory := AssignStoryCoordinates(axis,nth,len(openings),limit)
 

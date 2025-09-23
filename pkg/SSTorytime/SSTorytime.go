@@ -2934,24 +2934,51 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// Find the node that sits at the start/top of a causal chain
 
-	qstr =  "CREATE OR REPLACE FUNCTION GetNCCStoryStartNodes(nodes NodePtr[],arrows int[],sttype int[],limit int)\n"+
+	qstr =  "CREATE OR REPLACE FUNCTION GetNCCStoryStartNodes(nodes NodePtr[],arrow int,inverse int,sttype int,maxlimit int)\n"+
 		"RETURNS NodePtr[] AS $fn$\n"+
 		"DECLARE \n"+
-		"   retval   NodePtr[] = ARRAY[]::nodeptr[];\n"+
-		"   m3 Link[];\n"+
-		"   m2 Link[];\n"+
-		"   m1 Link[];\n"+
-		"   n0 Link[];\n"+
-		"   l1 Link[];\n"+
-		"   c2 Link[];\n"+
-		"   e3 Link[];\n"+
+		"   retval NodePtr[] = ARRAY[]::nodeptr[];\n"+
+		"   fwd    Link[];\n"+
+		"   bwd    Link[];\n"+
+		"   lnk    Link;\n"+
+		"   n      Node;\n"+
+		"   a      int;\n"+
+		"   st     int;\n"+
+		"   okf    boolean;\n"+
+		"   notokb boolean;\n"+
 		"BEGIN\n"+
 
-		"FOR n IN ARRAY nodes LOOP\n"+
-		"   SELECT Im3,Im2,Im1,In0,Il1,Ic2,Ie3 FROM Node where Nptr=n;"+
-		"   IF "+
-		"END LOOP;"+
-		"  RETURN retval; \n" +
+		"FOREACH n IN ARRAY nodes LOOP\n"+
+		"   CASE sttype \n"
+	for st := -EXPRESS; st <= EXPRESS; st++ {
+		qstr += fmt.Sprintf("   WHEN %d THEN\n"+
+			"            SELECT %s,%s INTO fwd,bwd FROM Node WHERE NOT L=0 AND NPtr=n LIMIT maxlimit;\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
+	}
+	
+	qstr += "         ELSE RAISE EXCEPTION 'No such sttype %', st;\n" +
+		"   END CASE;\n" +
+		"   FOREACH lnk IN ARRAY fwd LOOP\n"+
+		"      IF lnk.Arr = arrow THEN"+
+		"         okf = true;\n"+
+		"      END IF;"+
+		"   END LOOP;\n" +
+		"   IF st = 0 THEN\n"+
+		"      retval = array_append(retval,n)"+
+		"      EXIT;\n"+
+		"   ELSE\n"+
+		"      FOREACH lnk IN ARRAY bwd LOOP\n"+
+		"         IF lnk.Arr = inv THEN"+
+		"            notokb = true;\n"+
+		"            EXIT;\n"+
+		"         END IF;"+
+		"      END LOOP;\n" +
+		"      IF okf AND NOT notokb THEN\n"+
+		"         retval = array_append(retval,n)"+
+		"         EXIT;\n"+
+		"      END IF;\n"+
+		"   END IF;\n"+
+		"END LOOP;\n"+
+		"RETURN retval;\n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
 
@@ -3957,29 +3984,34 @@ func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]
 func GetNCCNodesStartingStoriesForArrow(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []NodePtr {
 
 	n := FormatSQLNodePtrArray(nodeptrs)
-	a := FormatSQLIntArray(Arrow2Int(arrowptrs))
-	s := FormatSQLIntArray(sttypes)
 
-	qstr := fmt.Sprintf("select GetNCCStoryStartNodes('%s','%s','%s',%d)",n,a,s,limit)
-
-	fmt.Println("QTRS",qstr)
-	row,err := ctx.DB.Query(qstr)
-
-	if err != nil {
-		fmt.Println("GetNodesNCCStartingStoriesForArrow failed\n",qstr,err)
-		return nil
-	}
-	
-	var nptrstring string
 	var matches []NodePtr
 
-	for row.Next() {		
-		err = row.Scan(&nptrstring)
-		//match := ParseSQLNPtrArray(nptrstring)
-		//matches = append(matches,match...)
+	// Need to take each arrow type at a time
+
+	for a := 0; a < len(arrowptrs); a++ {
+
+		inv := INVERSE_ARROWS[arrowptrs[a]]
+
+		qstr := fmt.Sprintf("select GetNCCStoryStartNodes('%s',%d,%d,%d,%d)",n,arrowptrs[a],inv,sttypes[a],limit)
+
+		row,err := ctx.DB.Query(qstr)
+		
+		if err != nil {
+			fmt.Println("GetNodesNCCStartingStoriesForArrow failed\n",qstr,err)
+			return nil
+		}
+		
+		var nptrstring string
+		
+		for row.Next() {		
+			err = row.Scan(&nptrstring)
+			//match := ParseSQLNPtrArray(nptrstring)
+			//matches = append(matches,match...)
+		}
+		
+		row.Close()
 	}
-	
-	row.Close()
 
 	return matches
 }

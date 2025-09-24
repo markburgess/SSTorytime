@@ -153,6 +153,10 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 		if len(name) == 0 || name == "\\remind" {
 			name = "any \\chapter reminders \\context " + key + " " + ambient
 		}
+
+		if len(name) == 0 || name == "\\help" {
+			name = "\\notes \\chapter \"help and search\" \\limit 40"
+		}
 		
 		search := SST.DecodeSearchField(name)
 

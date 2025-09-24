@@ -1486,7 +1486,7 @@ for (let line = 0; line < array.length; line++)
             lastline = line;
 
             let line_no = document.createElement("span");
-            line_no.setAttribute("class", "break");
+            //line_no.setAttribute("class", "break");
             line_no.textContent = "At line " + array[line][i].Line;
             parent.appendChild(line_no);
 
@@ -1532,7 +1532,7 @@ for (let line = 0; line < array.length; line++)
 
             let text = document.createElement("span");
             text.setAttribute("class", "line-view");
-            text.setAttribute("class", "break");
+            //text.setAttribute("class", "break");
             //text.style.cssText = "display: inline-block;";
             text.textContent = str;
             text_link.appendChild(text);

@@ -1577,6 +1577,7 @@ func IdempAddNode(s string,intended_sequence bool) (SST.NodePtr,string) {
 	iptr := SST.AppendTextToDirectory(new_nodetext,ParseError)
 
 	// Build page map
+
 	if LINE_PATH == nil {
 		var leg SST.Link
 		leg.Dst = iptr

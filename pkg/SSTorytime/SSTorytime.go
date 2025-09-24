@@ -929,7 +929,7 @@ func AppendTextToDirectory(event Node,ErrFunc func(string)) NodePtr {
 
 	if ok {
 		node_alloc_ptr.CPtr = cnode_slot
-		IdempAddChapterToNode(node_alloc_ptr.Class,node_alloc_ptr.CPtr,event.Chap)
+		IdempAddChapterSeqToNode(node_alloc_ptr.Class,node_alloc_ptr.CPtr,event.Chap,event.Seq)
 		return node_alloc_ptr
 	}
 
@@ -1053,7 +1053,7 @@ func CheckExistingOrAltCaps(event Node,ErrFunc func(string)) (ClassedNodePtr,boo
 
 //**************************************************************
 
-func IdempAddChapterToNode(class int,cptr ClassedNodePtr,chap string) {
+func IdempAddChapterSeqToNode(class int,cptr ClassedNodePtr,chap string,seq bool) {
 
 	/* In the DB version, we have handle chapter collisions
            we want all similar names to have a single node for lateral
@@ -1062,25 +1062,12 @@ func IdempAddChapterToNode(class int,cptr ClassedNodePtr,chap string) {
 
 	var node Node
 
-	switch class {
-	case N1GRAM:
-		node = NODE_DIRECTORY.N1directory[cptr]
-	case N2GRAM:
-		node = NODE_DIRECTORY.N2directory[cptr]
-	case N3GRAM:
-		node = NODE_DIRECTORY.N3directory[cptr]
-	case LT128:
-		node = NODE_DIRECTORY.LT128[cptr]
-	case LT1024:
-		node = NODE_DIRECTORY.LT1024[cptr]
-	case GT1024:
-		node = NODE_DIRECTORY.GT1024[cptr]
-	}
+	node = UpdateSeqStatus(class,cptr,seq)
 
 	if strings.Contains(node.Chap,chap) {
 		return
 	}
-	
+
 	newchap := node.Chap + "," + chap
 
 	switch class {
@@ -1097,6 +1084,37 @@ func IdempAddChapterToNode(class int,cptr ClassedNodePtr,chap string) {
 	case GT1024:
 		NODE_DIRECTORY.GT1024[cptr].Chap = newchap
 	}
+}
+
+//**************************************************************
+
+func UpdateSeqStatus(class int,cptr ClassedNodePtr,seq bool) Node {
+
+	switch class {
+	case N1GRAM:
+		NODE_DIRECTORY.N1directory[cptr].Seq = NODE_DIRECTORY.N1directory[cptr].Seq || seq
+		return NODE_DIRECTORY.N1directory[cptr]
+	case N2GRAM:
+		NODE_DIRECTORY.N2directory[cptr].Seq = NODE_DIRECTORY.N2directory[cptr].Seq || seq
+		return NODE_DIRECTORY.N2directory[cptr]
+	case N3GRAM:
+		NODE_DIRECTORY.N3directory[cptr].Seq = NODE_DIRECTORY.N3directory[cptr].Seq || seq
+		return NODE_DIRECTORY.N3directory[cptr]
+	case LT128:
+		NODE_DIRECTORY.LT128[cptr].Seq = NODE_DIRECTORY.LT128[cptr].Seq || seq
+		return NODE_DIRECTORY.LT128[cptr]
+	case LT1024:
+		NODE_DIRECTORY.LT1024[cptr].Seq = NODE_DIRECTORY.LT1024[cptr].Seq || seq
+		return NODE_DIRECTORY.LT1024[cptr]
+	case GT1024:
+		NODE_DIRECTORY.GT1024[cptr].Seq = NODE_DIRECTORY.GT1024[cptr].Seq || seq
+		return NODE_DIRECTORY.GT1024[cptr]
+	}
+
+	fmt.Println("Non existent node class (shouldn't happen)")
+	os.Exit(-1)
+	var dummy Node
+	return dummy
 }
 
 //**************************************************************
@@ -1578,7 +1596,7 @@ func ForceDBNode(ctx PoSST, n Node) {
 	// Add node version setting explicit CPtr value, note different function call
 	// We use this function when we ARE managing/counting CPtr values ourselves
 
-	var qstr string
+	var qstr,seqstr string
 
         n.L,n.NPtr.Class = StorageClass(n.S)
 	
@@ -1587,10 +1605,16 @@ func ForceDBNode(ctx PoSST, n Node) {
 	es := SQLEscape(n.S)
 	ec := SQLEscape(n.Chap)
 
-	qstr = fmt.Sprintf("SELECT InsertNode(%d,%d,%d,'%s','%s',%v)",n.L,n.NPtr.Class,cptr,es,ec,n.Seq)
+	if n.Seq {
+		seqstr = "true"
+	} else {
+		seqstr = "false"
+	}
+
+	qstr = fmt.Sprintf("SELECT InsertNode(%d,%d,%d,'%s','%s',%s)",n.L,n.NPtr.Class,cptr,es,ec,seqstr)
 
 	row,err := ctx.DB.Query(qstr)
-	
+
 	if err != nil {
 		s := fmt.Sprint("Failed to insert",err)
 		

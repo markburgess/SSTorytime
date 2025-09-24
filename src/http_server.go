@@ -323,7 +323,7 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	// Look for axial trails following a particular arrow, like _sequence_ 
 
-	if name && sequence || sequence && arrows {
+	if sequence {
 		HandleStories(w,r,CTX,search,nodeptrs,arrowptrs,sttype,limit)
 		return
 	}
@@ -583,6 +583,7 @@ func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search S
 
 	stories := SST.GetSequenceContainers(ctx,nodeptrs,arrowptrs,sttypes,limit)
 
+	fmt.Println("STORIES",stories,"from node set",len(nodeptrs),arrowptrs)
 	jarray := ""
 
 	for s := range stories {
@@ -646,21 +647,23 @@ func HandleMatchingArrows(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,s
 		arrows = append(arrows,al)
 	}
 
-	for st := range sttype {
-		adirs := SST.GetDBArrowBySTType(ctx,sttype[st])
-		for adir := range adirs {
-			inv := SST.GetDBArrowByPtr(ctx,SST.INVERSE_ARROWS[adirs[adir].Ptr])
-
-			var al ArrowList
-			al.ArrPtr = adirs[adir].Ptr
-			al.ASTtype = SST.STIndexToSTType(adirs[adir].STAindex)
-			al.Short = adirs[adir].Short
-			al.Long = adirs[adir].Long
-			al.InvPtr = inv.Ptr
-			al.ISTtype = SST.STIndexToSTType(inv.STAindex)
-			al.InvS = inv.Short
-			al.InvL = inv.Long
-			arrows = append(arrows,al)
+	if arrowptrs == nil {
+		for st := range sttype {
+			adirs := SST.GetDBArrowBySTType(ctx,sttype[st])
+			for adir := range adirs {
+				inv := SST.GetDBArrowByPtr(ctx,SST.INVERSE_ARROWS[adirs[adir].Ptr])
+				
+				var al ArrowList
+				al.ArrPtr = adirs[adir].Ptr
+				al.ASTtype = SST.STIndexToSTType(adirs[adir].STAindex)
+				al.Short = adirs[adir].Short
+				al.Long = adirs[adir].Long
+				al.InvPtr = inv.Ptr
+				al.ISTtype = SST.STIndexToSTType(inv.STAindex)
+				al.InvS = inv.Short
+				al.InvL = inv.Long
+				arrows = append(arrows,al)
+			}
 		}
 	}
 

@@ -53,6 +53,8 @@
 \story (wuya)
 \story Mary
 \sequence "create a pod"
+\seq any \in \chapter kubernetes
+\story any \chapter moon
 </pre>
 
 ## Path solutions

@@ -9449,15 +9449,11 @@ func Waiting(output bool,total int) {
 	percent := float64(SILLINESS_COUNTER) / float64(total) * 100
 
 	const propaganda = "IT.ISN'T.KNOWLEDGE.IF.YOU.DON'T.KNOW.IT.!!"
-	const interval = 4
+	const interval = 8
 
 	if SILLINESS {
 		if SILLINESS_COUNTER % interval != 0 {
-			if SILLINESS_COUNTER % 2 != 0 {
-				fmt.Print(".")
-			} else {
-				fmt.Print(" ")
-			}
+			fmt.Print(".")
 		} else {
 			fmt.Print(string(propaganda[SILLINESS_POS]))
 			SILLINESS_POS++

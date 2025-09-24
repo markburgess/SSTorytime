@@ -2956,7 +2956,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   END IF;"+
 		"END LOOP;\n" +
 
-		"IF st = 0 THEN\n"+
+/*		"IF st = 0 THEN\n"+
 		"   RETURN okf;\n"+
 		"ELSE\n"+
 		"   FOREACH lnk IN ARRAY bwd LOOP\n"+
@@ -2965,7 +2965,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"      END IF;"+
 		"   END LOOP;\n" +
 		"   RETURN okf;"+
-		"END IF;\n"+
+		"END IF;\n"+ */
 		"RETURN false;\n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"

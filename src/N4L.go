@@ -104,7 +104,10 @@ var (
 	CONTEXT_STATE = make(map[string]bool)
 	SECTION_STATE string
 
+	// Sequence mode state
+
 	SEQUENCE_MODE bool = false
+	SEQUENCE_START bool = false
 	SEQUENCE_RELN string = "then" 
 	LAST_IN_SEQUENCE string = ""
 
@@ -310,6 +313,7 @@ func NewFile(filename string) {
 	LINE_RELN_COUNTER = 0
 	LINE_ALIAS = ""
 	LAST_IN_SEQUENCE = ""
+	SEQUENCE_MODE = false
 	FWD_ARROW = ""
 	BWD_ARROW = ""
 	SECTION_STATE = ""
@@ -1476,6 +1480,7 @@ func CheckChapter(name string) {
 	}
 
 	SEQUENCE_MODE = false
+	SEQUENCE_START = false
 }
 
 //**************************************************************
@@ -1924,11 +1929,13 @@ func CheckSequenceMode(context string, mode rune) {
 		case '+':
 			PVerbose("\nStart sequence mode for items")
 			SEQUENCE_MODE = true
+			SEQUENCE_START = true
 			LAST_IN_SEQUENCE = ""
 
 		case '-':
 			PVerbose("End sequence mode for items\n")
 			SEQUENCE_MODE = false
+			SEQUENCE_START = false
 		}
 	}
 
@@ -1945,8 +1952,16 @@ func LinkUpStorySequence(this string) {
 		if LINE_ITEM_COUNTER == 1 && LAST_IN_SEQUENCE != "" {
 			
 			PVerbose("* ... Sequence addition: ",LAST_IN_SEQUENCE,"-(",SEQUENCE_RELN,")->",this,"\n")
-			
-			last_iptr,_ := IdempAddNode(LAST_IN_SEQUENCE,SEQ_START)
+
+			var last_iptr SST.NodePtr
+
+			if SEQUENCE_START {
+				last_iptr,_ = IdempAddNode(LAST_IN_SEQUENCE,SEQ_START)
+				SEQUENCE_START = false
+			} else {
+				last_iptr,_ = IdempAddNode(LAST_IN_SEQUENCE,SEQ_UNKNOWN)
+			}
+
 			this_iptr,_ := IdempAddNode(this,SEQ_UNKNOWN)
 			link := GetLinkArrowByName("(then)")
 			SST.AppendLinkToNode(last_iptr,link,this_iptr)

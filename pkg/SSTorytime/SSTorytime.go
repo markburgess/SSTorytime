@@ -3944,7 +3944,7 @@ func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]
 
 // **************************************************************************
 
-func GetNCCNodesStartingStoriesForArrow(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []NodePtr {
+func SelectStoriesByArrow(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []NodePtr {
 
 	var matches []NodePtr
 
@@ -3957,7 +3957,6 @@ func GetNCCNodesStartingStoriesForArrow(ctx PoSST,nodeptrs []NodePtr, arrowptrs 
 			inv := INVERSE_ARROWS[arrowptrs[a]]
 
 			qstr := fmt.Sprintf("select IsStoryStartNode('(%d,%d)'::NodePtr,%d,%d,%d,%d)",n.Class,n.CPtr,arrowptrs[a],inv,sttypes[a],limit)
-			fmt.Println(qstr)
 			row,err := ctx.DB.Query(qstr)
 			
 			if err != nil {
@@ -5844,7 +5843,7 @@ func GetSequenceContainers(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, s
 
 	var stories []Story
 
-	openings := GetNCCNodesStartingStoriesForArrow(ctx,nodeptrs,arrowptrs,sttypes,limit)
+	openings := SelectStoriesByArrow(ctx,nodeptrs,arrowptrs,sttypes,limit)
 
 	arrname := ""
 	count := 0

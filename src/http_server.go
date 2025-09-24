@@ -226,11 +226,7 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	if search.Range > 0 {
 		limit = search.Range
 	} else {
-		if from || to {
-			limit = 30 // many paths make hard work
-		} else {
-			limit = 10
-		}
+		limit = 30 // many paths make hard work
 	}
 
 	fmt.Println("Your starting expression generated this set: ",line,"\n")

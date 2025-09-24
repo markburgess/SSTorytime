@@ -193,7 +193,7 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	if search.Range > 0 {
 		limit = search.Range
 	} else {
-		limit = 10
+		limit = 30
 	}
 
 	var nodeptrs,leftptrs,rightptrs []SST.NodePtr

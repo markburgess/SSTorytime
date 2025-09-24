@@ -120,6 +120,7 @@ type Node struct {
 	L         int     // length of text string
 	S         string  // text string itself
 
+	Seq       bool    // true if this node begins an intended sequence, otherwise ambiguous
 	Chap      string  // section/chapter name in which this was added
 	NPtr      NodePtr // Pointer to self index
 
@@ -289,6 +290,7 @@ const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
 	"Search    TSVECTOR GENERATED ALWAYS AS (to_tsvector('english',S)) STORED,\n" +
 	"UnSearch  TSVECTOR GENERATED ALWAYS AS (to_tsvector('english',sst_unaccent(S))) STORED,\n" +
 	"Chap      text,           \n" +
+	"Seq       boolean,        \n" +
 	I_MEXPR+"  Link[],         \n" + // Im3
 	I_MCONT+"  Link[],         \n" + // Im2
 	I_MLEAD+"  Link[],         \n" + // Im1
@@ -655,7 +657,7 @@ func Configure(ctx PoSST,load_arrows bool) {
 
 		ctx.DB.QueryRow("drop function lastsawsection(text)")
 		ctx.DB.QueryRow("drop function lastsawnptr(nodeptr)")
-		
+
 		ctx.DB.QueryRow("drop type NodePtr")
 		ctx.DB.QueryRow("drop type Link")
 		ctx.DB.QueryRow("drop type Appointment")
@@ -1585,7 +1587,7 @@ func ForceDBNode(ctx PoSST, n Node) {
 	es := SQLEscape(n.S)
 	ec := SQLEscape(n.Chap)
 
-	qstr = fmt.Sprintf("SELECT InsertNode(%d,%d,%d,'%s','%s')",n.L,n.NPtr.Class,cptr,es,ec)
+	qstr = fmt.Sprintf("SELECT InsertNode(%d,%d,%d,'%s','%s',%v)",n.L,n.NPtr.Class,cptr,es,ec,n.Seq)
 
 	row,err := ctx.DB.Query(qstr)
 	
@@ -1970,11 +1972,11 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// Force for managed input
 
-	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION InsertNode(iLi INT, iszchani INT, icptri INT, iSi TEXT, ichapi TEXT)\n" +
+	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION InsertNode(iLi INT, iszchani INT, icptri INT, iSi TEXT, ichapi TEXT,sequence boolean)\n" +
 		"RETURNS bool AS $fn$ " +
 		"DECLARE \n" +
 		"BEGIN\n" +
-		"   INSERT INTO Node (Nptr.Chan,Nptr.Cptr,L,S,chap,%s) VALUES (iszchani,icptri,iLi,iSi,ichapi,'{}','{}','{}','{}','{}','{}','{}');" +
+		"   INSERT INTO Node (Nptr.Chan,Nptr.Cptr,L,S,chap,Seq,%s) VALUES (iszchani,icptri,iLi,iSi,ichapi,sequence,'{}','{}','{}','{}','{}','{}','{}');" +
 		"   RETURN true;\n"+
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;",cols);
@@ -2902,13 +2904,12 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// Find the node that sits at the start/top of a causal chain
 
-	qstr =  "CREATE OR REPLACE FUNCTION IsStoryStartNode(this NodePtr,arrow int,inverse int,sttype int,maxlimit int)\n"+
+	qstr =  "CREATE OR REPLACE FUNCTION IsStoryStartNode(this NodePtr,arrow int,inverse int,sttype int)\n"+
 		"RETURNS boolean AS $fn$\n"+
 		"DECLARE \n"+
 		"   fwd    Link[];\n"+
 		"   bwd    Link[];\n"+
 		"   lnk    Link;\n"+
-		"   nd      Node;\n"+
 		"   a      int;\n"+
 		"   st     int;\n"+
 		"   okf    boolean;\n"+
@@ -2917,7 +2918,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"CASE sttype \n"
 	for st := -EXPRESS; st <= EXPRESS; st++ {
 		qstr += fmt.Sprintf("   WHEN %d THEN\n"+
-			"            SELECT %s,%s INTO fwd,bwd FROM Node WHERE NOT L=0 AND NPtr=this LIMIT maxlimit;\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
+			"            SELECT %s,%s INTO fwd,bwd FROM Node WHERE NOT L=0 AND NPtr=this;\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
 	}
 	
 	qstr += "      ELSE RAISE EXCEPTION 'No such sttype %', st;\n" +
@@ -3956,9 +3957,9 @@ func SelectStoriesByArrow(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, st
 
 			inv := INVERSE_ARROWS[arrowptrs[a]]
 
-			qstr := fmt.Sprintf("select IsStoryStartNode('(%d,%d)'::NodePtr,%d,%d,%d,%d)",n.Class,n.CPtr,arrowptrs[a],inv,sttypes[a],limit)
+			qstr := fmt.Sprintf("select IsStoryStartNode('(%d,%d)'::NodePtr,%d,%d,%d)",n.Class,n.CPtr,arrowptrs[a],inv,sttypes[a])
 			row,err := ctx.DB.Query(qstr)
-			
+			fmt.Println("QQQQQQ",qstr)
 			if err != nil {
 				fmt.Println("GetNodesNCCStartingStoriesForArrow failed\n",qstr,err)
 				return nil

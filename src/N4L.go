@@ -35,6 +35,9 @@ const (
 	ROLE_ABBR = 33
 	LARGE_FILE = 500000
 
+	SEQ_UNKNOWN = false
+	SEQ_START = true
+
 	ROLE_EVENT = 1
 	ROLE_RELATION = 2
 	ROLE_SECTION = 3
@@ -1536,7 +1539,7 @@ func IdempAddLink(from string, frptr SST.NodePtr, link SST.Link,to string, toptr
 
 func HandleNode(annotated string) SST.NodePtr {
 
-	clean_ptr,clean_version := IdempAddNode(annotated)
+	clean_ptr,clean_version := IdempAddNode(annotated,SEQ_UNKNOWN)
 
 	PVerbose("Event/item/node:",clean_version,"in chapter",SECTION_STATE)
 
@@ -1558,7 +1561,7 @@ func HandleNode(annotated string) SST.NodePtr {
 
 //**************************************************************
 
-func IdempAddNode(s string) (SST.NodePtr,string) {
+func IdempAddNode(s string,intended_sequence bool) (SST.NodePtr,string) {
 
 	clean_version := StripAnnotations(s)
 
@@ -1567,6 +1570,7 @@ func IdempAddNode(s string) (SST.NodePtr,string) {
 	var new_nodetext SST.Node
 	new_nodetext.S = clean_version
 	new_nodetext.L = l
+	new_nodetext.Seq = new_nodetext.Seq || intended_sequence
 	new_nodetext.Chap = SECTION_STATE
 	new_nodetext.NPtr.Class = c
 
@@ -1941,8 +1945,8 @@ func LinkUpStorySequence(this string) {
 			
 			PVerbose("* ... Sequence addition: ",LAST_IN_SEQUENCE,"-(",SEQUENCE_RELN,")->",this,"\n")
 			
-			last_iptr,_ := IdempAddNode(LAST_IN_SEQUENCE)
-			this_iptr,_ := IdempAddNode(this)
+			last_iptr,_ := IdempAddNode(LAST_IN_SEQUENCE,SEQ_START)
+			this_iptr,_ := IdempAddNode(this,SEQ_UNKNOWN)
 			link := GetLinkArrowByName("(then)")
 			SST.AppendLinkToNode(last_iptr,link,this_iptr)
 
@@ -2006,7 +2010,7 @@ func AddBackAnnotations(cleantext string,cleanptr SST.NodePtr,annotated string) 
 				if skip > 0 {
 					link := GetLinkArrowByName(ANNOTATION[symb])
 					this_item := ExtractWord(annotated,r+skip)
-					this_iptr,_ := IdempAddNode(this_item)
+					this_iptr,_ := IdempAddNode(this_item,SEQ_UNKNOWN)
 					IdempAddLink(reminder,cleanptr,link,this_item,this_iptr)
 					r += skip-1
 					continue

@@ -196,9 +196,14 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 		limit = 10
 	}
 
-	nodeptrs := SST.SolveNodePtrs(ctx,search.Name,search.Chapter,search.Context,arrowptrs,limit)
-	leftptrs := SST.SolveNodePtrs(ctx,search.From,search.Chapter,search.Context,arrowptrs,limit)
-	rightptrs := SST.SolveNodePtrs(ctx,search.To,search.Chapter,search.Context,arrowptrs,limit)
+	var nodeptrs,leftptrs,rightptrs []SST.NodePtr
+
+	if !pagenr && !sequence {
+		leftptrs = SST.SolveNodePtrs(ctx,search.From,search,arrowptrs,limit)
+		rightptrs = SST.SolveNodePtrs(ctx,search.To,search,arrowptrs,limit)
+	}
+
+	nodeptrs = SST.SolveNodePtrs(ctx,search.Name,search,arrowptrs,limit)
 
 	// SEARCH SELECTION *********************************************
 
@@ -289,7 +294,7 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 	// Look for axial trails following a particular arrow, like _sequence_ 
 
-	if name && sequence || sequence && arrows {
+	if sequence {
 		ShowStories(ctx,nodeptrs,arrowptrs,sttype,limit)
 		ShowTime(ctx,search)
 		return

@@ -246,9 +246,15 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	fmt.Println(" - show stats:",search.Stats)
 	fmt.Println()
 
-	nodeptrs := SST.SolveNodePtrs(CTX,search.Name,search.Chapter,search.Context,arrowptrs,limit)
-	leftptrs := SST.SolveNodePtrs(CTX,search.From,search.Chapter,search.Context,arrowptrs,limit)
-	rightptrs := SST.SolveNodePtrs(CTX,search.To,search.Chapter,search.Context,arrowptrs,limit)
+	var nodeptrs,leftptrs,rightptrs []SST.NodePtr
+
+	if !pagenr && !sequence {
+		leftptrs = SST.SolveNodePtrs(CTX,search.From,search,arrowptrs,limit)
+		rightptrs = SST.SolveNodePtrs(CTX,search.To,search,arrowptrs,limit)
+	}
+
+	nodeptrs = SST.SolveNodePtrs(CTX,search.Name,search,arrowptrs,limit)
+
 
 	fmt.Println("Solved search nodes ...")
 

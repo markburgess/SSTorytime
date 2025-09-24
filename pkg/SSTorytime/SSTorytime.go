@@ -2942,7 +2942,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"CASE sttype \n"
 	for st := -EXPRESS; st <= EXPRESS; st++ {
 		qstr += fmt.Sprintf("   WHEN %d THEN\n"+
-			"            SELECT %s,%s INTO fwd,bwd FROM Node WHERE NOT L=0 AND NPtr=this;\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
+			"            SELECT %s,%s INTO fwd,bwd FROM Node WHERE Seq=true AND NPtr=this;\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
 	}
 	
 	qstr += "      ELSE RAISE EXCEPTION 'No such sttype %', st;\n" +
@@ -3669,19 +3669,19 @@ func GetDBContextByPtr(ctx PoSST,ptr ContextPtr) (string,ContextPtr) {
 
 func GetDBNodePtrMatchingName(ctx PoSST,name,chap string) []NodePtr {
 
-	return GetDBNodePtrMatchingNCC(ctx,name,chap,nil,nil,CAUSAL_CONE_MAXLIMIT)
+	return GetDBNodePtrMatchingNCCS(ctx,name,chap,nil,nil,false,CAUSAL_CONE_MAXLIMIT)
 }
 
 // **************************************************************************
 
-func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr,limit int) []NodePtr {
+func GetDBNodePtrMatchingNCCS(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr,seq bool,limit int) []NodePtr {
 
 	// Order by L to favour exact matches
 
 	nm = SQLEscape(nm)
 	chap = SQLEscape(chap)
 
-	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY NPtr,L LIMIT %d",NodeWhereString(nm,chap,cn,arrow),limit)
+	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY NPtr,L LIMIT %d",NodeWhereString(nm,chap,cn,arrow,seq),limit)
 
 	row, err := ctx.DB.Query(qstr)
 
@@ -3705,7 +3705,7 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowP
 
 // **************************************************************************
 
-func NodeWhereString(name,chap string,context []string,arrow []ArrowPtr) string {
+func NodeWhereString(name,chap string,context []string,arrow []ArrowPtr,seq bool) string {
 
 	var chap_col, nm_col string
 	var ctx_col string
@@ -3752,6 +3752,12 @@ func NodeWhereString(name,chap string,context []string,arrow []ArrowPtr) string 
 		nm_col += fmt.Sprintf(" AND lower(S) = '%s'",bare_name)
 	}
 
+        var seq_col string
+        
+        if seq {
+                seq_col = "AND Seq=true"
+        }
+
 	// context and arrows
 
 	_,cn_stripped := IsBracketedSearchList(context)
@@ -3762,8 +3768,8 @@ func NodeWhereString(name,chap string,context []string,arrow []ArrowPtr) string 
 
 	dbcols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
 
-	qstr = fmt.Sprintf("%s %s AND NCC_match(NPtr,%s,%s,%s,%s)",
-		chap_col,nm_col,ctx_col,arrows,sttypes,dbcols)
+	qstr = fmt.Sprintf("%s %s %s AND NCC_match(NPtr,%s,%s,%s,%s)",
+		chap_col,nm_col,seq_col,ctx_col,arrows,sttypes,dbcols)
 
 	return qstr
 }
@@ -4189,7 +4195,11 @@ func ArrowPtrFromArrowsNames(ctx PoSST,arrows []string) ([]ArrowPtr,[]int) {
 
 //******************************************************************
 
-func SolveNodePtrs(ctx PoSST,nodenames []string,chap string,cntx []string, arr []ArrowPtr,limit int) []NodePtr {
+func SolveNodePtrs(ctx PoSST,nodenames []string,search SearchParameters,arr []ArrowPtr,limit int) []NodePtr {
+
+	chap := search.Chapter
+	cntx := search.Context
+	seq := search.Sequence
 
 	// This is a UI/UX wrapper for the underlying lookup, avoiding
 	// duplicate results and ordering according to interest
@@ -4208,7 +4218,7 @@ func SolveNodePtrs(ctx PoSST,nodenames []string,chap string,cntx []string, arr [
 	for r := 0; r < len(rest); r++ {
 
 		// Takes care of general context matching
-		nptrs := GetDBNodePtrMatchingNCC(ctx,rest[r],chap,cntx,arr,limit)
+		nptrs := GetDBNodePtrMatchingNCCS(ctx,rest[r],chap,cntx,arr,seq,limit)
 
 		for n := 0; n < len(nptrs); n++ {
 			idempotence[nptrs[n]] = true

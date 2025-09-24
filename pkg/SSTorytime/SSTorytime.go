@@ -2925,59 +2925,6 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	row.Close()
 
-
-	// Find the node that sits at the start/top of a causal chain
-
-	qstr =  "CREATE OR REPLACE FUNCTION IsStoryStartNode(this NodePtr,arrow int,inverse int,sttype int)\n"+
-		"RETURNS boolean AS $fn$\n"+
-		"DECLARE \n"+
-		"   fwd    Link[];\n"+
-		"   bwd    Link[];\n"+
-		"   lnk    Link;\n"+
-		"   a      int;\n"+
-		"   st     int;\n"+
-		"   okf    boolean;\n"+
-		"BEGIN\n"+
-
-		"CASE sttype \n"
-	for st := -EXPRESS; st <= EXPRESS; st++ {
-		qstr += fmt.Sprintf("   WHEN %d THEN\n"+
-			"            SELECT %s,%s INTO fwd,bwd FROM Node WHERE Seq=true AND NPtr=this;\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
-	}
-	
-	qstr += "      ELSE RAISE EXCEPTION 'No such sttype %', st;\n" +
-		"END CASE;\n" +
-
-		// Do we find arrow but NOT inverse
-
-		"FOREACH lnk IN ARRAY fwd LOOP\n"+
-		"   IF lnk.Arr = arrow THEN"+
-		"      okf = true;\n"+
-		"   END IF;"+
-		"END LOOP;\n" +
-
-/*		"IF st = 0 THEN\n"+
-		"   RETURN okf;\n"+
-		"ELSE\n"+
-		"   FOREACH lnk IN ARRAY bwd LOOP\n"+
-		"      IF lnk.Arr = inverse THEN"+
-		"         RETURN false;\n"+
-		"      END IF;"+
-		"   END LOOP;\n" +
-		"   RETURN okf;"+
-		"END IF;\n"+ */
-		"RETURN false;\n" +
-		"END ;\n" +
-		"$fn$ LANGUAGE plpgsql;\n"
-
-	row,err = ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("FAILED \n",qstr,err)
-	}
-
-	row.Close()
-
 	// ...................................................................
 	// Now add in the more complex context/chapter filters in searching
 	// ...................................................................
@@ -3979,34 +3926,22 @@ func SelectStoriesByArrow(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, st
 
 	var matches []NodePtr
 
-	// Need to take each arrow type at a time
+	// Need to take each arrow type at a time. We can't possibly know if an
+	// intentionally promised sequence start (in Node) refers to one arrow or another,
+	// but, the chance of being a start for several different independent stories is unlikely.
+
+	// We can always search for ad hoc cases with dream/post-processing if not from N4L
+	// Thus a valid story is defined from a start node. It is normally a node with an out-arrow
+	// |- NODE --ARROW-->, i.e. no in-arrow entering, but this may be false if the story has
+	// loops, like a repeated line in a song chorus.
 
 	for _,n := range nodeptrs {
 
-		for a := 0; a < len(arrowptrs); a++ {
+		// All these nodes should have Seq = true already from "SolveNodePtrs()"
+		// So all the searching is finished, we just need to match the requested arrow
 
-			inv := INVERSE_ARROWS[arrowptrs[a]]
-
-			qstr := fmt.Sprintf("select IsStoryStartNode('(%d,%d)'::NodePtr,%d,%d,%d)",n.Class,n.CPtr,arrowptrs[a],inv,sttypes[a])
-			row,err := ctx.DB.Query(qstr)
-			fmt.Println("QQQQQQ",qstr)
-			if err != nil {
-				fmt.Println("GetNodesNCCStartingStoriesForArrow failed\n",qstr,err)
-				return nil
-			}
-			
-			var yesno bool
-			
-			for row.Next() {		
-				err = row.Scan(&yesno)
-			}
-
-			if yesno {
-				matches = append(matches,n)
-			}
-			
-			row.Close()
-		}
+		node := GetDBNodeByNodePtr(ctx,n)  // we are now caching this for later
+		matches = append(matches,node.NPtr)
 	}
 
 	fmt.Println("GOT ",matches)
@@ -5891,7 +5826,7 @@ func GetSequenceContainers(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, s
 
 		story.Chapter = node.Chap
 
-		axis := GetLongestAxialPath(ctx,openings[nth],arrowptrs[0])
+		axis := GetLongestAxialPath(ctx,openings[nth],arrowptrs[0],limit)
 
 		directory := AssignStoryCoordinates(axis,nth,len(openings),limit)
 
@@ -6019,13 +5954,13 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TO
 
 // **************************************************************************
 
-func GetLongestAxialPath(ctx PoSST,nptr NodePtr,arrowptr ArrowPtr) []Link {
+func GetLongestAxialPath(ctx PoSST,nptr NodePtr,arrowptr ArrowPtr,limit int) []Link {
 
 	var max int = 1
-	const maxdepth = 100 // Hard limit on story length, what?
-	const maxlimit = 100 // to be checked !
+
 	sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
-	paths,dim := GetFwdPathsAsLinks(ctx,nptr,sttype,maxdepth,maxlimit)
+
+	paths,dim := GetFwdPathsAsLinks(ctx,nptr,sttype,limit,limit)
 
 	for pth := 0; pth < dim; pth++ {
 

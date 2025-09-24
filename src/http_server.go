@@ -255,7 +255,6 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	nodeptrs = SST.SolveNodePtrs(CTX,search.Name,search,arrowptrs,limit)
 
-
 	fmt.Println("Solved search nodes ...")
 
 	// SEARCH SELECTION *********************************************
@@ -589,28 +588,26 @@ func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search S
 
 	stories := SST.GetSequenceContainers(ctx,nodeptrs,arrowptrs,sttypes,limit)
 
-	fmt.Println("STORIES",stories,"from node set",len(nodeptrs),arrowptrs)
 	jarray := ""
 
-	for s := range stories {
+	for s := 0; s < len(stories); s++ {
+
 		var jstory string
-		
+
 		for a := 0; a < len(stories[s].Axis); a++ {
 			jstr := JSONStoryNodeEvent(stories[s].Axis[a])
 			jstory += fmt.Sprintf("%s,",jstr)
 		}
+
 		jstory = strings.Trim(jstory,",")
-		jarray += fmt.Sprintf("[%s],",jstory)
+		jarray = fmt.Sprintf("[%s],",jstory)
 	}
 
-	if jarray == "" {
-		jarray = "[]"
-	}
+	jarray = strings.Trim(jarray,",")
 
-	data := strings.Trim(jarray,",")
-	response := PackageResponse(ctx,search,"Sequence",data)
+	response := PackageResponse(ctx,search,"Sequence",jarray)
 
-	fmt.Println("Sequence...",string(response))
+	//fmt.Println("Sequence...",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -752,7 +749,7 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,se
 	data,_ := json.Marshal(chapters)
 	response := PackageResponse(ctx,search,"TOC",string(data))
 
-	//fmt.Println("Chap/context...",string(response))
+	fmt.Println("Chap/context...",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -810,17 +807,27 @@ func JSONStoryNodeEvent(en SST.NodeEvent) string {
 
 	var jstr string
 
+//	j,_ := json.Marshal(en)
+
+//	jstr = string(j)
+
 	if len(en.Text) == 0 {
 		return ""
 	}
 
 	t,_ := json.Marshal(en.Text)
 	text := SST.EscapeString(string(t))
+	text = SST.SQLEscape(text)
+
 	jstr += fmt.Sprintf("{\"Text\": \"%s\",\n",text)
 	jstr += fmt.Sprintf("\"L\": \"%d\",\n",en.L)
+
 	c,_ := json.Marshal(en.Chap)
 	chap := SST.EscapeString(string(c))
+	chap = SST.SQLEscape(chap)
+
 	jstr += fmt.Sprintf("\"Chap\": \"%s\",\n",chap)
+
 	jstr += fmt.Sprintf("\"Context\": \"%s\",\n",SST.EscapeString(en.Context))
 	jstr += fmt.Sprintf("\"NPtr\": { \"Class\": \"%d\", \"CPtr\" : \"%d\"},\n",en.NPtr.Class,en.NPtr.CPtr)
 	jxyz,_ := json.Marshal(en.XYZ)
@@ -838,7 +845,9 @@ func JSONStoryNodeEvent(en SST.NodeEvent) string {
 		}
 		arrays += arr
 	}
+
 	arrays = strings.Trim(arrays,",")
+
 	jstr += fmt.Sprintf("\"Orbits\": [%s] }",arrays)
 	return jstr
 }

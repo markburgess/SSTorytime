@@ -9449,6 +9449,7 @@ func Waiting(output bool,total int) {
 	const propaganda = "IT.ISN'T.KNOWLEDGE.IF.YOU.DON'T.KNOW.IT.!!"
 	const interval = 8
 
+
 	if SILLINESS {
 		if SILLINESS_COUNTER % interval != 0 {
 			fmt.Print(".")
@@ -9461,7 +9462,7 @@ func Waiting(output bool,total int) {
 			}
 		}
 	} else {
-		fmt.Print(" ")
+		fmt.Print(".")
 	}
 
 	if SILLINESS_COUNTER % (len(propaganda)*interval*interval) == 0 {

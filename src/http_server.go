@@ -423,7 +423,7 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,nptr
 	array := fmt.Sprintf("[%s]",data)
 
 	response := PackageResponse(ctx,search,"ConePaths",array)
-	//fmt.Println("CasualConePath reponse",string(response))
+	fmt.Println("CasualConePath reponse",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -458,11 +458,11 @@ func PackageConeFromOrigin(ctx SST.PoSST,nptr SST.NodePtr,nth int,sttype int,cha
 		os.Exit(-1)
 	}
 
-	title := SST.EscapeString(SST.GetDBNodeByNodePtr(ctx,nptr).S)
+	title,_ := json.Marshal(SST.GetDBNodeByNodePtr(ctx,nptr).S)
 
 	jstr := fmt.Sprintf(" { \"NClass\" : %d,\n",nptr.Class)
 	jstr += fmt.Sprintf("   \"NCPtr\" : %d,\n",nptr.CPtr)
-	jstr += fmt.Sprintf("   \"Title\" : \"%s\",\n",title)  // tbd
+	jstr += fmt.Sprintf("   \"Title\" : %s,\n",string(title))
 	jstr += fmt.Sprintf("   \"Paths\" : %s\n}",string(wstr))	
 
 	return jstr,count

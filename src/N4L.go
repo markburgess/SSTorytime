@@ -2044,9 +2044,13 @@ func EmbeddedSymbol(runetext []rune,offset int) (int,string) {
 		return 0,"end of string"
 	}
 
+	var found_len int
+	var found string
+
 	for an := range ANNOTATION {
 
 		// Careful of unicode, convert to runes
+
 		uni := []rune(an)
 		match := runetext[offset] == uni[0]
 
@@ -2069,9 +2073,17 @@ func EmbeddedSymbol(runetext []rune,offset int) (int,string) {
 			}
 		}
 
-		if match {
-			return len(an),an
+		// There might still be another longer greedy match
+
+		if match && len(an) > found_len {
+			found = an
+			found_len = len(an)
+			match = false
 		}
+	}
+
+	if len(found) > 0 {
+		return found_len,found
 	}
 
 	return 0,"UNKNOWN SYMBOL"

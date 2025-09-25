@@ -59,7 +59,7 @@ const (
 	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
 	ERR_MISSING_SECTION = "Declarations outside a section or chapter"
 	ERR_NO_SUCH_ALIAS = "No such alias or \" reference exists to fill in - aborting"
-	ERR_MISSING_ITEM_SOMEWHERE = "Missing item, empty string, perhaps undefined annotation somewhere"
+	ERR_MISSING_ITEM_SOMEWHERE = "Missing item, empty string, perhaps a missing ditto or variable reference"
 	ERR_MISSING_ITEM_RELN = "Missing item or double relation"
 	ERR_MISMATCH_QUOTE = "Apparent missing or mismatch in ', \" or ( )"
 	ERR_ILLEGAL_CONFIGURATION = "Error in configuration, no such section"
@@ -1519,14 +1519,8 @@ func IdempAddLink(from string, frptr SST.NodePtr, link SST.Link,to string, toptr
 	LINE_PATH = append(LINE_PATH,link)
 
 	if from == "" || to == "" {
-		ParseError(ERR_MISSING_ITEM_SOMEWHERE)
+		ParseError(ERR_MISSING_ITEM_SOMEWHERE + " (adding link)")
 		os.Exit(-1)
-	}
-
-        // Add to graph
-
-	if from == "" || to == "" {
-		ParseError(ERR_MISSING_ITEM_SOMEWHERE)
 	}
 
 	SST.AppendLinkToNode(frptr,link,toptr)
@@ -2026,6 +2020,12 @@ func AddBackAnnotations(cleantext string,cleanptr SST.NodePtr,annotated string) 
 				if skip > 0 {
 					link := GetLinkArrowByName(ANNOTATION[symb])
 					this_item := ExtractWord(annotated,r+skip)
+
+					if len(this_item) <= WORD_MISTAKE_LEN {
+						err := fmt.Sprintf("%s \"%s\"  after annotation %s, len %d",ERR_SHORT_WORD,this_item,symb,skip)
+						ParseError(err)
+					}
+
 					this_iptr,_ := IdempAddNode(this_item,SEQ_UNKNOWN)
 					IdempAddLink(reminder,cleanptr,link,this_item,this_iptr)
 					r += skip-1
@@ -2098,11 +2098,6 @@ func ExtractWord(fulltext string,offset int) string {
 		if !protected && !unicode.IsLetter(rune(runetext[r])) {
 
 			sword := strings.Trim(strings.TrimSpace(string(word)),pair_quote)
-
-			if len(sword) <= WORD_MISTAKE_LEN {
-				ParseError(ERR_SHORT_WORD+"\""+sword+"\"")
-			}
-
 			return sword
 		}
 

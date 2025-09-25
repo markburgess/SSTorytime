@@ -768,8 +768,6 @@ func RegisterContext(parse_state map[string]bool,context []string) ContextPtr {
 func TryContext(ctx PoSST,context []string) ContextPtr {
 
 	ctxstr := CompileContextString(context)
-
-	// Call db directly, without the local cache
 	str,ctxptr := GetDBContextByName(ctx,ctxstr)
 
 	if ctxptr == -1 || str != ctxstr {
@@ -1834,7 +1832,7 @@ func UploadContextToDB(ctx PoSST,contextstring string,ptr ContextPtr) ContextPtr
 
 	var cptr ContextPtr
 
-	for row.Next() {		
+	for row.Next() {
 		err = row.Scan(&cptr)
 	}
 
@@ -1895,7 +1893,7 @@ func IdempDBAddLink(ctx PoSST,from Node,link Link,to Node) {
 		os.Exit(-1)
 	}
 
-	if link.Arr < 0 {
+	if link.Arr < 0 || len(ARROW_DIRECTORY) == 0 {
 		fmt.Println("No arrows have yet been defined, so you can't rely on the arrow names")
 		os.Exit(-1)
 	}
@@ -9463,11 +9461,7 @@ func Waiting(output bool,total int) {
 			}
 		}
 	} else {
-		if SILLINESS_COUNTER % 2 != 0 {
-			fmt.Print(".")
-		} else {
-			fmt.Print(" ")
-		}
+		fmt.Print(" ")
 	}
 
 	if SILLINESS_COUNTER % (len(propaganda)*interval*interval) == 0 {

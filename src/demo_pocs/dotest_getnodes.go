@@ -41,7 +41,7 @@ func Solve(ctx SST.PoSST) {
 	start_bc := "i6"
 
 	p1 := SST.GetDBNodePtrMatchingName(ctx,start_bc,"")
-	p2 := SST.GetDBNodePtrMatchingNCC(ctx,start_bc,"",nil,nil,10)
+	p2 := SST.GetDBNodePtrMatchingNCCS(ctx,start_bc,"",nil,nil,false,10)
 
 	if Diff (p1,p2) {
 		fmt.Println("Failed",p1,p2)

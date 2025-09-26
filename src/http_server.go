@@ -230,7 +230,17 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	if search.Range > 0 {
 		limit = search.Range
 	} else {
-		limit = 30 // many paths make hard work
+		if from || to || sequence {
+			limit = 30 // many paths make hard work
+		} else {
+			const common_word = 5
+
+			if SST.SearchTermLen(search.Name) < common_word {
+				limit = 5
+			} else {
+				limit = 10
+			}
+		}
 	}
 
 	fmt.Println("Your starting expression generated this set: ",line,"\n")

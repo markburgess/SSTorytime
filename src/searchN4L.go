@@ -193,7 +193,17 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	if search.Range > 0 {
 		limit = search.Range
 	} else {
-		limit = 30
+		if from || to || sequence {
+			limit = 30 // many paths make hard work
+		} else {
+			const common_word = 5
+
+			if SST.SearchTermLen(search.Name) < common_word {
+				limit = 5
+			} else {
+				limit = 10
+			}
+		}
 	}
 
 	var nodeptrs,leftptrs,rightptrs []SST.NodePtr

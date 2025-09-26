@@ -8,7 +8,7 @@
  :: basic annotation ::
 
  + note/remark             (note)    - is a note or remark about         (isnotefor)
- + added remark            (remark)  - is a remark concerning            (concerns)
+ + added remark            (remark)  - is a remark about                 (remabout)
  + please note!            (NB)      - is an important remark concerning (important regarding)
 
  :: attributes, supporting information ::

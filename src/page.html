@@ -2027,10 +2027,7 @@ async function sendsearchData() {
   // Take over form submission
 
   ((button = document.getElementById("gosubmit")),
-    button.addEventListener("click", (event) => {
-event.preventDefault();
-sendsearchData();
-    }));
+    button.addEventListener("click", (event) => { event.preventDefault(); sendsearchData(); }));
 }
 
 /***********************************************************/
@@ -2040,6 +2037,9 @@ async function sendlinkData(nclass, ncptr)
 let formData = new FormData();
 formData.set("nclass", nclass);
 formData.set("ncptr", ncptr);
+
+let searchfield = document.getElementById("name");
+searchfield.value = "("+nclass+","+ncptr +")";
 
 startHipnotize();
 

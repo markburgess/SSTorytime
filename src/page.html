@@ -1147,6 +1147,7 @@ arrow_link.id = "arrow-" + stindex;
 arrow_link.title = STINDICES[stindex];
 arrow_link.class = "tooltip";
 arrow_link.style.fontFamily = "Verdana";
+arrow_link.onclick = function () { sendLinkSearch('\\arrow "' + arrow + '"');};
 box.appendChild(arrow_link);
 
 if (str.includes("\n")) 

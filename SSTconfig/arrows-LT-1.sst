@@ -35,7 +35,7 @@
   :: adventure game chic ::
 
   + has a twisty path leading to (twistfwd) - a twisty path arrives from (twistbwd)
-  + by killing dragon arrive at   (bkdarr)   - is the result of killing dragon ()
+  + by killing dragon arrive at  (bkdarr)   - is the result of killing dragon (killdrag)
 
   :: basic causality ::
 

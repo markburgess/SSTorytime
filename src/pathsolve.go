@@ -188,8 +188,7 @@ func PathSolve(ctx SST.PoSST, chapter,cntext,begin, end string) {
 
 	// *** Summarize paths
 
-	s := SST.SuperNodes(ctx,solutions,maxdepth)
-	supers := strings.Split(s[1:len(s)-1],"\",\"")
+	supers := SST.SuperNodes(ctx,solutions,maxdepth)
 
 	for s := range supers {
 		fmt.Println("   - Supernode:",supers[s])
@@ -197,9 +196,7 @@ func PathSolve(ctx SST.PoSST, chapter,cntext,begin, end string) {
 
 	fmt.Println("\n *\n *\n * FLOW IMPORTANCE:\n *\n *\n")
 
-	b := SST.BetweenNessCentrality(ctx,solutions)
-
-	betw := strings.Split(b[1:len(b)-1],"\",\"")
+	betw := SST.BetweenNessCentrality(ctx,solutions)
 
 	for b := range betw {
 		fmt.Println("   - Betweenness centrality:",betw[b])

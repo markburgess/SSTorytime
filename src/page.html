@@ -704,8 +704,13 @@ DrawGrid(0, 0, 1);
 
 for (let head_nptr of obj.Content) 
    {
-   let nclass = head_nptr.NClass;
-   let ncptr = head_nptr.NCPtr;
+   if (head_nptr.Paths == null || head_nptr.Paths.length == 0)
+      {
+      continue;
+      }
+
+   let nclass = head_nptr.RootNode.Class;
+   let ncptr = head_nptr.RootNode.CPtr;
 
    let card = document.createElement("div");
    card.setAttribute("class", "card-view");
@@ -753,7 +758,7 @@ for (let head_nptr of obj.Content)
       col2.appendChild(hd2);
       let lst2 = document.createElement("ol");
 
-      for (let snode of head_nptr.Supernodes) 
+      for (let snode of head_nptr.SuperNodes) 
          {
          let li = document.createElement("li");
          li.textContent = snode;
@@ -1215,7 +1220,7 @@ return parent;
 
 function PrintPaths(parent, array) 
 {
-if (array.length < 1) 
+if (array == null || array.length < 1) 
    {
    return parent;
    }
@@ -1249,7 +1254,7 @@ for (let path = 0; path < array.length; path++)
          // node
          let str = array[path][i].Name;
          let ncptr = array[path][i].NPtr.CPtr;
-         let nclass = array[path][i].NPtr.NClass;
+         let nclass = array[path][i].NPtr.Class;
 
          let xyz = array[path][i].XYZ;
 
@@ -1426,7 +1431,7 @@ for (let line = 0; line < array.length; line++)
          {
          let str = array[line][i].Name;
          let ncptr = array[line][i].NPtr.CPtr;
-         let nclass = array[line][i].NPtr.NClass;
+         let nclass = array[line][i].NPtr.Class;
 
          let xyz = array[line][i].XYZ;
 

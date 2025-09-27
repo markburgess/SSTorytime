@@ -402,22 +402,20 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,nptr
 
 	fmt.Println("HandleCausalCones()",nptrs)
 	var total int = 1
-	var data string
 
 	if len(sttype) == 0 {
 		sttype = []int{0,1,2,3}
 	}
 
+	var cones []SST.WebConePaths
+
 	for n := range nptrs {
 		for st := range sttype {
 
-			jstr,count := PackageConeFromOrigin(ctx,nptrs[n],n,sttype[st],chap,context,len(nptrs),limit)
+			subcone,count := PackageConeFromOrigin(ctx,nptrs[n],n,sttype[st],chap,context,len(nptrs),limit)
+			cones = append(cones,subcone)
 
-			if count > 0 {
-				total += count
-				data += jstr
-				data += ","
-			}
+			total += count
 
 			if total > limit {
 				break
@@ -429,10 +427,9 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,nptr
 		}
 	}
 
-	data = strings.Trim(data,",")
-	array := fmt.Sprintf("[%s]",data)
+	array,_ := json.Marshal(cones)
 
-	response := PackageResponse(ctx,search,"ConePaths",array)
+	response := PackageResponse(ctx,search,"ConePaths",string(array))
 	fmt.Println("CasualConePath reponse",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
@@ -442,7 +439,7 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,nptr
 
 //******************************************************************
 
-func PackageConeFromOrigin(ctx SST.PoSST,nptr SST.NodePtr,nth int,sttype int,chap string,context []string,dimnptr,limit int) (string,int) {
+func PackageConeFromOrigin(ctx SST.PoSST,nptr SST.NodePtr,nth int,sttype int,chap string,context []string,dimnptr,limit int) (SST.WebConePaths,int) {
 
 	// Package a JSON object for the nth/dimnptr causal cone , assigning each nth the same width
 
@@ -457,25 +454,12 @@ func PackageConeFromOrigin(ctx SST.PoSST,nptr SST.NodePtr,nth int,sttype int,cha
 		count += countb
 	}
 
-	wstr,err := json.Marshal(wpaths)
+	var subcone SST.WebConePaths
+	subcone.RootNode = nptr
+	subcone.Title = SST.GetDBNodeByNodePtr(ctx,nptr).S
+	subcone.Paths = wpaths
 
-	if wpaths == nil {
-		return "",0
-	}
-
-	if err != nil {
-		fmt.Println("Error in PackageConeFromOrigin",err)
-		os.Exit(-1)
-	}
-
-	title,_ := json.Marshal(SST.GetDBNodeByNodePtr(ctx,nptr).S)
-
-	jstr := fmt.Sprintf(" { \"NClass\" : %d,\n",nptr.Class)
-	jstr += fmt.Sprintf("   \"NCPtr\" : %d,\n",nptr.CPtr)
-	jstr += fmt.Sprintf("   \"Title\" : %s,\n",string(title))
-	jstr += fmt.Sprintf("   \"Paths\" : %s\n}",string(wstr))	
-
-	return jstr,count
+	return subcone,count
 }
 
 //******************************************************************
@@ -516,17 +500,16 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftpt
 
 		solutions,_ = SST.WaveFrontsOverlap(CTX,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
-		fmt.Println("solutions",solutions)
-
 		if len(solutions) > 0 {
 			// format paths
-			var jstr string
 
-			jstr += fmt.Sprintf(" { \"NClass\" : %d,\n",solutions[0][0].Dst.Class)
-			jstr += fmt.Sprintf("   \"NCPtr\" : %d,\n",solutions[0][0].Dst.CPtr)
-			jstr += fmt.Sprintf("   \"Title\" : \"%s\",\n","path solutions")
-			jstr += fmt.Sprintf("   \"BTWC\" : [ %s ],\n",SST.BetweenNessCentrality(CTX,solutions))
-			jstr += fmt.Sprintf("   \"Supernodes\" : [ %s ],\n",SST.SuperNodes(CTX,solutions,maxdepth))
+			var pack []SST.WebConePaths
+			var soln SST.WebConePaths
+
+			soln.RootNode = solutions[0][0].Dst
+			soln.Title = "path solutions"
+			soln.BTWC = SST.BetweenNessCentrality(CTX,solutions)
+			soln.SuperNodes = SST.SuperNodes(CTX,solutions,maxdepth)
 
 			var wpaths [][]SST.WebPath
 			nth := 0
@@ -538,13 +521,13 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftpt
 				break
 			}
 
-			wstr,_ := json.Marshal(wpaths)
-			jstr += fmt.Sprintf("   \"Paths\" : %s }",string(wstr))
+			soln.Paths = wpaths
+			pack = append(pack,soln)
+			array_pack,_ := json.Marshal(pack)
 
-			array_pack := fmt.Sprintf("[%s]",jstr)
-			response := PackageResponse(ctx,search,"PathSolve",array_pack)
+			response := PackageResponse(ctx,search,"PathSolve",string(array_pack))
 
-			//fmt.Println("PATH SOLVE:",string(response))
+			fmt.Println("PATH SOLVE:",string(response))
 
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(response)

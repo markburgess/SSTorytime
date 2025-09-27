@@ -20,6 +20,14 @@ Be careful to ensure that you haven't accidentally used any of the annotation ma
 
 This is probably a result of certain words and phrases belonging to more than one chapter, and thus bridging chapters that you didn't intend. This bridging is intentional, as it allows >"lateral thinking", which is an important source of discovery.
 
+* **Why doesn't pathsolve understan my search on the command line**
+
+Shell characters interfere with the syntax. We need to escape characters, e.g. using single quotes to avoid expansion:
+<pre>
+$ ./pathsolve -begin '!a1!' -end s1
+$ ./searchN4L \\from '!a1!'
+</pre>
+
 * **Why doesn't a path solution work?**
 
 Path solving is a potentially exponential process. Without some constraints it could take a very long time. You can restrict the time significantly by specifying precise start and end nodes, e.g. write `from !a1! to !b6!` to match the precise a1 (not a substring of many possibilities. You can also use a context `from a1 to b4 context connection`. See also 'Why are the results different each time?'

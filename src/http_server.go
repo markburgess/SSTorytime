@@ -430,7 +430,7 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,nptr
 	array,_ := json.Marshal(cones)
 
 	response := PackageResponse(ctx,search,"ConePaths",string(array))
-	fmt.Println("CasualConePath reponse",string(response))
+	//fmt.Println("CasualConePath reponse",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -527,7 +527,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftpt
 
 			response := PackageResponse(ctx,search,"PathSolve",string(array_pack))
 
-			fmt.Println("PATH SOLVE:",string(response))
+			//fmt.Println("PATH SOLVE:",string(response))
 
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(response)

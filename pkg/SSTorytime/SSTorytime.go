@@ -4312,7 +4312,7 @@ func GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int,limit int) []N
 
 func GetFwdConeAsLinks(ctx PoSST, start NodePtr, sttype,depth int) []Link {
 
-	// This function may be misleading as it doesn't respect paths
+	// This function may be misleading as it doesn't respect paths, may be deprecated in future
 
 	qstr := fmt.Sprintf("select unnest(fwdconeaslinks) from FwdConeAsLinks('(%d,%d)',%d,%d);",start.Class,start.CPtr,sttype,depth)
 
@@ -4440,6 +4440,7 @@ func GetEntireNCConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,dept
 // **************************************************************************
 
 func GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodePtr,depth int,chapter string,context []string,limit int) ([][]Link,int) {
+
 	// orientation should be "fwd" or "bwd" else "both"
 
 	remove_accents,stripped := IsBracketedSearchTerm(chapter)

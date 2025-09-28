@@ -132,6 +132,8 @@ starting "hub_<arrow>_<nodelist>".
 
 ### Reading the graph back
 
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/geometry.png 'Testing a web interface')
+
 Looking up up the data is more complicated because there are many options.
 This example looks for story paths starting from a node that we search for by name.
 <ol>

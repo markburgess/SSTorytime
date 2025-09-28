@@ -293,35 +293,44 @@ functions.
 $ psql storyline
 
 storyline=# \dt
-              List of relations
- Schema |      Name      | Type  |   Owner    
---------+----------------+-------+------------
- public | arrowdirectory | table | sstoryline
- public | arrowinverses  | table | sstoryline
- public | node           | table | sstoryline
- public | nodearrownode  | table | sstoryline
-(4 rows)
+               List of relations
+ Schema |       Name       | Type  |   Owner    
+--------+------------------+-------+------------
+ public | arrowdirectory   | table | sstoryline
+ public | arrowinverses    | table | sstoryline
+ public | contextdirectory | table | sstoryline
+ public | lastseen         | table | sstoryline
+ public | node             | table | sstoryline
+ public | pagemap          | table | sstoryline
+(6 rows)
 
 </pre>
 * To query these, we look at the members:
 <pre>
 storyline=# \d node
-                Table "public.node"
- Column |  Type   | Collation | Nullable | Default 
---------+---------+-----------+----------+---------
- nptr   | nodeptr |           |          | 
- l      | integer |           |          | 
- s      | text    |           |          | 
- chap   | text    |           |          | 
- im3    | link[]  |           |          | 
- im2    | link[]  |           |          | 
- im1    | link[]  |           |          | 
- in0    | link[]  |           |          | 
- il1    | link[]  |           |          | 
- ic2    | link[]  |           |          | 
- ie3    | link[]  |           |          | 
+sstoryline-# \d Node
+                                                     Table "public.node"
+  Column  |   Type   | Collation | Nullable |                                     Default                                     
+----------+----------+-----------+----------+---------------------------------------------------------------------------------
+ nptr     | nodeptr  |           |          | 
+ l        | integer  |           |          | 
+ s        | text     |           |          | 
+ search   | tsvector |           |          | generated always as (to_tsvector('english'::regconfig, s)) stored
+ unsearch | tsvector |           |          | generated always as (to_tsvector('english'::regconfig, sst_unaccent(s))) stored
+ chap     | text     |           |          | 
+ seq      | boolean  |           |          | 
+ im3      | link[]   |           |          | 
+ im2      | link[]   |           |          | 
+ im1      | link[]   |           |          | 
+ in0      | link[]   |           |          | 
+ il1      | link[]   |           |          | 
+ ic2      | link[]   |           |          | 
+ ie3      | link[]   |           |          | 
 Indexes:
-    "node_chan_l_s_idx" btree (((nptr).chan), l, s)
+    "sst_gin" gin (search)
+    "sst_type" btree (((nptr).chan), l, s)
+    "sst_ungin" gin (unsearch)
+
 
 </pre>
 

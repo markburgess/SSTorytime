@@ -114,6 +114,15 @@ var CLASS_CHANNEL_DESCRIPTION = []string{"","single word ngram","two word ngram"
 	"string less than 128 chars","string less than 1024 chars","string greater than 1024 chars"}
 
 //**************************************************************
+// Data structures
+//**************************************************************
+
+type PoSST struct {
+
+   DB *sql.DB
+}
+
+//******************************************************************
 
 type Node struct {
 
@@ -130,6 +139,54 @@ type Node struct {
 
 //**************************************************************
 
+type Link struct {  // A link is a type of arrow, with context
+                    // and maybe with a weightfor package math
+	Arr ArrowPtr         // type of arrow, presorted
+	Wgt float32          // numerical weight of this link
+	Ctx ContextPtr       // context for this pathway
+	Dst NodePtr          // adjacent event/item/node
+}
+
+//**************************************************************
+
+type NodePtr struct {
+
+	Class int            // Text size-class, used mainly in memory
+	CPtr  ClassedNodePtr // index of within name class lane
+}
+
+//**************************************************************
+
+type ClassedNodePtr int  // Internal pointer type of size-classified text
+
+//**************************************************************
+
+type ArrowDirectory struct {
+
+	STAindex  int
+	Long    string
+	Short   string
+	Ptr     ArrowPtr
+}
+
+//**************************************************************
+
+type ArrowPtr int // ArrowDirectory index
+
+//**************************************************************
+
+type ContextDirectory struct {
+
+	Context string
+	Ptr     ContextPtr
+}
+
+//**************************************************************
+
+type ContextPtr int // ContextDirectory index
+
+//**************************************************************
+
 type PageMap struct {  // Thereis additional intent in the layout
 
 	Chapter string
@@ -137,38 +194,6 @@ type PageMap struct {  // Thereis additional intent in the layout
 	Context ContextPtr
 	Line    int
 	Path    []Link
-}
-
-//**************************************************************
-
-type PageView struct {
-	Title   string
-	Context string
-	Notes   [][]WebPath
-}
-
-//**************************************************************
-
-type Coords struct {
-	X   float64
-	Y   float64
-	Z   float64
-	R   float64
-	Lat float64
-	Lon float64
-}
-
-//**************************************************************
-
-type WebPath struct {
-	NPtr    NodePtr
-	Arr     ArrowPtr
-	STindex int
-	Line    int     // used for pagemap
-	Name    string
-	Chp     string
-	Ctx     string
-	XYZ     Coords
 }
 
 //**************************************************************
@@ -184,16 +209,6 @@ type Appointment struct {
 	Ctx []string
 	NTo NodePtr
 	NFrom []NodePtr
-}
-
-//**************************************************************
-
-type Link struct {  // A link is a type of arrow, with context
-                    // and maybe with a weightfor package math
-	Arr ArrowPtr         // type of arrow, presorted
-	Wgt float32          // numerical weight of this link
-	Ctx ContextPtr       // context for this pathway
-	Dst NodePtr          // adjacent event/item/node
 }
 
 //**************************************************************
@@ -229,43 +244,7 @@ type NodeDirectory struct {
 var NODE_CACHE = make(map[NodePtr]NodePtr)
 
 //**************************************************************
-
-type NodePtr struct {
-
-	Class int            // Text size-class
-	CPtr  ClassedNodePtr // index of within name class lane
-}
-
-//**************************************************************
-
-type ClassedNodePtr int  // Internal pointer type of size-classified text
-
-//**************************************************************
-
-type ArrowDirectory struct {
-
-	STAindex  int
-	Long    string
-	Short   string
-	Ptr     ArrowPtr
-}
-
-//**************************************************************
-
-type ArrowPtr int // ArrowDirectory index
-
-//**************************************************************
-
-type ContextDirectory struct {
-
-	Context string
-	Ptr     ContextPtr
-}
-
-//**************************************************************
-
-type ContextPtr int // ContextDirectory index
-
+// POSTGRES DATA TYPES
 //**************************************************************
 
 const NODEPTR_TYPE = "CREATE TYPE NodePtr AS  " +
@@ -354,7 +333,6 @@ const APPOINTMENT_TYPE = "CREATE TYPE Appointment AS  " +
 //**************************************************************
 
 var ( 
-
 	// Arrow multi-name factorization
 
 	ARROW_DIRECTORY []ArrowDirectory
@@ -384,13 +362,38 @@ var (
 	SILLINESS bool
 )
 
-//******************************************************************
-// LIBRARY
-//******************************************************************
+//**************************************************************
+// WEB INTEFACE REPRESENTATIONS FOR JSON RENDERING
+//**************************************************************
 
-type PoSST struct {
+type PageView struct {
+	Title   string
+	Context string
+	Notes   [][]WebPath
+}
 
-   DB *sql.DB
+//**************************************************************
+
+type Coords struct {
+	X   float64
+	Y   float64
+	Z   float64
+	R   float64
+	Lat float64
+	Lon float64
+}
+
+//**************************************************************
+
+type WebPath struct {
+	NPtr    NodePtr
+	Arr     ArrowPtr
+	STindex int
+	Line    int     // used for pagemap
+	Name    string
+	Chp     string
+	Ctx     string
+	XYZ     Coords
 }
 
 //******************************************************************
@@ -521,6 +524,8 @@ func Open(load_arrows bool) PoSST {
 
 func OverrideCredentials(u,p,d string) (string,string,string) {
 
+	// Store database/postgres credentials in a system file instead of hardcoding
+
 	dirname, err := os.UserHomeDir()
 
 	if err != nil && len(dirname) > 1 {
@@ -584,6 +589,8 @@ func OverrideCredentials(u,p,d string) (string,string,string) {
 
 func GetLine(s []byte,i int) (string,int) {
 
+	// For parsing the password credential file
+
 	var result []byte
 
 	for o := i; o < len(s); o++ {
@@ -599,6 +606,8 @@ func GetLine(s []byte,i int) (string,int) {
 	return string(result),i
 }
 
+// **************************************************************************
+//  When opening a connection, restore config
 // **************************************************************************
 
 func MemoryInit() {
@@ -748,8 +757,21 @@ func Close(ctx PoSST) {
 }
 
 // **************************************************************************
-// In memory representation structures
+//  Context registratation and directory management
 // **************************************************************************
+
+func GetContext(contextptr ContextPtr) string {
+
+	exists := int(contextptr) < len(CONTEXT_DIRECTORY)
+
+	if exists {
+		return CONTEXT_DIRECTORY[contextptr].Context
+	}
+
+	return "unknown context"
+}
+
+// ****************************************************************************
 
 func RegisterContext(parse_state map[string]bool,context []string) ContextPtr {
 
@@ -870,6 +892,8 @@ func GetNodeContextString(ctx PoSST,node Node) string {
 	return ""
 }
 
+// **************************************************************************
+//  Node registration and memory management
 // **************************************************************************
 
 func GetNodeTxtFromPtr(frptr NodePtr) string {
@@ -1127,6 +1151,8 @@ func UpdateSeqStatus(class int,cptr ClassedNodePtr,seq bool) Node {
 }
 
 //**************************************************************
+// Link registration and management
+//**************************************************************
 
 func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
 
@@ -1252,6 +1278,8 @@ func LinearFindText(in []Node,event Node,ignore_caps bool) (ClassedNodePtr,bool)
 }
 
 //**************************************************************
+// STtype naming and conversion
+//**************************************************************
 
 func GetSTIndexByName(stname,pm string) int {
 
@@ -1314,6 +1342,8 @@ func PrintSTAIndex(stindex int) string {
 }
 
 //**************************************************************
+// Arrow registration and management
+//**************************************************************
 
 func InsertArrowDirectory(stname,alias,name,pm string) ArrowPtr {
 
@@ -1355,7 +1385,7 @@ func InsertInverseArrowDirectory(fwd,bwd ArrowPtr) {
 }
 
 //**************************************************************
-// Write to database
+// Upload managed N4L graph / Write to database
 //**************************************************************
 
 func GraphToDB(ctx PoSST,wait_counter bool) {
@@ -1460,49 +1490,7 @@ func GraphToDB(ctx PoSST,wait_counter bool) {
 }
 
 // **************************************************************************
-// Postgres
-// **************************************************************************
-
-func CreateType(ctx PoSST, defn string) bool {
-
-	row,err := ctx.DB.Query(defn)
-
-	if err != nil {
-		s := fmt.Sprintln("Failed to create datatype PGLink ",err)
-		
-		if strings.Contains(s,"already exists") {
-			return true
-		} else {
-			return false
-		}
-	}
-
-	row.Close();
-	return true
-}
-
-// **************************************************************************
-
-func CreateTable(ctx PoSST,defn string) bool {
-
-	row,err := ctx.DB.Query(defn)
-	
-	if err != nil {
-		s := fmt.Sprintln("Failed to create a table %.10 ...",defn,err)
-		
-		if strings.Contains(s,"already exists") {
-			return true
-		} else {
-			return false
-		}
-	}
-
-	row.Close()
-	return true
-}
-
-// **************************************************************************
-// Store - High level API
+// Store - High level API, for automatic NPtr numbering
 // **************************************************************************
 
 func Vertex(ctx PoSST,name,chap string) Node {
@@ -1597,7 +1585,7 @@ func HubJoin(ctx PoSST,name,chap string,nptrs []NodePtr,arrow string,context []s
 }
 
 // **************************************************************************
-// Lower level functions
+// Lower level functions, for self-managed NPtr values
 // **************************************************************************
 
 func ForceDBNode(ctx PoSST, n Node) {
@@ -1686,11 +1674,13 @@ func CreateDBNode(ctx PoSST, n Node) Node {
 }
 
 // **************************************************************************
+//  Low level append/insert for auto-managed NPtr values
+// **************************************************************************
 
 func IdempDBAddNode(ctx PoSST,n Node) Node {
 
 	// We use this function when we aren't counting CPtr values
-	// This functon may be deprecated in future, replaced by Node()
+	// This functon may be deprecated in future
 
 	var qstr string
 
@@ -1733,6 +1723,8 @@ func IdempDBAddNode(ctx PoSST,n Node) Node {
 	return n
 }
 
+// **************************************************************************
+//  Uploading memory cache to database
 // **************************************************************************
 
 func UploadNodeToDB(ctx PoSST, org Node,channel int) {
@@ -1800,19 +1792,6 @@ func UploadInverseArrowToDB(ctx PoSST,arrow ArrowPtr) {
 	}
 
 	row.Close()
-}
-
-// ****************************************************************************
-
-func GetContext(contextptr ContextPtr) string {
-
-	exists := int(contextptr) < len(CONTEXT_DIRECTORY)
-
-	if exists {
-		return CONTEXT_DIRECTORY[contextptr].Context
-	}
-
-	return "unknown context"
 }
 
 // **************************************************************************
@@ -1894,6 +1873,8 @@ func UploadPageMapEvent(ctx PoSST, line PageMap) {
 
 func IdempDBAddLink(ctx PoSST,from Node,link Link,to Node) {
 
+	// API Entry point for registering links
+
 	frptr := from.NPtr
 	toptr := to.NPtr
 
@@ -1965,6 +1946,49 @@ func AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 	if err != nil {
 		fmt.Println("Failed to append",err,qstr)
 	       return false
+	}
+
+	row.Close()
+	return true
+}
+
+
+// **************************************************************************
+// Postgres interface
+// **************************************************************************
+
+func CreateType(ctx PoSST, defn string) bool {
+
+	row,err := ctx.DB.Query(defn)
+
+	if err != nil {
+		s := fmt.Sprintln("Failed to create datatype PGLink ",err)
+		
+		if strings.Contains(s,"already exists") {
+			return true
+		} else {
+			return false
+		}
+	}
+
+	row.Close();
+	return true
+}
+
+// **************************************************************************
+
+func CreateTable(ctx PoSST,defn string) bool {
+
+	row,err := ctx.DB.Query(defn)
+	
+	if err != nil {
+		s := fmt.Sprintln("Failed to create a table %.10 ...",defn,err)
+		
+		if strings.Contains(s,"already exists") {
+			return true
+		} else {
+			return false
+		}
 	}
 
 	row.Close()
@@ -2184,8 +2208,6 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	row.Close()
 
-
-
 	// Construct an empty link pointing nowhere as a starting node
 
 	qstr = "CREATE OR REPLACE FUNCTION GetSingletonAsLinkArray(start NodePtr)\n"+
@@ -2394,19 +2416,6 @@ func DefineStoredFunctions(ctx PoSST) {
 	
 	row.Close()
 	
-          /* e.g. select unnest(fwdconeaslinks) from FwdConeAsLinks('(4,1)',1,4);
-                           unnest                           
-             ------------------------------------------------------------
-              (0,0,{},"(4,1)")
-              (77,0.34,"{ ""fairy castles"", ""angel air"" }","(4,2)")
-              (77,0.34,"{ ""fairy castles"", ""angel air"" }","(4,3)")
-              (77,0.34,"{ ""steamy hot tubs"" }","(4,5)")
-              (77,0.34,"{ ""fairy castles"", ""angel air"" }","(4,4)")
-              (77,0.34,"{ ""steamy hot tubs"", ""lady gaga"" }","(4,6)")
-             (6 rows)
-
-          */
-
 	qstr = "CREATE OR REPLACE FUNCTION FwdConeAsLinks(start NodePtr,sttype INT,maxdepth INT,maxlimit int)\n"+
 		"RETURNS Link[] AS $fn$\n" +
 		"DECLARE \n" +
@@ -2488,8 +2497,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"RETURN ret_paths; \n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
-
-        // select FwdPathsAsLinks('(4,1)',1,3)
 
 	row,err = ctx.DB.Query(qstr)
 	
@@ -3183,7 +3190,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n")
 	
-	
         // This one includes an NC chapter filter
 	
 	qstr = "CREATE OR REPLACE FUNCTION GetNCNeighboursByType(start NodePtr, chapter text,rm_acc boolean,sttype int,maxlimit int)\n"+
@@ -3204,8 +3210,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
 	
-        // select GetNCNeighboursByType('(1,116)','chinese',-1);
-	
 	row,err = ctx.DB.Query(qstr)
 	
 	if err != nil {
@@ -3215,7 +3219,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	row.Close()
 	
 	// **************************************
-	// Looking for hub / authority search
+	// Looking for hub / appointed node matroid search
 	// **************************************
 	
 	qstr = "CREATE OR REPLACE FUNCTION GetAppointments(arrow int,sttype int,min int,chaptxt text,context text[],with_accents bool)\n"+
@@ -3239,7 +3243,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		qstr += fmt.Sprintf("WHEN %d THEN\n",st);
 
 		qstr += "   IF with_accents THEN\n"
-		// -------------------------------------------------
 		qstr += fmt.Sprintf("      FOR this IN SELECT NPtr as thptr,Chap as thchap,%s as chn FROM Node WHERE lower(unaccent(chap)) LIKE lower(chaptxt)\n",STTypeDBChannel(st));
 		qstr += "      LOOP\n" +
 		"         count := 0;\n" +
@@ -3269,9 +3272,9 @@ func DefineStoredFunctions(ctx PoSST) {
 		"	    appointed = array_append(appointed,app);\n" +
 		"         END IF;\n" +
 		"      END LOOP;\n"
-		// -------------------------------------------------
+
 		qstr += "   ELSE\n"
-		// -------------------------------------------------
+
 		qstr += fmt.Sprintf("      FOR this IN SELECT NPtr as thptr,Chap as thchap,%s as chn FROM Node WHERE lower(chap) LIKE lower(chaptxt)\n",STTypeDBChannel(st));
 		qstr += "      LOOP\n" +
 		"         count := 0;\n" +
@@ -3300,7 +3303,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"	    appointed = array_append(appointed,app);\n" +
 		"         END IF;\n" +
 		"      END LOOP;\n" +
-		// -------------------------------------------------
+
 		"   END IF;\n"
 	}
 	
@@ -3318,7 +3321,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	row.Close()
 
 	// **************************************
-	// Maintenance/deletion
+	// Maintenance/deletion transactions
 	// **************************************
 
 	qstr = "CREATE OR REPLACE FUNCTION DeleteChapter(chapter text)\n"+
@@ -3510,7 +3513,116 @@ func DefineStoredFunctions(ctx PoSST) {
 }
 
 // **************************************************************************
-// Retrieve structural parts
+// Query / Retrieve structural parts
+// **************************************************************************
+
+func GetDBNodePtrMatchingName(ctx PoSST,name,chap string) []NodePtr {
+
+	return GetDBNodePtrMatchingNCCS(ctx,name,chap,nil,nil,false,CAUSAL_CONE_MAXLIMIT)
+}
+
+// **************************************************************************
+
+func GetDBNodePtrMatchingNCCS(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr,seq bool,limit int) []NodePtr {
+
+	// Order by L to favour exact matches
+
+	nm = SQLEscape(nm)
+	chap = SQLEscape(chap)
+
+	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L,NPtr LIMIT %d",NodeWhereString(nm,chap,cn,arrow,seq),limit)
+
+	row, err := ctx.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("QUERY GetNodePtrMatchingNCC Failed",err,qstr)
+	}
+
+	var whole string
+	var n NodePtr
+	var retval []NodePtr
+
+	for row.Next() {		
+		err = row.Scan(&whole)
+		fmt.Sscanf(whole,"(%d,%d)",&n.Class,&n.CPtr)
+		retval = append(retval,n)
+	}
+
+	row.Close()
+	return retval
+}
+
+// **************************************************************************
+
+func NodeWhereString(name,chap string,context []string,arrow []ArrowPtr,seq bool) string {
+
+	var chap_col, nm_col string
+	var ctx_col string
+	var qstr string
+
+	// Format a WHERE clause for a Node search satisfying constraints
+
+	// Chapter first to limit search by block
+
+	if chap != "any" && chap != "" {
+
+		remove_chap_accents,chap_stripped := IsBracketedSearchTerm(chap)
+
+		if remove_chap_accents {
+			chap_search := "%"+chap_stripped+"%"
+			chap_col = fmt.Sprintf("lower(unaccent(Chap)) LIKE lower('%s')",chap_search)
+		} else {
+			chap_search := "%"+chap+"%"
+			chap_col = fmt.Sprintf("lower(Chap) LIKE lower('%s')",chap_search)
+		}
+	} else {
+		chap_col = "true"
+	}
+
+	// Name search using tsquery for wildcards and additional S = exact_constraint for !exact!
+
+	outer_exact_match,nopling := IsExactMatch(name)
+	remove_name_accents,nobrack := IsBracketedSearchTerm(nopling)
+	inner_exact_match,bare_name := IsExactMatch(nobrack)
+
+	is_exact_match := outer_exact_match || inner_exact_match
+
+	if name == "any" || name == "%%" {
+		nm_col = ""
+	} else {
+		if remove_name_accents {
+			nm_col = fmt.Sprintf(" AND Unsearch @@ phraseto_tsquery('english', '%s')",bare_name)
+		} else {
+			nm_col = fmt.Sprintf(" AND Search @@ phraseto_tsquery('english', '%s')",bare_name)
+		}
+	}
+
+	if is_exact_match {
+		nm_col += fmt.Sprintf(" AND lower(S) = '%s'",bare_name)
+	}
+
+        var seq_col string
+        
+        if seq {
+                seq_col = "AND Seq=true"
+        }
+
+	// context and arrows
+
+	_,cn_stripped := IsBracketedSearchList(context)
+	ctx_col = FormatSQLStringArray(cn_stripped)
+
+	arrows := FormatSQLIntArray(Arrow2Int(arrow))
+	sttypes := FormatSQLIntArray(GetSTtypesFromArrows(arrow))
+
+	dbcols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
+
+	qstr = fmt.Sprintf("%s %s %s AND NCC_match(NPtr,%s,%s,%s,%s)",
+		chap_col,nm_col,seq_col,ctx_col,arrows,sttypes,dbcols)
+
+	return qstr
+}
+
 // **************************************************************************
 
 func GetDBChaptersMatchingName(ctx PoSST,src string) []string {
@@ -3623,115 +3735,6 @@ func GetDBContextByPtr(ctx PoSST,ptr ContextPtr) (string,ContextPtr) {
 
 // **************************************************************************
 
-func GetDBNodePtrMatchingName(ctx PoSST,name,chap string) []NodePtr {
-
-	return GetDBNodePtrMatchingNCCS(ctx,name,chap,nil,nil,false,CAUSAL_CONE_MAXLIMIT)
-}
-
-// **************************************************************************
-
-func GetDBNodePtrMatchingNCCS(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr,seq bool,limit int) []NodePtr {
-
-	// Order by L to favour exact matches
-
-	nm = SQLEscape(nm)
-	chap = SQLEscape(chap)
-
-	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY NPtr,L LIMIT %d",NodeWhereString(nm,chap,cn,arrow,seq),limit)
-
-	row, err := ctx.DB.Query(qstr)
-
-	if err != nil {
-		fmt.Println("QUERY GetNodePtrMatchingNCC Failed",err,qstr)
-	}
-
-	var whole string
-	var n NodePtr
-	var retval []NodePtr
-
-	for row.Next() {		
-		err = row.Scan(&whole)
-		fmt.Sscanf(whole,"(%d,%d)",&n.Class,&n.CPtr)
-		retval = append(retval,n)
-	}
-
-	row.Close()
-	return retval
-}
-
-// **************************************************************************
-
-func NodeWhereString(name,chap string,context []string,arrow []ArrowPtr,seq bool) string {
-
-	var chap_col, nm_col string
-	var ctx_col string
-	var qstr string
-
-	// Format a WHERE clause for a Node search satisfying constraints
-
-	// Chapter first to limit search by block
-
-	if chap != "any" && chap != "" {
-
-		remove_chap_accents,chap_stripped := IsBracketedSearchTerm(chap)
-
-		if remove_chap_accents {
-			chap_search := "%"+chap_stripped+"%"
-			chap_col = fmt.Sprintf("lower(unaccent(Chap)) LIKE lower('%s')",chap_search)
-		} else {
-			chap_search := "%"+chap+"%"
-			chap_col = fmt.Sprintf("lower(Chap) LIKE lower('%s')",chap_search)
-		}
-	} else {
-		chap_col = "true"
-	}
-
-	// Name search using tsquery for wildcards and additional S = exact_constraint for !exact!
-
-	outer_exact_match,nopling := IsExactMatch(name)
-	remove_name_accents,nobrack := IsBracketedSearchTerm(nopling)
-	inner_exact_match,bare_name := IsExactMatch(nobrack)
-
-	is_exact_match := outer_exact_match || inner_exact_match
-
-	if name == "any" || name == "%%" {
-		nm_col = ""
-	} else {
-		if remove_name_accents {
-			nm_col = fmt.Sprintf(" AND Unsearch @@ phraseto_tsquery('english', '%s')",bare_name)
-		} else {
-			nm_col = fmt.Sprintf(" AND Search @@ phraseto_tsquery('english', '%s')",bare_name)
-		}
-	}
-
-	if is_exact_match {
-		nm_col += fmt.Sprintf(" AND lower(S) = '%s'",bare_name)
-	}
-
-        var seq_col string
-        
-        if seq {
-                seq_col = "AND Seq=true"
-        }
-
-	// context and arrows
-
-	_,cn_stripped := IsBracketedSearchList(context)
-	ctx_col = FormatSQLStringArray(cn_stripped)
-
-	arrows := FormatSQLIntArray(Arrow2Int(arrow))
-	sttypes := FormatSQLIntArray(GetSTtypesFromArrows(arrow))
-
-	dbcols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
-
-	qstr = fmt.Sprintf("%s %s %s AND NCC_match(NPtr,%s,%s,%s,%s)",
-		chap_col,nm_col,seq_col,ctx_col,arrows,sttypes,dbcols)
-
-	return qstr
-}
-
-// **************************************************************************
-
 func GetSTtypesFromArrows(arrows []ArrowPtr) []int {
 
 	var sttypes []int
@@ -3743,29 +3746,6 @@ func GetSTtypesFromArrows(arrows []ArrowPtr) []int {
 	}
 
 	return sttypes
-}
-
-// **************************************************************************
-
-func IgnoreArrow(ctx PoSST,arr ArrowPtr) bool {
-
-	var ignorables = []string{EXPR_INTENT_L,INV_EXPR_INTENT_L,EXPR_AMBIENT_L,INV_EXPR_AMBIENT_L,CONT_FINDS_L,INV_CONT_FOUND_IN_L,NEAR_FRAG_L,INV_NEAR_FRAG_IN_L}
-
-	if len(IGNORE_ARROWS) == 0 {
-		for a := range ignorables {
-			dbarr := GetDBArrowByName(ctx,ignorables[a])
-			IGNORE_ARROWS = append(IGNORE_ARROWS,dbarr)
-		}
-	}
-
-	for _,dbarr := range IGNORE_ARROWS {
-
-		if arr == dbarr {
-			return true
-		}
-	} 
-
-	return false
 }
 
 // **************************************************************************
@@ -3824,6 +3804,8 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 // **************************************************************************
 
 func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]NodePtr,[]NodePtr) {
+
+	// Used in graph report, analysis
 
 	var qstr,qwhere string
 	var dim = len(sttypes)
@@ -5820,6 +5802,8 @@ func IdempAddNote(list []Orbit, item Orbit) []Orbit {
 
 func GetSequenceContainers(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []Story {
 
+	// Story search
+
 	var stories []Story
 
 	openings := SelectStoriesByArrow(ctx,nodeptrs,arrowptrs,sttypes,limit)
@@ -5883,7 +5867,7 @@ func GetSequenceContainers(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, s
 
 func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TOP][]Orbit {
 
-	// Start with properties of node, within orbit
+	// Find the orbiting linked nodes of NPtr, start with properties of node
 
 	const probe_radius = 3
 
@@ -5964,6 +5948,8 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TO
 // **************************************************************************
 
 func GetLongestAxialPath(ctx PoSST,nptr NodePtr,arrowptr ArrowPtr,limit int) []Link {
+
+	// Used in story search along extended STtype paths
 
 	var max int = 1
 
@@ -6055,7 +6041,7 @@ func ContextIntentAnalysis(spectrum map[string]int,clusters []string) ([]string,
 }
 
 // *********************************************************************
-// LTM progress tracking
+// Access stats, LTM progress tracking
 // *********************************************************************
 
 func UpdateLastSawSection(ctx PoSST,name string) {
@@ -6072,8 +6058,6 @@ func UpdateLastSawNPtr(ctx PoSST,class,cptr int,name string) {
 	ctx.DB.QueryRow(s)
 }
 
-//******************************************************************
-// Retrieve access/progress stats
 //******************************************************************
 
 func GetLastSawSection(ctx PoSST) []LastSeen {
@@ -6137,7 +6121,7 @@ func GetLastSawNPtr(ctx PoSST, nptr NodePtr) LastSeen {
 }
 
 // *********************************************************************
-// STM context tracking
+// Dynamic context / sensory input evaluation STM tracking
 // *********************************************************************
 
 type History struct {
@@ -6550,7 +6534,7 @@ func PrintSomeLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter st
 }
 
 // **************************************************************************
-// Presentation in JSON
+// Rendering, Marshalling, Presentation in JSON
 // **************************************************************************
 
 func JSONNodeEvent(ctx PoSST, nptr NodePtr,xyz Coords,orbits [ST_TOP][]Orbit) string {

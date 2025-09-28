@@ -1402,38 +1402,38 @@ func GraphToDB(ctx PoSST,wait_counter bool) {
 		case N1GRAM:
 			for n := offset; n < len(NODE_DIRECTORY.N1directory); n++ {
 				org := NODE_DIRECTORY.N1directory[n]
-				UploadNodeToDB(ctx,org,class)
+				UploadNodeToDB(ctx,org)
 				Waiting(wait_counter,total)
 			}
 		case N2GRAM:
 			for n := offset; n < len(NODE_DIRECTORY.N2directory); n++ {
 				org := NODE_DIRECTORY.N2directory[n]
-				UploadNodeToDB(ctx,org,class)
+				UploadNodeToDB(ctx,org)
 				Waiting(wait_counter,total)
 			}
 		case N3GRAM:
 			for n := offset; n < len(NODE_DIRECTORY.N3directory); n++ {
 				org := NODE_DIRECTORY.N3directory[n]
-				UploadNodeToDB(ctx,org,class)
+				UploadNodeToDB(ctx,org)
 				Waiting(wait_counter,total)
 			}
 		case LT128:
 			for n := offset; n < len(NODE_DIRECTORY.LT128); n++ {
 				org := NODE_DIRECTORY.LT128[n]
-				UploadNodeToDB(ctx,org,class)
+				UploadNodeToDB(ctx,org)
 				Waiting(wait_counter,total)
 			}
 		case LT1024:
 			for n := offset; n < len(NODE_DIRECTORY.LT1024); n++ {
 				org := NODE_DIRECTORY.LT1024[n]
-				UploadNodeToDB(ctx,org,class)
+				UploadNodeToDB(ctx,org)
 				Waiting(wait_counter,total)
 			}
 
 		case GT1024:
 			for n := offset; n < len(NODE_DIRECTORY.GT1024); n++ {
 				org := NODE_DIRECTORY.GT1024[n]
-				UploadNodeToDB(ctx,org,class)
+				UploadNodeToDB(ctx,org)
 				Waiting(wait_counter,total)
 			}
 		}
@@ -1727,7 +1727,7 @@ func IdempDBAddNode(ctx PoSST,n Node) Node {
 //  Uploading memory cache to database
 // **************************************************************************
 
-func UploadNodeToDB(ctx PoSST, org Node,channel int) {
+func UploadNodeToDB(ctx PoSST, org Node) {
 
 	const nolink = 999
 

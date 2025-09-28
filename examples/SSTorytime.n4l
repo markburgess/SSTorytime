@@ -199,11 +199,49 @@ END;"    (ex)  A recursive search in SQL
 
  PoSST     (use-for) establishing a connection to the SST library service
  Node      (use-for) representing core aspects of a single graph node
+
+   "   (def)  'type Node struct {
+
+	L         int     // length of text string
+	S         string  // text string itself
+
+	Seq       bool    // true if this node begins an intended sequence, otherwise ambiguous
+	Chap      string  // section/chapter name in which this was added
+	NPtr      NodePtr // Pointer to self index
+
+	I [ST_TOP][]Link  // link incidence list, by STindex - these are the "vectors" +/-
+  	                  // NOTE: carefully how STindex offsets represent negative SSTtypes
+}'
+
  NodePtr   (use-for) unique key referring to a node and pointing to its data
+
+    "      (def)  'type NodePtr struct {
+
+	Class int            // Text size-class, used mainly in memory
+	CPtr  ClassedNodePtr // index of within name class lane
+}'
+
  Link      (use-for) representing a graph link, with arrow and destination node and weight
+
+   "       (def) 'type Link struct {  // A link is a type of arrow, with context
+                    // and maybe with a weightfor package math
+	Arr ArrowPtr         // type of arrow, presorted
+	Wgt float32          // numerical weight of this link
+	Ctx ContextPtr       // context for this pathway
+	Dst NodePtr          // adjacent event/item/node
+}'
+
  ArrowPtr  (use-for) A unique key for a type of link arrow and its properties
  PageMap   (use-for) representing the original N4L intended layout of notes
 
+     "     (def) 'type PageMap struct {  // Thereis additional intent in the layout
+
+	Chapter string
+	Alias   string
+	Context ContextPtr
+	Line    int
+	Path    []Link
+}'
 
  :: database upload functions, self-managed NPtr  ::
 

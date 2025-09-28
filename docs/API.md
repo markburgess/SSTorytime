@@ -234,103 +234,51 @@ basic workhorses. You will not normally use these.
 For example, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/postgres_stories.go).
 
 <pre>
-  :: low level API, golang, go programming ::
+ :: golang API, database upload functions, self-managed NPtr  ::
 
- +::data types::
+"CreateDBNode(ctx PoSST, n Node) Node" (use-for) establishing a node in postgres without auto %NPtr assignment
+"UploadNodeToDB(ctx PoSST, org Node)"  (use-for) uploading an existing Node in memory to postgres
+"UploadArrowToDB(ctx PoSST,arrow ArrowPtr)" (use-for) uploading an arrow definition from memory to postgres
+"UploadInverseArrowToDB(ctx PoSST,arrow ArrowPtr)" (use-for) uploading an inverse arrow definition
+"UploadPageMapEvent(ctx PoSST, line PageMap)" (use-for) uploading a PageMap structure from memory to postgres
 
- PoSST     (for) establishing a connection to the SST library service
- Node      (for) representing core aspects of a single graph node
- NodePtr   (for) unique key referring to a node and pointing to its data
- Link      (for) representing a graph link, with arrow and destination node and weight
- ArrowPtr  (for) A unique key for a type of link arrow and its properties
- PageMap   (for) representing the original N4L intended layout of notes
+ :: database upload functions, DB-managed NPtr  ::
 
- -::data types::
- +::database upload functions::
+"IdempDBAddNode(ctx PoSST,n Node) Node" (use-for) appending a node when you don't want to manage the NPtr values.
+"IdempDBAddLink(ctx PoSST,from Node,link Link,to Node)" (use-for) entry point for adding a link to a node in postgres
 
-"CreateDBNode(ctx PoSST, n Node) Node" (for) establishing a node structure in postgres
-"UploadNodeToDB(ctx PoSST, org Node)"  (for) uploading an existing Node in memory to postgres
-"UploadArrowToDB(ctx PoSST,arrow ArrowPtr)" (for) uploading an arrow definition from memory to postgres
-"UploadInverseArrowToDB(ctx PoSST,arrow ArrowPtr)" (for) uploading an inverse arrow definition
-"UploadPageMapEvent(ctx PoSST, line PageMap)" (for) uploading a PageMap structure from memory to postgres
+"CreateDBNodeArrowNode(ctx PoSST, org NodePtr, dst Link, sttype int) bool" (use-for) adding a NodeArrowNode secondary/derived structure to postgres
 
-"IdempDBAddLink(ctx PoSST,from Node,link Link,to Node)" (for) entry point for adding a link to a node in postgres
-"CreateDBNodeArrowNode(ctx PoSST, org NodePtr, dst Link, sttype int) bool" (for) adding a NodeArrowNode secondary/derived structure to postgres
+ :: golang API, searching functions ::
 
- -::database upload functions::
- +::database retrieve structural parts, retrieving::
+"GetDBNodePtrMatchingName(ctx PoSST,name,chap string) []NodePtr"  (use-for) finding a list of %NPtr matching a substring by name
+"GetDBNodePtrMatchingNCCS(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr,seq bool,limit int) []NodePtr"  (use-for) Comprehensive search by %"NCCS criteria"
+"GetDBChaptersMatchingName(ctx PoSST,src string) []string"  (use-for) obtaining a list of chapters matching by name
+"GetDBContextByName(ctx PoSST,src string) (string,ContextPtr)"  (use-for) obtaining context sets that match by string name
+"GetDBContextByPtr(ctx PoSST,ptr ContextPtr) (string,ContextPtr)"  (use-for) obtaining the context set with given index pointer
+"GetSTtypesFromArrows(arrows []ArrowPtr) []int"  (use-for) obtaining the generic semantic spacetime type for a given a list of arrow pointers
+"GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]NodePtr,[]NodePtr)"  (use-for) find nodes that are sources or sinks for a specific STType
+"SelectStoriesByArrow(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []NodePtr"  (use-for) finding nodes that are sources for story sequences matching the arrow types
 
+"GetDBArrowsWithArrowName(ctx PoSST,s string) (ArrowPtr,int)"  (use-for) obtaining an arrowpointer and STType matching a precise name
+"GetDBArrowsMatchingArrowName(ctx PoSST,s string) []ArrowPtr" (use-for) obtaining a list of arrowpointers matching the approximate name
+"GetDBArrowByName(ctx PoSST,name string) ArrowPtr"  (use-for) obtaining an arrowpointer for precise arrowname - redundant
+"GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory" (use-for) obtains an arrow directory entry for a given arrow pointer
+"GetDBArrowBySTType(ctx PoSST,sttype int) []ArrowDirectory" (use-for) obtains the arrow directory for a given STtype
+"GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap"  (use-for) obtains a page from the named chapter as a page map
 
-"GetDBChaptersMatchingName(ctx PoSST,src string) []string" (for) retrieving chapter names
-"GetDBContextsMatchingName(ctx PoSST,src string) []string" (for) retrieving context elements/dictionary with Node.S matching src string
-"GetDBNodePtrMatchingName(ctx PoSST,src,chap string) []NodePtr" (for) retrieving a NodePtr to nodes with Node.S matching src string, node.Chap matching chap
-"GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node" (for) retrieving a full Node structure from a NodePtr reference
-"GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,chap string,cn []string,arrows []ArrowPtr) []NodeArrowNode" (for) retrieving a NodeArrowNode record in a given chapter and context by arrow type
-"GetDBNodeContextsMatchingArrow(ctx PoSST,searchtext string,chap string,cn []string,arrow []ArrowPtr,page int) []QNodePtr" (for) retrieving contextualized node pointers involved in arrow criteria
-"GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) []NodePtr" (for) retrieving singleton nodes starting paths with a particular arrow
-    " (see) "GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]NodePtr,[]NodePtr)"
-    " (see) "GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,chapter string,context []string) []NodePtr"
-"GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,chapter string,context []string) []NodePtr" (for) retrieving singleton nodes starting paths with a particular arrow and matching context and chapter 
-    " (see) "GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]NodePtr,[]NodePtr)"
-    " (see) "GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) []NodePtr"
-"GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]NodePtr,[]NodePtr)" (for) retrieving a list of nodes that are sources or sinks in chapters and contexts of the graph with respect to a given link meta SSType
-    "  (see) "GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,chapter string,context []string) []NodePtr"
-    "  (see) "GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) []NodePtr"
+ :: golang API, causal cones ::
 
-"GetDBArrowsWithArrowName(ctx PoSST,s string) ArrowPtr"       (for) retrieving all arrow details matching exact name
-    " (see) "GetDBArrowByName(ctx PoSST,name string) ArrowPtr" 
-"GetDBArrowsMatchingArrowName(ctx PoSST,s string) []ArrowPtr" (for) retrieving list of all arrow details matching name
-"GetDBArrowByName(ctx PoSST,name string) ArrowPtr"   (for) retrieving all arrow details matching name from arrow directory 
-     " (see) "GetDBArrowsWithArrowName(ctx PoSST,s string) ArrowPtr"
-"GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory"
-"GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap" (for) retrieving a PageMap matching chapter, context and logical page number (note) pages are currently 60 items long
-"GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int) []NodePtr" (for) retrieving the future cone set of Nodes from a given NodePtr, returned as NodePtr for orbit description
-"GetFwdConeAsLinks(ctx PoSST, start NodePtr, sttype,depth int) []Link" (for) retrieving the future cone set of Nodes from a given NodePtr, returned as Link structures for path description
-"GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int) ([][]Link,int)" (for) retrieving the future cone set of Links from a given NodePtr as an array of paths, i.e. a double array of Link
-"GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth int) ([][]Link,int)" (for) retrieving the cone set of Nodes from a given NodePtr in all directions, returned as Link structures for path description
-"GetEntireNCConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth int,chapter string,context []string) ([][]Link,int)" (for) retrieving the cone set of Nodes from a given NodePtr in all directions, returned as Link structures for path description and filtered by chapter and context, specifying direction fwd/bwd/any
-"GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodePtr,depth int,chapter string,context []string) ([][]Link,int)" (for) retrieving the cone set of Nodes from a given multinode start set of NodePtr in all directions, returned as Link structures for path description, filtered by chapter and context, specifying direction fwd/bwd/any
+"GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int,limit int) []NodePtr"  (use-for) obtains the orbit around a starting node as a set of nodes to given depth
+"GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int, maxlimit int) ([][]Link,int)"  (use-for) obtains all possible paths from a node along STtype links
+"GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodePtr,depth int,chapter string,context []string,limit int) ([][]Link,int)" (use-for) obtains all possible paths from a starting node, with orientation "fwd,bwd,any" as link arrays matching the chapter and context criteria
 
- -::database retrieve structural parts::
- +::path integral:::
+ :: search language ::
 
-"GetPathsAndSymmetries(ctx PoSST,start_set,end_set []NodePtr,chapter string,context []string,maxdepth int) [][]Link" (for) retrieve solution paths between a starting set and and final set like +'<final|start>' in generalized way
-"GetPathTransverseSuperNodes(ctx PoSST,solutions [][]Link,maxdepth int) [][]NodePtr" (for) establish the nodes that play idential roles in a set of paths from +'<final|start>' to see which nodes are redundant
+"SolveNodePtrs(ctx PoSST,nodenames []string,search SearchParameters,arr []ArrowPtr,limit int) []NodePtr"  (use-for) finding a set of matching NPtrs satisfying the search parameters compiled by a search command
 
-  -::path integral:::
-  +::adjacency matrix representation, graph vector support::
-
-"GetDBAdjacentNodePtrBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([][]float32,[]NodePtr)" (for) retrieving the graph adjacenccy matrix as a square matrix of float32 link weights and an index to NodePointer lookup directory
-
- -::path integral:::
- +::orbits::
-
-"GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string) [ST_TOP][]Orbit" (for) retrieving the nearest neighbours of a NodePtr to maximum radius of three layers
-"PrintNodeOrbit(ctx PoSST, nptr NodePtr,width int)" (for) printing a Node orbit in human readable form on the console, calling GetNodeOrbit
-"PrintLinkOrbit(notes [ST_TOP][]Orbit,sttype int)" (for) printing an orbit in human readable form
-"PrintLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter string,context []string)" (for) printing a Link array of paths in human readable form
 
 </pre>
-
-
-## Matroid Analysis Functions (nodes by appointed roles)
-
-For examples, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/search_clusters_functions.go) and [example](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/search_clusters.go).
-
-These functions will most likely be used during browsing of data, when getting a feel for the size and shape of the data.
-
-* `GetAppointmentArrayByArrow(ctx PoSST, context []string,chapter string) map[ArrowPtr][]NodePtr` - return a map of groups of nodes formed as matroids to arrows of all types, classified by arrow type.
-
-* `GetAppointmentArrayBySSType(ctx PoSST) map[int][]NodePtr` - return a map of groups of nodes formed as matroids to arrows classified by STType.
-
-* `GetAppointmentHistogramByArrow(ctx PoSST) map[ArrowPtr]int` - Find the group (member frequency) sizes of the above groups by arrow.
-
-* `GetAppointmentHistogramBySSType(ctx PoSST) map[int]int` - Find the group (member frequency) sizes of the above groups by STType.
-
-* `GetAppointmentNodesByArrow(ctx PoSST) []ArrowAppointment` - Return the group members of a matroid by arrow type.
-
-* `GetAppointmentNodesBySTType(ctx PoSST) []STTypeAppointment` - Return the group members of a matroid by STType.
-
 
 
 ## Basic queries from SQL

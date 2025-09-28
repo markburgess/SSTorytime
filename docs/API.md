@@ -341,9 +341,10 @@ So each of these functions basically renders a fixed type JSON structure, in a m
 
 ### NodeEvents and their Orbits
 
-The simplest kind of lookup is a single topic match, returning a Node. When we get a Node, we
-return the `S` string, the `NPtr` reference and the `Chapter` and `Context` sets associated
-with each match. Each orbiting is a collection of `NodeEvent`s in JSON:
+The simplest kind of lookup is a single topic match, returning a
+Node. When we get a Node, we return the `S` string, the `NPtr`
+reference and the `Chapter` and `Context` sets associated with each
+match. Each orbiting is a collection of `NodeEvent`s in JSON:
 
 ### NodeEvent
 
@@ -365,14 +366,15 @@ type NodeEvent struct {
 }
 </pre>
 
-The orbital references are listed as a set of arrays much like the STtype collection of
-`Link` arrays in the server and database's internal Node representation. There are
-7 lists indicating the arrow name, it's spacetime time and the destination Node Ptr and its text
-along with relative coordinates. `OOO` is the origin coordinate of the body a satellite orbits,
-(i.e. radius one orbits the original search node, radius 2 orbits one of the radius one satellites).
-There is sufficient information in this to collate all the satellites of a particular STtype into a single list.
-<pre>
-type Orbit struct {
+The orbital references are listed as a set of arrays much like the
+STtype collection of `Link` arrays in the server and database's
+internal Node representation. There are 7 lists indicating the arrow
+name, it's spacetime time and the destination Node Ptr and its text
+along with relative coordinates. `OOO` is the origin coordinate of the
+body a satellite orbits, (i.e. radius one orbits the original search
+node, radius 2 orbits one of the radius one satellites).  There is
+sufficient information in this to collate all the satellites of a
+particular STtype into a single list.  <pre> type Orbit struct {
 
 	Radius  int
 	Arrow   string
@@ -415,10 +417,14 @@ type Story struct {
 
 ### WebConePaths
 
-`WebConePaths` are wrappers around arrays of `WebPath` arrays (analogous to the `[][]Link` arrays in the figure
-above), which are held in the `Paths` field. Additional information is provided by the server: The title
-of the cone, as some explanation of its semantics, an array of 'betweenness centrality' scores for the paths,
-and an array of supernode sets that are calculated by the server based on path [symmetries](https://mark-burgess-oslo-mb.medium.com/semantic-spacetime-1-the-shape-of-knowledge-86daced424a5).
+`WebConePaths` are wrappers around arrays of `WebPath` arrays
+(analogous to the `[][]Link` arrays in the figure above), which are
+held in the `Paths` field. Additional information is provided by the
+server: The title of the cone, as some explanation of its semantics,
+an array of 'betweenness centrality' scores for the paths, and an
+array of supernode sets that are calculated by the server based on
+path
+[symmetries](https://mark-burgess-oslo-mb.medium.com/semantic-spacetime-1-the-shape-of-knowledge-86daced424a5).
 
 <pre>
 type WebConePaths struct {

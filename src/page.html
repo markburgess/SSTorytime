@@ -1875,6 +1875,11 @@ panel.appendChild(docpart);
 
 function CheckSingleCone(panel,docpart,name,nclass,nptr,arrow,bwd,fwd)
 {
+if (bwd == null || fwd == null)
+   {
+   return;
+   }
+
 if (bwd[0] != null && fwd[0] != null) 
    {
    // we are in the middle of a cone
@@ -2237,47 +2242,68 @@ if (lastevent != event)
 
 // Now look at orbits
 
-for (let ngh of event.Orbits[Il1]) 
+if (event.Orbits[Il1] != null)
    {
-   Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-   LeadsTo(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   for (let ngh of event.Orbits[Il1]) 
+      {
+      Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+      LeadsTo(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+      }
    }
 
-for (let ngh of event.Orbits[Im1]) 
+if (event.Orbits[Im1] != null)
    {
-   Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-   LeadsTo(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
+   for (let ngh of event.Orbits[Im1]) 
+      {
+      Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+      LeadsTo(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
+      }
    }
-   
-for (let ngh of event.Orbits[Ic2]) 
-    {
-    Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-    Contains(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+
+if (event.Orbits[Ic2] != null)
+   {
+   for (let ngh of event.Orbits[Ic2]) 
+      {
+      Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+      Contains(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+      }
+   }
+
+if (event.Orbits[Im2] != null)
+   {
+   for (let ngh of event.Orbits[Im2]) 
+      {
+      Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+      Contains(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
+      }
     }
 
-for (let ngh of event.Orbits[Im2]) 
-    {
-    Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-    Contains(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
-    }
-    
-for (let ngh of event.Orbits[Ie3]) 
-    {
-    Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-    Expresses(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-    }
-    
-for (let ngh of event.Orbits[Im3]) 
-    {
-    Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-    Expresses(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
-    }
-    
-for (let ngh of event.Orbits[In0]) 
-    {
-    Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-    Near(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-    }
+if (event.Orbits[Ie3] != null)
+   {
+   for (let ngh of event.Orbits[Ie3]) 
+      {
+      Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+      Expresses(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+      }
+   }
+
+if (event.Orbits[Im3] != null)
+   {
+   for (let ngh of event.Orbits[Im3]) 
+      {
+      Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+      Expresses(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
+      }
+   }
+
+if (event.Orbits[In0] != null)
+   {
+   for (let ngh of event.Orbits[In0]) 
+      {
+      Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+      Near(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+      }
+   }
 }
 
 /***********************************************************/

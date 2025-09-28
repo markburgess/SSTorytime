@@ -6538,7 +6538,7 @@ func PrintSomeLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter st
 // Rendering, Marshalling, Presentation in JSON
 // **************************************************************************
 
-func JSONNodeEvent(ctx PoSST, nptr NodePtr,xyz Coords,orbits [ST_TOP][]Orbit) string {
+func JSONNodeEvent(ctx PoSST, nptr NodePtr,xyz Coords,orbits [ST_TOP][]Orbit) NodeEvent {
 
 	node := GetDBNodeByNodePtr(ctx,nptr)
 
@@ -6550,10 +6550,7 @@ func JSONNodeEvent(ctx PoSST, nptr NodePtr,xyz Coords,orbits [ST_TOP][]Orbit) st
 	event.NPtr = nptr
 	event.XYZ = xyz
 	event.Orbits = orbits
-
-	jstr,_ := json.Marshal(event)
-
-	return strings.ReplaceAll(string(jstr),"null","[]")
+	return event
 }
 
 // **************************************************************************

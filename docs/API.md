@@ -220,10 +220,11 @@ Out major focus will tend to be by STtype.
 
 The search patterns can be:
 <pre>
-            by Name                                    GetNodeNotes/Orbits
-START match by Chapter     ---> (set of NodePtr)  -->  GetFwdPaths (by STtype)
-            by first Arrow                             GetFwdBwdPaths (by signless STtype)
-            by Context                                 GetEntireCone (for all types)
+            by Name                                    GetNodeOrbits
+START match by Chapter     ---> (set of NodePtr)  -->  GetFwdPaths
+            by Arrow Start                             SolvePaths
+            by Context                                 GetEntireCone
+            by Sequence
 </pre>
 
 ## Low level wrapper functions 
@@ -234,52 +235,137 @@ performing all the marshalling and de-marshalling. The following are
 basic workhorses. You will not normally use these.
 For example, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/postgres_stories.go).
 
-<pre>
- :: golang API, database upload functions, self-managed NPtr  ::
 
-"CreateDBNode(ctx PoSST, n Node) Node" (use-for) establishing a node in postgres without auto %NPtr assignment
-"UploadNodeToDB(ctx PoSST, org Node)"  (use-for) uploading an existing Node in memory to postgres
-"UploadArrowToDB(ctx PoSST,arrow ArrowPtr)" (use-for) uploading an arrow definition from memory to postgres
-"UploadInverseArrowToDB(ctx PoSST,arrow ArrowPtr)" (use-for) uploading an inverse arrow definition
-"UploadPageMapEvent(ctx PoSST, line PageMap)" (use-for) uploading a PageMap structure from memory to postgres
+### Graph Creation ad hoc
 
- :: database upload functions, DB-managed NPtr  ::
+#### `CreateDBNode(ctx PoSST, n Node) Node`
 
-"IdempDBAddNode(ctx PoSST,n Node) Node" (use-for) appending a node when you don't want to manage the NPtr values.
-"IdempDBAddLink(ctx PoSST,from Node,link Link,to Node)" (use-for) entry point for adding a link to a node in postgres
+For establishing a node in postgres without automatci NPtr assignment.
 
-"CreateDBNodeArrowNode(ctx PoSST, org NodePtr, dst Link, sttype int) bool" (use-for) adding a NodeArrowNode secondary/derived structure to postgres
+#### `IdempDBAddNode(ctx PoSST,n Node) Node`
 
- :: golang API, searching functions ::
+For appending a node when you don't want to manage the NPtr values.
 
-"GetDBNodePtrMatchingName(ctx PoSST,name,chap string) []NodePtr"  (use-for) finding a list of %NPtr matching a substring by name
-"GetDBNodePtrMatchingNCCS(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr,seq bool,limit int) []NodePtr"  (use-for) Comprehensive search by %"NCCS criteria"
-"GetDBChaptersMatchingName(ctx PoSST,src string) []string"  (use-for) obtaining a list of chapters matching by name
-"GetDBContextByName(ctx PoSST,src string) (string,ContextPtr)"  (use-for) obtaining context sets that match by string name
-"GetDBContextByPtr(ctx PoSST,ptr ContextPtr) (string,ContextPtr)"  (use-for) obtaining the context set with given index pointer
-"GetSTtypesFromArrows(arrows []ArrowPtr) []int"  (use-for) obtaining the generic semantic spacetime type for a given a list of arrow pointers
-"GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]NodePtr,[]NodePtr)"  (use-for) find nodes that are sources or sinks for a specific STType
-"SelectStoriesByArrow(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []NodePtr"  (use-for) finding nodes that are sources for story sequences matching the arrow types
+#### `IdempDBAddLink(ctx PoSST,from Node,link Link,to Node)` 
 
-"GetDBArrowsWithArrowName(ctx PoSST,s string) (ArrowPtr,int)"  (use-for) obtaining an arrowpointer and STType matching a precise name
-"GetDBArrowsMatchingArrowName(ctx PoSST,s string) []ArrowPtr" (use-for) obtaining a list of arrowpointers matching the approximate name
-"GetDBArrowByName(ctx PoSST,name string) ArrowPtr"  (use-for) obtaining an arrowpointer for precise arrowname - redundant
-"GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory" (use-for) obtains an arrow directory entry for a given arrow pointer
-"GetDBArrowBySTType(ctx PoSST,sttype int) []ArrowDirectory" (use-for) obtains the arrow directory for a given STtype
-"GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap"  (use-for) obtains a page from the named chapter as a page map
-
- :: golang API, causal cones ::
-
-"GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int,limit int) []NodePtr"  (use-for) obtains the orbit around a starting node as a set of nodes to given depth
-"GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int, maxlimit int) ([][]Link,int)"  (use-for) obtains all possible paths from a node along STtype links
-"GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodePtr,depth int,chapter string,context []string,limit int) ([][]Link,int)" (use-for) obtains all possible paths from a starting node, with orientation "fwd,bwd,any" as link arrays matching the chapter and context criteria
-
- :: search language ::
-
-"SolveNodePtrs(ctx PoSST,nodenames []string,search SearchParameters,arr []ArrowPtr,limit int) []NodePtr"  (use-for) finding a set of matching NPtrs satisfying the search parameters compiled by a search command
+For entry point for adding a link to a node in postgres
 
 
-</pre>
+### Data Retrieval functions
+
+#### `GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node`
+
+Retrieve node details directly by NPtr reference.
+
+
+#### `GetDBContextByPtr(ctx PoSST,ptr ContextPtr) (string,ContextPtr)`
+
+For obtaining the context set with given index pointer
+
+
+#### `GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory`
+
+For obtains an arrow directory entry for a given arrow pointer
+
+#### `GetDBArrowBySTType(ctx PoSST,sttype int) []ArrowDirectory`
+
+For obtaining the arrow directory for a given STtype
+
+
+
+
+### Searching functions
+
+#### `GetDBNodePtrMatchingName(ctx PoSST,name,chap string) []NodePtr`
+
+For finding a list of %NPtr matching a substring by name
+
+#### `GetDBNodePtrMatchingNCCS(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr,seq bool,limit int) []NodePtr`  
+
+For Comprehensive search by %`NCCS criteria`.
+
+#### `GetDBChaptersMatchingName(ctx PoSST,src string) []string`
+
+For obtaining a list of chapters matching by name
+
+#### `GetDBContextByName(ctx PoSST,src string) (string,ContextPtr)`
+
+For obtaining context sets that match by string name
+
+#### `GetSTtypesFromArrows(arrows []ArrowPtr) []int`
+
+For obtaining the generic semantic spacetime type for a given a list of arrow pointers
+
+#### `GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]NodePtr,[]NodePtr)`
+
+For finding nodes that are sources or sinks for a specific STType
+
+#### `SelectStoriesByArrow(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []NodePtr`
+
+For finding nodes that are sources for story sequences matching the arrow types
+
+### Arrows / Links
+
+#### `GetDBArrowsWithArrowName(ctx PoSST,s string) (ArrowPtr,int)`
+
+For obtaining an arrowpointer and STType matching a precise name
+
+#### `GetDBArrowsMatchingArrowName(ctx PoSST,s string) []ArrowPtr`
+
+For obtaining a list of arrowpointers matching the approximate name
+
+#### `GetDBArrowByName(ctx PoSST,name string) ArrowPtr`
+
+For obtaining an arrowpointer for precise arrowname - redundant
+
+
+### Page Map / Notes View
+
+#### `GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap`
+
+Obtains a page from the named chapter as a page map
+
+### Causal Cone View
+
+#### `GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int,limit int) []NodePtr`
+
+Obtains the orbit around a starting node as a set of nodes to given depth
+
+#### `GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int, maxlimit int) ([][]Link,int)`
+
+Obtains all possible paths from a node along STtype links
+
+#### `GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodePtr,depth int,chapter string,context []string,limit int) ([][]Link,int)`
+
+Obtains all possible paths from a starting node, with orientation `fwd,bwd,any` as link arrays matching the chapter and context criteria
+
+### Search constraint solution
+
+#### `SolveNodePtrs(ctx PoSST,nodenames []string,search SearchParameters,arr []ArrowPtr,limit int) []NodePtr`
+
+For finding a set of matching NPtrs satisfying the search parameters compiled by a search command
+
+
+### Batch upload functions, for pre-assigned (DB-managed) NPtrs
+
+#### `UploadNodeToDB(ctx PoSST, org Node)`
+
+For uploading an existing Node in memory to postgres
+
+
+#### `UploadArrowToDB(ctx PoSST,arrow ArrowPtr)`
+
+For uploading an arrow definition from memory to postgres
+
+#### `UploadInverseArrowToDB(ctx PoSST,arrow ArrowPtr)`
+
+For uploading an inverse arrow definition
+
+#### `UploadPageMapEvent(ctx PoSST, line PageMap)`
+
+For uploading a PageMap structure from memory to postgres
+
+
 
 
 ## Basic queries from SQL

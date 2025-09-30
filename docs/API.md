@@ -220,10 +220,11 @@ Out major focus will tend to be by STtype.
 
 The search patterns can be:
 <pre>
-            by Name                                    GetNodeNotes/Orbits
-START match by Chapter     ---> (set of NodePtr)  -->  GetFwdPaths (by STtype)
-            by first Arrow                             GetFwdBwdPaths (by signless STtype)
-            by Context                                 GetEntireCone (for all types)
+            by Name                                    GetNodeOrbits
+START match by Chapter     ---> (set of NodePtr)  -->  GetFwdPaths
+            by Arrow Start                             SolvePaths
+            by Context                                 GetEntireCone
+            by Sequence
 </pre>
 
 ## Low level wrapper functions 

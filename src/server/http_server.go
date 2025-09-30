@@ -1,3 +1,7 @@
+//
+//  Web server for lookup requests and JSON interface
+//
+
 package main
 
 import (

@@ -1,7 +1,6 @@
 //******************************************************************
 //
-// Replacement for searchN4L
-// single search string without complex options
+// searchN4L: single search string without complex options
 //
 //******************************************************************
 

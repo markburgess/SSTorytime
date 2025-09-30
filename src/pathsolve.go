@@ -2,7 +2,6 @@
 //
 // Find <end|start> transition matrix and calculate symmetries
 //
-//
 //******************************************************************
 
 package main

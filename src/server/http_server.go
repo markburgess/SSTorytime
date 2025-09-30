@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strings"
 	"syscall"
+	"text/tabwriter"
 	"time"
 
 	SST "SSTorytime"
@@ -259,17 +260,20 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 		}
 	}
 
-	fmt.Println("Your starting expression generated this set: ", line, "\n")
-	fmt.Println(" - start set:", SL(search.Name))
-	fmt.Println(" -      from:", SL(search.From))
-	fmt.Println(" -        to:", SL(search.To))
-	fmt.Println(" -   chapter:", search.Chapter)
-	fmt.Println(" -   context:", SL(search.Context))
-	fmt.Println(" -    arrows:", SL(search.Arrows))
-	fmt.Println(" -    pagenr:", search.PageNr)
-	fmt.Println(" - sequence/story:", search.Sequence)
-	fmt.Println(" - limit/range/depth:", limit)
-	fmt.Println(" - show stats:", search.Stats)
+	fmt.Println()
+	tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.AlignRight)
+	fmt.Fprintln(tabWriter, "start set:\t", SL(search.Name))
+	fmt.Fprintln(tabWriter, "from:\t", SL(search.From))
+	fmt.Fprintln(tabWriter, "to:\t", SL(search.To))
+	fmt.Fprintln(tabWriter, "chapter:\t", search.Chapter)
+	fmt.Fprintln(tabWriter, "context:\t", SL(search.Context))
+	fmt.Fprintln(tabWriter, "arrows:\t", SL(search.Arrows))
+	fmt.Fprintln(tabWriter, "pageNR:\t", search.PageNr)
+	fmt.Fprintln(tabWriter, "sequence/story:\t", search.Sequence)
+	fmt.Fprintln(tabWriter, "limit/range/depth:\t", limit)
+	fmt.Fprintln(tabWriter, "show stats:\t", search.Stats)
+
+	tabWriter.Flush()
 	fmt.Println()
 
 	var nodeptrs, leftptrs, rightptrs []SST.NodePtr

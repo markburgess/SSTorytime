@@ -23,11 +23,12 @@ header {
   display: grid;
   position: absolute;
   grid-template-columns: 65% 25%;
+  background-color: transparent;
   align-items: start;
   justify-content: space-between;
   max-width: 100svw;
   width: 98svw;
-  z-index: 100;
+  z-index: 10;
   gap: 1ch;
 
   & h2 {

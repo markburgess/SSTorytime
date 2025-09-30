@@ -250,25 +250,25 @@ For appending a node when you don't want to manage the NPtr values.
 For entry point for adding a link to a node in postgres
 
 
-### Batch upload functions, for pre-assigned (DB-managed) NPtrs
+### Data Retrieval functions
 
-#### `UploadNodeToDB(ctx PoSST, org Node)`
+#### `GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node`
 
-For uploading an existing Node in memory to postgres
+Retrieve node details directly by NPtr reference.
 
 
-#### `UploadArrowToDB(ctx PoSST,arrow ArrowPtr)`
+####`GetDBContextByPtr(ctx PoSST,ptr ContextPtr) (string,ContextPtr)`
 
-For uploading an arrow definition from memory to postgres
+For obtaining the context set with given index pointer
 
-#### `UploadInverseArrowToDB(ctx PoSST,arrow ArrowPtr)`
 
-For uploading an inverse arrow definition
+#### `GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory`
 
-#### `UploadPageMapEvent(ctx PoSST, line PageMap)`
+For obtains an arrow directory entry for a given arrow pointer
 
-For uploading a PageMap structure from memory to postgres
+#### `GetDBArrowBySTType(ctx PoSST,sttype int) []ArrowDirectory`
 
+For obtaining the arrow directory for a given STtype
 
 
 
@@ -291,10 +291,6 @@ For obtaining a list of chapters matching by name
 
 For obtaining context sets that match by string name
 
-####`GetDBContextByPtr(ctx PoSST,ptr ContextPtr) (string,ContextPtr)`
-
-For obtaining the context set with given index pointer
-
 #### `GetSTtypesFromArrows(arrows []ArrowPtr) []int`
 
 For obtaining the generic semantic spacetime type for a given a list of arrow pointers
@@ -307,6 +303,7 @@ For finding nodes that are sources or sinks for a specific STType
 
 For finding nodes that are sources for story sequences matching the arrow types
 
+### Arrows / Links
 
 #### `GetDBArrowsWithArrowName(ctx PoSST,s string) (ArrowPtr,int)`
 
@@ -320,19 +317,14 @@ For obtaining a list of arrowpointers matching the approximate name
 
 For obtaining an arrowpointer for precise arrowname - redundant
 
-#### `GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory`
 
-For obtains an arrow directory entry for a given arrow pointer
-
-#### `GetDBArrowBySTType(ctx PoSST,sttype int) []ArrowDirectory`
-
-For obtaining the arrow directory for a given STtype
+### Page Map / Notes View
 
 #### `GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap`
 
 Obtains a page from the named chapter as a page map
 
-### Causal Cones
+### Causal Cone View
 
 #### `GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int,limit int) []NodePtr`
 
@@ -346,12 +338,31 @@ Obtains all possible paths from a node along STtype links
 
 Obtains all possible paths from a starting node, with orientation `fwd,bwd,any` as link arrays matching the chapter and context criteria
 
-### Search language
+### Search constraint solution
 
 #### `SolveNodePtrs(ctx PoSST,nodenames []string,search SearchParameters,arr []ArrowPtr,limit int) []NodePtr`
 
 For finding a set of matching NPtrs satisfying the search parameters compiled by a search command
 
+
+### Batch upload functions, for pre-assigned (DB-managed) NPtrs
+
+#### `UploadNodeToDB(ctx PoSST, org Node)`
+
+For uploading an existing Node in memory to postgres
+
+
+#### `UploadArrowToDB(ctx PoSST,arrow ArrowPtr)`
+
+For uploading an arrow definition from memory to postgres
+
+#### `UploadInverseArrowToDB(ctx PoSST,arrow ArrowPtr)`
+
+For uploading an inverse arrow definition
+
+#### `UploadPageMapEvent(ctx PoSST, line PageMap)`
+
+For uploading a PageMap structure from memory to postgres
 
 
 

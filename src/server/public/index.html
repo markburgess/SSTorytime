@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>SSTorytime Simple viewer</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/style.css" />
+    <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+              tex2jax: {
+                  inlineMath: [['$','$'], ['\\(','\\)']],
+                  displayMath: [['$$','$$'], ['\\[','\\]']],
+      }
+            });
+    </script>
+
+    <script
+      type="text/javascript"
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+    ></script>
+  </head>
+  <body>
+    <span id="wait"></span>
+    <page>
+      <header>
+        <h2>SSToryGraph</h2>
+      </header>
+      <nav>
+        <form id="search">
+          <label for="name">?</label>
+          <input type="text" id="name" name="name" value="" />
+          <input type="submit" id="gosubmit" value="Go!" />
+        </form>
+      </nav>
+
+      <section id="canvas"></section>
+      <section>
+        <main></main>
+      </section>
+      <footer></footer>
+    </page>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

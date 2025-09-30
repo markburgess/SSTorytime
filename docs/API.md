@@ -257,7 +257,7 @@ For entry point for adding a link to a node in postgres
 Retrieve node details directly by NPtr reference.
 
 
-####`GetDBContextByPtr(ctx PoSST,ptr ContextPtr) (string,ContextPtr)`
+#### `GetDBContextByPtr(ctx PoSST,ptr ContextPtr) (string,ContextPtr)`
 
 For obtaining the context set with given index pointer
 

@@ -235,12 +235,22 @@ basic workhorses. You will not normally use these.
 For example, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/postgres_stories.go).
 
 
-### Graph Creation
+### Graph Creation ad hoc
 
 #### `CreateDBNode(ctx PoSST, n Node) Node`
 
-For establishing a node in postgres without auto %NPtr assignment
+For establishing a node in postgres without automatci NPtr assignment.
 
+#### `IdempDBAddNode(ctx PoSST,n Node) Node`
+
+For appending a node when you don't want to manage the NPtr values.
+
+#### `IdempDBAddLink(ctx PoSST,from Node,link Link,to Node)` 
+
+For entry point for adding a link to a node in postgres
+
+
+### Batch upload functions, for pre-assigned (DB-managed) NPtrs
 
 #### `UploadNodeToDB(ctx PoSST, org Node)`
 
@@ -261,15 +271,6 @@ For uploading a PageMap structure from memory to postgres
 
 
 
-### Upload functions, with DB-managed NPtrs
-
-#### `IdempDBAddNode(ctx PoSST,n Node) Node`
-
-For appending a node when you don't want to manage the NPtr values.
-
-#### `IdempDBAddLink(ctx PoSST,from Node,link Link,to Node)` 
-
-(use-for) entry point for adding a link to a node in postgres
 
 
 ### Searching functions

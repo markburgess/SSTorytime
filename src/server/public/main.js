@@ -189,6 +189,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 
     function DoHeader(obj) 
     {
+        RerenderMath()
         // Clear the main panel here, as it's common to all
 
         let clearscreen = document.querySelector("main");
@@ -262,16 +263,17 @@ document.addEventListener("DOMContentLoaded", function (event)
         nowbar.textContent = obj.Ambient;
         header.appendChild(nowbar);
 
-        let ctxbar = document.createElement("div");
-        ctxbar.id = "context_history";
-        ctxbar.textContent = obj.Intent;
-        header.appendChild(ctxbar);
+        // let ctxbar = document.createElement("div");
+        // ctxbar.id = "context_history";
+        // ctxbar.textContent = obj.Intent;
+        // header.appendChild(ctxbar);
     }
 
     /***********************************************************/
 
     function DoOrbitPanel(obj) 
     {
+        RerenderMath()
         let section = document.querySelector("main");
         let panel = document.createElement("i");
         panel.id = "main_content_panel";
@@ -310,6 +312,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 
     function DoEntireConePanel(obj) 
     {
+        RerenderMath()
         let section = document.querySelector("main");
         let panel = document.createElement("span");
         panel.id = "main_content_panel";
@@ -461,6 +464,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 
     function DoTOCPanel(obj) 
     {
+        RerenderMath()
         let section = document.querySelector("main");
 
         let panel = document.createElement("span");
@@ -569,6 +573,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 
     function DoStatsPanel(obj) 
     {
+        RerenderMath()
         let section = document.querySelector("main");
 
         let panel = document.createElement("div");
@@ -1008,6 +1013,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 
     function PrintNotes(parent, array) 
     {
+        RerenderMath()
         if (array == null || array.length < 1) 
         {
             return parent;
@@ -1999,25 +2005,25 @@ document.addEventListener("DOMContentLoaded", function (event)
 
     /***********************************************************/
 
-    function DrawGrid(x, z, length) 
+    function DrawGrid(x, z, length)
     {
-        CTX.save();
+        CTX.save()
 
-        for (let xi = -length; xi <= length; xi += 0.1) 
+        for (let xi = -length; xi <= length; xi += 0.1)
         {
-            SST_Line(xi, 0, -length, xi, 0, length, "lightgrey", 1);
+            SST_Line(xi, 0, -length, xi, 0, length, "lightgrey", 1 * mob)
         }
 
-        for (let zi = -length; zi <= length; zi += 0.1) 
+        for (let zi = -length; zi <= length; zi += 0.1)
         {
-            SST_Line(-length, 0, zi, length, 0, zi, "lightgrey", 1);
+            SST_Line(-length, 0, zi, length, 0, zi, "lightgrey", 1 * mob)
         }
 
-        SST_Line(-length / 2, 0, 0, 0, 0, 0, "lightgrey", 1);
-        SST_Line(0, 0, -length / 2, 0, 0, 0, "lightgrey", 1);
-        SST_Line(0, -length / 2, 0, 0, length, 0, "lightgrey", 1);
+        SST_Line(-length / 2, 0, 0, 0, 0, 0, "lightgrey", 1 * mob)
+        SST_Line(0, 0, -length / 2, 0, 0, 0, "lightgrey", 1 * mob)
+        SST_Line(0, -length / 2, 0, 0, length, 0, "lightgrey", 1 * mob)
 
-        CTX.restore();
+        CTX.restore()
     }
 
     // *************************************************
@@ -2035,7 +2041,7 @@ document.addEventListener("DOMContentLoaded", function (event)
         let canvas = document.createElement("canvas");
         canvas.id = "myCanvas";
         canvas.width = window.innerWidth;
-        canvas.height = window.innerWidth / 2;
+        canvas.height = window.innerWidth / 2 / mob;
         CTX = canvas.getContext("2d");
         parent.appendChild(canvas);
         CTX.beginPath();
@@ -2047,7 +2053,7 @@ document.addEventListener("DOMContentLoaded", function (event)
     function Label(x, y, z, text, size, colour) 
     {
         CTX.save();
-        let font = "bold " + size + "px Arial";
+        let font = "bold " + size * mob + "px Arial";
 
         let xr = Tx(x, y, z) + 30;
         let yr = Ty(x, y, z);
@@ -2109,56 +2115,52 @@ document.addEventListener("DOMContentLoaded", function (event)
 
     // *************************************************
 
-    function LeadsTo(x0, y0, z0, xp, yp, zp) 
+
+    function LeadsTo(x0, y0, z0, xp, yp, zp)
     {
         //Arrow(x0,y0,z0,xp,yp,zp,"rgba(0,250,0,1)",3);
-        Arrow(x0, y0, z0, xp, yp, zp, "darkred", 3);
+        Arrow(x0, y0, z0, xp, yp, zp, "darkred", 3 * mob)
     }
 
     // *************************************************
-
-    function Contains(x0, y0, z0, xp, yp, zp) 
+    function Contains(x0, y0, z0, xp, yp, zp)
     {
         //Arrow(x0,y0,z0,xp,yp,zp,"rgba(60,60,60,1)",2);
-        Arrow(x0, y0, z0, xp, yp, zp, "lightblue", 2);
+        Arrow(x0, y0, z0, xp, yp, zp, "lightblue", 2 * mob)
     }
 
     // *************************************************
-
-    function Expresses(x0, y0, z0, xp, yp, zp) 
+    function Expresses(x0, y0, z0, xp, yp, zp)
     {
         //Arrow(x0,y0,z0,xp,yp,zp,"rgba(106,236,255,1)",2);
-        Arrow(x0, y0, z0, xp, yp, zp, "orange", 2);
+        Arrow(x0, y0, z0, xp, yp, zp, "orange", 2 * mob)
     }
 
     // *************************************************
-
-    function Near(x0, y0, z0, xp, yp, zp) 
+    function Near(x0, y0, z0, xp, yp, zp)
     {
         //Arrow(x0,y0,z0,xp,yp,zp,"rgba(20,20,20,1)",1);
-        Arrow(x0, y0, z0, xp, yp, zp, "darkgrey", 1);
+        Arrow(x0, y0, z0, xp, yp, zp, "darkgrey", 1 * mob)
     }
 
     // *************************************************
-
-    function Event(x, y, z) 
+    function Event(x, y, z)
     {
-        Node(x, y, z, 6, "darkred", "red");
+        Node(x, y, z, 6 * mob, "darkred", "red")
     }
 
     // *************************************************
-
-    function Thing(x, y, z) 
+    function Thing(x, y, z)
     {
-        Node(x, y, z, 4, "darkgreen", "lightgreen");
+        Node(x, y, z, 4 * mob, "darkgreen", "lightgreen")
     }
 
     // *************************************************
-
-    function Concept(x, y, z) 
+    function Concept(x, y, z)
     {
-        Node(x, y, z, 4, "darkblue", "lightblue");
+        Node(x, y, z, 4 * mob, "darkblue", "lightblue")
     }
+
 
     // *************************************************
 

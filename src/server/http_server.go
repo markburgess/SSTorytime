@@ -1,7 +1,3 @@
-//
-// Simple web server lookup
-//
-
 package main
 
 import (
@@ -135,37 +131,11 @@ func SignalHandler() {
 
 // *********************************************************************
 
-func PageHandler(w http.ResponseWriter, r *http.Request) {
-
-	GenHeader(w, r)
-
-	switch r.Method {
-	case "GET":
-		w.Header().Set("Content-Type", "text/html")
-		page, err := os.ReadFile("./page.html")
-
-		localAddr := r.Context().Value(http.LocalAddrContextKey)
-		ipaddr := fmt.Sprintf("%s", localAddr)
-		page = []byte(strings.Replace(string(page), "localhost:8080", ipaddr, -1))
-
-		if err != nil {
-			fmt.Println("Can't find ./page.html")
-			os.Exit(-1)
-		}
-		w.Write(page)
-
-	default:
-		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
-	}
-}
-
 // *********************************************************************
 // SEARCH
 // *********************************************************************
 
 func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
-
-	GenHeader(w, r)
 
 	switch r.Method {
 

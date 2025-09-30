@@ -3,44 +3,105 @@
   <head>
     <title>SSTorytime Simple viewer</title>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1 shrink-to-fit=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    />
     <link rel="stylesheet" href="/style.css" />
-    <script type="text/x-mathjax-config">
-            MathJax.Hub.Config({
-              tex2jax: {
-                  inlineMath: [['$','$'], ['\\(','\\)']],
-                  displayMath: [['$$','$$'], ['\\[','\\]']],
-      }
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [
+            ["$", "$"],
+            ["\\(", "\\)"],
+          ],
+          displayMath: [
+            ["$$", "$$"],
+            ["\\[", "\\]"],
+          ],
+        },
+        startup: {
+          ready: () => {
+            MathJax.startup.defaultReady();
+            MathJax.startup.promise.then(() => {
+              console.log("MathJax initial typesetting complete");
+              if (window.initializeApp) {
+                window.initializeApp();
+              }
             });
+          },
+        },
+      };
     </script>
-
     <script
-      type="text/javascript"
       id="MathJax-script"
       async
-      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+      src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"
     ></script>
   </head>
-  <body>
-    <span id="wait"></span>
-    <page>
+
+  <body class="">
+    <span id="wait" class=""></span>
+    <page
+      class="antialiased from-slate-200/50 via-sky-100/50 to-slate-200/50 bg-linear-to-bl"
+    >
       <header>
         <h2>SSToryGraph</h2>
+
+        <a href="#main-section" id="scroll-indicator" class="scroll-indicator">
+          <span class="material-icons-sharp">arrow_downward</span>
+        </a>
       </header>
       <nav>
         <form id="search">
-          <label for="name">?</label>
-          <input type="text" id="name" name="name" value="" />
+          <label for="name"
+            ><span class="material-icons-sharp"> question_mark </span></label
+          >
+          <input
+            type="text"
+            autocomplete="on"
+            id="name"
+            name="name"
+            value=""
+            list="search-suggestions"
+          />
           <input type="submit" id="gosubmit" value="Go!" />
         </form>
+        <span id="scroll-indicator" class="scroll-indicator">
+          <span class="material-icons-sharp">swipe_down</span>
+        </span>
       </nav>
-
+      <datalist id="search-suggestions"></datalist>
       <section id="canvas"></section>
-      <section>
+      <section class="pb-[14svh]">
         <main></main>
       </section>
-      <footer></footer>
+      <footer>
+        <div id="status-indicators">
+          <span
+            id="server-status"
+            class="status-indicator"
+            title="Server Status"
+          ></span>
+          <span
+            id="database-status"
+            class="status-indicator"
+            title="Database Status"
+          ></span>
+        </div>
+      </footer>
     </page>
-    <script type="module" src="/main.js"></script>
+    <script defer src="/main.js"></script>
   </body>
 </html>

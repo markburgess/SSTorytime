@@ -130,6 +130,39 @@ nav {
     font-weight: 500;
   }
 }
+a {
+  position: relative;
+  transition-property: transform, translate, scale, rotate;
+  animation: fade-in 1s var(--ease-5);
+  text-decoration: italic;
+  color: var(--blue-8);
+  padding-inline: 0;
+  cursor: pointer;
+  font-weight: var(--font-weight-6);
+  text-wrap: wrap balance;
+
+  &::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    inset-inline-start: 0;
+    inset-block-end: -1ch;
+    transform: scale(0);
+    background-color: var(--blue-8);
+    transition: all ease-in-out 250ms;
+  }
+
+  &:hover {
+    color: var(-indigo-6);
+    text-shadow: 1px 2px 5px rgba(52, 58, 64, 0.3),
+      -2px -1px 3px rgba(56, 217, 169, 0.2);
+
+    &::before {
+      transform: scale(1);
+    }
+  }
+}
 
 .card-note {
   display: flex;
@@ -159,6 +192,13 @@ nav {
   border: 1px var(--stone-4) solid;
 
   box-shadow: var(--shadow-2);
+}
+.NCM-N {
+  color: var(--blue-12);
+}
+mjx-container[display] {
+  text-align: start !important;
+  text-indent: 2ch;
 }
 
 .line-view {

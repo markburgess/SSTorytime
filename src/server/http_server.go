@@ -19,6 +19,8 @@ import (
 	SST "SSTorytime"
 )
 
+// Ugly Go directive to embed text files into the binary
+
 //go:embed all:public
 var content embed.FS
 
@@ -27,10 +29,78 @@ var content embed.FS
 var CTX SST.PoSST // just one persistent connection
 
 // *********************************************************************
-func enableCORS(next http.Handler) http.Handler {
+// Main
+// *********************************************************************
+
+func main() {
+
+	CTX = SST.Open(true)
+
+	// 1. Create the filesystem view rooted inside the "public" directory.
+
+	publicFS, err := fs.Sub(content, "public")
+
+	if err != nil {
+		log.Fatal("failed to create sub-filesystem:", err)
+	}
+
+	// 2. Create a router (ServeMux) and register handlers.
+
+	mux := http.NewServeMux()
+
+	fileServer := http.FileServer(http.FS(publicFS))
+
+	mux.Handle("/", fileServer)
+	mux.HandleFunc("/searchN4L", SearchN4LHandler)
+	mux.HandleFunc("/status", StatusHandler)
+
+	// 3. Create an http.Server instance for graceful shutdown.
+
+	srv := &http.Server{Addr:    "0.0.0.0:8080", Handler: EnableCORS(mux), }
+
+	// 4. Run the server in a goroutine so it doesn't block.
+
+	go func() {
+		log.Println("Server starting on http://localhost:8080")
+
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("could not start server: %s\n", err)
+		}
+	}()
+
+	// 5. Wait for an interrupt signal.
+
+	quit := make(chan os.Signal, 1)
+
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Println("Server is shutting down...")
+
+	// 6. Perform a graceful shutdown with a timeout.
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Server shutdown failed: %s\n", err)
+	}
+
+	log.Println("Server exited properly")
+}
+
+// *********************************************************************
+// Handlers
+// *********************************************************************
+
+func EnableCORS(next http.Handler) http.Handler {
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		// Set the Access-Control-Allow-Origin header to the origin of the request.
+
 		origin := r.Header.Get("Origin")
+
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
@@ -44,55 +114,6 @@ func enableCORS(next http.Handler) http.Handler {
 		// Call the next handler in the chain.
 		next.ServeHTTP(w, r)
 	})
-}
-
-func main() {
-
-	CTX = SST.Open(true)
-
-	// 1. Create the filesystem view rooted inside the "public" directory.
-	publicFS, err := fs.Sub(content, "public")
-	if err != nil {
-		log.Fatal("failed to create sub-filesystem:", err)
-	}
-
-	// 2. Create a router (ServeMux) and register handlers.
-	mux := http.NewServeMux()
-	fileServer := http.FileServer(http.FS(publicFS))
-
-	mux.Handle("/", fileServer)
-	mux.HandleFunc("/searchN4L", SearchN4LHandler)
-	mux.HandleFunc("/status", StatusHandler)
-
-	// 3. Create an http.Server instance for graceful shutdown.
-	srv := &http.Server{
-		Addr:    "0.0.0.0:8080",
-		Handler: enableCORS(mux),
-	}
-
-	// 4. Run the server in a goroutine so it doesn't block.
-	go func() {
-		log.Println("Server starting on http://localhost:8080")
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("could not start server: %s\n", err)
-		}
-	}()
-
-	// 5. Wait for an interrupt signal.
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	log.Println("Server is shutting down...")
-
-	// 6. Perform a graceful shutdown with a timeout.
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatalf("Server shutdown failed: %s\n", err)
-	}
-
-	log.Println("Server exited properly")
 }
 
 // *********************************************************************
@@ -129,8 +150,6 @@ func SignalHandler() {
 		fmt.Println("Unknown signal.")
 	}
 }
-
-// *********************************************************************
 
 // *********************************************************************
 // SEARCH

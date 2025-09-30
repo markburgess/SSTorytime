@@ -146,8 +146,7 @@ a {
     position: absolute;
     width: 100%;
     height: 2px;
-    inset-inline-start: 0;
-    inset-block-end: -1ch;
+    bottom: 0;
     transform: scale(0);
     background-color: var(--blue-8);
     transition: all ease-in-out 250ms;

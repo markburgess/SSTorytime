@@ -482,7 +482,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 			chapter_section.setAttribute("class", "card-view");
 			chapter_section.id = "toc-panel";
 
-			chapter_section.style.display = "inline-block";
+			chapter_section.style.display = "inline-flex";
 			let link = document.createElement("a");
 			let item = document.createElement("h3");
 			link.onclick = function ()
@@ -494,13 +494,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 			chapter_section.appendChild(link);
 
 			Event(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z);
-			Label(
-				chpblk.XYZ.X,
-				chpblk.XYZ.Y,
-				chpblk.XYZ.Z,
-				chpblk.Chapter,
-				12,
-				"gray",
+			Label(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z, chpblk.Chapter, 12, "gray",
 			);
 
 			// First do the context groups or ambient parts

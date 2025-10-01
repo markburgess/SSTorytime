@@ -180,7 +180,7 @@ h3 {
   }
 
   & span {
-    padding: 1ch;
+    padding-inline: 1ch;
     display: inline-flex;
     width: fit-content;
     flex-basis: 100%;
@@ -309,21 +309,31 @@ h3 {
 }
 
 #toc-elem {
-  padding: 1ch;
+  padding-inline: 1ch;
   color: purple;
   font-size: 150%;
   line-height: 150%;
 }
 
+#toc-panel {
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  & h3 {
+    font-size: var(--font-size-fluid-1);
+    margin: 0;
+  }
+}
+
 #toc-single {
-  padding: 1ch;
+  padding-inline: 1ch;
   color: var(--orange-10);
   font-size: 150%;
   line-height: 120%;
 }
 
 #toc-common {
-  padding: 1ch;
+  padding-inline: 1ch;
   font-size: 120%;
   line-height: 110%;
 }

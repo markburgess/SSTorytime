@@ -3,10 +3,7 @@
   <head>
     <title>SSTorytime Simple viewer</title>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1 shrink-to-fit=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -17,8 +14,8 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
     />
-    <link rel="stylesheet" href="/style.css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="/style.css" />
     <script>
       window.MathJax = {
         tex: {
@@ -79,8 +76,8 @@
         <span id="scroll-indicator" class="scroll-indicator">
           <span class="material-icons-sharp">swipe_down</span>
         </span>
+        <datalist id="search-suggestions"></datalist>
       </nav>
-      <datalist id="search-suggestions"></datalist>
       <section id="canvas"></section>
       <section class="pb-[14svh]">
         <main></main>
@@ -100,6 +97,6 @@
         </div>
       </footer>
     </page>
-    <script defer src="/main.js"></script>
+    <script type="module" defer src="/main.js"></script>
   </body>
 </html>

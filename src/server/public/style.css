@@ -181,7 +181,6 @@ h3 {
 
   & span {
     padding-inline: 1ch;
-    display: inline-flex;
     width: fit-content;
     flex-basis: 100%;
     text-wrap: wrap balance;
@@ -198,7 +197,7 @@ h3 {
     white-space: pre;
 
     & :hover {
-      color: var(--indigo-10);
+      color: var(--indigo-8);
       text-shadow: 1px 2px 5px rgba(52, 58, 64, 0.3),
         -2px -1px 3px rgba(56, 217, 169, 0.2);
     }
@@ -260,51 +259,51 @@ h3 {
 }
 
 .NCM-N {
-  color: var(--blue-12);
+  color: blue;
 }
 #cntxt {
   font-size: var(--font-size-fluid-0);
   text-wrap: wrap balance;
 }
 #arrow-0 {
-  color: var(--purple-9);
+  color: purple;
   font-size: var(--font-size-fluid-0);
   /* -express */
 }
 
 #arrow-1 {
   /* -contain */
-  color: var(--blue-9);
+  color: darkblue;
   font-size: var(--font-size-fluid-0);
 }
 
 #arrow-2 {
   /* -leadsto */
-  color: var(--red-9);
+  color: darkred;
   font-size: var(--font-size-fluid-0);
 }
 
 #arrow-3 {
   /* near */
-  color: var(--indigo-9);
+  color: blue;
   font-size: var(--font-size-fluid-0);
 }
 
 #arrow-4 {
   /* +leadsto */
-  color: var(--red-9);
+  color: red;
   font-size: var(--font-size-fluid-0);
 }
 
 #arrow-5 {
   /* +contain */
-  color: var(--cyan-9);
+  color: darkcyan;
   font-size: var(--font-size-fluid-0);
 }
 
 #arrow-6 {
   /* +express */
-  color: var(--purple-9);
+  color: purple;
   font-size: var(--font-size-fluid-0);
 }
 

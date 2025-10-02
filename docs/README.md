@@ -179,7 +179,9 @@ CREATE EXTENSION UNACCENT;
 
 ## Installing the Go programming language for building and scripting
 
-See also about Go
+The Go language is easy like "Python" but fast and strongly typed, with compiler checks.
+You can think of it as a "better Python" -- in spite of some questionable aesthetic choices.
+Get it from:
 
 ```
 https://golang.org/dl/

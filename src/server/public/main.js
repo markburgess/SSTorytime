@@ -394,7 +394,8 @@ for (let head_nptr of obj.Content)
 
    card = PrintPaths(card, head_nptr.Paths);
 
-   // Add the centrality box at bottom of page
+   // Add the centrality box at bottom of page (still ugly)
+
    let tab = document.createElement("table");
    let row = document.createElement("tr");
    let col1 = document.createElement("td");
@@ -1033,6 +1034,7 @@ for (let path = 0; path < array.length; path++)
          arrow_link.class = "tooltip";
          arrow_link.title = STINDICES[stindex];
          arrow_link.style.fontFamily = "Verdana";
+         arrow_link.onclick = function () { sendLinkSearch('\\arrow "' + arrow + '"');};
          newpath.appendChild(arrow_link);
          }
       }

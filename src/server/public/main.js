@@ -424,12 +424,16 @@ for (let head_nptr of obj.Content)
       col2.appendChild(hd2);
       let lst2 = document.createElement("ol");
 
-      for (let snode of head_nptr.Supernodes)
+      if (head_nptr.SuperNodes != null)
          {
-         let li = document.createElement("li");
-         li.textContent = snode;
-         lst2.appendChild(li);
-         }
+         for (let snode of head_nptr.SuperNodes)
+            {
+            let li = document.createElement("li");
+            li.textContent = snode;
+            lst2.appendChild(li);
+            }
+	 }
+
       col2.appendChild(lst2);
 
       row.appendChild(col1);
@@ -920,6 +924,10 @@ for (let path = 0; path < array.length; path++)
       {
       continue;
       }
+
+   let thisx;
+   let thisy;
+   let thisz;
 
    // The WebPath protocol alternates node-arrow...
    for (let i = 0; i < array[path].length; i++)

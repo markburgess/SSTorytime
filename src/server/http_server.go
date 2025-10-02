@@ -571,7 +571,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, left
 
 			response := PackageResponse(ctx, search, "PathSolve", string(array_pack))
 
-			//fmt.Println("PATH SOLVE:",string(response))
+			fmt.Println("PATH SOLVE:",string(response))
 
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(response)

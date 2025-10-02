@@ -148,17 +148,9 @@ You can install Postgres in memory to increase performance of the upload and sea
 
 **Beware !**: all data in the postgres database will be lost when restarting processes. 
 But you can always rebuild the schema, and reload your data graph from your N4L files using the tool N4L.
-
-```
-$ sudo mkdir -p /mnt/pg_ram
-$ sudo mount -t tmpfs -o size=800M tmpfs /mnt/pg_ram
-$ sudo chown postgres:postgres /mnt/pg_ram
-$ sudo systemctl stop postgresql
-$ sudo -u postgres /usr/lib/postgresql/<version>/bin/initdb -D /mnt/pg_ram/pgdata
-$ sudo -u postgres /usr/lib/postgresql/<version>/bin/pg_ctl -D /mnt/pg_ram/pgdata -l /mnt/pg_ram/logfile start
-
 e.g. paste in the following commands to a shell, giving the root password:
 
+```
 sudo su -
 
 mkdir -p /mnt/pg_ram

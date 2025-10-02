@@ -696,7 +696,6 @@ for (let ls of obj.Content)
       {
       let nlink = document.createElement("a");
       let nitem = document.createElement("span");
-      nitem.id = "heatmap";
 
       if (ls.NPtr.Class < 0)
          {
@@ -715,6 +714,7 @@ for (let ls of obj.Content)
          nitem.textContent = "(" + ls.NPtr.Class + "," + ls.NPtr.CPtr + ")";
          }
 
+      nitem.id = "heatmap";
       nitem.style.color = HeatColour(ls.Freq, ls.Pdelta, 70);
       nitem.style.fontSize = "80%";
       nitem.style.backgroundColor = HeatColour(ls.Freq, ls.Pdelta, 100);

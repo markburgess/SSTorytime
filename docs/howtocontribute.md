@@ -27,7 +27,8 @@ The hardest part at the moment is installing the software. It's easiest of you h
 
 ## The TO-DO list
 
-There are many things left to implement in SST.
+There are many things left to implement in SST. If you want to make
+suggestions, please get in touch and offer some feedback.
 
 * The user interface is only provisional, so there are many things to do to improve style and colouration.
 The focus has been on obtaining a "responsive" design that will work on all devices, large and small. This is obviously both a challenge and a matter of individual taste.

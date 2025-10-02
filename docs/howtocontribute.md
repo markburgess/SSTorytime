@@ -23,3 +23,19 @@ The hardest part at the moment is installing the software. It's easiest of you h
 * If you want to think about how to visualize information in a knowledge base in new and exciting way, then give it a try! If you have specific expertise in web programming, get in touch!
 
 * As the documentation becomes more complete, you'll be able to write your own programs to query data. Later there will be a Python interface too.
+
+
+## The TO-DO list
+
+There are many things left to implement in SST.
+
+* The user interface is only provisional, so there are many things to do to improve style and colouration.
+The focus has been on obtaining a "responsive" design that will work on all devices, large and small. This is obviously both a challenge and a matter of individual taste.
+
+* * User-selected colours and styles
+
+* * Using Images and other Media Types more seamlessly as nodes in a graph is desirable. Presently, one can give a URL to an image or resource, but the browsing experience is incomplete.
+
+* * Reading text out loud (in multiple languages) is desirable.
+
+* Basic solving for paths in a graph has been implemented in a generic way, but there cases (such as for criminal investigation or research trial mapping) where more advanced solutions involving types and weights are needed. This remains to be done, because some effort first has to be made to understand the scaling and speed of lookup for different kinds of data. Path searching is computationally intensive and lends itself to a batch-style job (e.g. `graph_report`) rather than an interactive search.

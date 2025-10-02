@@ -27,7 +27,6 @@ go env -w GO111MODULE=off
 ```
 
 
-
 ## Installing database Postgres
 
 Hard part first; the postgres database is a bit of a monster. There are several steps to install it an set it up. 
@@ -54,41 +53,7 @@ $ ps waux | grep postgres
 ```
 You should now see a number of processes running as the postgres user.
 
-* * (as postgres user) Next login to the postgres user account and run the `psql` command there to gain root access:
-
-```
-sudo su -
-su - postgres
-psql
-```
-
-Only postgres user can CREATE or DROP a database.
-
-* * (as postgres user) Set up a database for the examples. The default name in the code is:
-
-```
-\h for help
-
-CREATE USER sstoryline PASSWORD 'sst_1234' superuser;
-CREATE DATABASE sstoryline;
-GRANT ALL PRIVILEGES ON DATABASE sstoryline TO sstoryline;
-CREATE EXTENSION UNACCENT;
-```
-
-For the last line, you must have installed the extension packages `postgres-contrib`.
-If you want to use psql to examine and manage
-the database yourself using psql, it's useful to add your own account to the privileges, like this:
-
-```
-CREATE USER myusername;
-GRANT ALL PRIVILEGES ON DATABASE sstoryline TO myusername;
-\l
-```
-
-The `\l` command lists the databases, and you should now see the database.
-
-* * (as postgres user) Locate the file `locate pg_hba.conf` for your distribution (you might have to search for it) and edit it as the postgres user.
-
+* To complete the setup you need to locate the file `locate pg_hba.conf` for your distribution (you might have to search for it) and edit it as the postgres user and edit it go grant connection access.
 
 ```
 $ myfavouriteeditor /var/lib/pgsql/data/pg_hba.conf
@@ -104,12 +69,48 @@ host    all             all             ::1/128                 <b>password</b>
 ```
 
 This will allow you to connect to the database using the shell command `psql` command using password
-authentication. Think of a suitable password.
+authentication. 
 
 Note that, if you accidentally edit the file as root, the owner of the file will be changed and postgres will fail to start.
 
 
 Notice that the `psql` is a tool that accepts commands of two kind: backslash commands, e.g. describe tables for the current database `\dt`,  `\d tablename`, and describing stored functions `\df`. Also note that direct SQL commands, which must end in a semi-colon `;`.
+
+
+## Setting up the SST database in postgres - two methods
+
+You can set up postgres directly or run it in RAM disk memory. Running in a RAM disk is fast and protects
+your storage device (SSD or harddisk) from unnecessary wear while reloading and changing data a lot.
+If you choose a RAM disk, rebooting the computer or powering off will lose all the data in the database.
+However, if you are only using the database to keep N4L notes, you can rebuild it anytime from source.
+
+### SST Postgres on secondary disk storage
+
+To complete the setup, login to the postgres user account and run the `psql` command.
+Only postgres user can CREATE or DROP a database. Since you probably don't know the postgres password,
+you can go via the root account:
+
+```
+$ sudo su -  
+(root password)
+# su - postgres
+## psql
+```
+
+You now have a postgres shell.
+To set up a database,, simply paste in these commands:
+
+```
+CREATE USER sstoryline PASSWORD 'sst_1234' superuser;
+CREATE DATABASE sstoryline;
+GRANT ALL PRIVILEGES ON DATABASE sstoryline TO sstoryline;
+CREATE EXTENSION UNACCENT;
+```
+
+For the last line, you must have installed the extension packages `postgres-contrib`.
+
+The `\l` command lists the databases, and you should now see the database.
+
 
 * You should now be able to exit su log in to the postgres shell as an ordinary user, without sudo. Tap CTRL-D twice to get back to your user shell.
 When connecting in code, you have to add the password. For a shell user, postgres recognizes your local
@@ -136,9 +137,9 @@ you will be able to use the software. If you're planning to run a publicly avail
 should learn more about the security of postgres. We won't go into that here.
 
 
-## Option: Installing Postgres in memory [Linux]
+## SST Postgres in RAM disk memory [Linux]
 
-Optionally, you can install Postgres in memory to increase performance of the upload and search, and to preserve your laptop SSD disks. The downside is that each time you reboot you will have to repeat this procedure and all will be lost.
+You can install Postgres in memory to increase performance of the upload and search, and to preserve your laptop SSD disks. The downside is that each time you reboot you will have to repeat this procedure and all will be lost.
 
 - To do so, create a new data folder, and mount it as a memory file system.
 - grant access rights to your postgres user.
@@ -156,7 +157,7 @@ $ sudo systemctl stop postgresql
 $ sudo -u postgres /usr/lib/postgresql/<version>/bin/initdb -D /mnt/pg_ram/pgdata
 $ sudo -u postgres /usr/lib/postgresql/<version>/bin/pg_ctl -D /mnt/pg_ram/pgdata -l /mnt/pg_ram/logfile start
 
-e.g.
+e.g. paste in the following commands to a shell, giving the root password:
 
 sudo su -
 
@@ -170,7 +171,18 @@ su postgres -
 
 ```
 
-Now repeat the setup steps for the database.
+Now repeat the setup steps for the database:
+
+```
+$ sudo su -  
+(root password)
+# su - postgres
+## psql
+CREATE USER sstoryline PASSWORD 'sst_1234' superuser;
+CREATE DATABASE sstoryline;
+GRANT ALL PRIVILEGES ON DATABASE sstoryline TO sstoryline;
+CREATE EXTENSION UNACCENT;
+```
 
 
 ## Installing the Go programming language for building and scripting

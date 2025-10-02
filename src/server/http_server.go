@@ -786,7 +786,7 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, 
 	data, _ := json.Marshal(chapters)
 	response := PackageResponse(ctx, search, "TOC", string(data))
 
-	fmt.Println("Chap/context...", string(response))
+	//fmt.Println("Chap/context...", string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -957,6 +957,8 @@ func SL(list []string) string {
 
 	return s
 }
+
+//******************************************************************
 
 // StatusResponse defines the structure for our JSON response.
 type StatusResponse struct {

@@ -16,7 +16,7 @@ N4L: N4L.go ../pkg/SSTorytime/SSTorytime.go
 searchN4L: searchN4L.go ../pkg/SSTorytime/SSTorytime.go
 	go build -o $@ $@.go
 
-http_server: ./server/http_server.go ../pkg/SSTorytime/SSTorytime.go
+http_server: ./server/http_server.go ../pkg/SSTorytime/SSTorytime.go server/public/main.js
 	go build -o $@ ./server/http_server.go
 
 notes: notes.go ../pkg/SSTorytime/SSTorytime.go

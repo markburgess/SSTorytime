@@ -831,6 +831,7 @@ arrow_link.id = "arrow-" + stindex;
 arrow_link.title = STINDICES[stindex];
 arrow_link.class = "tooltip";
 arrow_link.style.fontFamily = "Verdana";
+arrow_link.onclick = function () { sendLinkSearch('\\arrow "' + arrow + '"');};
 box.appendChild(arrow_link);
 
 if (str.includes("\n"))
@@ -870,7 +871,6 @@ else
       } 
    else
       {
-      // THIS IS WHERE WE WANT TO ADD TAB/ORBIT POPUP ON MOUSEOVER ??
       text_link.onclick = function ()
          {
          sendlinkData(nclass, ncptr);
@@ -1996,8 +1996,8 @@ if (event.Orbits[In0] != null)
 
 function ArrowPair(angle, type, fwd, bwd)
 {
-x = 0.5 * Math.cos(angle);
-y = 0.5 * Math.sin(angle);
+let x = 0.5 * Math.cos(angle);
+let y = 0.5 * Math.sin(angle);
 
 switch (type)
    {

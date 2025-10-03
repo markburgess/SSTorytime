@@ -133,7 +133,7 @@ const STINDICES = [
 	"is a property expressed by",
 	"is contained by",
 	"comes from",
-	"is near/smimilar to",
+	"is near/similar to",
 	"leads to",
 	"contains",
 	"expresses property",
@@ -329,7 +329,6 @@ let panel = document.createElement("i");
 panel.id = "main_content_panel";
 section.appendChild(panel);
 
-// List of events unrelated
 if (obj == null)
    {
    return;
@@ -350,7 +349,7 @@ let last_node_event = obj.Content[0];
 
 for (let node_event of obj.Content)
    {
-   ShowNodeEvent(panel, node_event, separates, "all", "", "h3");
+   ShowNodeEvent(panel, node_event, separates, "all", "", "h4");
 
    last_node_event = node_event; // don't link up
    PlotGraphics(node_event, last_node_event);
@@ -380,7 +379,7 @@ for (let head_nptr of obj.Content)
    card.setAttribute("class", "card-view");
    panel.appendChild(card);
 
-   let item = document.createElement("h2");
+   let item = document.createElement("h4");
    let link = document.createElement("a");
    item.textContent = head_nptr.Title.slice(0, 50) + "..";
 
@@ -1000,7 +999,7 @@ for (let path = 0; path < array.length; path++)
 
             let text = document.createElement("span");
             text.textContent = str;
-
+	    text.id = "orbital-full-text";
             if (str.length < 20)
                {
                text.style.fontSize = "150%";
@@ -1276,7 +1275,6 @@ return parent;
 
 function ShowNodeEvent(panel,event,counter,direction,skiparrow,anchortag)
 {
-// create a div panel for the orbit root node
 let child = document.createElement("div");
 child.className = "card-view";
 child.id = "orbit_column_1of3"; // col 1 spans all 3 columns, full width for full node text
@@ -1292,7 +1290,7 @@ let nptrtxt = "(" + event.NPtr.Class + "," + event.NPtr.CPtr + ")";
 
 if (counter == 0)
    {
-   text = "--> " + event.Text;
+   text = "--> " + '"' + event.Text + '"';
    }
 
    // ** BEGIN 1: Here we print the full text for column_1of3 either as pre or p
@@ -1319,6 +1317,7 @@ if (counter == 0)
          {
          sendlinkData(event.NPtr.Class, event.NPtr.CPtr);
          };
+
       let from_text = document.createElement(anchortag);
       from_link.nameClass = "text";
       from_link.appendChild(from_text);
@@ -1327,7 +1326,9 @@ if (counter == 0)
 
       if (!IsMath(event.Text))
          {
+	 // Insert a card overview title summary (blue)
          from_text.textContent = event.Text.slice(0, 70) + "...";
+
          let small_tot_text = document.createElement("div");
          small_tot_text.textContent = text;
          small_tot_text.id = "orbital-full-text";

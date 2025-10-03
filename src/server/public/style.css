@@ -32,7 +32,7 @@ header {
   & h2 {
     text-wrap: wrap;
     text-wrap-style: balance;
-    color: var(--orange-11);
+    color: var(--blue-9);
     text-shadow: -1px 3px 4px rgba(15, 51, 11, 0.2);
     font-size: var(--font-size-fluid-1);
     text-align: start;
@@ -149,6 +149,7 @@ h3 {
   border-radius: var(--radius-3);
   padding: 1rem 0.5rem;
   margin-bottom: 0.5rem;
+    color: var(--indigo-12);
   width: 95svw;
   border: 1px var(--stone-4) solid;
   display: flex;
@@ -160,12 +161,21 @@ h3 {
 
   & pre {
     font-size: var(--font-size-fluid-0);
+    color: var(--indigo-12);
     display: inline-flex;
     text-wrap: wrap balance;
   }
 
   & h3 {
     font-size: var(--font-size-fluid-0);
+    color: var(--blue-3);
+    min-width: fit-content;
+    margin-top: 0.5ch;
+  }
+
+  & h4 {
+    font-size: var(--font-size-fluid-1);
+    color: var(--blue-3);
     min-width: fit-content;
     margin-top: 0.5ch;
   }
@@ -181,6 +191,7 @@ h3 {
 
   & span {
     padding-inline: 1ch;
+    color: var(--green-11);
     width: fit-content;
     flex-basis: 100%;
     text-wrap: wrap balance;
@@ -230,6 +241,7 @@ h3 {
     font-weight: 500;
   }
 }
+
 #current_time_context {
   color: var(--yellow-8);
 }
@@ -240,7 +252,12 @@ h3 {
   padding: 5px;
 }
 
+#heatmap { 
+   margin: 2px;
+}
+
 #orbital-full-text {
+  font-family: var(--font-serif);
   font-size: var(--font-size-fluid-1);
 }
 

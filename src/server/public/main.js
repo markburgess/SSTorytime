@@ -809,19 +809,24 @@ let box = document.createElement("div");
 box.id = "radius-" + radius;
 
 // any arrow comes first
-let prefix = " . .  " + "╠═▹  ";
+let spacer = "║";
+let prefix = "╠═▹  ";
 
 for (let indent = 0; indent < radius; indent++)
    {
-   prefix = " . . . . . " + prefix;
+   prefix = "           " + prefix;
+   spacer = "           " + spacer;
    }
 
 if (radius == 2)
    {
-   prefix = " . . . . . . .  ║ . . .  " + prefix;
+   prefix = "                          " + prefix;
+   spacer = "                ║       " + spacer;
    }
 
+// next orbital
 let hier_pre = document.createElement("span");
+hier_pre.id = "radial-satellite";
 hier_pre.textContent = prefix;
 box.appendChild(hier_pre);
 
@@ -1363,18 +1368,18 @@ if (counter == 0)
    setting.appendChild(text2);
 
    let ctxlink = document.createElement("a");
-   ctxlink.textContent = '"' + event.Context + '"';
+   ctxlink.textContent = '"' + event.Context + '"   ';
 
    ctxlink.onclick = function ()
       {
       sendLinkSearch('any \\context "' + CtxSplice(event.Context) + '"');
       };
+
    setting.appendChild(ctxlink);
 
    child.appendChild(setting);
+   ProgressCheckBox(setting,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
    }
-
-ProgressCheckBox(child,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
 
 // See what pathways we are part of and add notes
 CheckSingleCone(panel,child,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1,event.Orbits[Im1],event.Orbits[Il1]);

@@ -50,7 +50,7 @@ header {
     padding-block: 1ch;
     overflow-x: clip;
     font-size: clamp(0.3rem, 0.5rem + 1svw, 1.2rem);
-    font-weight: var(--font-weight-5);
+    font-weight: var(--font-weight-4);
     color: rgba(24, 50, 77, 0.6);
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
   }
@@ -197,6 +197,7 @@ h3 {
     text-wrap: wrap balance;
     overflow: clip;
     font-size: var(--font-size-fluid-0);
+    font-weight: var(--font-weight-4);
   }
 
   & > span:first-child {

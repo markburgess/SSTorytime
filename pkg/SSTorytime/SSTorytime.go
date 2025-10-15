@@ -1822,11 +1822,13 @@ func UploadContextToDB(ctx PoSST,contextstring string,ptr ContextPtr) ContextPtr
 
 	var cptr ContextPtr
 
-	for row.Next() {
-		err = row.Scan(&cptr)
+	if row != nil {
+		for row.Next() {
+			err = row.Scan(&cptr)
+		}
+		row.Close()
 	}
 
-	row.Close()
 	return cptr
 }
 

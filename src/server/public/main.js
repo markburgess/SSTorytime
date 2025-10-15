@@ -1382,10 +1382,10 @@ if (counter == 0)
    }
 
 // See what pathways we are part of and add notes
-CheckSingleCone(panel,child,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1,event.Orbits[Im1],event.Orbits[Il1]);
-CheckSingleCone(panel,child,"[CN]",event.NPtr.Class,event.NPtr.CPtr,2,event.Orbits[Im2],event.Orbits[Ic2]);
-CheckSingleCone(panel,child,"[EP]",event.NPtr.Class,event.NPtr.CPtr,3,event.Orbits[Im3],event.Orbits[Ie3]);
-CheckSingleCone(panel,child,"[NR]",event.NPtr.Class,event.NPtr.CPtr,0,event.Orbits[In0],event.Orbits[In0]);
+CheckSingleCone(child,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1,event.Orbits[Im1],event.Orbits[Il1]);
+CheckSingleCone(child,"[CN]",event.NPtr.Class,event.NPtr.CPtr,2,event.Orbits[Im2],event.Orbits[Ic2]);
+CheckSingleCone(child,"[EP]",event.NPtr.Class,event.NPtr.CPtr,3,event.Orbits[Im3],event.Orbits[Ie3]);
+CheckSingleCone(child,"[NR]",event.NPtr.Class,event.NPtr.CPtr,0,event.Orbits[In0],event.Orbits[In0]);
 
 // Next we add the satellite nodes in column_2of3 and column_3of3
 // Each vector from Im3...Ie3, one by one
@@ -1418,6 +1418,10 @@ if (event == null)
    return;
    }
 
+let maintext = document.createElement("span");
+child.appendChild(maintext);
+
+let from_text;
 let text = counter + ". " + event.Text;
 let nptrtxt = "(" + event.NPtr.Class + "," + event.NPtr.CPtr + ")";
 
@@ -1430,13 +1434,13 @@ if (text.includes("\n"))
       sendlinkData(event.NPtr.Class, event.NPtr.CPtr);
       };
 
-   let from_text = document.createElement("pre");
+   from_text = document.createElement("pre");
    from_text.nameClass = "text";
    from_text.textContent = text;
    from_link.nameClass = "text";
    from_link.appendChild(from_text);
 
-   child.appendChild(from_link);
+   maintext.appendChild(from_link);
    }
 else
    {
@@ -1450,30 +1454,32 @@ else
    from_link.nameClass = "text";
    from_link.appendChild(from_text);
 
-   child.appendChild(from_link);
+   maintext.appendChild(from_link);
 
    from_text.textContent = text + "    ";
    }
 
-ProgressCheckBox(child,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
+ProgressCheckBox(maintext,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
 
 // See what pathways we are part of and add notes
-CheckSingleCone(panel,child,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1,event.Orbits[Im1],event.Orbits[Il1]);
-CheckSingleCone(panel,child,"[CN]",event.NPtr.Class,event.NPtr.CPtr,2,event.Orbits[Im2],event.Orbits[Ic2]);
-CheckSingleCone(panel,child,"[EP]",event.NPtr.Class,event.NPtr.CPtr,3,event.Orbits[Im3],event.Orbits[Ie3]);
-CheckSingleCone(panel,child,"[NR]",event.NPtr.Class,event.NPtr.CPtr,0,event.Orbits[In0],event.Orbits[In0]);
+CheckSingleCone(maintext,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1,event.Orbits[Im1],event.Orbits[Il1]);
+CheckSingleCone(maintext,"[CN]",event.NPtr.Class,event.NPtr.CPtr,2,event.Orbits[Im2],event.Orbits[Ic2]);
+CheckSingleCone(maintext,"[EP]",event.NPtr.Class,event.NPtr.CPtr,3,event.Orbits[Im3],event.Orbits[Ie3]);
+CheckSingleCone(maintext,"[NR]",event.NPtr.Class,event.NPtr.CPtr,0,event.Orbits[In0],event.Orbits[In0]);
 
 let text2 = document.createElement("i");
-text2.textContent = ", . . . context ";
-child.appendChild(text2);
+text2.textContent = "  , . . . context ";
+maintext.appendChild(text2);
 
 let ctxlink = document.createElement("a");
+
 ctxlink.textContent = '"' + event.Context + '"';
 ctxlink.onclick = function ()
    {
    sendLinkSearch('any \\context "' + CtxSplice(event.Context) + '"');
    };
-child.appendChild(ctxlink);
+
+maintext.appendChild(ctxlink);
 }
 
 /***********************************************************/
@@ -1572,7 +1578,7 @@ panel.appendChild(docpart);
 
 /***********************************************************/
 
-function CheckSingleCone(panel,docpart,name,nclass,nptr,arrow,bwd,fwd)
+function CheckSingleCone(docpart,name,nclass,nptr,arrow,bwd,fwd)
 {
 if (bwd == null || fwd == null)
    {

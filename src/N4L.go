@@ -1550,7 +1550,7 @@ func HandleNode(annotated string) SST.NodePtr {
 
 	if !VERBOSE && GIVE_SIGNS_OF_LIFE {
 		if (SIGN_OF_LIFE % 1000) == 0 {
-			fmt.Print("--> ")
+			fmt.Print("+ ")
 		}
 		SIGN_OF_LIFE++
 	}

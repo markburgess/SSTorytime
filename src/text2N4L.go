@@ -203,17 +203,7 @@ func PartName(p int,file string,context string) string {
 //*******************************************************************
 
 func SpliceSet(ctx []string) string {
-
-	var context string = ""
-
-	for w := 0; w < len(ctx); w++ {
-		context += ctx[w]
-		if w < len(ctx) - 1 {
-			context += ", "
-		}
-	}
-
-	return context
+	return strings.Join(ctx, ", ")
 }
 
 //*******************************************************************
@@ -228,10 +218,9 @@ func AddIntentionalContext(fp *os.File,ctx []string) {
 //*******************************************************************
 
 func Sanitize(s string) string {
-
-	s = strings.Replace(s,"(","[",-1)
-	s = strings.Replace(s,")","]",-1)
-	return s
+	replacer := strings.NewReplacer("(", "[", ")", "]")
+	
+	return replacer.Replace(s)
 }
 
 //*******************************************************************

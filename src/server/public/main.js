@@ -106,6 +106,7 @@ let HEIGHT = CANVAS.offsetHeight;
 
 CANVAS.width = WIDTH;
 
+let UNINITIALIZED = -99;
 let ORGX = WIDTH / 2;
 let ORGY = HEIGHT / 2;
 let THETA = Math.PI / 9;
@@ -370,6 +371,7 @@ CANVAS = CreateCanvas();
 DrawGrid(0, 0, 1);
 
 // Iterate over the cones from different starting nodes
+
 for (let head_nptr of obj.Content)
    {
    let nclass = head_nptr.NClass;
@@ -912,14 +914,14 @@ return parent;
 
 function PrintPaths(parent, array)
 {
-if (array.length < 1)
+if (array == null || array.length < 1)
    {
    return parent;
    }
 
-let lastx = 0;
-let lasty = 0;
-let lastz = 0;
+let lastx = UNINITIALIZED;
+let lasty = UNINITIALIZED;
+let lastz = UNINITIALIZED;
 let lastarrow = 0;
 let newpath;
 
@@ -935,6 +937,7 @@ for (let path = 0; path < array.length; path++)
    let thisz;
 
    // The WebPath protocol alternates node-arrow...
+
    for (let i = 0; i < array[path].length; i++)
       {
       if (i == 0)
@@ -966,9 +969,9 @@ for (let path = 0; path < array.length; path++)
             } 
          else
             {
-            lastx = 0;
-            lasty = 0;
-            lastz = 0;
+            lastx = UNINITIALIZED;;
+            lasty = UNINITIALIZED;;
+            lastz = UNINITIALIZED;;
             }
 
          Event(thisx, thisy, thisz);
@@ -1051,7 +1054,7 @@ return parent;
 
 function DrawPath(lastarrow, thisx, thisy, thisz, lastx, lasty, lastz)
 {
-if (lastx != 0 || lasty != 0 || lastz != 0)
+if (lastx != UNINITIALIZED || lasty != UNINITIALIZED || lastz != UNINITIALIZED)
    {
    switch (lastarrow)
       {

@@ -397,11 +397,15 @@ for (let head_nptr of obj.Content)
 
    // Add the centrality box at bottom of page (still ugly)
 
+   let item2 = document.createElement("h4");
+   item2.textContent = "Symmetry analysis:";
+   card.appendChild(item2);
+
    let tab = document.createElement("table");
    let row = document.createElement("tr");
    let col1 = document.createElement("td");
-   let hd1 = document.createElement("h4");
 
+   let hd1 = document.createElement("strong");
    hd1.textContent = "Betweenness Centrality Rank";
    col1.appendChild(hd1);
 
@@ -421,7 +425,7 @@ for (let head_nptr of obj.Content)
       col1.appendChild(lst1);
 
       let col2 = document.createElement("td");
-      let hd2 = document.createElement("h4");
+      let hd2 = document.createElement("strong");
       hd2.textContent = "Supernode summary";
       col2.appendChild(hd2);
       let lst2 = document.createElement("ol");

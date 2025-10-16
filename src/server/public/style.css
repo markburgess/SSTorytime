@@ -200,6 +200,11 @@ h3 {
     font-weight: var(--font-weight-4);
   }
 
+  & td {
+    padding: 3ch;
+    margin-left: 2ch;
+  }
+
   & > span:first-child {
     margin-bottom: 1ch;
     flex-basis: 100%;

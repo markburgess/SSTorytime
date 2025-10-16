@@ -7110,7 +7110,9 @@ type STM struct {
 const (
 
 	CMD_ON = "\\on"
-	CMD_FOR = "\\for"
+	CMD_ON_2 = "on"    // _2 are too short to be intentional
+	CMD_FOR = "\\for"  // so double these for "smarter" accident avoidance
+	CMD_FOR_2 = "for"
 	CMD_ABOUT = "\\about"
 	CMD_NOTES = "\\notes"
 	CMD_BROWSE = "\\browse"
@@ -7122,22 +7124,28 @@ const (
 	CMD_STORIES = "\\stories"
 	CMD_FROM = "\\from"
 	CMD_TO = "\\to"
+	CMD_TO_2 = "to"
 	CMD_CTX = "\\ctx"
 	CMD_CONTEXT = "\\context"
 	CMD_AS = "\\as"
+	CMD_AS_2 = "as"
 	CMD_CHAPTER = "\\chapter"
 	CMD_CONTENTS = "\\contents"
 	CMD_TOC = "\\toc"
+	CMD_TOC_2 = "toc"
 	CMD_SECTION = "\\section"
 	CMD_IN = "\\in"
+	CMD_IN_2 = "in"
 	CMD_ARROW = "\\arrow"
 	CMD_LIMIT = "\\limit"
 	CMD_DEPTH = "\\depth"
 	CMD_RANGE = "\\range"
 	CMD_DISTANCE = "\\distance"
 	CMD_STATS = "\\stats"
+	CMD_STATS_2 = "stats"
 	CMD_REMIND = "\\remind"
 	CMD_HELP = "\\help"
+	CMD_HELP_2 = "help"
 )
 
 //******************************************************************
@@ -7148,17 +7156,17 @@ func DecodeSearchField(cmd string) SearchParameters {
 
 	var keywords = []string{ 
 		CMD_NOTES, CMD_BROWSE, CMD_PATH,
-		CMD_PATH,CMD_FROM,CMD_TO,
+		CMD_PATH,CMD_FROM,CMD_TO,CMD_TO_2,
 		CMD_SEQ1,CMD_SEQ2,CMD_STORY,CMD_STORIES,
-		CMD_CONTEXT,CMD_CTX,CMD_AS,
-		CMD_CHAPTER,CMD_IN,CMD_SECTION,CMD_CONTENTS,CMD_TOC,
+		CMD_CONTEXT,CMD_CTX,CMD_AS,CMD_AS_2,
+		CMD_CHAPTER,CMD_IN,CMD_IN_2,CMD_SECTION,CMD_CONTENTS,CMD_TOC,CMD_TOC_2,
 		CMD_ARROW,
-		CMD_ON,CMD_ABOUT,CMD_FOR,
+		CMD_ON,CMD_ON_2,CMD_ABOUT,CMD_FOR,CMD_FOR_2,
 		CMD_PAGE,
 		CMD_LIMIT,CMD_RANGE,CMD_DISTANCE,CMD_DEPTH,
-		CMD_STATS,
+		CMD_STATS,CMD_STATS_2,
 		CMD_REMIND,
-		CMD_HELP,
+		CMD_HELP,CMD_HELP_2,
         }
 	
 	// parentheses are reserved for unaccenting
@@ -7236,16 +7244,16 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 
 			switch SomethingLike(cmd_parts[c][p],keywords) {
 
-			case CMD_STATS:
+			case CMD_STATS, CMD_STATS_2:
 				param.Stats = true
 				continue
 
-			case CMD_HELP:
+			case CMD_HELP, CMD_HELP_2:
 				param.Chapter = "SSTorytime help"
 				param.Name = []string{"any"}
 				continue
 
-			case CMD_CHAPTER, CMD_SECTION, CMD_IN, CMD_CONTENTS, CMD_TOC:
+				case CMD_CHAPTER,CMD_SECTION,CMD_IN,CMD_IN_2,CMD_CONTENTS,CMD_TOC,CMD_TOC_2:
 				if lenp > p+1 {
 					str := cmd_parts[c][p+1]
 					str = strings.TrimSpace(str)
@@ -7321,7 +7329,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				}
 				continue
 				
-			case CMD_CONTEXT,CMD_CTX,CMD_AS:
+				case CMD_CONTEXT,CMD_CTX,CMD_AS,CMD_AS_2:
 				if lenp > p+1 {
 					for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 						p++
@@ -7353,7 +7361,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				}
 				continue
 
-			case CMD_TO:
+			case CMD_TO,CMD_TO_2:
 				if p > 0 && lenp > p+1 {
 					if param.From == nil {
 						param.From = append(param.From,cmd_parts[c][p-1])
@@ -7389,7 +7397,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				param.Sequence = true
 				continue
 
-			case CMD_ON,CMD_ABOUT,CMD_FOR:
+			case CMD_ON,CMD_ON_2,CMD_ABOUT,CMD_FOR,CMD_FOR_2:
 				if lenp > p+1 {
 					for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 						p++

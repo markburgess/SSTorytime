@@ -8,6 +8,7 @@
   # All the details of every track can be different. If tracks has multple parts, like
   # symphonies then they tell stories following on from one another.
 
+  # Album/Item 1
 
   Celebrated Composer, The Early Symphonies (abbrev) CBES-1
 
@@ -29,7 +30,7 @@
 
       " (conducted) Pointy Penguin
 
-   #
+   # Album/Item 2
 
    Beethoven, Symphony No. 3, Opus 55, "Eroica" (abbrev) BTHV-3-1
 
@@ -41,26 +42,47 @@
       " (perform-by)  %"Pittsburgh Symphony Orchestra"
       " (conducted)   Manfred Honeck
 
-      # We need to be careful of the uniqueness of names, as these are events not "things"
-      # the same work can have been recorded several times
+      " (contains) %"BTHV-3-1", "1. Allegro con brio (live)"  (tempo)    Allegro
+      " (contains)               "                          (duration) 16:15
 
-      " (contains) symphony 1 (contains) %BTHV-3-1, "1. Allegro con brio (live)"  (tempo)    Allegro
-      " (contains)     "      (contains)               "                          (duration) 16:15
+      " (contains) %"BTHV-3-1", "2. Marcia funbre. Adagio Assai (live)"  (tempo)    Adagio Assai
+      " (contains)               "                            (duration) 15:11
 
-      " (contains) symphony 1 (contains) %BTHV-3-1, "2. Marcia funbre. Adagio Assai (live)"  (tempo)    Adagio Assai
-      " (contains)     "      (contains)               "                            (duration) 15:11
+      " (contains) %"BTHV-3-1", "3. Scherzo. Allegro vivace. (live)" (tempo) Allegro vivace
+      " (contains)               "                                 (duration) 16:15
 
-      " (contains) symphony 1 (contains) %BTHV-3-1, "3. Scherzo. Allegro vivace. (live)" (tempo) Allegro vivace
-      " (contains)     "      (contains)               "                                 (duration) 16:15
+      " (contains) %"BTHV-3-1", "4. Finale. Allegro molto (live)" (tempo) Allegro molto 
+      " (contains)               "                              (duration) 11.50
 
-      " (contains) symphony 1 (contains) %BTHV-3-1, "4. Finale. Allegro molto (live)" (tempo) Allegro molto 
-      " (contains)     "      (contains)               "                              (duration) 11.50
 
-  # Coherence and stories
-  # Multi-part pieces
+  # Album/Item N
+
+  A Farewell To Kings (abbrev) RUSH-5
+
+      " (release format) Vinyl
+      " (sample rate)    44kHz / 16-bit
+      " (recording date) 1977
+      " (composed by)    Music by %"Alex Lifeson", %"Geddy Lee", lyrics by %"Neil Peart"
+      " (perform-by)     Rush
+      " (pub-by)         Mercury
+
+      " (contains) %"RUSH-5", 1. A Farewell To Kings (duration) 5:53
+      " (contains) %"RUSH-5", 2. Xanadu              (duration) 11:07
+      " (contains) %"RUSH-5", 3. Closer To The Heart (duration) 2:55
+      " (contains) %"RUSH-5", 4. Cinderella Man      (duration) 4:22
+      " (contains) %"RUSH-5", 5. Madrigal            (duration) 2:36
+      " (contains) %"RUSH-5", 6. Cygnus X-1          (duration) 10:22
+
+ ###################################
+
+ # Coherence and stories
+  # Multi-part pieces, connect the sequences that define the whole pieces in order
 
   :: works, pieces ::
  
   CBES-1, Part 1 (then ) CBES-1, Part 2
+
   CBES-1, First Movement (then) CBES-1, Second Movement (then) CBES-1, Third Movement
+
+  BTHV-3-1, "1. Allegro con brio (live)" (then) BTHV-3-1, "2. Marcia funbre. Adagio Assai (live)" (then) BTHV-3-1, "3. Scherzo. Allegro vivace. (live)" (then) BTHV-3-1, "4. Finale. Allegro molto (live)"
 

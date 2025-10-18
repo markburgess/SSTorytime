@@ -4,6 +4,11 @@
   # This is a special kind of note presented by default on reload of the page
 
 
+ # Sandbox executed function
+
+ Dynamic: Time remaining until Christmas ... {TimeUntil 25 December}
+ Dynamic: {TimeSince Day25 May Yr2018 Hr13} have elapsed since the ChiTek-i company was founded
+
  ###########
 
  :: Monday ::
@@ -14,6 +19,7 @@
 
  :: Monday, Hr10, Hr11 ::
 
+ Dynamic: Regular coordination meeting at 11:30 - TIME REMAINING .. {TimeUntil Hr11 Min30} !!
 
  ###########
 

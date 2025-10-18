@@ -3776,7 +3776,7 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 
 	var whole [ST_TOP]string
 
-	// NB, there seems to be a bug in the SQL package, which cannot always populate the links, so try not to
+	// NB, there seems to be a "bug" in the SQL package, which cannot always populate the links, so try not to
 	//     rely on this and work around when needed using GetEntireCone(any,2..) separately
 
 	for row.Next() {
@@ -3791,6 +3791,12 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 	if count > 1 {
 		fmt.Println("GetDBNodeByNodePtr returned too many matches (multi-model conflict?):",count,"for ptr",db_nptr)
 		os.Exit(-1)
+	}
+
+	// Expand any dynamic inbuilt functions
+
+	if strings.HasPrefix(n.S,"Dynamic: ") {
+		n.S = ExpandDynamicFunctions(n.S)
 	}
 
 	row.Close()
@@ -3937,7 +3943,6 @@ func SelectStoriesByArrow(ctx PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, st
 		matches = append(matches,node.NPtr)
 	}
 
-	fmt.Println("GOT ",matches)
 	return matches
 }
 
@@ -7626,6 +7631,7 @@ var GR_DAY_TEXT = []string{
     }
         
 var GR_MONTH_TEXT = []string{
+	"NONE",
         "January",
         "February",
         "March",
@@ -7722,20 +7728,6 @@ func GetTimeContext() (string,string,int64) {
 
 // ****************************************************************************
 
-func GetUnixTimeKey(now int64) string {
-
-	// Time on the torus (donut/doughnut) (CFEngine style)
-	// The argument is in traditional UNIX "time_t" unit e.g. then := time.Unix()
-	// This is a simple wrapper to DoNowt() returning only a db-suitable keyname
-
-	t := time.Unix(now, 0)
-	_,slot := DoNowt(t)
-
-	return slot
-}
-
-// ****************************************************************************
-
 func Season (month string) (string,string) {
 
 	switch month {
@@ -7751,6 +7743,111 @@ func Season (month string) (string,string) {
 	}
 
 	return "hurricane","typhoon"
+}
+
+// ****************************************************************************
+ 
+func GetTimeFromSemantics(speclist []string,now time.Time) time.Time {
+
+	day := 0
+	hour := 0
+	mins := 0
+	weekday := 0
+	month := time.Month(0)
+	year := 0
+	days_to_next := 0
+
+	hasweekday := false
+	hasmonth := false
+
+	// Parse semantic time array
+
+	for i,v := range speclist {
+
+		if i == 0 {
+			continue
+		}
+
+		if strings.HasPrefix(v,"Day") {
+			fmt.Sscanf(v[3:],"%d",&day)
+			continue
+		}
+
+		if strings.HasPrefix(v,"Yr") {
+			fmt.Sscanf(v[2:],"%d",&year)
+			continue
+		}
+
+		if strings.HasPrefix(v,"Min") {
+			fmt.Sscanf(v[3:],"%d",&mins)
+			continue
+		}
+
+		if strings.HasPrefix(v,"Hr") {
+			fmt.Sscanf(v[2:],"%d",&hour)
+			continue
+		}
+
+		if !hasweekday {
+			weekday,hasweekday = InList(v,GR_DAY_TEXT)
+			if hasweekday {
+				intended := weekday
+				todayis := fmt.Sprintf("%s",now.Weekday())
+				actual,_ := InList(todayis,GR_DAY_TEXT)
+				days_to_next = (intended - actual + 7) % 7
+				continue
+			}
+		}
+
+		if !hasmonth {
+			var index int
+			index,hasmonth = InList(v,GR_MONTH_TEXT)
+			if hasmonth {
+				month = time.Month(index)
+				continue
+			}
+		}
+
+		fmt.Println("Semantic time parameter without semantic prefix (Day,Hr,Min, etc)",v)
+	}
+
+	if hasweekday && (day > 0 || hasmonth || year > 0) {
+		fmt.Println("Weekday only makes sense as the next applicable occurrence, without a date")
+	} else if hasweekday {
+
+		// We're looking for the next upcoming day
+		day = now.Day()
+		month = now.Month()
+		year = now.Year()
+		newnow := time.Date(year,month,day,0,0,0,0,time.UTC)
+		newnow = newnow.AddDate(0,0,days_to_next)
+		return newnow
+	}
+
+	if year == 0 {
+		year = now.Year()
+	}
+
+	if day == 0 {
+		day = now.Day()
+	}
+
+	if month == 0 {
+		month = now.Month()
+	}
+
+	if hour == 0 {
+		hour = now.Hour()
+	}
+
+	// Note the local timezone is very problematic in Go
+
+	_,offset_secs := now.Zone()
+
+	offset := offset_secs / 3600
+
+	newnow := time.Date(year,month,day,hour-offset,mins,0,0,time.UTC)
+	return newnow
 }
 
 //*****************************************************************
@@ -9262,6 +9359,19 @@ func SimilarString(full,like string) bool {
 
 //****************************************************************************
 
+func InList(s string, list []string) (int,bool) {
+
+	for i,v := range list {
+		if s == v {
+			return i,true
+		}
+	}
+
+	return -1,false
+}
+
+//****************************************************************************
+
 func MatchArrows(arrows []ArrowPtr,arr ArrowPtr) bool {
 
 	for a := range arrows {
@@ -9645,4 +9755,149 @@ func ReadToNext(array []rune,pos int,r rune) (string,int) {
 	return ret,len(ret)
 }
 
+//****************************************************************************
+// Allow for simple dynamic content for some approved realtime functions
+//****************************************************************************
+
+func ExpandDynamicFunctions(s string) string {
+
+	if !strings.Contains(s,"{") {
+		return s
+	}
+
+	if !strings.Contains(s,"}") {
+		return s
+	}
+
+	chars := []rune(s[len("Dynamic:"):])
+
+	var news string
+
+	for pos := 0; pos < len(chars); pos++ {
+
+		if chars[pos] != '{' {
+			news += string(chars[pos])
+		} else {
+			newpos,result := EvaluateInBuilt(chars,pos)
+			news += result
+			pos = newpos
+		}
+	}
+
+	return news
+}
+
+//****************************************************************************
+
+func EvaluateInBuilt(chars []rune,pos int) (int,string) {
+
+	var fntext string
+	var endpos int
+
+	for r := pos; chars[r] != '}' && r < len(chars); r++ {
+		fntext += string(chars[r])
+		endpos = r+1
+	}
+
+	fntext = fntext[1:len(fntext)]
+
+	delim := func(c rune) bool {
+		return c == ' ' || c == ',' || c == ';'
+	}
+
+	fn := strings.FieldsFunc(fntext,delim)
+	result := DoInBuiltFunction(fn)
+	return endpos,result
+}
+
+//****************************************************************************
+
+func DoInBuiltFunction(fn []string) string {
+
+	// Placeholder - this needs to support sandboxed read only user functions
+
+	var result string
+
+	switch fn[0] {
+	case "TimeUntil":
+		result = InBuiltTimeUntil(fn)
+	case "TimeSince":
+		result = InBuiltTimeSince(fn)
+	}
+
+	return result
+}
+
+//****************************************************************************
+
+func InBuiltTimeUntil(fn []string) string {
+
+	now := time.Now().Local()
+	intended_time := GetTimeFromSemantics(fn,now)
+	duration := intended_time.Sub(now)
+
+	interval := int(duration / 1000000000)  // nanoseconds -> seconds
+
+	years := interval / (365 * 24 * 3600)
+	r1 := interval % (365 * 24 * 3600)
+
+	days := r1 / (24 * 3600)
+	r2 := r1 % (24 * 3600)
+
+	hours := r2 / 3600
+	r3 :=  r2 % 3600
+
+	mins := r3 / 60
+
+	return ShowTime(years,days,hours,mins)
+}
+
+//****************************************************************************
+
+func InBuiltTimeSince(fn []string) string {
+
+	now := time.Now().Local()
+	intended_time := GetTimeFromSemantics(fn,now)
+
+	duration := now.Sub(intended_time)
+
+	interval := int(duration / 1000000000)  // nanoseconds -> seconds
+
+	years := interval / (365 * 24 * 3600)
+	r1 := interval % (365 * 24 * 3600)
+
+	days := r1 / (24 * 3600)
+	r2 := r1 % (24 * 3600)
+
+	hours := r2 / 3600
+	r3 :=  r2 % 3600
+
+	mins := r3 / 60
+
+	return ShowTime(years,days,hours,mins)
+}
+
+//****************************************************************************
+
+func ShowTime(years,days,hours,mins int) string {
+
+	var s string
+
+	if years > 0 {
+		s += fmt.Sprintf("%d Year(s), ",years)
+	}
+
+	if days > 0 {
+		s += fmt.Sprintf("%d Day(s), ",days)
+	}
+
+	if hours > 0 {
+		s += fmt.Sprintf("%d Hour(s), ",hours)
+	}
+
+	s += fmt.Sprintf("%d Mins ",mins)
+
+
+	return s
+}
 

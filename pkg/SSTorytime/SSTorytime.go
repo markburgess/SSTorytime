@@ -9908,6 +9908,9 @@ func ShowTime(years,days,hours,mins int) string {
 
 	s += fmt.Sprintf("%d Mins ",mins)
 
+	if mins < 0 {
+		s += " [already passed or waiting for next occurrence]"
+	}
 
 	return s
 }

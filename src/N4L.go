@@ -134,6 +134,7 @@ var (
 //**************************************************************
 
 type RCtype struct {
+
 	Row SST.NodePtr
 	Col SST.NodePtr
 }

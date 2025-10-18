@@ -72,12 +72,12 @@
  + is the author of    (author-of)  - is authored by   (author)
  + wrote               (wrote)      - written by       (written)  
  + invented            (invent)     - invented by      (invent-by)
- + is the publisher of (published)  - was published by (pub by)
+ + is the publisher of (published)  - was published by (pub-by)
  + composer of         (comp-of)    - composed by      (comp)
  + conductor of        (conduct-of) - conducted by     (conducted)
 
- + teaches/taught     (taught)      - is taught by    (taught-by)
-
+ + teaches/taught      (taught)      - is taught by     (taught-by)
+ + gave performance of (performed)   - performed by     (perform-by)
 
 
  :: properties, skills, subjects, themes ::

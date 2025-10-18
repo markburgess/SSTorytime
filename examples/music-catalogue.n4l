@@ -9,12 +9,14 @@
   # symphonies then they tell stories following on from one another.
 
 
-  Celebrated Composer, Early Symphonies (abbrev) CBES-1
+  Celebrated Composer, The Early Symphonies (abbrev) CBES-1
 
       " (release format) Compact Disc
-      " (sample rate) 44kHz / 16-bit
+      " (sample rate)    44kHz / 16-bit
       " (recording date) 2016
-      " (composed by) Celebrated Composer
+      " (composed by)    Celebrated Composer
+      " (perform-by)     Orchestra
+      " (pub-by)         Crazy Classics
 
       # We need to be careful of the uniqueness of names, as these are events not "things"
       # the same work can have been recorded several times
@@ -27,11 +29,38 @@
 
       " (conducted) Pointy Penguin
 
+   #
+
+   Beethoven, Symphony No. 3, Opus 55, "Eroica" (abbrev) BTHV-3-1
+
+      " (release format) FLAC
+      " (sample rate)    192kHz / 24-bit
+      " (recording date) 2018
+      " (composed by) Ludwig van Beethoven
+      " (pub-by)      Reference Recordings
+      " (perform-by)  %"Pittsburgh Symphony Orchestra"
+      " (conducted)   Manfred Honeck
+
+      # We need to be careful of the uniqueness of names, as these are events not "things"
+      # the same work can have been recorded several times
+
+      " (contains) symphony 1 (contains) %BTHV-3-1, "1. Allegro con brio (live)"  (tempo)    Allegro
+      " (contains)     "      (contains)               "                          (duration) 16:15
+
+      " (contains) symphony 1 (contains) %BTHV-3-1, "2. Marcia funbre. Adagio Assai (live)"  (tempo)    Adagio Assai
+      " (contains)     "      (contains)               "                            (duration) 15:11
+
+      " (contains) symphony 1 (contains) %BTHV-3-1, "3. Scherzo. Allegro vivace. (live)" (tempo) Allegro vivace
+      " (contains)     "      (contains)               "                                 (duration) 16:15
+
+      " (contains) symphony 1 (contains) %BTHV-3-1, "4. Finale. Allegro molto (live)" (tempo) Allegro molto 
+      " (contains)     "      (contains)               "                              (duration) 11.50
+
+  # Coherence and stories
   # Multi-part pieces
 
   :: works, pieces ::
  
   CBES-1, Part 1 (then ) CBES-1, Part 2
-
   CBES-1, First Movement (then) CBES-1, Second Movement (then) CBES-1, Third Movement
 

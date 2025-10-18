@@ -9,7 +9,6 @@ package main
 import (
 	"strings"
 	"os"
-	"io/ioutil"
 	"bufio"
 	"flag"
 	"fmt"
@@ -1415,7 +1414,7 @@ func AssessGrammarCompletions(token string, prior_state int) {
 	default:
 		CheckSection()
 
-		if AllCaps(token) {
+		if NoteToSelf(token) {
 			ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
 		}
 
@@ -2339,14 +2338,21 @@ func CheckSection() {
 
 //**************************************************************
 
-func AllCaps(s string) bool {
+func NoteToSelf(s string) bool {
 
 	if len(s) <= 2 * WORD_MISTAKE_LEN {
 		return false
 	}
 
+	const intentionality_threshold = 50
+
+	if (len(s) > intentionality_threshold) && s[len(s)-1] == '.' {
+		return false
+	}
+
 	for _, r := range s {
-		if !unicode.IsUpper(r) && unicode.IsLetter(r) || unicode.IsNumber(r) {
+
+		if !unicode.IsUpper(r) && (unicode.IsLetter(r) || unicode.IsNumber(r)) {
 			return false
 		}
 	}
@@ -2418,38 +2424,6 @@ func ParseError(message string) {
 
 //**************************************************************
 
-func ReadUTF8File(filename string) []rune {
-	
-	content,err := ioutil.ReadFile(filename)
-	
-	if err != nil {
-		ParseError(ERR_NO_SUCH_FILE_FOUND+filename)
-		os.Exit(-1)
-	}
-
-	var unicode []rune
-	var sign_of_life int
-
-	if GIVE_SIGNS_OF_LIFE {
-		fmt.Print("Encoding for unicode: ")
-	}
-
-	for i, w := 0, 0; i < len(content); i += w {
-                runeValue, width := utf8.DecodeRuneInString(string(content)[i:])
-                w = width
-		unicode = append(unicode,runeValue)
-
-		if GIVE_SIGNS_OF_LIFE && sign_of_life % 10000 == 0 {
-			fmt.Print(" ",i)
-		}
-		sign_of_life++
-	}
-
-	return unicode
-}
-
-//**************************************************************
-
 func ReadUTF8FileBuffered(filename string) []rune { 
 
 	// Open a stream to the file instead of reading it all at once.
@@ -2493,7 +2467,7 @@ func ReadUTF8FileBuffered(filename string) []rune {
 		unicode = append(unicode, r) 
 
 		if GIVE_SIGNS_OF_LIFE && sign_of_life % 10000 == 0 {
-			fmt.Print(" ",sign_of_life)
+			fmt.Print(".")
 		}
 		sign_of_life++
 

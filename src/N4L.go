@@ -1099,11 +1099,11 @@ func ParseN4L(src []rune) {
 	var token string
 
 	for pos := 0; pos < len(src); {
+
 		pos = SkipWhiteSpace(src,pos)
 		token,pos = GetToken(src,pos)
 
 		ClassifyTokenRole(token)
-
 	}
 
 	if Dangler() {
@@ -1224,7 +1224,7 @@ func GetToken(src []rune, pos int) (string,int) {
 
 	var token string
 
-	if pos >= len(src) {
+	if pos >= len(src) {	    // end of file
 		return "", pos
 	}
 
@@ -1513,7 +1513,7 @@ func HandleNode(annotated string) SST.NodePtr {
 
 	clean_ptr,clean_version := IdempAddNode(annotated,SEQ_UNKNOWN)
 
-	PVerbose("Event/item/node:",clean_version,"in chapter",SECTION_STATE)
+	PVerbose("Event/item/node: \"",clean_version,"\" in chapter",SECTION_STATE)
 
 	LINE_ITEM_REFS = append(LINE_ITEM_REFS,clean_ptr)
 	
@@ -1599,12 +1599,31 @@ func ReadFile(filename string) []rune {
 
 func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 
+	// Read until we find a terminator for this kind of token
+	// determined by "stop" signal - watch out for embedded quotes
+
 	var cpy []rune
 
 	var starting_at = LINE_NUM
 
+	// We have to read the string in rune form to handle unicode
+	// rune by rune to handle special cases and aggregated into cpy
+
 	for ; Collect(src,pos,stop,cpy) && pos < len(src); pos++ {
+
 		cpy = append(cpy,src[pos])
+
+		// if there's an embedded " quote, treat quoted section as a single character 
+
+		if pos+1 < len(src) && src[pos] == '"' {
+			for p := pos+1; p < len(src); p++ {
+				cpy = append(cpy,src[p])
+				if src[p] == '"' {
+					pos = p
+					break
+				}
+			}
+		}
 	}
 
 	if IsQuote(stop) && src[pos-1] != stop {
@@ -1613,13 +1632,12 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 		os.Exit(-1)
 	}
 
+	// Tokenize the string
+
 	token := string(cpy)
-
 	token = strings.TrimSpace(token)
-
 	count := strings.Count(token,"\n")
 	LINE_NUM += count
-
 	return token,pos
 }
 
@@ -1627,12 +1645,14 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 
 func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 
+	// Generalize the stop-condition for for-loop accumulating runes
+	// when we receive the "stop" rune signal, that's the end by policy
+
 	var collect bool = true
 
-	// Quoted strings are tricky
+	// Quoted strings are tricky, especially when they start in the middle of another string
 
 	if IsQuote(stop) {
-
 		var is_end bool
 
 		if pos+1 >= len(src) {
@@ -1646,12 +1666,15 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 		} else {
 			return true
 		}
-
 	}
+
+	// nothing unquoted can exceed a line length
 
 	if pos >= len(src) || src[pos] == '\n' {
 		return false
 	}
+
+	// ordinary text strings are signalled by ALPHATEXT policy
 
 	if stop == ALPHATEXT {
 		collect = IsGeneralString(src,pos)
@@ -1686,6 +1709,9 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 //**************************************************************
 
 func IsGeneralString(src []rune,pos int) bool {
+
+	// Plain text should terminate like this, but
+	// beware of quotes inside
 
 	switch src[pos] {
 

@@ -1,0 +1,37 @@
+
+- record collection list
+
+  # note categories like pop / rock / classical are useless to a music owner
+  # we are never that general. Music is known more intimately
+
+  # There is really no standard for music collections, singles, albums, collections, etc
+  # All the details of every track can be different. If tracks has multple parts, like
+  # symphonies then they tell stories following on from one another.
+
+
+  Celebrated Composer, Early Symphonies (abbrev) CBES-1
+
+      " (release format) Compact Disc
+      " (sample rate) 44kHz / 16-bit
+      " (recording date) 2016
+      " (composed by) Celebrated Composer
+
+      # We need to be careful of the uniqueness of names, as these are events not "things"
+      # the same work can have been recorded several times
+
+      " (contains) symphony 1 (contains) CBES-1, First Movement  (tempo) Allegro
+      " (contains)     "      (contains) CBES-1, Second Movement (tempo) Scherzo
+      " (contains)     "      (contains) CBES-1, Third Movement  (tempo) Adagio
+      " (contains) symphony 2 (contains) CBES-1, Part 1
+      " (contains)     "      (contains) CBES-1, Part 2
+
+      " (conducted) Pointy Penguin
+
+  # Multi-part pieces
+
+  :: works, pieces ::
+ 
+  CBES-1, Part 1 (then ) CBES-1, Part 2
+
+  CBES-1, First Movement (then) CBES-1, Second Movement (then) CBES-1, Third Movement
+

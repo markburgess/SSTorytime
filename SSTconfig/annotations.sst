@@ -5,7 +5,7 @@
  // slashes and () # - are illegal, as used in comments/grammar
  // also avoid +,* and mathematical symbols
 
- % (discusses)
+ % (ref)                    # refers to, a generic way of linking components
  = (involves)
  ** (is a special case of)
 

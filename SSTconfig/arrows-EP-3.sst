@@ -17,6 +17,9 @@
  + has no example    (noex)         - is not an example of (not-ex)
  + has abbreviation  (abbrev)       - is short for         (short for)
  + has version       (version)      - is a version of      (is-version)
+ + release format    (relform)      - has release          (has-rel)
+ + recording date    (recdate)      - date for recording   (date-rec)
+ + release date      (reldate)      - date for release     (date-rel)
 
  + has supplier        (supply)      - is the supplier of           (supply-by)
  + has source          (source)      - the source for               (source-of)
@@ -41,6 +44,8 @@
    + may have value          (maybeX)  - is the possible value for (mXof)
    + has frequency           (freq)    - is the frequency of       (freq-of)
    + is characterized by     (state)   - is a/the state of         (state-of)
+   + sample rate             (srate)   - is the sample quality for (sr-of)
+   + has tempo               (tempo)   - is the tempo of           (temp-of)
 
    + is expressed in formula (formula) - is a formula for (isformula)
 
@@ -63,11 +68,13 @@
 
  :: steady state relationships ::
 
- + maintains           (maintains) - is maintained by (maintained-by)  # steady state case
- + is the author of    (author-of) - is authored by   (author)
- + wrote               (wrote)     - written by       (written)  
- + invented            (invent)    - invented by      (invent-by)
- + is the publisher of (published) - was published by (pub by)
+ + maintains           (maintains)  - is maintained by (maintained-by)  # steady state case
+ + is the author of    (author-of)  - is authored by   (author)
+ + wrote               (wrote)      - written by       (written)  
+ + invented            (invent)     - invented by      (invent-by)
+ + is the publisher of (published)  - was published by (pub by)
+ + composer of         (comp-of)    - composed by      (comp)
+ + conductor of        (conduct-of) - conducted by     (conducted)
 
  + teaches/taught     (taught)      - is taught by    (taught-by)
 

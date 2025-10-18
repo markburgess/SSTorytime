@@ -1351,6 +1351,17 @@ func InsertArrowDirectory(stname,alias,name,pm string) ArrowPtr {
 
 	var newarrow ArrowDirectory
 
+	// Check is already exists - harmless
+
+	prev_alias,a_exists := ARROW_SHORT_DIR[alias]
+	prev_name,n_exists := ARROW_LONG_DIR[name]
+
+	if a_exists && n_exists {
+		if prev_alias == prev_name {
+			return prev_alias
+		}
+	}
+
 	for a := range ARROW_DIRECTORY {
 		if ARROW_DIRECTORY[a].Long == name || ARROW_DIRECTORY[a].Short == alias {
 			return ArrowPtr(-1)

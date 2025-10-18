@@ -108,6 +108,7 @@
  + features           (feats)      - is featured in        (feat-in)
  + has property       (propt)      - is a property of      (propt-of)
  + has quote          (quote)      - is a quote from       (quote from)
+ + has time duration  (duration)   - is the duration of    (is-duration)
 
  + means              (means)      - is meant by           (meansb)
  + promises           (promise)    - is promised by        (prom-by)

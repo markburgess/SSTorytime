@@ -136,6 +136,7 @@ job summary by an LLM text tool in which you get an answer `take it or leave it'
 * [An example / case study](docs/example.md)
 * [Basics of Knowledge Engineering](docs/KnowledgeAndLearning.md)
 * [How does context work?](docs/howdoescontextwork.md)
+* [Dynamic Node Content with in-built functions](docs/dynamic_functions.md)
 * [N4L - Notes For Learning/Loading](docs/N4L.md)
 * [searchN4L - preliminary search/testing tool](docs/searchN4L.md)
 * [pathsolve - preliminary path solving tool](docs/pathsolve.md)

@@ -9899,15 +9899,15 @@ func ShowTime(years,days,hours,mins int) string {
 	var s string
 
 	if years > 0 {
-		s += fmt.Sprintf("%d Year(s), ",years)
+		s += fmt.Sprintf("%d Years, ",years)
 	}
 
 	if days > 0 {
-		s += fmt.Sprintf("%d Day(s), ",days)
+		s += fmt.Sprintf("%d Days, ",days)
 	}
 
 	if hours > 0 {
-		s += fmt.Sprintf("%d Hour(s), ",hours)
+		s += fmt.Sprintf("%d Hours, ",hours)
 	}
 
 	s += fmt.Sprintf("%d Mins ",mins)

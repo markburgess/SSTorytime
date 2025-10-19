@@ -13,11 +13,17 @@ data security, or operate in a sandbox.**
 Currently, there are only two example functions, demonstrated in the [reminders.n4l](../examples/reminders.n4l)
 example. 
 <pre>
- Dynamic: Time remaining until Christmas ... {TimeUntil 25 December}
-
- Dynamic: Regular coordination meeting at 11:30 - TIME REMAINING .. {TimeUntil Hr11 Min30} !!
-
  Dynamic: {TimeSince Day25 May Yr2018 Hr13} have elapsed since the ChiTek-i company was founded
+ Dynamic: Time remaining until Christmas ... {TimeUntil 25 December}
+</pre>
+This would expand to something like this:
+<pre>
+
+ Time remaining until Christmas ... 60 Days, 23 Hours, 5 Mins
+ 7 Years, 148 Days, 23 Hours, 54 Mins have elapsed since the ChiTek-i company was founded
+</pre>
+<pre>
+ Dynamic: Regular coordination meeting at 11:30 - TIME REMAINING .. {TimeUntil Hr11 Min30} !!
 
 </pre>
 Dynamic content should start with the string `Dynamic: ` and may contain functions which are

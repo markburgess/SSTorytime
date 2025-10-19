@@ -16,13 +16,13 @@ import (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	qstr := "SELECT S from Node where unaccent(S) LIKE '%xue%'"
 
 	fmt.Println("TRY",qstr)
 
-	row,err := ctx.DB.Query(qstr)
+	row,err := sst.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("FAILED \n",qstr,err)
@@ -37,5 +37,5 @@ func main() {
 
 	row.Close()
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }

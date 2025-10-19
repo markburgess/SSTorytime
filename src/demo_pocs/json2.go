@@ -12,16 +12,16 @@ import (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
-	nptr := SST.GetDBNodePtrMatchingName(ctx,"lamb","")
+	sst := SST.Open(load_arrows)
+	nptr := SST.GetDBNodePtrMatchingName(sst,"lamb","")
 	const maxdepth = 4
 
 	multicone := "{\n"
 
 	for n := 0; n < len(nptr); n++ {
 
-		cone,_ := SST.GetFwdPathsAsLinks(ctx,nptr[n],1,maxdepth)
-		json := SST.JSONCone(ctx,cone,"",nil)
+		cone,_ := SST.GetFwdPathsAsLinks(sst,nptr[n],1,maxdepth)
+		json := SST.JSONCone(sst,cone,"",nil)
 
 		const empty = 5
 
@@ -36,7 +36,7 @@ func main() {
 	multicone += "\n}\n"
 
 	fmt.Println(multicone)
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 
 

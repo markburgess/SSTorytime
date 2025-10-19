@@ -16,12 +16,12 @@ import (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	qstr := "drop function ArrowInList"
-	row,err := ctx.DB.Query(qstr)
+	row,err := sst.DB.Query(qstr)
 	qstr = "drop function GetStoryStartNodes"
-	row,err = ctx.DB.Query(qstr)
+	row,err = sst.DB.Query(qstr)
 
 	qstr = "CREATE OR REPLACE FUNCTION ArrowInList(arrow int,links Link[])\n"+
 		"RETURNS boolean AS $fn$\n"+
@@ -40,7 +40,7 @@ func main() {
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
 
-	row,err = ctx.DB.Query(qstr)
+	row,err = sst.DB.Query(qstr)
 
 	if err != nil {
 		fmt.Println("FAILED \n",qstr,err)
@@ -67,7 +67,7 @@ func main() {
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
 
-	row,err = ctx.DB.Query(qstr)
+	row,err = sst.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("FAILED \n",qstr,err)
@@ -77,19 +77,19 @@ func main() {
 
 	arrow := "then"
 
-	//matches := SST.GetNodesStartingStoriesForArrow(ctx,arrow)
+	//matches := SST.GetNodesStartingStoriesForArrow(sst,arrow)
 
 	chapter := ""
 	context := []string{"poem"}
 
-	matches := SST.GetNCCNodesStartingStoriesForArrow(ctx,arrow,"",chapter,context)
+	matches := SST.GetNCCNodesStartingStoriesForArrow(sst,arrow,"",chapter,context)
 
 	for p := range matches {
 
-		n := SST.GetDBNodeByNodePtr(ctx,matches[p])
+		n := SST.GetDBNodeByNodePtr(sst,matches[p])
 
 		fmt.Println("Story start with",n.S)
 	}
 	
-	SST.Close(ctx)
+	SST.Close(sst)
 }

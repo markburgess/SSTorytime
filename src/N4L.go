@@ -145,7 +145,7 @@ type RCtype struct {
 
 func main() {
 
-	var ctx SST.PoSST
+	var sst SST.PoSST
 
 	args := Init()
 
@@ -156,7 +156,7 @@ func main() {
 			load_arrows = false
 		}
 
-		ctx = SST.Open(load_arrows)
+		sst = SST.Open(load_arrows)
 	}
 
 	AddMandatory()
@@ -196,7 +196,7 @@ func main() {
 	}
 
 	if UPLOAD {
-		dbchapters := SST.GetDBChaptersMatchingName(ctx,"")
+		dbchapters := SST.GetDBChaptersMatchingName(sst,"")
 		memchapters := GetMemChapters()
 
 		conflict := false
@@ -217,10 +217,10 @@ func main() {
 
 		} else {
 			fmt.Println("\n\nUploading nodes..")
-			SST.GraphToDB(ctx,true)
+			SST.GraphToDB(sst,true)
 		}
 
-		SST.Close(ctx)
+		SST.Close(sst)
 	}
 }
 

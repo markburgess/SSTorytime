@@ -23,16 +23,16 @@ var path [8][]string
 func main() {
 
 	load_arrows := true
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
-	Solve(ctx)
+	Solve(sst)
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 
 //******************************************************************
 
-func Solve(ctx SST.PoSST) {
+func Solve(sst SST.PoSST) {
 
 	// Contra colliding wavefronts as path integral solver
 
@@ -44,8 +44,8 @@ func Solve(ctx SST.PoSST) {
 	start_bc := "a7"
 	end_bc := "i6"
 
-	leftptrs := SST.GetDBNodePtrMatchingName(ctx,start_bc,"")
-	rightptrs := SST.GetDBNodePtrMatchingName(ctx,end_bc,"")
+	leftptrs := SST.GetDBNodePtrMatchingName(sst,start_bc,"")
+	rightptrs := SST.GetDBNodePtrMatchingName(sst,end_bc,"")
 
 	if leftptrs == nil || rightptrs == nil {
 		fmt.Println("No paths available from end points")
@@ -61,11 +61,11 @@ func Solve(ctx SST.PoSST) {
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		left_paths,Lnum = SST.GetEntireNCConePathsAsLinks(ctx,"fwd",leftptrs[0],ldepth,"",cntx,limit)
-		xleft_paths,Lnumx := SST.GetEntireConePathsAsLinks(ctx,"fwd",leftptrs[0],ldepth,limit)
+		left_paths,Lnum = SST.GetEntireNCConePathsAsLinks(sst,"fwd",leftptrs[0],ldepth,"",cntx,limit)
+		xleft_paths,Lnumx := SST.GetEntireConePathsAsLinks(sst,"fwd",leftptrs[0],ldepth,limit)
 
-		right_paths,Rnum = SST.GetEntireNCConePathsAsLinks(ctx,"bwd",rightptrs[0],rdepth,"",cntx,limit)
-		xright_paths,Rnumx := SST.GetEntireConePathsAsLinks(ctx,"bwd",rightptrs[0],rdepth,limit)	
+		right_paths,Rnum = SST.GetEntireNCConePathsAsLinks(sst,"bwd",rightptrs[0],rdepth,"",cntx,limit)
+		xright_paths,Rnumx := SST.GetEntireConePathsAsLinks(sst,"bwd",rightptrs[0],rdepth,limit)	
 
 		if Lnum != Lnumx {
 			fmt.Println("LEFT sizes differ at depth",ldepth,"=",Lnum,Lnumx)

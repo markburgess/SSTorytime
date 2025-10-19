@@ -26,11 +26,11 @@ const (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	qstr := "drop function match_context"
 
-	row,err := ctx.DB.Query(qstr)
+	row,err := sst.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("FAILED \n",qstr,err)
@@ -48,7 +48,7 @@ func main() {
 		"END ;" +
 		"$fn$ LANGUAGE plpgsql;"
 
-	row,err = ctx.DB.Query(qstr)
+	row,err = sst.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("FAILED \n",qstr,err)
@@ -70,7 +70,7 @@ func main() {
 		"  (SELECT NFrom,ctx,match_context(ctx,%s) AS match FROM NodeArrowNode)"+
 		"     SELECT DISTINCT ctx,chap,nfrom,S FROM matching_nodes JOIN Node ON nptr=nfrom  WHERE match=true and chap LIKE '%s'",set1,chapmatch)
 
-	row,err = ctx.DB.Query(qstr)
+	row,err = sst.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("FAILED \n",qstr,err)
@@ -85,5 +85,5 @@ func main() {
 
 	row.Close()
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }

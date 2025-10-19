@@ -22,24 +22,24 @@ import (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	context := []string{""}
 	arrow := "then"
 
-	Story(ctx,"chinese",context,"fox",arrow)
+	Story(sst,"chinese",context,"fox",arrow)
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 
 //******************************************************************
 
-func Story(ctx SST.PoSST, chapter string,context []string,searchtext string,arrname string) {
+func Story(sst SST.PoSST, chapter string,context []string,searchtext string,arrname string) {
 
 	searchtext = strings.TrimSpace(searchtext)
 
 	const limit = 10
-	stories := SST.GetSequenceContainers(ctx,arrname,searchtext,chapter,context,limit)
+	stories := SST.GetSequenceContainers(sst,arrname,searchtext,chapter,context,limit)
 
 	//for s := range stories {
 

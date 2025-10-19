@@ -22,20 +22,20 @@ import (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	searchtext := "notes"
 	chaptext := ""
 	context := []string{""}
 
-	Search(ctx,chaptext,context,searchtext)
+	Search(sst,chaptext,context,searchtext)
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 
 //******************************************************************
 
-func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
+func Search(sst SST.PoSST, chaptext string,context []string,searchtext string) {
 
 	chaptext = strings.TrimSpace(chaptext)
 	searchtext = strings.TrimSpace(searchtext)
@@ -52,7 +52,7 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 	
 	for w := range search_items {
 		fmt.Print("Looking for nodes like ",search_items[w],"...")
-		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,search_items[w],chaptext)...)
+		start_set = append(start_set,SST.GetDBNodePtrMatchingName(sst,search_items[w],chaptext)...)
 	}
 
 	fmt.Println("   Found possible relevant nodes:",start_set)
@@ -61,10 +61,10 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 
 		for sttype := -SST.EXPRESS; sttype <= SST.EXPRESS; sttype++ {
 
-			name :=  SST.GetDBNodeByNodePtr(ctx,start_set[start])
+			name :=  SST.GetDBNodeByNodePtr(sst,start_set[start])
 
 			const limit = 10
-			allnodes := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,maxdepth,limit)
+			allnodes := SST.GetFwdConeAsNodes(sst,start_set[start],sttype,maxdepth,limit)
 			
 			if len(allnodes) > 1 {
 				fmt.Println()
@@ -74,18 +74,18 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 				fmt.Println("    -------------------------------------------")
 
 				for l := range allnodes {
-					fullnode := SST.GetDBNodeByNodePtr(ctx,allnodes[l])
+					fullnode := SST.GetDBNodeByNodePtr(sst,allnodes[l])
 					fmt.Println("     - SSType",SST.STTypeName(sttype)," cone item: ",fullnode.S,", found in",fullnode.Chap)
 				}
 			
-				alt_paths,path_depth := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,maxdepth,limit)
+				alt_paths,path_depth := SST.GetFwdPathsAsLinks(sst,start_set[start],sttype,maxdepth,limit)
 				
 				if alt_paths != nil {
 					
 					fmt.Println("\n-- Forward",SST.STTypeName(sttype),"cone stories ----------------------------------")
 					
 					for p := 0; p < path_depth; p++ {
-						SST.PrintLinkPath(ctx,alt_paths,p,"\nStory:","",nil)
+						SST.PrintLinkPath(sst,alt_paths,p,"\nStory:","",nil)
 					}
 				}
 				fmt.Printf("     (END %d)\n",start+1)

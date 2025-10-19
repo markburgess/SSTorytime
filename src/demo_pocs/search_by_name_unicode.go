@@ -30,21 +30,21 @@ const (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	cntx := []string{ "yes", "thank you", "(food)"}
 	chapter := "chinese"
 	name := "(rou)"
 	limit := 10
-	nptrs := SST.GetDBNodePtrMatchingNCC(ctx,name,chapter,cntx,nil,limit)
+	nptrs := SST.GetDBNodePtrMatchingNCC(sst,name,chapter,cntx,nil,limit)
 
 	fmt.Println("\nSearching..in chapter",chapter,"\nin contexts",cntx,"\nfor",name,"\n")
 
 	for n := range nptrs {
-		node := SST.GetDBNodeByNodePtr(ctx,nptrs[n])
+		node := SST.GetDBNodeByNodePtr(sst,nptrs[n])
 		fmt.Println("Found:",node.S)
 	}
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 

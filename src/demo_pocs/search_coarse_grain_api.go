@@ -18,7 +18,7 @@ import (
 func main() {
 
 	load_arrows := true
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	// Contra colliding wavefronts as path integral solver
 
@@ -41,14 +41,14 @@ func main() {
 	var start_set,end_set []SST.NodePtr
 
 	for n := range start_bc {
-		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,start_bc[n],"")...)
+		start_set = append(start_set,SST.GetDBNodePtrMatchingName(sst,start_bc[n],"")...)
 	}
 
 	for n := range end_bc {
-		end_set = append(end_set,SST.GetDBNodePtrMatchingName(ctx,end_bc[n],"")...)
+		end_set = append(end_set,SST.GetDBNodePtrMatchingName(sst,end_bc[n],"")...)
 	}
 
-	solutions := SST.GetPathsAndSymmetries(ctx,start_set,end_set,chapter,context,maxdepth)
+	solutions := SST.GetPathsAndSymmetries(sst,start_set,end_set,chapter,context,maxdepth)
 
 	var count int
 
@@ -59,21 +59,21 @@ func main() {
 	
 	for s := 0; s < len(solutions); s++ {
 		prefix := fmt.Sprintf(" - story %d: ",s)
-		SST.PrintLinkPath(ctx,solutions,s,prefix,"",nil)
+		SST.PrintLinkPath(sst,solutions,s,prefix,"",nil)
 	}
 	count++
 	fmt.Println("-------------------------------------------")
 
 	// **** Process symmetries ***
 
-	supernodes := SST.GetPathTransverseSuperNodes(ctx,solutions,maxdepth)
+	supernodes := SST.GetPathTransverseSuperNodes(sst,solutions,maxdepth)
 
 	fmt.Println("Look for coarse grains, final matroid:",len(supernodes))
 
 	for g := range supernodes {
 		fmt.Print("\n    - Super node ",g," = {")
 		for n := range supernodes[g] {
-			node :=SST.GetDBNodeByNodePtr(ctx,supernodes[g][n])
+			node :=SST.GetDBNodeByNodePtr(sst,supernodes[g][n])
 			fmt.Print(node.S,",")
 		}
 		fmt.Println("}")
@@ -83,12 +83,12 @@ func main() {
 
 //******************************************************************
 
-func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
+func ShowNode(sst SST.PoSST,nptr []SST.NodePtr) string {
 
 	var ret string
 
 	for n := range nptr {
-		node := SST.GetDBNodeByNodePtr(ctx,nptr[n])
+		node := SST.GetDBNodeByNodePtr(sst,nptr[n])
 		ret += node.S + ","
 	}
 
@@ -97,13 +97,13 @@ func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
 
 // **********************************************************
 
-func ShowNodePath(ctx SST.PoSST,lnk []SST.Link) string {
+func ShowNodePath(sst SST.PoSST,lnk []SST.Link) string {
 
 	var ret string
 
 	for n := range lnk {
-		node := SST.GetDBNodeByNodePtr(ctx,lnk[n].Dst)
-		arrs := SST.GetDBArrowByPtr(ctx,lnk[n].Arr).Long
+		node := SST.GetDBNodeByNodePtr(sst,lnk[n].Dst)
+		arrs := SST.GetDBArrowByPtr(sst,lnk[n].Arr).Long
 		ret += fmt.Sprintf("(%s) -> %s ",arrs,node.S)
 	}
 

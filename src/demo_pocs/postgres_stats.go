@@ -8,9 +8,9 @@ import (
 
 func main() {
 
-	ctx := SST.Open(false)
+	sst := SST.Open(false)
 
-	l := SST.GetLastSawSection(ctx)
+	l := SST.GetLastSawSection(sst)
 
 	for r := range l {
 		fmt.Println(l[r])
@@ -20,9 +20,9 @@ func main() {
 	nptr.Class=2;
 	nptr.CPtr=581
 
-	x := SST.GetLastSawNPtr(ctx,nptr)
+	x := SST.GetLastSawNPtr(sst,nptr)
 	fmt.Println("X",x)
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 

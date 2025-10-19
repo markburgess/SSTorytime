@@ -16,7 +16,7 @@ import (
 
 func main() {
 
-        ctx := SST.Open(false)
+        sst := SST.Open(false)
 
 	fmt.Println("Reset..")
 
@@ -81,28 +81,28 @@ func main() {
 
 	sttype := SST.LEADSTO
 
-	n1 = SST.IdempDBAddNode(ctx, n1)
-	n2 = SST.IdempDBAddNode(ctx, n2)
-	SST.AppendDBLinkToNode(ctx,n1.NPtr,lnk12,sttype)
+	n1 = SST.IdempDBAddNode(sst, n1)
+	n2 = SST.IdempDBAddNode(sst, n2)
+	SST.AppendDBLinkToNode(sst,n1.NPtr,lnk12,sttype)
 
-	n2 = SST.IdempDBAddNode(ctx, n2)
-	n3 = SST.IdempDBAddNode(ctx, n3)
-	SST.AppendDBLinkToNode(ctx,n2.NPtr,lnk23,sttype)
+	n2 = SST.IdempDBAddNode(sst, n2)
+	n3 = SST.IdempDBAddNode(sst, n3)
+	SST.AppendDBLinkToNode(sst,n2.NPtr,lnk23,sttype)
 
-	n3 = SST.IdempDBAddNode(ctx, n3)
-	n4 = SST.IdempDBAddNode(ctx, n4)
-	SST.AppendDBLinkToNode(ctx,n3.NPtr,lnk34,sttype)
+	n3 = SST.IdempDBAddNode(sst, n3)
+	n4 = SST.IdempDBAddNode(sst, n4)
+	SST.AppendDBLinkToNode(sst,n3.NPtr,lnk34,sttype)
 
-	n2 = SST.IdempDBAddNode(ctx, n2)
-	n5 = SST.IdempDBAddNode(ctx, n5)
-	SST.AppendDBLinkToNode(ctx,n2.NPtr,lnk25,sttype)
+	n2 = SST.IdempDBAddNode(sst, n2)
+	n5 = SST.IdempDBAddNode(sst, n5)
+	SST.AppendDBLinkToNode(sst,n2.NPtr,lnk25,sttype)
 
-	n5 = SST.IdempDBAddNode(ctx, n5)
-	n6 = SST.IdempDBAddNode(ctx, n6)
-	SST.AppendDBLinkToNode(ctx,n5.NPtr,lnk56,sttype)
+	n5 = SST.IdempDBAddNode(sst, n5)
+	n6 = SST.IdempDBAddNode(sst, n6)
+	SST.AppendDBLinkToNode(sst,n5.NPtr,lnk56,sttype)
 
 	// Add loop
-	SST.AppendDBLinkToNode(ctx,n6.NPtr,lnk62,sttype)
+	SST.AppendDBLinkToNode(sst,n6.NPtr,lnk62,sttype)
 
 	fmt.Println("----------------------------------")
 	fmt.Println("Node section hypersurfaces:")
@@ -110,7 +110,7 @@ func main() {
 	const maxdepth = 8
 
 	for depth := 0; depth < maxdepth; depth++ {
-		val := SST.GetFwdConeAsNodes(ctx,n1.NPtr,sttype,depth)
+		val := SST.GetFwdConeAsNodes(sst,n1.NPtr,sttype,depth)
 		fmt.Println("As NodePtr(s) fwd from",n1,"depth",depth)
 		for l := range val {
 			fmt.Println("   - Step",val[l])
@@ -122,7 +122,7 @@ func main() {
 	fmt.Println("Link section hypersurfaces:")
 
 	for depth := 0; depth < maxdepth; depth++ {
-		val := SST.GetFwdConeAsLinks(ctx,n1.NPtr,sttype,depth)
+		val := SST.GetFwdConeAsLinks(sst,n1.NPtr,sttype,depth)
 		fmt.Println("Search as Links fwd from",n1,"depth",depth)
 		for l := range val {
 			fmt.Println("   - Step",val[l])
@@ -136,7 +136,7 @@ func main() {
 
 		fmt.Println("Searching paths of length",depth,"/",maxdepth,"from",n1.NPtr)
 
-		paths,_ := SST.GetFwdPathsAsLinks(ctx,n1.NPtr,sttype,depth)
+		paths,_ := SST.GetFwdPathsAsLinks(sst,n1.NPtr,sttype,depth)
 
 		for p := range paths {
 
@@ -151,7 +151,7 @@ func main() {
 		}
 	}
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 
 

@@ -16,7 +16,7 @@ import (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	var whole1,whole2,whole3,whole4 string
 	var retval1,retval2,retval3,retval4 [][]SST.Link
@@ -25,7 +25,7 @@ func main() {
 
 	qstr := "select AllNCPathsAsLinks('(1,116)','chinese','{}','any',-1)"
 
-	row,err := ctx.DB.Query(qstr)
+	row,err := sst.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("FAILED \n",qstr,err)
@@ -44,7 +44,7 @@ func main() {
 
 	qstr2 := "select AllNCPathsAsLinks('(1,116)','chinese','{trivia}','any',8)"
 
-	row2,err2 := ctx.DB.Query(qstr2)
+	row2,err2 := sst.DB.Query(qstr2)
 	
 	if err2 != nil {
 		fmt.Println("FAILED \n",qstr2,err2)
@@ -61,7 +61,7 @@ func main() {
 
 	qstr3 := "select AllNCPathsAsLinks('(1,116)','wrong section','{trivia}','any',8)"
 
-	row3,err3 := ctx.DB.Query(qstr3)
+	row3,err3 := sst.DB.Query(qstr3)
 	
 	if err3 != nil {
 		fmt.Println("FAILED \n",qstr3,err3)
@@ -78,7 +78,7 @@ func main() {
 
 	qstr4 := "select AllNCPathsAsLinks('(1,116)','chinese','{wrong,context}','any',8)"
 
-	row4,err4 := ctx.DB.Query(qstr4)
+	row4,err4 := sst.DB.Query(qstr4)
 	
 	if err4 != nil {
 		fmt.Println("FAILED \n",qstr4,err4)
@@ -93,31 +93,31 @@ func main() {
 
 	fmt.Println("GOT WRONG CONTEXT MATCH",qstr4,retval4)
 
-	start := SST.GetDBNodePtrMatchingName(ctx,"important","chinese")
-	a,_ := SST.GetEntireConePathsAsLinks(ctx,"any",start[0],4)
+	start := SST.GetDBNodePtrMatchingName(sst,"important","chinese")
+	a,_ := SST.GetEntireConePathsAsLinks(sst,"any",start[0],4)
 
 	fmt.Println("wrapper call should work (reference)",a)
 
 	chap := "chinese"
 	context := []string{"trivia"}
 
-	b,_ := SST.GetEntireNCConePathsAsLinks(ctx,"any",start[0],4,chap,context)
+	b,_ := SST.GetEntireNCConePathsAsLinks(sst,"any",start[0],4,chap,context)
 
 	fmt.Println("NC wrapper call should work",b)
 
 	chap = "chinese"
 	context = []string{"not work"}
 
-	c,_ := SST.GetEntireNCConePathsAsLinks(ctx,"any",start[0],4,chap,context)
+	c,_ := SST.GetEntireNCConePathsAsLinks(sst,"any",start[0],4,chap,context)
 
 	fmt.Println("NC wrapper call should BE EMPTY",c)
 
 	chap = "NOTchinese"
 	context = []string{"trivia"}
 
-	d,_ := SST.GetEntireNCConePathsAsLinks(ctx,"any",start[0],4,chap,context)
+	d,_ := SST.GetEntireNCConePathsAsLinks(sst,"any",start[0],4,chap,context)
 
 	fmt.Println("NC wrapper call should BE EMPTY",d)
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }

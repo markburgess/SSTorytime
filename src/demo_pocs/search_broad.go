@@ -21,9 +21,9 @@ import (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
-	nodeptrs := SST.GetDBNodePtrMatchingName(ctx,"a1","slit")
+	nodeptrs := SST.GetDBNodePtrMatchingName(sst,"a1","slit")
 
 	fmt.Println("Found",nodeptrs)
 
@@ -34,12 +34,12 @@ func main() {
 		chapter := "slit"
 
 		const limit = 10
-		alt_paths,path_depth := SST.GetEntireConePathsAsLinks(ctx,"fwd",nodeptrs[n],maxdepth,limit)
+		alt_paths,path_depth := SST.GetEntireConePathsAsLinks(sst,"fwd",nodeptrs[n],maxdepth,limit)
 		
 		if alt_paths != nil {
 			
 			for p := 0; p < path_depth; p++ {
-				SST.PrintLinkPath(ctx,alt_paths,p,"\nStory:",chapter,context)
+				SST.PrintLinkPath(sst,alt_paths,p,"\nStory:",chapter,context)
 			}
 		}
 	}

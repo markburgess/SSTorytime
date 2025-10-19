@@ -8,12 +8,12 @@ import (
 
 func main() {
 
-	ctx := SST.Open(false)
+	sst := SST.Open(false)
 
 	var qstr string
 
-	ctx.DB.QueryRow("drop function lastsawsection(text)")
-	ctx.DB.QueryRow("drop function lastsawnptr(nodeptr)")
+	sst.DB.QueryRow("drop function lastsawsection(text)")
+	sst.DB.QueryRow("drop function lastsawnptr(nodeptr)")
 
 	// ************ LAST SEEN **************'
 
@@ -43,7 +43,7 @@ func main() {
 	
         // select GetNCNeighboursByType('(1,116)','chinese',-1);
 	
-	row,err := ctx.DB.Query(qstr)
+	row,err := sst.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error defining postgres function:",qstr,err)
@@ -75,7 +75,7 @@ func main() {
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
 	
-	row,err = ctx.DB.Query(qstr)
+	row,err = sst.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error defining postgres function:",qstr,err)
@@ -83,6 +83,6 @@ func main() {
 	
 	row.Close()
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 

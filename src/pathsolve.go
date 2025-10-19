@@ -34,9 +34,9 @@ func main() {
 	Init()
 
 	load_arrows := true
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
-	PathSolve(ctx,CHAPTER,CONTEXT,BEGIN,END)
+	PathSolve(sst,CHAPTER,CONTEXT,BEGIN,END)
 
 }
 
@@ -116,7 +116,7 @@ func Init() []string {
 
 //******************************************************************
 
-func PathSolve(ctx SST.PoSST, chapter,cntext,begin, end string) {
+func PathSolve(sst SST.PoSST, chapter,cntext,begin, end string) {
 
 	const maxdepth = 20
 	var Lnum,Rnum int
@@ -130,11 +130,11 @@ func PathSolve(ctx SST.PoSST, chapter,cntext,begin, end string) {
 	var leftptrs,rightptrs []SST.NodePtr
 
 	for n := range start_bc {
-		leftptrs = append(leftptrs,SST.GetDBNodePtrMatchingName(ctx,start_bc[n],chapter)...)
+		leftptrs = append(leftptrs,SST.GetDBNodePtrMatchingName(sst,start_bc[n],chapter)...)
 	}
 
 	for n := range end_bc {
-		rightptrs = append(rightptrs,SST.GetDBNodePtrMatchingName(ctx,end_bc[n],chapter)...)
+		rightptrs = append(rightptrs,SST.GetDBNodePtrMatchingName(sst,end_bc[n],chapter)...)
 	}
 
 	if leftptrs == nil || rightptrs == nil {
@@ -142,7 +142,7 @@ func PathSolve(ctx SST.PoSST, chapter,cntext,begin, end string) {
 		return
 	}
 
-	fmt.Printf("\n\n Paths < end_set= {%s} | {%s} = start set>\n\n",ShowNode(ctx,rightptrs),ShowNode(ctx,leftptrs))
+	fmt.Printf("\n\n Paths < end_set= {%s} | {%s} = start set>\n\n",ShowNode(sst,rightptrs),ShowNode(sst,leftptrs))
 
 	// Find the path matrix
 
@@ -152,16 +152,16 @@ func PathSolve(ctx SST.PoSST, chapter,cntext,begin, end string) {
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,FWD,leftptrs,ldepth,chapter,context,maxdepth)
-		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,BWD,rightptrs,rdepth,chapter,context,maxdepth)
-		solutions,_ = SST.WaveFrontsOverlap(ctx,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
+		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(sst,FWD,leftptrs,ldepth,chapter,context,maxdepth)
+		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(sst,BWD,rightptrs,rdepth,chapter,context,maxdepth)
+		solutions,_ = SST.WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
 		if len(solutions) > 0 {
 
 			for s := 0; s < len(solutions); s++ {
 				prefix := fmt.Sprintf(" - story path: ")
-				SST.PrintLinkPath(ctx,solutions,s,prefix,"",nil)
-				betweenness = TallyPath(ctx,solutions[s],betweenness)
+				SST.PrintLinkPath(sst,solutions,s,prefix,"",nil)
+				betweenness = TallyPath(sst,solutions[s],betweenness)
 			}
 			count++
 			break
@@ -187,7 +187,7 @@ func PathSolve(ctx SST.PoSST, chapter,cntext,begin, end string) {
 
 	// *** Summarize paths
 
-	supers := SST.SuperNodes(ctx,solutions,maxdepth)
+	supers := SST.SuperNodes(sst,solutions,maxdepth)
 
 	for s := range supers {
 		fmt.Println("   - Supernode:",supers[s])
@@ -195,7 +195,7 @@ func PathSolve(ctx SST.PoSST, chapter,cntext,begin, end string) {
 
 	fmt.Println("\n *\n *\n * FLOW IMPORTANCE:\n *\n *\n")
 
-	betw := SST.BetweenNessCentrality(ctx,solutions)
+	betw := SST.BetweenNessCentrality(sst,solutions)
 
 	for b := range betw {
 		fmt.Println("   - Betweenness centrality:",betw[b])
@@ -206,12 +206,12 @@ func PathSolve(ctx SST.PoSST, chapter,cntext,begin, end string) {
 
 // **********************************************************
 
-func TallyPath(ctx SST.PoSST,path []SST.Link,between map[string]int) map[string]int {
+func TallyPath(sst SST.PoSST,path []SST.Link,between map[string]int) map[string]int {
 
 	// count how often each node appears in the different path solutions
 
 	for leg := range path {
-		n := SST.GetDBNodeByNodePtr(ctx,path[leg].Dst)
+		n := SST.GetDBNodeByNodePtr(sst,path[leg].Dst)
 		between[n.S]++
 	}
 
@@ -220,12 +220,12 @@ func TallyPath(ctx SST.PoSST,path []SST.Link,between map[string]int) map[string]
 
 // **********************************************************
 
-func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
+func ShowNode(sst SST.PoSST,nptr []SST.NodePtr) string {
 
 	var ret string
 
 	for n := range nptr {
-		node := SST.GetDBNodeByNodePtr(ctx,nptr[n])
+		node := SST.GetDBNodeByNodePtr(sst,nptr[n])
 		ret += fmt.Sprintf("%.30s, ",node.S)
 	}
 

@@ -10,9 +10,9 @@ import (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	SST.ShowText("昨天下雪了，所以我想叫车.狐狸在树林里找吃的。他来到一棵大树下，看见乌鸦正站在树枝上，嘴里叼着一片肉。狐狸馋得直流口水。狐狸停下来想，“那只乌鸦有一块美味的肉，我要想个办法得到它。”狐狸开始琢磨着如何拿走乌鸦的肉。他眼珠一转，对乌鸦说：“嗨，我亲爱的乌鸦，您好吗？”乌鸦没有回答。狐狸赔着笑脸说：“亲爱的乌鸦，您的孩子好吗？”乌鸦看了狐狸一眼，还是没有回答。",40)
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }

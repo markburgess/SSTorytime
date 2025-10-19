@@ -24,7 +24,7 @@ import (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	reader := bufio.NewReader(os.Stdin)
 
@@ -51,15 +51,15 @@ func main() {
 
 		context := []string{"poem"}
 		
-		Search(ctx,chaptext,context,searchtext)
+		Search(sst,chaptext,context,searchtext)
 	}
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 
 //******************************************************************
 
-func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
+func Search(sst SST.PoSST, chaptext string,context []string,searchtext string) {
 
 	chaptext = strings.TrimSpace(chaptext)
 	searchtext = strings.TrimSpace(searchtext)
@@ -76,7 +76,7 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 	
 	for w := range search_items {
 		fmt.Print("Looking for nodes like ",search_items[w],"...")
-		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,search_items[w],chaptext)...)
+		start_set = append(start_set,SST.GetDBNodePtrMatchingName(sst,search_items[w],chaptext)...)
 	}
 
 	fmt.Println("   Found possible relevant nodes:",start_set)
@@ -85,9 +85,9 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 
 		for sttype := -SST.EXPRESS; sttype <= SST.EXPRESS; sttype++ {
 
-			name :=  SST.GetDBNodeByNodePtr(ctx,start_set[start])
+			name :=  SST.GetDBNodeByNodePtr(sst,start_set[start])
 
-			allnodes := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,maxdepth)
+			allnodes := SST.GetFwdConeAsNodes(sst,start_set[start],sttype,maxdepth)
 			
 			if len(allnodes) > 1 {
 				fmt.Println()
@@ -97,20 +97,20 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 				fmt.Println("    -------------------------------------------")
 
 				for l := range allnodes {
-					fullnode := SST.GetDBNodeByNodePtr(ctx,allnodes[l])
+					fullnode := SST.GetDBNodeByNodePtr(sst,allnodes[l])
 					fmt.Println("     - SSType",SST.STTypeName(sttype)," cone item: ",fullnode.S,", found in",fullnode.Chap)
 				}
 
 				// Conic proper time paths
 			
-				alt_paths,path_depth := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,maxdepth)
+				alt_paths,path_depth := SST.GetFwdPathsAsLinks(sst,start_set[start],sttype,maxdepth)
 				
 				if alt_paths != nil {
 					
 					fmt.Println("\n-- Forward (",SST.STTypeName(sttype),") cone stories ----------------------------------\n")
 					
 					for p := 0; p < path_depth; p++ {
-						SST.PrintLinkPath(ctx,alt_paths,p,"\nStory:","",nil)
+						SST.PrintLinkPath(sst,alt_paths,p,"\nStory:","",nil)
 					}
 				}
 				fmt.Printf("     (END %d)\n",start+1)
@@ -126,14 +126,14 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 	fmt.Println("checking whether any arrows also match search",searchtext,"(in any context)")
 	fmt.Println("--------------------------------------------------")
 	
-	matching_arrows := SST.GetDBArrowsMatchingArrowName(ctx,searchtext)
+	matching_arrows := SST.GetDBArrowsMatchingArrowName(sst,searchtext)
 	
-	relns := SST.GetDBNodeArrowNodeMatchingArrowPtrs(ctx,chaptext,context,matching_arrows)
+	relns := SST.GetDBNodeArrowNodeMatchingArrowPtrs(sst,chaptext,context,matching_arrows)
 	
 	for r := range relns {
 		
-		from := SST.GetDBNodeByNodePtr(ctx,relns[r].NFrom)
-		to := SST.GetDBNodeByNodePtr(ctx,relns[r].NTo)
+		from := SST.GetDBNodeByNodePtr(sst,relns[r].NFrom)
+		to := SST.GetDBNodeByNodePtr(sst,relns[r].NTo)
 		arr := SST.ARROW_DIRECTORY[relns[r].Arr].Long
 		wgt := relns[r].Wgt
 		actx := relns[r].Ctx

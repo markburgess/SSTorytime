@@ -22,7 +22,7 @@ import (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	fmt.Println("Node causal forward cone doors.N4l")
 
@@ -33,7 +33,7 @@ func main() {
 
 	// Get the start node
 
-	start_set := SST.GetDBNodePtrMatchingName(ctx,"start","")
+	start_set := SST.GetDBNodePtrMatchingName(sst,"start","")
 
 	for start := range start_set {
 
@@ -41,7 +41,7 @@ func main() {
 		fmt.Println(" - Total forward cone from: ",start_set[start])
 		fmt.Println(" ---------------------------------")
 
-		allnodes := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,maxdepth)
+		allnodes := SST.GetFwdConeAsNodes(sst,start_set[start],sttype,maxdepth)
 		
 		for l := range allnodes {
 			fmt.Println("   - node",allnodes[l])
@@ -55,7 +55,7 @@ func main() {
 			
 			levels[depth] = make([]SST.NodePtr,0)
 			
-			allnodes := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,depth)
+			allnodes := SST.GetFwdConeAsNodes(sst,start_set[start],sttype,depth)
 			
 			for l := range allnodes {
 				if IsNew(allnodes[l],levels) {
@@ -73,7 +73,7 @@ func main() {
 				
 				fmt.Println("Searching paths of length",depth,"/",maxdepth,"from",start_set[start])
 				
-				paths,_ := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,depth)
+				paths,_ := SST.GetFwdPathsAsLinks(sst,start_set[start],sttype,depth)
 				
 				for p := range paths {
 					
@@ -91,7 +91,7 @@ func main() {
 			}
 		}
 	}		
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 
 //******************************************************************

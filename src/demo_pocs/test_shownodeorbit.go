@@ -17,34 +17,34 @@ import (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	searchtext := "hypo"
 	chaptext := "brain"
 	context := []string{""}
 
 	fmt.Println("Look for",searchtext,"\n")
-	Search(ctx,chaptext,context,searchtext)
+	Search(sst,chaptext,context,searchtext)
 
 	searchtext = "S1"
 	chaptext = ""
 	context = []string{"physics"}
 
 	fmt.Println("Look for",searchtext,"\n")
-	Search(ctx,chaptext,context,searchtext)
+	Search(sst,chaptext,context,searchtext)
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 
 //******************************************************************
 
-func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
+func Search(sst SST.PoSST, chaptext string,context []string,searchtext string) {
 	
-	nptrs := SST.GetDBNodePtrMatchingName(ctx,searchtext,chaptext)
+	nptrs := SST.GetDBNodePtrMatchingName(sst,searchtext,chaptext)
 
 	for nptr := range nptrs {
 		fmt.Print(nptr,": ")
-		SST.PrintNodeOrbit(ctx,nptrs[nptr],100)
+		SST.PrintNodeOrbit(sst,nptrs[nptr],100)
 
 
 	}

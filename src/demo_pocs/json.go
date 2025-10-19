@@ -15,7 +15,7 @@ import (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	for goes := 0; goes < 10; goes ++ {
 
@@ -24,15 +24,15 @@ func main() {
 		reader := bufio.NewReader(os.Stdin)
 		text, _ := reader.ReadString('\n')
 		
-		SearchToJSON(ctx,text)
+		SearchToJSON(sst,text)
 	}
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 
 //******************************************************************
 
-func SearchToJSON(ctx SST.PoSST, text string) {
+func SearchToJSON(sst SST.PoSST, text string) {
 
 	text = strings.TrimSpace(text)
 
@@ -41,11 +41,11 @@ func SearchToJSON(ctx SST.PoSST, text string) {
 	search_items := strings.Split(text," ")
 
 	for w := range search_items {
-		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,search_items[w],"")...)
+		start_set = append(start_set,SST.GetDBNodePtrMatchingName(sst,search_items[w],"")...)
 	}
 
 	for s := range start_set {
-		r := SST.JSONNodeOrbit(ctx, start_set[s]) 
+		r := SST.JSONNodeOrbit(sst, start_set[s]) 
 		fmt.Println(s,r)
 	}
 	

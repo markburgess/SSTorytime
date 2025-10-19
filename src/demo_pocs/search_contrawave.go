@@ -31,7 +31,7 @@ const (
 func main() {
 
 	load_arrows := true
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	// Contra colliding wavefronts as path integral solver
 
@@ -44,8 +44,8 @@ func main() {
 	start_bc := "A7"
 	end_bc := "i6"
 
-	leftptrs := SST.GetDBNodePtrMatchingName(ctx,start_bc,"")
-	rightptrs := SST.GetDBNodePtrMatchingName(ctx,end_bc,"")
+	leftptrs := SST.GetDBNodePtrMatchingName(sst,start_bc,"")
+	rightptrs := SST.GetDBNodePtrMatchingName(sst,end_bc,"")
 
 	if leftptrs == nil || rightptrs == nil {
 		fmt.Println("No paths available from end points")
@@ -54,11 +54,11 @@ func main() {
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		left_paths,Lnum = SST.GetEntireConePathsAsLinks(ctx,"fwd",leftptrs[0],ldepth)
+		left_paths,Lnum = SST.GetEntireConePathsAsLinks(sst,"fwd",leftptrs[0],ldepth)
 		fmt.Println(left_paths)
-		right_paths,Rnum = SST.GetEntireConePathsAsLinks(ctx,"bwd",rightptrs[0],rdepth)		
+		right_paths,Rnum = SST.GetEntireConePathsAsLinks(sst,"bwd",rightptrs[0],rdepth)		
 		
-		solutions,loop_corrections := WaveFrontsOverlap(ctx,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
+		solutions,loop_corrections := WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
 		if len(solutions) > 0 {
 			fmt.Println("-- T R E E ----------------------------------")
@@ -66,7 +66,7 @@ func main() {
 
 			for s := 0; s < len(solutions); s++ {
 				prefix := fmt.Sprintf(" - story %d: ",s)
-				SST.PrintLinkPath(ctx,solutions,s,prefix,"",nil)
+				SST.PrintLinkPath(sst,solutions,s,prefix,"",nil)
 			}
 			count++
 			fmt.Println("-------------------------------------------")
@@ -78,7 +78,7 @@ func main() {
 
 			for s := 0; s < len(loop_corrections); s++ {
 				prefix := fmt.Sprintf(" - story %d: ",s)
-				SST.PrintLinkPath(ctx,loop_corrections,s,prefix,"",nil)
+				SST.PrintLinkPath(sst,loop_corrections,s,prefix,"",nil)
 			}
 			count++
 			fmt.Println("+++++++++++++++++++++++++++++++++++++++++++")
@@ -94,7 +94,7 @@ func main() {
 
 // **********************************************************
 
-func WaveFrontsOverlap(ctx SST.PoSST,left_paths,right_paths [][]SST.Link,Lnum,Rnum,ldepth,rdepth int) ([][]SST.Link,[][]SST.Link) {
+func WaveFrontsOverlap(sst SST.PoSST,left_paths,right_paths [][]SST.Link,Lnum,Rnum,ldepth,rdepth int) ([][]SST.Link,[][]SST.Link) {
 
 	// The wave front consists of Lnum and Rnum points left_paths[len()-1].
 	// Any of the
@@ -107,10 +107,10 @@ func WaveFrontsOverlap(ctx SST.PoSST,left_paths,right_paths [][]SST.Link,Lnum,Rn
 	leftfront := WaveFront(left_paths,Lnum)
 	rightfront := WaveFront(right_paths,Rnum)
 
-	fmt.Println("\n  Left front radius",ldepth,":",ShowNode(ctx,leftfront))
-	fmt.Println("  Right front radius",rdepth,":",ShowNode(ctx,rightfront))
+	fmt.Println("\n  Left front radius",ldepth,":",ShowNode(sst,leftfront))
+	fmt.Println("  Right front radius",rdepth,":",ShowNode(sst,rightfront))
 
-	incidence := NodesOverlap(ctx,leftfront,rightfront)
+	incidence := NodesOverlap(sst,leftfront,rightfront)
 	
 	for lp := range incidence {
 
@@ -123,9 +123,9 @@ func WaveFrontsOverlap(ctx SST.PoSST,left_paths,right_paths [][]SST.Link,Lnum,Rn
 		LRsplice = RightComplementJoin(LRsplice,adjoint)
 
 		fmt.Printf("...SPLICE PATHS L%d with R%d.....\n",lp,rp)
-		fmt.Println("Left tendril",ShowNodePath(ctx,left_paths[lp]))
-		fmt.Println("Right tendril",ShowNodePath(ctx,right_paths[rp]))
-		fmt.Println("Right adjoint:",ShowNodePath(ctx,adjoint))
+		fmt.Println("Left tendril",ShowNodePath(sst,left_paths[lp]))
+		fmt.Println("Right tendril",ShowNodePath(sst,right_paths[rp]))
+		fmt.Println("Right adjoint:",ShowNodePath(sst,adjoint))
 		fmt.Println(".....................\n")
 
 		if IsDAG(LRsplice) {
@@ -156,7 +156,7 @@ func WaveFront(path [][]SST.Link,num int) []SST.NodePtr {
 
 // **********************************************************
 
-func NodesOverlap(ctx SST.PoSST,left,right []SST.NodePtr) map[int]int {
+func NodesOverlap(sst SST.PoSST,left,right []SST.NodePtr) map[int]int {
 
 	var LRsplice = make(map[int]int)
 	var list string
@@ -166,7 +166,7 @@ func NodesOverlap(ctx SST.PoSST,left,right []SST.NodePtr) map[int]int {
 	for l := 0; l < len(left); l++ {
 		for r := 0; r < len(right); r++ {
 			if left[l] == right[r] {
-				node := SST.GetDBNodeByNodePtr(ctx,left[l])
+				node := SST.GetDBNodeByNodePtr(sst,left[l])
 				list += node.S+", "
 				LRsplice[l] = r
 			}
@@ -227,12 +227,12 @@ func IsDAG(seq []SST.Link) bool {
 
 // **********************************************************
 
-func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
+func ShowNode(sst SST.PoSST,nptr []SST.NodePtr) string {
 
 	var ret string
 
 	for n := range nptr {
-		node := SST.GetDBNodeByNodePtr(ctx,nptr[n])
+		node := SST.GetDBNodeByNodePtr(sst,nptr[n])
 		ret += node.S + ","
 	}
 
@@ -241,13 +241,13 @@ func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
 
 // **********************************************************
 
-func ShowNodePath(ctx SST.PoSST,lnk []SST.Link) string {
+func ShowNodePath(sst SST.PoSST,lnk []SST.Link) string {
 
 	var ret string
 
 	for n := range lnk {
-		node := SST.GetDBNodeByNodePtr(ctx,lnk[n].Dst)
-		arrs := SST.GetDBArrowByPtr(ctx,lnk[n].Arr).Long
+		node := SST.GetDBNodeByNodePtr(sst,lnk[n].Dst)
+		arrs := SST.GetDBArrowByPtr(sst,lnk[n].Arr).Long
 		ret += fmt.Sprintf("(%s) -> %s ",arrs,node.S)
 	}
 

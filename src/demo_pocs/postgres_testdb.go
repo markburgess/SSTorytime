@@ -7,8 +7,8 @@ import (
 
 func main() {
 
-	ctx := SST.Open(false)
+	sst := SST.Open(false)
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 

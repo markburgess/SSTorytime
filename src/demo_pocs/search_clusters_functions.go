@@ -21,31 +21,31 @@ import (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	context := []string{""}
 	//chapter := "double slit"
-	//arrow := SST.GetDBArrowByName(ctx,"backwards")
+	//arrow := SST.GetDBArrowByName(sst,"backwards")
 
 	chapter := "maze"
-	arrow := SST.GetDBArrowByName(ctx,"fwd")
-	UseGetAppointmentArrayByArrow(ctx,arrow,chapter,context,2)
+	arrow := SST.GetDBArrowByName(sst,"fwd")
+	UseGetAppointmentArrayByArrow(sst,arrow,chapter,context,2)
 
 	chapter = "double slit"
-	UseGetAppointmentArrayBySTType(ctx,1,chapter,context,2)
+	UseGetAppointmentArrayBySTType(sst,1,chapter,context,2)
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 
 //******************************************************************
 
-func UseGetAppointmentArrayByArrow(ctx SST.PoSST,arrow SST.ArrowPtr,chapter string,context []string,min int) {
+func UseGetAppointmentArrayByArrow(sst SST.PoSST,arrow SST.ArrowPtr,chapter string,context []string,min int) {
 
 	var ama map[SST.ArrowPtr][]SST.Appointment
 
-	arr_search := SST.GetDBArrowByPtr(ctx,arrow)
+	arr_search := SST.GetDBArrowByPtr(sst,arrow)
 
-	ama = SST.GetAppointedNodesByArrow(ctx,arrow,context,chapter,min)
+	ama = SST.GetAppointedNodesByArrow(sst,arrow,context,chapter,min)
 
 	fmt.Println("--------------------------------------------------")
 	fmt.Println("FEATURE: GetAppointmentArrayByArrow:")
@@ -55,19 +55,19 @@ func UseGetAppointmentArrayByArrow(ctx SST.PoSST,arrow SST.ArrowPtr,chapter stri
 
 	for arrowptr := range ama {
 		
-		arr_dir := SST.GetDBArrowByPtr(ctx,arrowptr)
+		arr_dir := SST.GetDBArrowByPtr(sst,arrowptr)
 		
 		// Appointment list
 		for n := 0; n < len(ama[arrowptr]); n++ {
 
 			appointed_nptr := ama[arrowptr][n].NTo
-			appointed := SST.GetDBNodeByNodePtr(ctx,appointed_nptr)
+			appointed := SST.GetDBNodeByNodePtr(sst,appointed_nptr)
 			
 			fmt.Printf("\nAppointed node (%s ...) in chapter \"%s\" correlates/is selected by:\n",appointed.S,chapter)
 
 			// Appointers list
 			for m := range ama[arrowptr][n].NFrom {
-				node := SST.GetDBNodeByNodePtr(ctx,ama[arrowptr][n].NFrom[m])
+				node := SST.GetDBNodeByNodePtr(sst,ama[arrowptr][n].NFrom[m])
 				stname := SST.STTypeName(SST.STIndexToSTType(arr_dir.STAindex))
 				fmt.Printf("     %.40s --(%s : %s)--> %.40s...   - in context %v\n",node.S,arr_dir.Long,stname,appointed.S,context)
 			}
@@ -79,11 +79,11 @@ func UseGetAppointmentArrayByArrow(ctx SST.PoSST,arrow SST.ArrowPtr,chapter stri
 }
 //******************************************************************
 
-func UseGetAppointmentArrayBySTType(ctx SST.PoSST,sttype int,chapter string,context []string,min int) {
+func UseGetAppointmentArrayBySTType(sst SST.PoSST,sttype int,chapter string,context []string,min int) {
 
 	var ama map[SST.ArrowPtr][]SST.Appointment
 
-	ama = SST.GetAppointedNodesBySTType(ctx,sttype,context,chapter,min)
+	ama = SST.GetAppointedNodesBySTType(sst,sttype,context,chapter,min)
 
 	fmt.Println("--------------------------------------------------")
 	fmt.Println("FEATURE: GetAppointmentArrayBySTType:")
@@ -93,19 +93,19 @@ func UseGetAppointmentArrayBySTType(ctx SST.PoSST,sttype int,chapter string,cont
 
 	for arrowptr := range ama {
 		
-		arr_dir := SST.GetDBArrowByPtr(ctx,arrowptr)
+		arr_dir := SST.GetDBArrowByPtr(sst,arrowptr)
 		
 		// Appointment list
 		for n := 0; n < len(ama[arrowptr]); n++ {
 
 			appointed_nptr := ama[arrowptr][n].NTo
-			appointed := SST.GetDBNodeByNodePtr(ctx,appointed_nptr)
+			appointed := SST.GetDBNodeByNodePtr(sst,appointed_nptr)
 			
 			fmt.Printf("\nAppointed node (%s ...) in chapter \"%s\" correlates/is selected by:\n",appointed.S,chapter)
 
 			// Appointers list
 			for m := range ama[arrowptr][n].NFrom {
-				node := SST.GetDBNodeByNodePtr(ctx,ama[arrowptr][n].NFrom[m])
+				node := SST.GetDBNodeByNodePtr(sst,ama[arrowptr][n].NFrom[m])
 				stname := SST.STTypeName(SST.STIndexToSTType(arr_dir.STAindex))
 				fmt.Printf("     %.40s --(%s : %s)--> %.40s...   - in context %v\n",node.S,arr_dir.Long,stname,appointed.S,context)
 			}

@@ -25,9 +25,9 @@ var path [8][]string
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
-	dbchapters := SST.GetDBChaptersMatchingName(ctx,"")
+	dbchapters := SST.GetDBChaptersMatchingName(sst,"")
 
 	fmt.Println("\nThe database currently caches the following chapters:\n")
 	for c := range dbchapters {
@@ -38,9 +38,9 @@ func main() {
 	args := Init()
 	chapter := args[0]
 
-	DeleteChapter(ctx,chapter)
+	DeleteChapter(sst,chapter)
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 
 //**************************************************************
@@ -81,11 +81,11 @@ func Usage() {
 
 //******************************************************************
 
-func DeleteChapter(ctx SST.PoSST,chapter string) {
+func DeleteChapter(sst SST.PoSST,chapter string) {
 
 	qstr := fmt.Sprintf("select DeleteChapter('%s')",chapter)
 
-	row,err := ctx.DB.Query(qstr)
+	row,err := sst.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error running deletechapter function:",qstr,err)

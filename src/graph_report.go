@@ -27,15 +27,15 @@ func main() {
 	Init()
 
 	load_arrows := true
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
-	chaps := SST.GetDBChaptersMatchingName(ctx,CHAPTER)
+	chaps := SST.GetDBChaptersMatchingName(sst,CHAPTER)
 
 	for chap := range chaps {
-		AnalyzeGraph(ctx,chaps[chap],CONTEXT,STTYPES,DEPTH) 
+		AnalyzeGraph(sst,chaps[chap],CONTEXT,STTYPES,DEPTH) 
 	}
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 
 //**************************************************************
@@ -111,10 +111,10 @@ func Init() []string {
 
 //******************************************************************
 
-func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string,sttypes []int,depth int) {
+func AnalyzeGraph(sst SST.PoSST,chapter string,context []string,sttypes []int,depth int) {
 
 
-	adj,nodekey := SST.GetDBAdjacentNodePtrBySTType(ctx,sttypes,chapter,context,false)
+	adj,nodekey := SST.GetDBAdjacentNodePtrBySTType(sst,sttypes,chapter,context,false)
 	symb := SST.SymbolMatrix(adj)
 	sadj := SST.SymmetrizeMatrix(adj)
 	num := GetNumberOfLinks(adj)
@@ -135,7 +135,7 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string,sttypes []int,de
 			}
 		}
 	
-	sources,sinks := SST.GetDBSingletonBySTType(ctx,sttypes,chapter,context)
+	sources,sinks := SST.GetDBSingletonBySTType(sst,sttypes,chapter,context)
 
 	fmt.Print("\n\n* PROCESS ORIGINS / ROOT DEPENDENCIES / PATH SOURCES for (")
 	for st := range sttypes {
@@ -144,7 +144,7 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string,sttypes []int,de
 	fmt.Println(") in",chapter)
 	fmt.Println("")
 
-	PrintNodes(ctx,sources)
+	PrintNodes(sst,sources)
 
 	fmt.Println("")
 	fmt.Print("\n\n* FINAL END-STATES / PATH SINK NODES for (")
@@ -154,7 +154,7 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string,sttypes []int,de
 	fmt.Println(") in",chapter)
 	fmt.Println("")
 
-	PrintNodes(ctx,sinks)
+	PrintNodes(sst,sinks)
 
 	fmt.Println("")
 	fmt.Println("* DIRECTED LOOPS AND CYCLES (max depth < ",depth,"):\n")
@@ -177,7 +177,7 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string,sttypes []int,de
 			an[power],sn[power] = SST.SymbolicMultiply(an[power-1],adj,sn[power-1],symb)
 		}
 
-		loop,_ := AnalyzePowerMatrix(ctx,sn[power])
+		loop,_ := AnalyzePowerMatrix(sst,sn[power])
 
 		for m := range loop {
 			acyclic = false
@@ -197,24 +197,24 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string,sttypes []int,de
 	for st := range sttypes {
 		var ama map[SST.ArrowPtr][]SST.Appointment
 		
-		ama = SST.GetAppointedNodesBySTType(ctx,sttypes[st],context,chapter,2)
+		ama = SST.GetAppointedNodesBySTType(sst,sttypes[st],context,chapter,2)
 		
 		for arrowptr := range ama {
 			
-			arr_dir := SST.GetDBArrowByPtr(ctx,arrowptr)
+			arr_dir := SST.GetDBArrowByPtr(sst,arrowptr)
 			
 			// Appointment list
 			for n := 0; n < len(ama[arrowptr]); n++ {
 				
 				appointed_nptr := ama[arrowptr][n].NTo
-				appointed := SST.GetDBNodeByNodePtr(ctx,appointed_nptr)
+				appointed := SST.GetDBNodeByNodePtr(sst,appointed_nptr)
 				dim := len(ama[arrowptr][n].NFrom)
 				
 				fmt.Printf("\n   Appointer correlates -> %d appointed nodes (%s ...) in chapter \"%s\"\n\n",dim,appointed.S,chapter)
 				
 				// Appointers list
 				for m := range ama[arrowptr][n].NFrom {
-					node := SST.GetDBNodeByNodePtr(ctx,ama[arrowptr][n].NFrom[m])
+					node := SST.GetDBNodeByNodePtr(sst,ama[arrowptr][n].NFrom[m])
 					stname := SST.STTypeName(SST.STIndexToSTType(arr_dir.STAindex))
 					fmt.Printf("     %.40s --(%s : %s)--> %.40s...   - in context %v\n",node.S,arr_dir.Long,stname,appointed.S,context)
 				}
@@ -231,7 +231,7 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string,sttypes []int,de
 
 	fmt.Println("* SYMMETRIZED EIGENVECTOR CENTRALITY = FLOW RESERVOIR CAPACITANCE AT EQUILIBRIUM = \n")
 
-	PrintVector(ctx,evc,nodekey)
+	PrintVector(sst,evc,nodekey)
 
 	regions,evctop,path := SST.FindGradientFieldTop(sadj,evc)
 
@@ -244,7 +244,7 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string,sttypes []int,de
 
 	for reg := range regions {
 		fmt.Println("  - subregion of maximum",reg,"consisting of nodes",regions[reg])
-		PrintKeyNodes(ctx,regions[reg],nodekey)
+		PrintKeyNodes(sst,regions[reg],nodekey)
 	}
 
 	fmt.Println("\n* HILL-CLIMBING EVC-LAMDSCAPE GRADIENT PATHS:\n")
@@ -285,7 +285,7 @@ func GetNameDistribution(nodeptr []SST.NodePtr) [7]int {
 
 //**************************************************************
 
-func AnalyzePowerMatrix(ctx SST.PoSST,symbolic [][]string) (map[string]int,map[string][]int) {
+func AnalyzePowerMatrix(sst SST.PoSST,symbolic [][]string) (map[string]int,map[string][]int) {
 
 	var loop = make(map[string]int)
 	var memberlist = make(map[string][]int)
@@ -338,32 +338,32 @@ func AnalyzePowerMatrix(ctx SST.PoSST,symbolic [][]string) (map[string]int,map[s
 
 //**************************************************************
 
-func PrintNodes(ctx SST.PoSST,nptrs []SST.NodePtr) {
+func PrintNodes(sst SST.PoSST,nptrs []SST.NodePtr) {
 
 	for n := range nptrs {
-		node := SST.GetDBNodeByNodePtr(ctx,nptrs[n])
+		node := SST.GetDBNodeByNodePtr(sst,nptrs[n])
 		fmt.Printf("   - NPtr(%d,%d) -> %s\n",nptrs[n].Class,nptrs[n].CPtr,node.S)
 	}
 }
 
 //**************************************************************
 
-func PrintKeyNodes(ctx SST.PoSST,m []int,nodekey []SST.NodePtr) {
+func PrintKeyNodes(sst SST.PoSST,m []int,nodekey []SST.NodePtr) {
 
 	for member := range m {
 		nptr := nodekey[m[member]]
-		node := SST.GetDBNodeByNodePtr(ctx,nptr)
+		node := SST.GetDBNodeByNodePtr(sst,nptr)
 		fmt.Printf("     - where %d -> %s\n",m[member],node.S)
 	}
 }
 
 //**************************************************************
 
-func PrintVector(ctx SST.PoSST,vector []float32,nodekey []SST.NodePtr) {
+func PrintVector(sst SST.PoSST,vector []float32,nodekey []SST.NodePtr) {
 
 	for row := 0; row < len(vector); row++ {
 		nptr := nodekey[row]
-		node := SST.GetDBNodeByNodePtr(ctx,nptr)
+		node := SST.GetDBNodeByNodePtr(sst,nptr)
 		fmt.Printf("   ( %3.3f ) <- %d = %s\n",vector[row],row,node.S)
 	}
 	fmt.Println()

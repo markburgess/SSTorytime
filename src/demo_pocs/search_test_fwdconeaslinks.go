@@ -22,28 +22,28 @@ import (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	searchtext := "(limian)"
 	chaptext := "chinese"
 	context := []string{"city","exercise"}
 
-	Search(ctx,chaptext,context,searchtext)
+	Search(sst,chaptext,context,searchtext)
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 
 //******************************************************************
 
-func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
+func Search(sst SST.PoSST, chaptext string,context []string,searchtext string) {
 
-	start_set := SST.GetDBNodePtrMatchingName(ctx,searchtext,chaptext)
+	start_set := SST.GetDBNodePtrMatchingName(sst,searchtext,chaptext)
 	
 	for sttype := -SST.EXPRESS; sttype <= SST.EXPRESS; sttype++ {
 		
-		name :=  SST.GetDBNodeByNodePtr(ctx,start_set[0])
+		name :=  SST.GetDBNodeByNodePtr(sst,start_set[0])
 		
-		alt_paths,path_depth := SST.GetFwdPathsAsLinks(ctx,start_set[0],sttype,2)
+		alt_paths,path_depth := SST.GetFwdPathsAsLinks(sst,start_set[0],sttype,2)
 		
 		if alt_paths != nil {
 			
@@ -51,7 +51,7 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 			
 			for p := 0; p < path_depth; p++ {
 
-				SST.PrintLinkPath(ctx,alt_paths,p,"\nStory:","",nil)
+				SST.PrintLinkPath(sst,alt_paths,p,"\nStory:","",nil)
 			}
 		}
 	}

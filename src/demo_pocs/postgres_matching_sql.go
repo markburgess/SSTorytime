@@ -26,7 +26,7 @@ const (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 
 // Doesn't compile--remember method
@@ -64,7 +64,7 @@ func main() {
 		"      JOIN Node ON nptr=nfrom WHERE match=true AND matcha=true %s %s",
 		context,arrows,nm_col,chap_col)
 
-	row, err := ctx.DB.Query(qstr)
+	row, err := sst.DB.Query(qstr)
 
 	if err != nil {
 		fmt.Println("QUERY GetNodePtrMatchingNCC Failed",err,qstr)
@@ -97,7 +97,7 @@ func main() {
 		"  (SELECT NFrom,ctx,match_context(ctx,%s) AS match FROM NodeArrowNode)"+
 		"     SELECT DISTINCT ctx,chap,nfrom,S FROM matching_nodes JOIN Node ON nptr=nfrom  WHERE match=true and chap LIKE '%s'",set1,chapmatch)
 
-	row,err = ctx.DB.Query(qstr)
+	row,err = sst.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("FAILED \n",qstr,err)
@@ -112,5 +112,5 @@ func main() {
 
 	row.Close()
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }

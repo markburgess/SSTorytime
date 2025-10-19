@@ -23,16 +23,16 @@ var path [8][]string
 func main() {
 
 	load_arrows := true
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
-	Solve(ctx)
+	Solve(sst)
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }
 
 //******************************************************************
 
-func Solve(ctx SST.PoSST) {
+func Solve(sst SST.PoSST) {
 
 	// Contra colliding wavefronts as path integral solver
 
@@ -40,8 +40,8 @@ func Solve(ctx SST.PoSST) {
 
 	start_bc := "i6"
 
-	p1 := SST.GetDBNodePtrMatchingName(ctx,start_bc,"")
-	p2 := SST.GetDBNodePtrMatchingNCCS(ctx,start_bc,"",nil,nil,false,10)
+	p1 := SST.GetDBNodePtrMatchingName(sst,start_bc,"")
+	p2 := SST.GetDBNodePtrMatchingNCCS(sst,start_bc,"",nil,nil,false,10)
 
 	if Diff (p1,p2) {
 		fmt.Println("Failed",p1,p2)

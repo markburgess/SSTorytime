@@ -16,11 +16,11 @@ import (
 func main() {
 
 	load_arrows := false
-	ctx := SST.Open(load_arrows)
+	sst := SST.Open(load_arrows)
 
 	qstr := "drop function match_context"
 
-	row,err := ctx.DB.Query(qstr)
+	row,err := sst.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("FAILED \n",qstr,err)
@@ -38,7 +38,7 @@ func main() {
 		"END ;" +
 		"$fn$ LANGUAGE plpgsql;"
 
-	row,err = ctx.DB.Query(qstr)
+	row,err = sst.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("FAILED \n",qstr,err)
@@ -56,7 +56,7 @@ func main() {
 
 	qstr = fmt.Sprintf("SELECT match_context(%s,%s)",set1,set2)
 
-	row,err = ctx.DB.Query(qstr)
+	row,err = sst.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("FAILED \n",qstr,err)
@@ -77,5 +77,5 @@ func main() {
 //   SELECT * FROM matching_nodes WHERE match = true
 
 
-	SST.Close(ctx)
+	SST.Close(sst)
 }

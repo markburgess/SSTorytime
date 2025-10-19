@@ -193,10 +193,10 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 		ambient, key, _ := SST.GetTimeContext()
 
 		if len(name) == 0 || name == "\\remind" {
-			name = "any \\chapter reminders \\context " + key + " " + ambient
+			name = "any \\chapter reminders \\context " + key + " " + ambient + " \\limit 20"
 		}
 
-		if len(name) == 0 || name == "\\help" {
+		if name == "\\help" {
 			name = "\\notes \\chapter \"help and search\" \\limit 40"
 		}
 

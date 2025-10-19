@@ -1163,7 +1163,8 @@ func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
 	link.Dst = toptr // fill in the last part of the reference
 
 	// Idempotently add any new context strings to the current list
-	// between from and to nodes
+	// between from and to nodes -- stindex tells us which link type, so implicit in the arrow type
+	// the empty arrow is used to record node context, which is type LEADSTO
 
 	switch frclass {
 
@@ -2753,8 +2754,8 @@ func DefineStoredFunctions(ctx PoSST) {
 		"BEGIN \n" +
 
 		// If the db has no context but the search does, then no need to waste any time
-		"IF thisctxptr = 0 AND array_length(user_set,1) IS NOT NULL THEN\n"+
-		"   RETURN false;\n"+
+		"IF thisctxptr = 0 THEN\n"+
+		"   RETURN true;\n" +
 		"END IF;\n"+
 
 		// Convert context ptr into a list from the new factored cache
@@ -3771,7 +3772,7 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 		return GetMemoryNodeFromPtr(im_nptr)
 	}
 
-	// This ony works if we insert non-null arrays in initialization
+	// This ony works if we insert non-null arrays like '[]' during initialization
 	cols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
 	qstr := fmt.Sprintf("select L,S,Chap,%s from Node where NPtr='(%d,%d)'::NodePtr AND NOT L=0",cols,db_nptr.Class,db_nptr.CPtr)
 
@@ -7351,7 +7352,10 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 						p++
 						ult := strings.Split(cmd_parts[c][pp],",")
 						for u := range ult {
-							param.Context = append(param.Context,DeQ(ult[u]))
+							class := strings.TrimSpace(DeQ(ult[u]))
+							if len(class) > 0 {
+								param.Context = append(param.Context,class)
+							}
 						}
 					}
 				} else {
@@ -7698,7 +7702,7 @@ func DoNowt(then time.Time) (string,string) {
 	// so prefix temporal classes with a :
 
 	year := fmt.Sprintf("Yr%d",then.Year())
-	month := GR_MONTH_TEXT[int(then.Month())-1]
+	month := GR_MONTH_TEXT[int(then.Month())]
 	day := then.Day()
 	hour := fmt.Sprintf("Hr%02d",then.Hour())
 	quarter := fmt.Sprintf("Qu%d",then.Minute()/15 + 1)

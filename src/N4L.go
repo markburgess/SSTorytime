@@ -317,7 +317,9 @@ func NewFile(filename string) {
 	FWD_ARROW = ""
 	BWD_ARROW = ""
 	SECTION_STATE = ""
-	CONTEXT_STATE = make(map[string]bool)
+	ResetContextState()
+	Box("Reset context","any")
+	ContextEval("any","=")
 }
 
 //**************************************************************
@@ -1138,9 +1140,9 @@ func SkipWhiteSpace(src []rune, pos int) int {
 
 func AddMandatory() {
 
-	SST.RegisterContext(nil,[]string{"any"})  // Register and empty
+	SST.RegisterContext(nil,[]string{"any"})
 
-	// empty link for orphans to retain context
+	// empty link for orphans to retain context - NB, this convention is used a lot in context handling EMPTY == LEADSTO
 
 	arr := SST.InsertArrowDirectory("leadsto","empty","debug","+")
 	inv := SST.InsertArrowDirectory("leadsto","void","unbug","-")
@@ -1420,7 +1422,7 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		}
 
 		this_iptr := HandleNode(this_item)
-		IdempContextLink(this_iptr)
+		IdempAddContextToNode(this_iptr)
 		LinkUpStorySequence(this_item)
 	}
 }
@@ -1561,7 +1563,7 @@ func IdempAddNode(s string,intended_sequence bool) (SST.NodePtr,string) {
 
 //**************************************************************
 
-func IdempContextLink(ptr SST.NodePtr) {
+func IdempAddContextToNode(nptr SST.NodePtr) {
 
 	// add a nullpotent link containing root node for 
 	// context membership, in case it's a singleton
@@ -1571,7 +1573,8 @@ func IdempContextLink(ptr SST.NodePtr) {
 	empty.Ctx = SST.RegisterContext(CONTEXT_STATE,nil)
 	empty.Arr = 0
 	empty.Wgt = 1
-	SST.AppendLinkToNode(ptr,empty,nowhere)
+
+	SST.AppendLinkToNode(nptr,empty,nowhere)
 }
 
 //**************************************************************
@@ -2167,6 +2170,13 @@ func GetMemChapters() []string {
 // Context logic
 //**************************************************************
 
+func ResetContextState() {
+
+	CONTEXT_STATE = make(map[string]bool)
+}
+
+//**************************************************************
+
 func ContextEval(s,op string) {
 
 	expr := CleanExpression(s)
@@ -2182,7 +2192,7 @@ func ContextEval(s,op string) {
 	switch op {
 		
 	case "=": 
-		CONTEXT_STATE = make(map[string]bool)
+		ResetContextState()
 		ModContext(or_parts,"+")
 	default:
 		ModContext(or_parts,op)

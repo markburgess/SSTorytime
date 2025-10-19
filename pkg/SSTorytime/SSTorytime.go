@@ -5801,20 +5801,6 @@ func NextLinkArrow(sst PoSST,path []Link,arrows []ArrowPtr) string {
 }
 
 // **************************************************************************
-
-func IdempAddNote(list []Orbit, item Orbit) []Orbit {
-
-	for o := range list {
-		if list[o].Dst == item.Dst && list[o].Arrow == item.Arrow &&
-			list[o].Text == item.Text {
-			return list
-		}
-	}
-
-	return append(list,item)
-}
-
-// **************************************************************************
 //
 // Part 3: Model data retrieval, and data marshalling, with JSON etc
 //
@@ -5895,13 +5881,13 @@ func GetNodeOrbit(sst PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TO
 
 	sweep,_ := GetEntireConePathsAsLinks(sst,"any",nptr,probe_radius,limit)
 
-	var notes [ST_TOP][]Orbit
+	var satellites [ST_TOP][]Orbit
 
 	// Organize by the leading nearest-neighbour by vector/link type
 
 	for stindex := 0; stindex < ST_TOP; stindex++ {
 
-		// Sweep different radial paths
+		// Sweep different radial paths [angle][depth]
 
 		for angle := 0; angle < len(sweep); angle++ {
 
@@ -5928,7 +5914,7 @@ func GetNodeOrbit(sst PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TO
 						continue
 					}
 
-					notes[stindex] = IdempAddNote(notes[stindex],nt)
+					satellites[stindex] = IdempAddSatellite(satellites[stindex],nt)
 
 					// are there more satellites at this angle?
 
@@ -5953,7 +5939,7 @@ func GetNodeOrbit(sst PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TO
 						arthis := STIndexToSTType(arrow.STAindex)
 						// No backtracking
 						if arthis != -arprev {	
-							notes[stindex] = IdempAddNote(notes[stindex],nt)
+							satellites[stindex] = IdempAddSatellite(satellites[stindex],nt)
 							arprev = arthis
 						}
 					}
@@ -5962,7 +5948,22 @@ func GetNodeOrbit(sst PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TO
 		}
 	}
 
-	return notes
+	return satellites
+}
+
+// **************************************************************************
+
+func IdempAddSatellite(list []Orbit, item Orbit) []Orbit {
+
+	// crude check but effective, since the list is fairly short unless the graph is sick
+
+	for o := range list {
+		if list[o].Dst == item.Dst && list[o].Arrow == item.Arrow && list[o].Text == item.Text {
+			return list
+		}
+	}
+
+	return append(list,item)
 }
 
 // **************************************************************************
@@ -6435,34 +6436,34 @@ func PrintNodeOrbit(sst PoSST, nptr NodePtr,limit int) {
 	fmt.Println("\tin chapter:",node.Chap)
 	fmt.Println()
 
-	notes := GetNodeOrbit(sst,nptr,"",limit)
+	satellites := GetNodeOrbit(sst,nptr,"",limit)
 
-	PrintLinkOrbit(notes,EXPRESS,0)
-	PrintLinkOrbit(notes,-EXPRESS,0)
-	PrintLinkOrbit(notes,-CONTAINS,0)
-	PrintLinkOrbit(notes,LEADSTO,0)
-	PrintLinkOrbit(notes,-LEADSTO,0)
-	PrintLinkOrbit(notes,NEAR,0)
+	PrintLinkOrbit(satellites,EXPRESS,0)
+	PrintLinkOrbit(satellites,-EXPRESS,0)
+	PrintLinkOrbit(satellites,-CONTAINS,0)
+	PrintLinkOrbit(satellites,LEADSTO,0)
+	PrintLinkOrbit(satellites,-LEADSTO,0)
+	PrintLinkOrbit(satellites,NEAR,0)
 
 	fmt.Println()
 }
 
 // **************************************************************************
 
-func PrintLinkOrbit(notes [ST_TOP][]Orbit,sttype int,indent_level int) {
+func PrintLinkOrbit(satellites [ST_TOP][]Orbit,sttype int,indent_level int) {
 
 	t := STTypeToSTIndex(sttype)
 
-	for n := range notes[t] {		
+	for n := range satellites[t] {		
 
-		r := notes[t][n].Radius + indent_level
+		r := satellites[t][n].Radius + indent_level
 
-		if notes[t][n].Ctx != "" {
-			txt := fmt.Sprintf(" -    (%s) - %s  \t.. in the context of %s\n",notes[t][n].Arrow,notes[t][n].Text,notes[t][n].Ctx)
+		if satellites[t][n].Ctx != "" {
+			txt := fmt.Sprintf(" -    (%s) - %s  \t.. in the context of %s\n",satellites[t][n].Arrow,satellites[t][n].Text,satellites[t][n].Ctx)
 			text := Indent(LEFTMARGIN * r) + txt
 			ShowText(text,SCREENWIDTH)
 		} else {
-			txt := fmt.Sprintf(" -    (%s) - %s\n",notes[t][n].Arrow,notes[t][n].Text)
+			txt := fmt.Sprintf(" -    (%s) - %s\n",satellites[t][n].Arrow,satellites[t][n].Text)
 			text := Indent(LEFTMARGIN * r) + txt
 			ShowText(text,SCREENWIDTH)
 		}

@@ -196,7 +196,6 @@ let request = new Request(requestURL);
 
 try
    {
-   RerenderMath();
    let response = await fetch(request);
    startHipnotize();
    let mynote = await response.json();
@@ -242,7 +241,6 @@ function AppRouter()
 
 function DoHeader(obj)
 {
-RerenderMath();
 // Clear the main panel here, as it's common to all
 let clearscreen = document.querySelector("main");
 clearscreen.innerHTML = "";
@@ -1375,7 +1373,7 @@ if (counter == 0)
    let ctxlink = document.createElement("a");
    ctxlink.textContent = '"' + event.Context + '"   ';
 
-   ctxlink.onclick = function ()
+   ctxlink.onclick = function()
       {
       sendLinkSearch('any \\context "' + CtxSplice(event.Context) + '"');
       };
@@ -1624,7 +1622,7 @@ return false;
 
 function IsMath(str)
 {
-if (str.includes("(") && str.includes(")"))
+if (str.includes("\\(") && str.includes("\\)"))
    {
    return true;
    }

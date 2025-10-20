@@ -31,7 +31,7 @@ Compatibility equivalence 	NFKC 	NFKD"
   ::  removing accents and diacritics ::
 
   The unaccent package in postgres
-         "    (in linux pkg) postgres-contrib
+         "    (in-linux-pkg) postgres-contrib
 
 # this contains parentheses so we have to quote it
 
@@ -49,7 +49,7 @@ The compatibility normal forms, NFKC and NFKD, will map many visually nearly ide
 
   :: how to deal in postgres ::
 
-     "unaccent()" function (for) removing accents from unicode in postgres database
+     "unaccent()" function (use-for) removing accents from unicode in postgres database
 
      $PREV.2  (e.g.) "RETURN translate($1, 'éçàêè...', 'ecaee...') ;"
 	"     (e.g.)   "select S from Node where translate(S,'ǎáà','aaa') like '%shang%';

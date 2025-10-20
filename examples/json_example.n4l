@@ -1,0 +1,96 @@
+
+-json example
+
+ # JSON is hierarchical. You miight be tempted to atomize it as a schema,
+ # but that's not what a graph is ...
+
+ // wrap the whole in single quotes since it contains double quote
+
+   'My json object representation is an EVENT {
+   "name": "Example API Response",
+   "version": "1.0.0",
+   "status": "success",
+
+   "data": {
+
+      "users": [
+      {
+        "id": 1,
+        "username": "alice",
+        "email": "alice@example.com",
+        "active": true,
+        "roles": ["admin", "user"]
+      },
+      {
+        "id": 2,
+        "username": "bob",
+        "email": "bob@example.com",
+        "active": false,
+        "roles": ["user"]
+      }
+    ],
+ 
+   "metadata": {
+      "total": 2,
+      "page": 1,
+      "limit": 10
+    }
+  },
+  "timestamp": "2025-10-17T14:30:00Z"
+}'
+
+
+       " (has name)    Example API Response
+       " (has version) 1.0.0 
+       " (has status)  success
+       " (has timestamp) "2025-10-17T14:30:00Z"
+
+ // wrap the data in single quotes since it contains double quote
+
+@data  " (has data) '{ "users": [
+      {
+        "id": 1,
+        "username": "alice",
+        "email": "alice@example.com",
+        "active": true,
+        "roles": ["admin", "user"]
+      },
+      {
+        "id": 2,
+        "username": "bob",
+        "email": "bob@example.com",
+        "active": false,
+        "roles": ["user"]
+      }
+    ],
+ 
+   "metadata": {
+      "total": 2,
+      "page": 1,
+      "limit": 10
+    }
+  }'
+
+
+  "  (coll-users) '[
+      {
+        "id": 1,
+        "username": "alice",
+        "email": "alice@example.com",
+        "active": true,
+        "roles": ["admin", "user"]
+      },
+      {
+        "id": 2,
+        "username": "bob",
+        "email": "bob@example.com",
+        "active": false,
+        "roles": ["user"]
+      }
+    ]'
+
+  "  (has metadata) '{
+      "total": 2,
+      "page": 1,
+      "limit": 10
+    }'

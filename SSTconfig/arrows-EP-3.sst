@@ -16,7 +16,20 @@
  + has example       (e.g.)         - is an example of     (ex)
  + has no example    (noex)         - is not an example of (not-ex)
  + has abbreviation  (abbrev)       - is short for         (short for)
+ + has name          (name)         - is the name of       (nom-de)
  + has version       (version)      - is a version of      (is-version)
+ + has status        (status)       - is the status of     (status-of)
+ + has data          (data)         - is data for          (data-for)
+ + has metadata      (metadata)     - is metadata for      (metadata-for)
+ + has id            (id)           - is an id for         (id-for)
+ + has username      (username)     - is the username for  (uname-for)
+ + has a number of roles (roles)    - is set of roles for  (roles-for)
+ + has a role        (role)         - is a role for        (role for)
+ + has the role of   (has role)     - is a role of         (role-of)
+ + has total value   (total)        - is the total value of (total-for)
+ + has page number   (pagenr)       - is the page number of (pagenr-of)
+ + has a limit of    (limit)        - is a limit for       (limit-for)
+ + has timestamp     (timestamp)    - is a timestamp for   (tstampfor)
  + release format    (relform)      - has release          (has-rel)
  + recording date    (recdate)      - date for recording   (date-rec)
  + release date      (reldate)      - date for release     (date-rel)
@@ -40,14 +53,16 @@
 
  :: scientific and technical annotations ::
 
-   + has value               (hasX)    - is the value of           (isXof)
-   + may have value          (maybeX)  - is the possible value for (mXof)
-   + has frequency           (freq)    - is the frequency of       (freq-of)
-   + is characterized by     (state)   - is a/the state of         (state-of)
-   + sample rate             (srate)   - is the sample quality for (sr-of)
-   + has tempo               (tempo)   - is the tempo of           (temp-of)
-
-   + is expressed in formula (formula) - is a formula for (isformula)
+   + has value               (hasX)    - is the value of            (isXof)
+   + may have value          (maybeX)  - is the possible value for  (mXof)
+   + has frequency           (freq)    - is the frequency of        (freq-of)
+   + is characterized by     (state)   - is a/the state of          (state-of)
+   + sample rate             (srate)   - is the sample quality for  (sr-of)
+   + has tempo               (tempo)   - is the tempo of            (temp-of)
+   + has arxiv reference     (arxiv)   - is the arxiv reference for (arxiv-for)
+   + has bibtex citation     (bib-cite)- is a bibtex citation label for (bibtex-for)
+   + has abstract            (abstract)- is an abstract for         (abstr-for)
+   + is expressed in formula (formula) - is a formula for           (isformula)
 
  :: condition, state ::
 
@@ -69,7 +84,7 @@
  :: steady state relationships ::
 
  + maintains           (maintains)  - is maintained by (maintained-by)  # steady state case
- + is the author of    (author-of)  - is authored by   (author)
+ + has author          (by)         - is the author of (author-of)
  + wrote               (wrote)      - written by       (written)  
  + invented            (invent)     - invented by      (invent-by)
  + is the publisher of (published)  - was published by (pub-by)
@@ -93,7 +108,7 @@
  + might be used for (perhaps used)  - is a possible use of (perhaps useof)
 
  + pending question            (question)  - is an unresolved question about (has-quest)
- + status within investigation (status)    - status of evidence (status-of)
+ + status within investigation (stateinv)  - status of evidence (statevid)
 
 
  + key problem                 (problem)    - is a problem associated with (isproblem)
@@ -113,6 +128,9 @@
  + means              (means)      - is meant by           (meansb)
  + promises           (promise)    - is promised by        (prom-by)
  + represents/models  (repr)       - is represented/modelled by (repr-by)
+ + make an offer of   (offering)   - is an offer by        (offer-by)       
+ + is willing to accept (accepting)- may be accepted by    (accept-by)
+ + makes assessments of (assesses) - is an assessment of   (assess-of)
 
  + obeys the rule (rule)      - is a rule for        (rule4)
  + has aspect     (aspect)    - is an aspect of      (aspect of)
@@ -132,10 +150,9 @@
  # Here we see type classifiers in action
 
  + is called       (called)  - is the appellation of         (appel)
- + has name        (name)    - is the name of                (nom-de)
  + has family name (family)  - is the family name of         (fam-nom-for)
  + has identifier  (ident)   - is an identifier for          (indent-for)
- + is moniker for  (moniker) - is the identity of            (id-for)
+ + is moniker for  (moniker) - is the identity of            (mnk-for)
 
  + is based in     (based)    - is the base of operations for (base-of)
  + is an organization in (org)     - is the home of organization (has-org)
@@ -150,7 +167,6 @@
 
  + has case              (case)       - is a case of (case of)
  + refers to             (ref)        - may be referred to as (refas)
- + has role              (role)       - is the role of (isrole)
  + has employment status (emplstatus) - employment status of (emplstatof)
 
  + has the structure of  (hasstruct)  - structure found in (structex)
@@ -173,7 +189,7 @@
 
  + has actor/subject role   (has-act)   - is the actor/subject role in   (is-act)
  + has affected object role (has-obj)   - is the affected object role in (is-obj)
-
+ + has an employer          (has-empl)  - is the employer of (empl-of)
  + reported                 (report)    - reported by (repby)
  + has possible motive      (motive)    - is a possible motive for (is-motive)
 

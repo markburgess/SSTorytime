@@ -14,7 +14,7 @@
  + has no part        (no-pt)    - is not part of       (not-pt-of)
  + has ingredient     (ingred)   - is an ingredient of  (ingred-of)
 
- + does not contain   (has no)   - is not from set    (is not)
+ + does not contain   (has no)   - is not from set     (is not)
  + is a set of        (setof)    - is part of the set  (in-set) 
  + is a group of      (grp-of)   - is an element of    (in-grp)
  + is a herd of       (herd)     - is part of herd     (in-herd)
@@ -26,7 +26,10 @@
 
  + is an umbrella for (umbrella) - under the aegis of  (aegis)
  + is the company of  (company)  - works for           (works)
- + is the employer of (employer)   - is an employee of (employee)
+ # employer, however, is a role not a container
+
+ + contains collection of users (coll-users) - is a collection of users belonging to (is-user-coll)
+ + contains user                (user)       - is a user in (is-user)
 
   :: descriptive ::
 
@@ -43,6 +46,7 @@
 
  + occurs within            (occurs)      - situates occurrences of (occurence-of)
  + is a shared resource for (shared-by)   - shares resource         (shares)
+ + linux package contains (pkg-contains)  - is part of linux package (in-linux-pkg)
 
   :: implicit ::
 

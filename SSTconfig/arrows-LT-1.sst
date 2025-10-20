@@ -12,18 +12,18 @@
 
     :: motion, action ::
 
-  + brings about      (brings)    - was brought about by (brought-by)
+  + next is              (next)      - previous was (prev)
+  + brings about         (brings)    - was brought about by (brought-by)
+  + leads to             (fwd)       - comes from           (bwd)
+  + from which we derive (derive)    - derives from         (derive-fr)
+  + leads ahead to       (fwd1)      - leads back to        (bwd1)
+  + succeeds             (succ1)     - is succeeded by      (succ-by)
+  + precedes             (prec)      - is preceded by       (prec-by)
+  + succeeded by         (succ2)     - preceded by          (pre-by)
+  + comes before         (bfr)       - comes after          (after)
+  + supplies             (suppl)     - has been supplied by (suppl-by)
 
-  + leads to          (fwd)       - comes from           (bwd)
-  + from which we derive (derive) - derives from         (derive-fr)
-  + leads ahead to    (fwd1)      - leads back to        (bwd1)
-  + succeeds          (succ1)     - is succeeded by      (succ-by)
-  + precedes          (prec)      - is preceded by       (prec-by)
-  + succeeded by      (succ2)     - preceded by          (pre-by)
-  + comes before      (bfr)       - comes after          (after)
-  + supplies          (suppl)     - has been supplied by (suppl-by)
-
-  + evolved to        (evolve)    - evolved from         (evolve-fr)
+  + evolved to           (evolve)    - evolved from         (evolve-fr)
 
     :: conditional transitions :: 
 

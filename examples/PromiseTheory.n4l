@@ -5,8 +5,8 @@
 
   :: promise of the first kind ::
 
-  X (offers)  promise offer body text unconditionally
-  Y (accepts) promise acceptance body text
+  X (offering)  promise offer body text unconditionally
+  Y (accepting) promise acceptance body text
 
   promise offer body text (expresses) ham
               "           (expresses) eggs
@@ -17,8 +17,8 @@
   promise acceptance body text (expresses) cabbage
               "           (has intended promiser) any
 
-  third party (observes) promise offer body text
-         "    (ovserves) promise requirement body text
+  third party (assesses) promise offer body text
+         "    (assesses) promise requirement body text
          "    (may be influenced by) promise offer body text
          "    (may be influenced by) promise acceptance body text
          "    (may be influenced by) Event: Promise from X to Y accepted

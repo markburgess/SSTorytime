@@ -40,11 +40,11 @@ Adam (fr) Company of Friends
   "  (fr) Taylor Swallow
 
 
-Company of Friends (employs) Robo1 
-         "         (employs) Robo2
-         "         (employs) Bot1
-         "         (employs) Bot2
-         "         (employs) Bot3
-         "         (employs) Bot4
-         "         (employs) Rob1Bot21
+Company of Friends (empl-of) Robo1 
+         "         (empl-of) Robo2
+         "         (empl-of) Bot1
+         "         (empl-of) Bot2
+         "         (empl-of) Bot3
+         "         (empl-of) Bot4
+         "         (empl-of) Rob1Bot21
 

@@ -1,10 +1,14 @@
 
 -ownership
 
+ # This file is an example of something that doesn't work
+ # ownership, employment etc are relations that are non-atomic
+ # ... will finish this example TBD
+
  :: hometown ::
 
-  mark (owns,20) 123, Electric Ave, Old Pork.
-  sarah (owns,35)    "
+  mark       (owns,20) 123, Electric Ave, Old Pork.
+  sarah      (owns,35)    "
   Green Bank (owns,45) "
 
  :: city ::

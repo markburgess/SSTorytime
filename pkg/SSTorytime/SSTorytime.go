@@ -5871,99 +5871,88 @@ func GetSequenceContainers(sst PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, s
 
 // **************************************************************************
 
-func GetNodeOrbit(sst PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TOP][]Orbit {
-
+func GetNodeOrbit(sst PoSST, nptr NodePtr, exclude_vector string, limit int) [ST_TOP][]Orbit {
+	
 	// radius = 0 is the starting node
 
 	const probe_radius = 3
 
 	// Find the orbiting linked nodes of NPtr, start with properties of node
 
-	sweep,_ := GetEntireConePathsAsLinks(sst,"any",nptr,probe_radius,limit)
+	sweep, _ := GetEntireConePathsAsLinks(sst, "any", nptr, probe_radius, limit)
 
 	var satellites [ST_TOP][]Orbit
 	var thread_wg sync.WaitGroup
 
-	// Organize by the leading nearest-neighbour by vector/link type
-
-	thread_result := make(chan []Orbit)
-
+	// Launch all goroutines first, then collect results
 	for stindex := 0; stindex < ST_TOP; stindex++ {
-
 		thread_wg.Add(1)
-		go AssembleSatellitesBySTtype(sst,&thread_wg,thread_result,stindex,satellites[stindex],sweep,exclude_vector,probe_radius,limit)
-		satellites[stindex] = <- thread_result
+		go func(idx int) {
+			defer thread_wg.Done()
+			satellites[idx] = AssembleSatellitesBySTtype(sst, idx, satellites[idx], sweep, exclude_vector, probe_radius, limit)
+		}(stindex)
 	}
 
+	// Wait for all goroutines to complete
 	thread_wg.Wait()
 
 	return satellites
 }
 
-// **************************************************************************
-
-func AssembleSatellitesBySTtype(sst PoSST, wg *sync.WaitGroup, result chan []Orbit,stindex int,satellite []Orbit,sweep [][]Link,exclude_vector string,probe_radius int,limit int) {
-
-	defer wg.Done()  // threading
-
-	// Sweep different radial paths [angle][depth]
+func AssembleSatellitesBySTtype(sst PoSST, stindex int, satellite []Orbit, sweep [][]Link, exclude_vector string, probe_radius int, limit int) []Orbit {
 	
+	// Sweep different radial paths [angle][depth]
+
 	for angle := 0; angle < len(sweep); angle++ {
-		
 		// len(sweep[angle]) is the length of the probe path at angle
-		
+
 		if sweep[angle] != nil && len(sweep[angle]) > 1 {
-			
+
 			const nearest_satellite = 1
 			start := sweep[angle][nearest_satellite]
-			
-			arrow := GetDBArrowByPtr(sst,start.Arr)
-			
+
+			arrow := GetDBArrowByPtr(sst, start.Arr)
+
 			if arrow.STAindex == stindex {
+				txt := GetDBNodeByNodePtr(sst, start.Dst)
 
-				txt := GetDBNodeByNodePtr(sst,start.Dst)
+				var nt Orbit
 
-				var nt Orbit				
 				nt.Arrow = arrow.Long
 				nt.STindex = arrow.STAindex
 				nt.Dst = start.Dst
 				nt.Text = txt.S
-				if txt.I[LEADSTO] != nil {
-					nt.Ctx = GetContext(txt.I[LEADSTO][0].Ctx)  // node context
-				} else {
-					nt.Ctx = "any"
-				}
 				nt.Radius = 1
 				if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
 					continue
 				}
-				
-				satellite = IdempAddSatellite(satellite,nt)
-				
+
+				satellite = IdempAddNote(satellite, nt)
+
 				// are there more satellites at this angle?
-				
+
 				for depth := 2; depth < probe_radius && depth < len(sweep[angle]); depth++ {
-					
+
 					arprev := STIndexToSTType(arrow.STAindex)
 					next := sweep[angle][depth]
-					arrow = GetDBArrowByPtr(sst,next.Arr)
-					subtxt := GetDBNodeByNodePtr(sst,next.Dst)
-					
+					arrow = GetDBArrowByPtr(sst, next.Arr)
+					subtxt := GetDBNodeByNodePtr(sst, next.Dst)
+
 					if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
 						break
 					}
-					
+
 					nt.Arrow = arrow.Long
 					nt.STindex = arrow.STAindex
 					nt.Dst = next.Dst
 					nt.Ctx = GetContext(next.Ctx)
 					nt.Text = subtxt.S
 					nt.Radius = depth
-					
+
 					arthis := STIndexToSTType(arrow.STAindex)
 					// No backtracking
-					if arthis != -arprev {	
-						satellite = IdempAddSatellite(satellite,nt)
+					if arthis != -arprev {
+						satellite = IdempAddNote(satellite, nt)
 						arprev = arthis
 					}
 				}
@@ -5971,7 +5960,7 @@ func AssembleSatellitesBySTtype(sst PoSST, wg *sync.WaitGroup, result chan []Orb
 		}
 	}
 
-	result <- satellite
+	return satellite
 }
 
 // **************************************************************************

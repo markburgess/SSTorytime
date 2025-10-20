@@ -5873,82 +5873,99 @@ func GetSequenceContainers(sst PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, s
 
 func GetNodeOrbit(sst PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TOP][]Orbit {
 
-	// Find the orbiting linked nodes of NPtr, start with properties of node
+	// radius = 0 is the starting node
 
 	const probe_radius = 3
 
-	// radius = 0 is the starting node
+	// Find the orbiting linked nodes of NPtr, start with properties of node
 
 	sweep,_ := GetEntireConePathsAsLinks(sst,"any",nptr,probe_radius,limit)
 
 	var satellites [ST_TOP][]Orbit
+	var thread_wg sync.WaitGroup
 
 	// Organize by the leading nearest-neighbour by vector/link type
 
 	for stindex := 0; stindex < ST_TOP; stindex++ {
 
-		// Sweep different radial paths [angle][depth]
+		thread_result := make(chan []Orbit)
+		thread_wg.Add(1)
+		go AssembleSatellitesBySTtype(sst,&thread_wg,thread_result,stindex,satellites[stindex],sweep,exclude_vector,probe_radius,limit)
+		satellites[stindex] = <- thread_result
+	}
 
-		for angle := 0; angle < len(sweep); angle++ {
+	thread_wg.Wait()
 
-			// len(sweep[angle]) is the length of the probe path at angle
+	return satellites
+}
 
-			if sweep[angle] != nil && len(sweep[angle]) > 1 {
+// **************************************************************************
 
-				const nearest_satellite = 1
-				start := sweep[angle][nearest_satellite]
+func AssembleSatellitesBySTtype(sst PoSST, wg *sync.WaitGroup, result chan []Orbit,stindex int,satellite []Orbit,sweep [][]Link,exclude_vector string,probe_radius int,limit int) {
 
-				arrow := GetDBArrowByPtr(sst,start.Arr)
+	defer wg.Done()  // threading
 
-				if arrow.STAindex == stindex {
-					txt := GetDBNodeByNodePtr(sst,start.Dst)
-
-					var nt Orbit
-
-					nt.Arrow = arrow.Long
-                                        nt.STindex = arrow.STAindex
-					nt.Dst = start.Dst
-					nt.Text = txt.S
-					nt.Radius = 1
+	// Sweep different radial paths [angle][depth]
+	
+	for angle := 0; angle < len(sweep); angle++ {
+		
+		// len(sweep[angle]) is the length of the probe path at angle
+		
+		if sweep[angle] != nil && len(sweep[angle]) > 1 {
+			
+			const nearest_satellite = 1
+			start := sweep[angle][nearest_satellite]
+			
+			arrow := GetDBArrowByPtr(sst,start.Arr)
+			
+			if arrow.STAindex == stindex {
+				txt := GetDBNodeByNodePtr(sst,start.Dst)
+				
+				var nt Orbit
+				
+				nt.Arrow = arrow.Long
+				nt.STindex = arrow.STAindex
+				nt.Dst = start.Dst
+				nt.Text = txt.S
+				nt.Radius = 1
+				if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
+					continue
+				}
+				
+				satellite = IdempAddSatellite(satellite,nt)
+				
+				// are there more satellites at this angle?
+				
+				for depth := 2; depth < probe_radius && depth < len(sweep[angle]); depth++ {
+					
+					arprev := STIndexToSTType(arrow.STAindex)
+					next := sweep[angle][depth]
+					arrow = GetDBArrowByPtr(sst,next.Arr)
+					subtxt := GetDBNodeByNodePtr(sst,next.Dst)
+					
 					if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
-						continue
+						break
 					}
-
-					satellites[stindex] = IdempAddSatellite(satellites[stindex],nt)
-
-					// are there more satellites at this angle?
-
-					for depth := 2; depth < probe_radius && depth < len(sweep[angle]); depth++ {
-
-						arprev := STIndexToSTType(arrow.STAindex)
-						next := sweep[angle][depth]
-						arrow = GetDBArrowByPtr(sst,next.Arr)
-						subtxt := GetDBNodeByNodePtr(sst,next.Dst)
-
-						if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
-							break
-						}
-
-						nt.Arrow = arrow.Long
-						nt.STindex = arrow.STAindex
-						nt.Dst = next.Dst
-						nt.Ctx = GetContext(next.Ctx)
-						nt.Text = subtxt.S
-						nt.Radius = depth
-
-						arthis := STIndexToSTType(arrow.STAindex)
-						// No backtracking
-						if arthis != -arprev {	
-							satellites[stindex] = IdempAddSatellite(satellites[stindex],nt)
-							arprev = arthis
-						}
+					
+					nt.Arrow = arrow.Long
+					nt.STindex = arrow.STAindex
+					nt.Dst = next.Dst
+					nt.Ctx = GetContext(next.Ctx)
+					nt.Text = subtxt.S
+					nt.Radius = depth
+					
+					arthis := STIndexToSTType(arrow.STAindex)
+					// No backtracking
+					if arthis != -arprev {	
+						satellite = IdempAddSatellite(satellite,nt)
+						arprev = arthis
 					}
 				}
 			}
 		}
 	}
 
-	return satellites
+	result <- satellite
 }
 
 // **************************************************************************

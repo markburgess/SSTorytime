@@ -5886,9 +5886,10 @@ func GetNodeOrbit(sst PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TO
 
 	// Organize by the leading nearest-neighbour by vector/link type
 
+	thread_result := make(chan []Orbit)
+
 	for stindex := 0; stindex < ST_TOP; stindex++ {
 
-		thread_result := make(chan []Orbit)
 		thread_wg.Add(1)
 		go AssembleSatellitesBySTtype(sst,&thread_wg,thread_result,stindex,satellites[stindex],sweep,exclude_vector,probe_radius,limit)
 		satellites[stindex] = <- thread_result

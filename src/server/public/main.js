@@ -558,7 +558,7 @@ for (let chpblk of obj.Content)
          let link = document.createElement("a");
          link.onclick = function ()
             {
-            sendLinkSearch("any \\context " + CtxSplice(ctx.Text));
+            sendLinkSearch("any \\chapter "+ chpblk.Chapter +" \\context " + CtxSplice(ctx.Text));
             };
 
          link.id = "toc-frag";
@@ -584,7 +584,7 @@ for (let chpblk of obj.Content)
          let link = document.createElement("a");
          link.onclick = function ()
             {
-            sendLinkSearch("any \\context " + CtxSplice(ctx.Text));
+            sendLinkSearch("any \\chapter "+ chpblk.Chapter +" \\context " + CtxSplice(ctx.Text));
             };
          link.textContent = " !! ";
 
@@ -608,7 +608,7 @@ for (let chpblk of obj.Content)
          let sitem = document.createElement("span");
          link.onclick = function ()
             {
-            sendLinkSearch("any \\context " + CtxSplice(ctx.Text));
+            sendLinkSearch("any \\chapter "+ chpblk.Chapter +" \\context " + CtxSplice(ctx.Text));
             };
          link.textContent = "Ambient context:: ";
          link.id = "toc-frag";
@@ -902,10 +902,19 @@ else
 
 if (ctx.length > 0)
    {
+   let ctxlink = document.createElement("a");
+
+   //   ctxlink.textContent = " context hints: " + ctx;
+   ctxlink.onclick = function ()
+      {
+      sendLinkSearch('any \\chapter "'+ chap +'" \\context ' + CtxSplice(ctx));
+      };
+
    let cntx = document.createElement("i");
    cntx.id = "cntxt";
    cntx.textContent = " context hints: " + ctx;
-   box.appendChild(cntx);
+   ctxlink.appendChild(cntx);
+   box.appendChild(ctxlink);
    }
 
 parent.appendChild(box);
@@ -1375,7 +1384,7 @@ if (counter == 0)
 
    ctxlink.onclick = function()
       {
-      sendLinkSearch('any \\context "' + CtxSplice(event.Context) + '"');
+      sendLinkSearch('any \\chapter '+ event.Chap +' \\context ' + CtxSplice(event.Context));
       };
 
    setting.appendChild(ctxlink);
@@ -1479,7 +1488,7 @@ let ctxlink = document.createElement("a");
 ctxlink.textContent = '"' + event.Context + '"';
 ctxlink.onclick = function ()
    {
-   sendLinkSearch('any \\context "' + CtxSplice(event.Context) + '"');
+   sendLinkSearch('any \\chapter '+ event.Chap +' \\context ' + CtxSplice(event.Context));
    };
 
 maintext.appendChild(ctxlink);

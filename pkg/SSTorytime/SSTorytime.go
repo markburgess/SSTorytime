@@ -5882,29 +5882,28 @@ func GetNodeOrbit(sst PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TO
 	sweep,_ := GetEntireConePathsAsLinks(sst,"any",nptr,probe_radius,limit)
 
 	var satellites [ST_TOP][]Orbit
-	var thread_wg sync.WaitGroup
-
-	// Organize by the leading nearest-neighbour by vector/link type
-
-	thread_result := make(chan []Orbit)
+//	var thread_wg sync.WaitGroup
 
 	for stindex := 0; stindex < ST_TOP; stindex++ {
 
-		thread_wg.Add(1)
-		go AssembleSatellitesBySTtype(sst,&thread_wg,thread_result,stindex,satellites[stindex],sweep,exclude_vector,probe_radius,limit)
-		satellites[stindex] = <- thread_result
+		// Go routines remain a mystery
+
+//		go func(stindex int) {
+//			defer thread_wg.Done()  // threading
+//			thread_wg.Add(1)
+			satellites[stindex] = AssembleSatellitesBySTtype(sst,stindex,satellites[stindex],sweep,exclude_vector,probe_radius,limit)
+			
+//		} (stindex)
 	}
 
-	thread_wg.Wait()
+//	thread_wg.Wait()
 
 	return satellites
 }
 
 // **************************************************************************
 
-func AssembleSatellitesBySTtype(sst PoSST, wg *sync.WaitGroup, result chan []Orbit,stindex int,satellite []Orbit,sweep [][]Link,exclude_vector string,probe_radius int,limit int) {
-
-	defer wg.Done()  // threading
+func AssembleSatellitesBySTtype(sst PoSST,stindex int,satellite []Orbit,sweep [][]Link,exclude_vector string,probe_radius int,limit int) []Orbit {
 
 	// Sweep different radial paths [angle][depth]
 	
@@ -5971,7 +5970,7 @@ func AssembleSatellitesBySTtype(sst PoSST, wg *sync.WaitGroup, result chan []Orb
 		}
 	}
 
-	result <- satellite
+	return satellite
 }
 
 // **************************************************************************

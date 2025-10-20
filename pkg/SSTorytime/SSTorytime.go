@@ -5882,21 +5882,22 @@ func GetNodeOrbit(sst PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TO
 	sweep,_ := GetEntireConePathsAsLinks(sst,"any",nptr,probe_radius,limit)
 
 	var satellites [ST_TOP][]Orbit
-//	var thread_wg sync.WaitGroup
+	var thread_wg sync.WaitGroup
 
 	for stindex := 0; stindex < ST_TOP; stindex++ {
 
 		// Go routines remain a mystery
-
-//		go func(stindex int) {
-//			defer thread_wg.Done()  // threading
-//			thread_wg.Add(1)
-			satellites[stindex] = AssembleSatellitesBySTtype(sst,stindex,satellites[stindex],sweep,exclude_vector,probe_radius,limit)
+		thread_wg.Add(1)
+		
+		go func(idx int) {
+			defer thread_wg.Done()  // threading
 			
-//		} (stindex)
+			satellites[idx] = AssembleSatellitesBySTtype(sst,idx,satellites[idx],sweep,exclude_vector,probe_radius,limit)
+			
+		} (stindex)
 	}
-
-//	thread_wg.Wait()
+	
+	thread_wg.Wait()
 
 	return satellites
 }

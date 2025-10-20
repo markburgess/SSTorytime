@@ -1,10 +1,98 @@
+#
+# First example of a naive schema transcription, which transcribes every type slavishly
+# like a machine parser. It results is a lot of new definitions.
+# A human is smarter than this ... so we can simplify
+#
+# JSON is hierarchical. You might be tempted to atomize it as a schema,
+# but that's not what a graph is ...
+#
 
 -json example
 
- # JSON is hierarchical. You miight be tempted to atomize it as a schema,
- # but that's not what a graph is ...
+##
 
- // wrap the whole in single quotes since it contains double quote
+@user1 '{
+        "id": 1,
+        "username": "alice",
+        "email": "alice@example.com",
+        "active": true,
+        "roles": ["admin", "user"]
+      }'
+
+##
+
+@user2 '{
+        "id": 2,
+        "username": "bob",
+        "email": "bob@example.com",
+        "active": false,
+        "roles": ["user"]
+      }'
+
+## First separate out the branches and leaves and give them labels
+
+@users 'Partial json element -- "users" : [
+      {
+        "id": 1,
+        "username": "alice",
+        "email": "alice@example.com",
+        "active": true,
+        "roles": ["admin", "user"]
+      },
+      {
+        "id": 2,
+        "username": "bob",
+        "email": "bob@example.com",
+        "active": false,
+        "roles": ["user"]
+      }
+    ]' 
+
+   " (contains) $user1.1
+   " (contains) $user2.1
+
+##
+
+@metadata 'Partial json element -- " metadata": {
+      "total": 2,
+      "page": 1,
+      "limit": 10
+    }'
+
+ ####################
+
+@data '{ "users": [
+      {
+        "id": 1,
+        "username": "alice",
+        "email": "alice@example.com",
+        "active": true,
+        "roles": ["admin", "user"]
+      },
+      {
+        "id": 2,
+        "username": "bob",
+        "email": "bob@example.com",
+        "active": false,
+        "roles": ["user"]
+      }
+    ],
+ 
+   "metadata": {
+      "total": 2,
+      "page": 1,
+      "limit": 10
+    }
+  }'
+
+  " (contains) $users.1
+  " (contains) $metadata.1
+
+ ####################
+
+  ## Starts here ... just quote the whole JSON object at the top node
+  ## no reason to hide its meaningful wholeness, but
+  ## wrap the whole in single quotes since it contains double quote
 
    'My json object representation is an EVENT {
    "name": "Example API Response",
@@ -36,61 +124,18 @@
       "limit": 10
     }
   },
+
   "timestamp": "2025-10-17T14:30:00Z"
 }'
 
+   " (has name)    Example API Response
+   " (has version) 1.0.0 
+   " (has status)  success
+   " (has timestamp) "2025-10-17T14:30:00Z"
 
-       " (has name)    Example API Response
-       " (has version) 1.0.0 
-       " (has status)  success
-       " (has timestamp) "2025-10-17T14:30:00Z"
-
- // wrap the data in single quotes since it contains double quote
-
-@data  " (has data) '{ "users": [
-      {
-        "id": 1,
-        "username": "alice",
-        "email": "alice@example.com",
-        "active": true,
-        "roles": ["admin", "user"]
-      },
-      {
-        "id": 2,
-        "username": "bob",
-        "email": "bob@example.com",
-        "active": false,
-        "roles": ["user"]
-      }
-    ],
- 
-   "metadata": {
-      "total": 2,
-      "page": 1,
-      "limit": 10
-    }
-  }'
+   " (has data) $data.1
 
 
-  "  (coll-users) '[
-      {
-        "id": 1,
-        "username": "alice",
-        "email": "alice@example.com",
-        "active": true,
-        "roles": ["admin", "user"]
-      },
-      {
-        "id": 2,
-        "username": "bob",
-        "email": "bob@example.com",
-        "active": false,
-        "roles": ["user"]
-      }
-    ]'
 
-  "  (has metadata) '{
-      "total": 2,
-      "page": 1,
-      "limit": 10
-    }'
+
+

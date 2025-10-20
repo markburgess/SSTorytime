@@ -35,9 +35,9 @@
 
   %SSTorytime takes a %"Promise Theory" approach.
 
-  Context has two roles in knowledge: promise theoretically it has a '+' donor role when catgorizing information through notes. It also has a "-" acceptance or filtering role when searching. Both of these are represented by the ":: ... ::" lines in N4L. 
+  Context has two roles in knowledge: promise theoretically it has a '+' donor role when categorizing information through notes. It also has a "-" acceptance or filtering role when searching. Both of these are represented by the ":: ... ::" lines in N4L. 
 
-  When we are laying out new informaton, we use the context tags/tokens like a section heading. This is the "+" promise.
+  When we are laying out new information, we use the context tags/tokens like a section heading. This is the "+" promise.
 
   When we are searching, we use context tags as a filter to reduce the scope of a search. This is the "-" promise.
 
@@ -47,7 +47,7 @@
 
 Sometimes you might see chapters that you didn't select showing up in searches. This is probably a result of certain words and phrases belonging to more than one chapter, and thus bridging chapters that you didn't intend. This possibility for bridging is intentional, as it allows %"lateral thinking", which is an important source of discovery.
 
- What role should times play? Precise times are irrelevant because they never repeat. Coarse grains of time like "monday morning" do repeat and may be relevant in finding intended information. But how do we record the time? Is it the time at which information
+ What role should times play? Precise times are irrelevant because they never repeat. Coarse grains of time like "Monday morning" do repeat and may be relevant in finding intended information. But how do we record the time? Is it the time at which information
 was written, uploaded, or when something actually happened? The technology can't guess this for you, because it needs to be intentional. The ambient time isn't necessarily relevant.
 
  SSTorytime shows you the ambient time in a coarse grained form after every search, so that you can copy and paste this into context tags if you want to be able to use it later. If you make a search without any search terms, you will see any items that are labelled in a matching time. So, if you have specific %"to-do"/%todo / to do lists for specific times, these will pop up by themselves.
@@ -64,7 +64,7 @@ was written, uploaded, or when something actually happened? The technology can't
 
  You can start narrow with a very specific term by quoting longer strings including spaces, but this assumes you know what is already there. Then you can gradually reduce the number of constraints by ADDING contexts and search terms.
 
- "NCCS criteria" (means) Node, Chapter, Context, Sequence: searches will select nodes that match all these crtieria in one go
+ "NCCS criteria" (means) Node, Chapter, Context, Sequence: searches will select nodes that match all these criteria in one go
 
  ###############################################
 

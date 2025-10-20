@@ -188,17 +188,17 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 			name = name + nstr
 		}
 
-		fmt.Println("\nReceived command:", name)
-
 		ambient, key, _ := SST.GetTimeContext()
 
 		if len(name) == 0 || name == "\\remind" {
-			name = "any \\chapter reminders \\context " + key + " " + ambient + " \\limit 20"
+			name = "any \\chapter reminders \\context any, " + key + " " + ambient + " \\limit 20"
 		}
 
 		if name == "\\help" {
 			name = "\\notes \\chapter \"help and search\" \\limit 40"
 		}
+
+		fmt.Println("\nReceived command:", name)
 
 		search := SST.DecodeSearchField(name)
 

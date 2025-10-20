@@ -77,7 +77,7 @@ const (
         ERR_STRAY_PAREN="Stray ) in an event/item - illegal character"
 	ERR_MISSING_LINE_LABEL_IN_REFERENCE="Missing a line label in reference, should be in the form $label.n"
 	ERR_NON_WORD_WHITE="Non word (whitespace) character after an annotation: "
-	ERR_SHORT_WORD="Short word, possible mistake or stray unicode symbol: "
+	ERR_SHORT_WORD="Short word, possible mistake or unquoted annotation: "
 	ERR_ILLEGAL_ANNOT_CHAR="Cannot use +/- reserved tokens for annotation"
 )
 
@@ -108,6 +108,7 @@ var (
 	SEQUENCE_MODE bool = false
 	SEQUENCE_START bool = false
 	SEQUENCE_RELN string = "then" 
+	SEQUENCE_RELN_INV string = "from"
 	LAST_IN_SEQUENCE string = ""
 
 	// Flags
@@ -1169,7 +1170,7 @@ func AddMandatory() {
 	// Reserved for special UX handling
 
 	arr = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
-	inv = SST.InsertArrowDirectory("leadsto","prev","follows on from","-")
+	inv = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN_INV,SEQUENCE_RELN_INV,"-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 	
 	arr = SST.InsertArrowDirectory("properties","url","has URL","+")
@@ -2397,8 +2398,10 @@ func NoteToSelf(s string) bool {
 
 	// Don't repeat the same message for multi-line dittos
 
-	if LINE_ITEM_CACHE["THIS"][0] == LINE_ITEM_CACHE["PREV"][0] {
-		return false
+	if LINE_ITEM_CACHE["THIS"] != nil && LINE_ITEM_CACHE["PREV"] != nil {
+		if LINE_ITEM_CACHE["THIS"][0] == LINE_ITEM_CACHE["PREV"][0] {
+			return false
+		}
 	}
 
 	return true

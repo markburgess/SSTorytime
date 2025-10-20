@@ -59,6 +59,10 @@
       "limit": 10
     }'
 
+   " (total) 2
+   " (pagenr) 1
+   " (limit) 10
+
  ####################
 
 @data '{ "users": [

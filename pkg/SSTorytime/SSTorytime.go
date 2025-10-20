@@ -2753,19 +2753,19 @@ func DefineStoredFunctions(sst PoSST) {
 		"   c text;\n"+
 		"BEGIN \n" +
 
-		// If the db has no context but the search does, then no need to waste any time
-		"IF thisctxptr = 0 THEN\n"+
-		"   RETURN true;\n" +
+		// If no constraints at all, then match
+
+		"IF array_length(user_set,1) IS NULL THEN\n" +  // Shouldn't happen anymore
+		"   RETURN true;\n"+
+		"END IF;\n"+
+
+		"IF user_set[0] = '' THEN\n"+
+		"   RETURN true;\n"+
 		"END IF;\n"+
 
 		// Convert context ptr into a list from the new factored cache
 		"SELECT Context INTO ctxstr FROM ContextDirectory WHERE ctxPtr=thisctxptr;" +
 		"db_set = regexp_split_to_array(ctxstr,',');\n" +
-
-		// If no constraints at all, then match
-		"IF array_length(user_set,1) IS NULL THEN\n"+
-		"   RETURN true;\n"+
-		"END IF;\n"+
 
 		// If there is a constraint, but no db membership, then no match
 		"IF array_length(db_set,1) IS NULL AND array_length(user_set,1) IS NOT NULL THEN\n"+
@@ -2780,14 +2780,14 @@ func DefineStoredFunctions(sst PoSST) {
 		// clean and unaccent sets
 
 		"FOREACH item IN ARRAY db_set LOOP\n" +
-		"   IF item = 'any' OR item = '' THEN\n" +
+		"   IF thisctxptr = 0 AND (item = 'any' OR item = '') THEN\n" +
 		"      RETURN true;\n"+
 		"   END IF;\n"+
 		"   notes = array_append(notes,lower(unaccent(item)));\n" +
 		"END LOOP;\n" +
 
 		"FOREACH item IN ARRAY user_set LOOP\n" +
-		"   IF item = 'any' OR item = '' THEN\n" +
+		"   IF thisctxptr = 0 AND (item = 'any' OR item = '') THEN\n" +
 		"      RETURN true;\n"+
 		"   END IF;\n"+
 		"   client = array_append(client,lower(unaccent(item)));\n" +
@@ -5920,14 +5920,19 @@ func AssembleSatellitesBySTtype(sst PoSST, wg *sync.WaitGroup, result chan []Orb
 			arrow := GetDBArrowByPtr(sst,start.Arr)
 			
 			if arrow.STAindex == stindex {
+
 				txt := GetDBNodeByNodePtr(sst,start.Dst)
-				
-				var nt Orbit
-				
+
+				var nt Orbit				
 				nt.Arrow = arrow.Long
 				nt.STindex = arrow.STAindex
 				nt.Dst = start.Dst
 				nt.Text = txt.S
+				if txt.I[LEADSTO] != nil {
+					nt.Ctx = GetContext(txt.I[LEADSTO][0].Ctx)  // node context
+				} else {
+					nt.Ctx = "any"
+				}
 				nt.Radius = 1
 				if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
 					continue

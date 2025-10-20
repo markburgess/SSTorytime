@@ -1421,8 +1421,7 @@ func AssessGrammarCompletions(token string, prior_state int) {
 			ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
 		}
 
-		this_iptr := HandleNode(this_item)
-		IdempAddContextToNode(this_iptr)
+		HandleNode(this_item)
 		LinkUpStorySequence(this_item)
 	}
 }
@@ -1529,6 +1528,8 @@ func HandleNode(annotated string) SST.NodePtr {
 		}
 		SIGN_OF_LIFE++
 	}
+
+	IdempAddContextToNode(clean_ptr)
 
 	return clean_ptr
 }

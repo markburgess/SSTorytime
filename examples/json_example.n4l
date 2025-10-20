@@ -11,7 +11,7 @@
 
 ##
 
-@user1 '{
+@user1 'Instance of a users array {
         "id": 1,
         "username": "alice",
         "email": "alice@example.com",
@@ -19,15 +19,29 @@
         "roles": ["admin", "user"]
       }'
 
+  " (has id) 1
+  " (has username) alice
+  " (email) "alice@example.com"
+  " (has role) admin
+  " (has role) user
+  " (has status) active
+
 ##
 
-@user2 '{
+@user2 'Instance of a users array {
         "id": 2,
         "username": "bob",
         "email": "bob@example.com",
         "active": false,
         "roles": ["user"]
       }'
+
+  " (has id) 2
+  " (has username) bob
+  " (email) bob@example.com
+  " (has role) user
+  " (has status) inactive
+
 
 ## First separate out the branches and leaves and give them labels
 

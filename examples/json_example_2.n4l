@@ -7,67 +7,50 @@
 # but that's not what a graph is ...
 #
 
--json example 2
-
-##
-
-# We have the problem of knowing how to name each node uniquely, if there is no obvious name tag.
-# Because a graph is a global namespace, unlike a JSON file, while has a URI structure.
+-json example 3
 
 @user1 User 1
 
-  " (contains) id = 1
-  " (contains) username = alice
-  " (contains) email = alice@example.com
-  " (contains) role = admin               // are roles ordered or not? Do we need additional "follows" links
-  " (contains) role = user
-  " (contains) active = true
+  " (id)        1
+  " (username)  alice
+  " (email)     alice@example.com
+  " (role)      admin               // are roles ordered or not? Do we need additional "follows" links
+  " (role)      user
+  " (status)    active
 
-##
+ ####################
 
 @user2 User 2
-
-  " (contains) id = 2
-  " (contains) username = bob
-  " (contains) email = bob@example.com
-  " (contains) role = user
-  " (contains) active = false
-
-
-## First separate out the branches and leaves and give them labels
+  " (id)       2
+  " (username) bob
+  " (email)    bob@example.com
+  " (role)     user
+  " (status)   inactive
 
 @users User array for "Example API Response"
+   " (user) $user1.1
+   " (user) $user2.1
 
-   " (contains) $user1.1
-   " (contains) $user2.1
-
-##
+ ####################
 
 @metadata Metadata for "Example API Response"
-
-   " (contains) total = 2
-   " (contains) page number = 1
-   " (contains) limit = 10
+   " (total)  2
+   " (pagenr) 1
+   " (limit)  10
 
  ####################
 
 @data Data for "Example API Response"
-
-  " (contains) $users.1
-  " (contains) $metadata.1
+  " (coll-users) $users.1
+  " (metadata)   $metadata.1
 
  ####################
 
-  ## Starts here ... just quote the whole JSON object at the top node
-  ## no reason to hide its meaningful wholeness, but
-  ## wrap the whole in single quotes since it contains double quote
-
   Example API Response
-
-   " (contains) version = 1.0.0 
-   " (contains) status = success
-   " (contains) timestamp = "2025-10-17T14:30:00Z"
-   " (contains) $data.1
+   " (version)   1.0.0 
+   " (status)    success
+   " (timestamp) "2025-10-17T14:30:00Z"
+   " (data)      $data.1
 
 
 

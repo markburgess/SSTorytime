@@ -20,12 +20,12 @@
         "roles": ["admin", "user"]
       }'
 
-  " (has id) 1
-  " (has username) alice
+  " (id) 1
+  " (username) alice
   " (email) "alice@example.com"
-  " (has role) admin
-  " (has role) user
-  " (has status) active
+  " (role) admin
+  " (role) user
+  " (status) active
 
 ##
 
@@ -37,11 +37,11 @@
         "roles": ["user"]
       }'
 
-  " (has id) 2
-  " (has username) bob
+  " (id) 2
+  " (username) bob
   " (email) bob@example.com
-  " (has role) user
-  " (has status) inactive
+  " (role) user
+  " (status) inactive
 
 
 ## First separate out the branches and leaves and give them labels
@@ -63,8 +63,8 @@
       }
     ]' 
 
-   " (contains) $user1.1
-   " (contains) $user2.1
+   " (user) $user1.1
+   " (user) $user2.1
 
 ##
 
@@ -104,14 +104,17 @@
     }
   }'
 
-  " (contains) $users.1
-  " (contains) $metadata.1
+  " (coll-users) $users.1
+  " (metadata) $metadata.1
 
  ####################
 
   ## Starts here ... just quote the whole JSON object at the top node
   ## no reason to hide its meaningful wholeness, but
   ## wrap the whole in single quotes since it contains double quote
+
+   # The full unique identifier of the object IS the object itself
+   # no need to invent a new layer of obfuscation...
 
    'My json object representation is an EVENT {
    "name": "Example API Response",
@@ -147,12 +150,11 @@
   "timestamp": "2025-10-17T14:30:00Z"
 }'
 
-   " (has name)    Example API Response
-   " (has version) 1.0.0 
-   " (has status)  success
-   " (has timestamp) "2025-10-17T14:30:00Z"
-
-   " (has data) $data.1
+   " (name)      Example API Response
+   " (version)   1.0.0 
+   " (status)    success
+   " (timestamp) "2025-10-17T14:30:00Z"
+   " (data)       $data.1
 
 
 

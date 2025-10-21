@@ -1,0 +1,37 @@
+
+-json array order
+
+@user1 User 1
+
+  " (id)        1
+  " (username)  alice
+  " (email)     alice@example.com
+  " (role)      admin               // are roles ordered or not? Do we need additional "follows" links
+  " (role)      user
+  " (status)    active
+
+@user2 User 2
+  " (id)       2
+  " (username) bob
+  " (email)    bob@example.com
+  " (role)     user
+  " (status)   inactive
+
+@user3 User 3
+  " (id)       3
+  " (username) clarice
+  " (email)    clarice@example.com
+  " (role)     victim
+  " (status)   scared
+
+ ####################
+
+User array for "Example API Response"
+   " (user) $user1.1
+   " (user) $user2.1
+
+ #
+ #  Capture the order of the records 1,2,3
+ #    as  1 (then) 2 (then) 3
+
+$user1.1 (then) $user2.1 (then) $user3.1

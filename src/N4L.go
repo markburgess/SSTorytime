@@ -63,7 +63,7 @@ const (
 	ERR_MISMATCH_QUOTE = "Apparent missing or mismatch in ', \" or ( )"
 	ERR_ILLEGAL_CONFIGURATION = "Error in configuration, no such section"
 	ERR_BAD_LABEL_OR_REF = "Badly formed label or reference (@label becomes $label.n) in "
-	ERR_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference. Close any space after a quote..."
+	ERR_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference. Double-quoted strings should not have a space after leading quote, as it can be confused with \" ditto symbol"
 	ERR_ANNOTATION_BAD = "Annotation marker should be short mark of non-space, non-alphanumeric character "
 	ERR_BAD_ABBRV = "abbreviation out of place"
 	ERR_BAD_ALIAS_REFERENCE = "Alias references start from $name.1"
@@ -1266,7 +1266,7 @@ func GetToken(src []rune, pos int) (string,int) {
 			token = "\""
 			pos++
 		} else {
-			if pos+2 < len(src) && IsWhiteSpace(src[pos+1],src[pos+2]) {
+			if quote == '"' && pos+2 < len(src) && IsWhiteSpace(src[pos+1],src[pos+2]) {
 				ParseError(ERR_ILLEGAL_QUOTED_STRING_OR_REF)
 				os.Exit(-1)
 			}

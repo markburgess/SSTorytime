@@ -1,0 +1,33 @@
+{
+   "name": "Example API Response",
+   "version": "1.0.0",
+   "status": "success",
+
+   "data": {
+
+      "users": [
+      {
+        "id": 1,
+        "username": "alice",
+        "email": "alice@example.com",
+        "active": true,
+        "roles": ["admin", "user"]
+      },
+      {
+        "id": 2,
+        "username": "bob",
+        "email": "bob@example.com",
+        "active": false,
+        "roles": ["user"]
+      }
+    ],
+ 
+   "metadata": {
+      "total": 2,
+      "page": 1,
+      "limit": 10
+    }
+  },
+
+  "timestamp": "2025-10-17T14:30:00Z"
+}

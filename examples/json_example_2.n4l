@@ -1,9 +1,9 @@
 #
-# First example of a naive schema transcription, which transcribes every type slavishly
+# Second example of schema transcription, which transcribes every type slavishly
 # like a machine parser. It results is a lot of new definitions.
 # A human is smarter than this ... so we can simplify
 #
-# JSON is hierarchical. You might be tempted to atomize it as a schema,
+# JSON is hierarchical. we allow ourselves to atomize it as a schema,
 # but that's not what a graph is ...
 #
 

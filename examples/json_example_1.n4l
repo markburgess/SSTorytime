@@ -4,7 +4,8 @@
 # A human is smarter than this ... so we can simplify
 #
 # JSON is hierarchical. You might be tempted to atomize it as a schema,
-# but that's not what a graph is ...
+# but that's not what a graph is ... here we recognize that the form of the json itself
+# is a part of the knowledge we are trying to capture.
 #
 
 -json example 1

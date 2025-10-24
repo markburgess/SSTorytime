@@ -1909,7 +1909,7 @@ return '"'+list+'"'
 function CtxSplice(s)
 {
 let ret = s.replaceAll(" . ", ".");
-return ret;
+return '"'+ret+'"';
 }
 
 /***********************************************************/

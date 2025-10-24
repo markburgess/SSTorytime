@@ -482,6 +482,8 @@ for (let story of obj.Content)
 
    counter++;
    }
+
+RerenderMath();
 }
 
 /***********************************************************/

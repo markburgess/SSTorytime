@@ -34,6 +34,8 @@ Graphs may be used:
 <li> And more ...
 </ul>
 </div>
+If you want to know the deep background behind the Semantic Spacetime concept and its approach, you can read the
+book shown to the right. N.B. This book is not a tutorial or how to manual.
 
 ## Take part in this Semantic Spacetime Project (SST)
 

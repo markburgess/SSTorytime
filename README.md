@@ -9,8 +9,8 @@
 
 
 > [!NOTE]
-> Commands now use \ in front as in other tools, e.g. `\from a1 \to s2` (see [searchN4L](docs/searchN4L.md))
-> A Python interface is coming.
+> * Join the [SSTorytime LinedIn Group](https://www.linkedin.com/groups/15875004/) for questions and discussions.
+> Note, this is not an RDF project. <br>
 
 # SSTorytime
 
@@ -41,8 +41,7 @@ book shown to the right. N.B. This book is not a tutorial or how to manual.
 
  Keywords, tags: Open Source Smart Graph Database API for Postgres, Go(lang) API, Explainability of Knowledge Representation
 
-* Join the [SSTorytime LinedIn Group](https://www.linkedin.com/groups/15875004/) for questions and discussions.
-Note, this is not an RDF project. <br>
+
 
 <br> [TO-DO List and HOW **YOU** CAN CONTRIBUTE!](docs/howtocontribute.md)
 

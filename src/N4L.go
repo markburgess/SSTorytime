@@ -302,7 +302,7 @@ func NewFile(filename string) {
 	}
 
 	if !VERBOSE && GIVE_SIGNS_OF_LIFE {
-		fmt.Printf("[%s] is a large file. This will take a while...\n",filename)
+		fmt.Printf("\n[%s] is a large file. This will take a while...\n",filename)
 	}
 
 	LINE_ITEM_STATE = ROLE_BLANK_LINE
@@ -1523,13 +1523,6 @@ func HandleNode(annotated string) SST.NodePtr {
 		AddBackAnnotations(clean_version,clean_ptr,annotated)
 	}
 
-	if !VERBOSE && GIVE_SIGNS_OF_LIFE {
-		if (SIGN_OF_LIFE % 1000) == 0 {
-			fmt.Print("+ ")
-		}
-		SIGN_OF_LIFE++
-	}
-
 	IdempAddContextToNode(clean_ptr)
 
 	return clean_ptr
@@ -2508,7 +2501,7 @@ func ReadUTF8FileBuffered(filename string) []rune {
 		unicode = append(unicode, r) 
 
 		if GIVE_SIGNS_OF_LIFE && sign_of_life % 10000 == 0 {
-			fmt.Print(".")
+			fmt.Print("+")
 		}
 		sign_of_life++
 

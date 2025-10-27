@@ -9661,7 +9661,7 @@ func Waiting(output bool,total int) {
 		if percent > 100 {
 			fmt.Printf("\n(%.1f%% - oops, have to work overtime!)\n",percent)
 		} else {
-			fmt.Printf("\n\n(%.1f%%)\n",percent)
+			fmt.Printf("\n\n(%.1f%%) uploading . . .\n",percent)
 		}
 	}
 

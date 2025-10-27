@@ -2480,11 +2480,6 @@ func ReadUTF8FileBuffered(filename string) []rune {
 	scanner.Split(bufio.ScanRunes) 
 
 	var unicode []rune 
-	var sign_of_life int
-
-	if GIVE_SIGNS_OF_LIFE {
-		fmt.Print("Encoding for unicode: ")
-	}
 
 	// The scanner reads one rune at a time until the end of the file. 
 
@@ -2499,12 +2494,6 @@ func ReadUTF8FileBuffered(filename string) []rune {
 		r, _ := utf8.DecodeRuneInString(runeText) 
 
 		unicode = append(unicode, r) 
-
-		if GIVE_SIGNS_OF_LIFE && sign_of_life % 10000 == 0 {
-			fmt.Print("+")
-		}
-		sign_of_life++
-
 	} 
 
 	// Check for any errors that occurred during scanning. 

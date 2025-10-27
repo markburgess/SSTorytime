@@ -1,0 +1,54 @@
+.PHONY: help build up down logs clean rebuild load-examples
+
+help: ## Show this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+build: ## Build Docker images
+	DOCKER_BUILDKIT=1 docker compose build
+
+up: ## Start all services
+	docker compose up -d
+
+down: ## Stop all services
+	docker compose down
+
+logs: ## Show logs
+	docker compose logs -f
+
+clean: ## Remove containers and volumes
+	docker compose down -v
+
+rebuild: down build up ## Rebuild and restart
+
+# CLI tools
+tools-up: ## Start with CLI tools
+	docker compose --profile tools up -d
+
+load-examples: tools-up ## Load example data
+	docker compose exec cli ./N4L examples/tutorial.n4l
+	docker compose exec cli ./N4L examples/knowledge.n4l
+	@echo "✅ Examples loaded"
+
+populate-db: tools-up ## Populate database with all examples (via make in examples/)
+	docker compose exec cli sh -c "cd examples && make"
+	@echo "✅ Database populated"
+
+search: ## Search (usage: make search QUERY="your query")
+	docker compose exec cli ./searchN4L "$(QUERY)"
+
+# Development
+dev-logs: ## Follow server logs
+	docker compose logs -f server
+
+db-shell: ## Access PostgreSQL shell
+	docker compose exec postgres psql -U sstoryline -d sstoryline
+
+cli-shell: tools-up ## Access CLI container shell
+	docker compose exec cli sh
+
+# Testing
+test-db: ## Test database connection
+	docker compose exec postgres psql -U sstoryline -d sstoryline -c "SELECT version();"
+
+status: ## Show container status
+	docker compose ps

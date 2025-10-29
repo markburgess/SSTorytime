@@ -2961,36 +2961,8 @@ func DefineStoredFunctions(sst PoSST) {
 	// ...................................................................
 
         // A more detailed path search that includes checks for chapter/context boundaries (NC/C functions)
-
-/*	qstr = "CREATE OR REPLACE FUNCTION AllNCPathsAsLinks(start NodePtr,chapter text,rm_acc boolean,context text[],orientation text,maxdepth INT,maxlimit int)\n"+
-		"RETURNS Text AS $fn$\n" +
-		"DECLARE\n" +
-		"   hop Text;\n" +
-		"   path Text;\n"+
-		"   summary_path Text[];\n"+
-		"   exclude NodePtr[] = ARRAY[start]::NodePtr[];\n" +
-		"   ret_paths Text;\n" +
-		"   startlnk Link;"+
-		"BEGIN\n" +
-		"startlnk := GetSingletonAsLink(start);\n"+
-		"path := Format('%s',startlnk::Text);"+
-		"ret_paths := SumAllNCPaths(startlnk,path,orientation,1,maxdepth,chapter,rm_acc,context,exclude,maxlimit);" +
-
-		"RETURN ret_paths; \n" +
-		"END ;\n" +
-		"$fn$ LANGUAGE plpgsql;\n"
-	
-        // select AllNCPathsAsLinks('(1,46)','chinese','{"food","example"}','fwd',4);
-
-	row,err = sst.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("Error defining postgres function:",qstr,err)
-	}
-
-	row.Close()*/
-
 	// SumAllNCPaths - a filtering version of the SumAllPaths recursive helper function, slower but more powerful
+
 	qstr = "CREATE OR REPLACE FUNCTION SumAllNCPaths(start Link,path TEXT,orientation text,depth int, maxdepth INT,chapter text,rm_acc boolean,context text[],exclude NodePtr[],maxlimit int)\n"+
 		"RETURNS Text AS $fn$\n" +
 		"DECLARE \n" + 
@@ -4413,49 +4385,6 @@ func GetEntireConePathsAsLinks(sst PoSST,orientation string,start NodePtr,depth 
 
 	return retval,len(retval)
 }
-
-// **************************************************************************
-/*
-func GetEntireNCConePathsAsLinks(sst PoSST,orientation string,start NodePtr,depth int,chapter string,context []string,limit int) ([][]Link,int) {
-
-	// orientation should be "fwd" or "bwd" else "both"
-
-	remove_accents,stripped := IsBracketedSearchTerm(chapter)
-	chapter = "%"+stripped+"%"
-	rm_acc := "false"
-
-	if remove_accents {
-		rm_acc = "true"
-	}
-
-	qstr := fmt.Sprintf("select AllNCPathsAsLinks from AllNCPathsAsLinks('(%d,%d)','%s',%s,%s,'%s',%d,%d);",
-		start.Class,start.CPtr,chapter,rm_acc,FormatSQLStringArray(context),orientation,depth,limit)
-
-	row, err := sst.DB.Query(qstr)
-
-	if err != nil {
-		fmt.Println("QUERY to AllNCPathsAsLinks Failed",err,qstr)
-	}
-
-	var whole string
-	var retval [][]Link
-
-	for row.Next() {		
-		err = row.Scan(&whole)
-		if err != nil {
-			fmt.Println("reading AllNCPathsAsLinks",err)
-		}
-
-		retval = ParseLinkPath(whole)
-	}
-
-	sort.Slice(retval, func(i,j int) bool {
-		return len(retval[i]) < len(retval[j])
-	})
-
-	row.Close()
-	return retval,len(retval)
-}*/
 
 // **************************************************************************
 

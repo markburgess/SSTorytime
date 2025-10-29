@@ -119,9 +119,9 @@ func Init() []string {
 func PathSolve(sst SST.PoSST, chapter,cntext,begin, end string) {
 
 	const maxdepth = 20
-	var Lnum,Rnum int
 	var count int
-	var left_paths, right_paths [][]SST.Link
+	var arrowptrs []SST.ArrowPtr
+	var sttype []int
 
 	start_bc := []string{begin}
 	end_bc := []string{end}
@@ -144,34 +144,20 @@ func PathSolve(sst SST.PoSST, chapter,cntext,begin, end string) {
 
 	fmt.Printf("\n\n Paths < end_set= {%s} | {%s} = start set>\n\n",ShowNode(sst,rightptrs),ShowNode(sst,leftptrs))
 
+	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,maxdepth)
+
 	// Find the path matrix
 
-	var solutions [][]SST.Link
-	var ldepth,rdepth int = 1,1
 	var betweenness = make(map[string]int)
 
-	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
-
-		left_paths,Lnum = SST.GetEntireNCConePathsAsLinks(sst,FWD,leftptrs,ldepth,chapter,context,maxdepth)
-		right_paths,Rnum = SST.GetEntireNCConePathsAsLinks(sst,BWD,rightptrs,rdepth,chapter,context,maxdepth)
-		solutions,_ = SST.WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
-
-		if len(solutions) > 0 {
-
-			for s := 0; s < len(solutions); s++ {
-				prefix := fmt.Sprintf(" - story path: ")
-				SST.PrintLinkPath(sst,solutions,s,prefix,"",nil)
-				betweenness = TallyPath(sst,solutions[s],betweenness)
-			}
-			count++
-			break
+	if len(solutions) > 0 {
+		
+		for s := 0; s < len(solutions); s++ {
+			prefix := fmt.Sprintf(" - story path: ")
+			SST.PrintLinkPath(sst,solutions,s,prefix,"",nil)
+			betweenness = TallyPath(sst,solutions[s],betweenness)
 		}
-
-		if turn % 2 == 0 {
-			ldepth++
-		} else {
-			rdepth++
-		}
+		count++
 	}
 
 	if len(solutions) == 0 {

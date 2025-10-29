@@ -63,13 +63,15 @@ func Solve(sst SST.PoSST) {
 	// Contra colliding wavefronts as path integral solver
 
 	const maxdepth = 16
-	var ldepth,rdepth int = 1,1
-	var Lnum,Rnum int
 	var count int
-	var left_paths, right_paths [][]SST.Link
+	var arrowptrs []SST.ArrowPtr
+	var sttype []int
+	var context []string
 
 	start_bc := "maze_a7"
 	end_bc := "maze_i6"
+	chapter := ""
+
 
 	leftptrs := SST.GetDBNodePtrMatchingName(sst,start_bc,"")
 	rightptrs := SST.GetDBNodePtrMatchingName(sst,end_bc,"")
@@ -79,46 +81,16 @@ func Solve(sst SST.PoSST) {
 		return
 	}
 
-	cntx := []string{""}
-	const limit = 10
+	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,maxdepth)
 
-	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
-
-		left_paths,Lnum = SST.GetEntireNCConePathsAsLinks(sst,"fwd",leftptrs,ldepth,"",cntx,limit)
-		right_paths,Rnum = SST.GetEntireNCConePathsAsLinks(sst,"bwd",rightptrs,rdepth,"",cntx,limit)	
-
-		solutions,loop_corrections := WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
-
-		if len(solutions) > 0 {
-			fmt.Println("-- T R E E ----------------------------------")
-			fmt.Println("Path solution",count,"from",start_bc,"to",end_bc,"with lengths",ldepth,-rdepth)
-
-			for s := 0; s < len(solutions); s++ {
-				prefix := fmt.Sprintf(" - story %d: ",s)
-				SST.PrintLinkPath(sst,solutions,s,prefix,"",nil)
-			}
-			count++
-			fmt.Println("-------------------------------------------")
+	if len(solutions) > 0 {
+		for s := 0; s < len(solutions); s++ {
+			prefix := fmt.Sprintf(" - story %d: ",s)
+			SST.PrintLinkPath(sst,solutions,s,prefix,"",nil)
 		}
-
-		if len(loop_corrections) > 0 {
-			fmt.Println("++ L O O P S +++++++++++++++++++++++++++++++")
-			fmt.Println("Path solution",count,"from",start_bc,"to",end_bc,"with lengths",ldepth,-rdepth)
-
-			for s := 0; s < len(loop_corrections); s++ {
-				prefix := fmt.Sprintf(" - story %d: ",s)
-				SST.PrintLinkPath(sst,loop_corrections,s,prefix,"",nil)
-			}
-			count++
-			fmt.Println("+++++++++++++++++++++++++++++++++++++++++++")
-		}
-
-		if turn % 2 == 0 {
-			ldepth++
-		} else {
-			rdepth++
-		}
+		count++
 	}
+	
 }
 
 // **********************************************************

@@ -293,10 +293,10 @@ def GetFwdPathsAsLinks(conn,nptr,sttype,depth,maxlimit):
 
 #
 
-def GetEntireNCSuperConePathsAsLinks(conn,orientation,nptrarr,depth,chapter,contex,limit):
+def GetEntireNCConePathsAsLinks(conn,orientation,nptrarr,depth,chapter,contex,limit):
     startset = FormatSQLArray(nptrarr)
     context = FormatSQLArray(contex)
-    cmd = f"SELECT AllSuperNCPathsAsLinks('{startset}','%{chapter}%',false,'{context}','{orientation}',{depth},{limit})"
+    cmd = f"SELECT AllNCPathsAsLinks('{startset}','%{chapter}%',false,'{context}','{orientation}',{depth},{limit})"
     curs = conn.cursor()
     curs.execute(cmd)
     pg_rows = curs.fetchall()

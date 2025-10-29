@@ -84,8 +84,8 @@ func Solve(sst SST.PoSST) {
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(sst,"fwd",leftptrs,ldepth,"",cntx,limit)
-		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(sst,"bwd",rightptrs,rdepth,"",cntx,limit)	
+		left_paths,Lnum = SST.GetEntireNCConePathsAsLinks(sst,"fwd",leftptrs,ldepth,"",cntx,limit)
+		right_paths,Rnum = SST.GetEntireNCConePathsAsLinks(sst,"bwd",rightptrs,rdepth,"",cntx,limit)	
 
 		solutions,loop_corrections := WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 

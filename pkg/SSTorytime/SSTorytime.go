@@ -3101,7 +3101,7 @@ func DefineStoredFunctions(sst PoSST) {
         // A more detailed path search that includes checks for chapter/context boundaries (NC/C functions)
         // with a start set of more than one node
 
-	qstr = "CREATE OR REPLACE FUNCTION AllSuperNCPathsAsLinks(start NodePtr[],chapter text,rm_acc boolean,context text[],orientation text,maxdepth INT,maxlimit int)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION AllNCPathsAsLinks(start NodePtr[],chapter text,rm_acc boolean,context text[],orientation text,maxdepth INT,maxlimit int)\n"+
 		"RETURNS Text AS $fn$\n" +
 		"DECLARE\n" +
 		"   root Text;\n" +
@@ -4459,7 +4459,7 @@ func GetEntireNCConePathsAsLinks(sst PoSST,orientation string,start NodePtr,dept
 
 // **************************************************************************
 
-func GetEntireNCSuperConePathsAsLinks(sst PoSST,orientation string,start []NodePtr,depth int,chapter string,context []string,limit int) ([][]Link,int) {
+func GetEntireNCConePathsAsLinks(sst PoSST,orientation string,start []NodePtr,depth int,chapter string,context []string,limit int) ([][]Link,int) {
 
 	// orientation should be "fwd" or "bwd" else "both"
 
@@ -4471,12 +4471,12 @@ func GetEntireNCSuperConePathsAsLinks(sst PoSST,orientation string,start []NodeP
 		rm_acc = "true"
 	}
 
-	qstr := fmt.Sprintf("select AllSuperNCPathsAsLinks(%s,'%s',%s,%s,'%s',%d,%d);",FormatSQLNodePtrArray(start),chapter,rm_acc,FormatSQLStringArray(context),orientation,depth,limit)
+	qstr := fmt.Sprintf("select AllNCPathsAsLinks(%s,'%s',%s,%s,'%s',%d,%d);",FormatSQLNodePtrArray(start),chapter,rm_acc,FormatSQLStringArray(context),orientation,depth,limit)
 
 	row, err := sst.DB.Query(qstr)
 
 	if err != nil {
-		fmt.Println("QUERY to AllSuperNCPathsAsLinks Failed",err,qstr)
+		fmt.Println("QUERY to AllNCPathsAsLinks Failed",err,qstr)
 		os.Exit(-1)
 	}
 
@@ -5086,12 +5086,12 @@ func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,
 
 		go func() {
 			defer wg.Done() 
-			left_paths,Lnum = GetEntireNCSuperConePathsAsLinks(sst,"any",start_set,ldepth,chapter,context,maxdepth)
+			left_paths,Lnum = GetEntireNCConePathsAsLinks(sst,"any",start_set,ldepth,chapter,context,maxdepth)
 		}()
 
 		go func() {
 			defer wg.Done() 
-			right_paths,Rnum = GetEntireNCSuperConePathsAsLinks(sst,"any",end_set,rdepth,chapter,context,maxdepth)
+			right_paths,Rnum = GetEntireNCConePathsAsLinks(sst,"any",end_set,rdepth,chapter,context,maxdepth)
 		}()
 
 		wg.Wait()

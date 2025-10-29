@@ -61,10 +61,10 @@ func Solve(sst SST.PoSST) {
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(sst,"fwd",leftptrs,ldepth,"",cntx,limit)
+		left_paths,Lnum = SST.GetEntireNCConePathsAsLinks(sst,"fwd",leftptrs,ldepth,"",cntx,limit)
 		xleft_paths,Lnumx := SST.GetEntireConePathsAsLinks(sst,"fwd",leftptrs[0],ldepth,limit)
 
-		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(sst,"bwd",rightptrs,rdepth,"",cntx,limit)
+		right_paths,Rnum = SST.GetEntireNCConePathsAsLinks(sst,"bwd",rightptrs,rdepth,"",cntx,limit)
 		xright_paths,Rnumx := SST.GetEntireConePathsAsLinks(sst,"bwd",rightptrs[0],rdepth,limit)	
 
 		if Lnum != Lnumx {

@@ -2204,7 +2204,7 @@ func DefineStoredFunctions(sst PoSST) {
 		"      END CASE;\n" +
 		
 		"      FOREACH lnk IN ARRAY lnkarray LOOP\n"+
-		"         IF match_arrow(lnk.arr,arrows) AND match_context(lnk.ctx,context) THEN\n"+
+		"         IF match_arrows(lnk.arr,arrows) AND match_context(lnk.ctx,context) THEN\n"+
 		"            RETURN true;\n"+
 		"         END IF;\n"+
 		"      END LOOP;\n"+
@@ -3105,7 +3105,178 @@ func DefineStoredFunctions(sst PoSST) {
 
 	row.Close()
 
+	// ...................................................................
+	// Now add in the more complex context/chapter filters in searching
+	// ...................................................................
+
+        // A more detailed path search that includes checks for chapter/context boundaries (NC/C functions)
+        // with a start set of more than one node
+
+	qstr = "CREATE OR REPLACE FUNCTION ConstraintPathsAsLinks(start NodePtr[],chapter text,rm_acc boolean,context text[],arrows int[],sttypes int[],maxdepth INT,maxlimit int)\n"+
+		"RETURNS Text AS $fn$\n" +
+		"DECLARE\n" +
+		"   root Text;\n" +
+		"   path Text;\n"+
+		"   node NodePtr;\n"+
+		"   summary_path Text[];\n"+
+		"   exclude NodePtr[] = start;\n" +
+		"   ret_paths Text;\n" +
+		"   startlnk Link;\n"+
+		"BEGIN\n" +
+
+		"IF sttypes IS NULL OR array_length(sttypes,1) IS NULL THEN\n" +
+		"   sttypes = ARRAY[-3,-2,-1,0,1,2,3];\n" +
+		"END IF;\n"+
+
+		// Aggregate array of starting set
+
+		"FOREACH node IN ARRAY start LOOP\n"+
+		"   startlnk := GetSingletonAsLink(node);\n"+
+		"   path := Format('%s',startlnk::Text);\n"+
+		"   root := SumConstraintPaths(startlnk,path,1,maxdepth,chapter,rm_acc,context,arrows,sttypes,exclude,maxlimit);\n" +
+		"   ret_paths := Format('%s\n%s',ret_paths,root);\n"+
+		"END LOOP;"+
+
+		"RETURN ret_paths;\n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+
+	row,err = sst.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
+	// ...................................................................
+	// Now add in the more complex context/chapter filters in searching
+	// ...................................................................
+
+        // Generalized path search
+	// SumConstraintPaths - a filtering version of the SumAllPaths recursive helper function, slower but more powerful
+
+	qstr = "CREATE OR REPLACE FUNCTION SumConstraintPaths(start Link,path TEXT,depth int,maxdepth INT,chapter text,rm_acc boolean,context text[],arrows int[],sttypes int[],exclude NodePtr[],maxlimit int)\n"+
+		"RETURNS Text AS $fn$\n" +
+		"DECLARE \n" + 
+		"    fwdlinks Link[];\n" +
+		"    stlinks  Link[];\n" +
+		"    empty Link[] = ARRAY[]::Link[];\n" +
+		"    lnk Link;\n" +
+		"    fwd Link;\n" +
+		"    ret_paths Text;\n" +
+		"    appendix Text;\n" +
+		"    tot_path Text;\n"+
+		"    count    int = 0;\n"+
+		"    horizon  int = 0;\n"+
+		"    sttype   int;\n"+
+		"BEGIN\n" +
+
+		"IF depth = maxdepth THEN\n"+
+		"  ret_paths := Format('%s\n%s',ret_paths,path);\n"+
+		"  RETURN ret_paths;\n"+
+		"END IF;\n"+
+
+		"FOREACH sttype IN ARRAY sttypes LOOP\n"+
+		"   stlinks := GetConstrainedFwdLinks(start.Dst,chapter,rm_acc,context,exclude,sttype,arrows,maxlimit);\n" +
+		"   fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"END LOOP;\n"+
+
+		"horizon := maxlimit - array_length(fwdlinks,1);"+
+
+		"IF horizon < 0 THEN\n"+
+		"  horizon = 0;\n"+
+		"  maxdepth = depth + 1;"+
+		"END IF;\n"+
+
+		"FOREACH lnk IN ARRAY fwdlinks LOOP \n" +
+		"   IF NOT lnk.Dst = ANY(exclude) THEN\n"+
+		"      exclude = array_append(exclude,lnk.Dst);\n" +
+		"      IF lnk IS NULL OR count > maxlimit THEN\n" +
+		"         ret_paths := Format('%s\n%s',ret_paths,path);\n"+
+		"      ELSE\n"+
+		"         count = count + 1;"+
+		"         IF context is not NULL AND NOT match_context(lnk.Ctx,context::text[]) THEN\n"+
+                "            CONTINUE;\n"+
+                "         END IF;\n"+
+
+		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
+		"         appendix := SumConstraintPaths(lnk,tot_path,depth+1,maxdepth,chapter,rm_acc,context,arrows,sttypes,exclude,horizon);\n" +
+
+		"         IF appendix IS NOT NULL THEN\n"+
+		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
+		"            count = count + regexp_count(appendix,';');"+
+		"         ELSE\n"+
+		"            ret_paths := Format('%s\n%s',ret_paths,tot_path);"+
+		"         END IF;\n"+
+		"      END IF;\n"+
+		"   END IF;\n"+
+		"END LOOP;\n"+
+
+		"RETURN ret_paths; \n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+
+	row,err = sst.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
+	// ****
+        // Fully filtering version of the neighbour scan
+	// ****
+
+	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetConstrainedFwdLinks(start NodePtr,chapter text,rm_acc boolean,context text[],exclude NodePtr[],sttype int,arrows int[],maxlimit int)\n"+
+		"RETURNS Link[] AS $fn$\n" +
+		"DECLARE \n" +
+		"    neighbours Link[];\n" +
+		"    fwdlinks Link[];\n" +
+		"    lnk Link;\n" +
+		"BEGIN\n" +
+
+		"    fwdlinks = GetNCNeighboursByType(start,chapter,rm_acc,sttype,maxlimit);\n"+
+
+		"    IF fwdlinks IS NULL THEN\n" +
+		"        RETURN '{}';\n" +
+		"    END IF;\n" +
+		"    neighbours := ARRAY[]::Link[];\n" +
+		"    FOREACH lnk IN ARRAY fwdlinks\n" +
+		"    LOOP\n"+
+
+		"      IF lnk.Arr = 0 THEN\n"+
+		"         CONTINUE;"+
+		"      END IF;\n"+
+
+		"      IF arrows IS NOT NULL AND array_length(arrows,1) > 0 AND NOT lnk.Arr=ANY(arrows) THEN\n"+
+		"         CONTINUE;\n"+
+		"      END IF;\n"+
+
+                "      IF context is not NULL AND NOT match_context(lnk.Ctx,context::text[]) THEN\n"+
+                "         CONTINUE;\n"+
+                "      END IF;\n"+
+		"      IF exclude is not NULL AND NOT lnk.dst=ANY(exclude) THEN\n" +
+		"         neighbours := array_append(neighbours, lnk);\n" +
+		"      END IF; \n" + 
+
+		"    END LOOP;\n" +
+		"    RETURN neighbours; \n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n")
+	
+	row,err = sst.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
+	// ****
         // An NC/C filtering version of the neighbour scan
+	// ****
 
 	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetNCFwdLinks(start NodePtr,chapter text,rm_acc boolean,context text[],exclude NodePtr[],sttype int,maxlimit int)\n"+
 		"RETURNS Link[] AS $fn$\n" +
@@ -3123,7 +3294,7 @@ func DefineStoredFunctions(sst PoSST) {
 		"    neighbours := ARRAY[]::Link[];\n" +
 		"    FOREACH lnk IN ARRAY fwdlinks\n" +
 		"    LOOP\n"+
-//MATCH ARROWDS
+
 		"      IF lnk.Arr = 0 THEN\n"+
 		"         CONTINUE;"+
 		"      END IF;\n"+
@@ -3529,13 +3700,16 @@ func GetDBNodePtrMatchingNCCS(sst PoSST,nm,chap string,cn []string,arrow []Arrow
 	var n NodePtr
 	var retval []NodePtr
 
-	for row.Next() {		
-		err = row.Scan(&whole)
-		fmt.Sscanf(whole,"(%d,%d)",&n.Class,&n.CPtr)
-		retval = append(retval,n)
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&whole)
+			fmt.Sscanf(whole,"(%d,%d)",&n.Class,&n.CPtr)
+			retval = append(retval,n)
+		}
+
+		row.Close()
 	}
 
-	row.Close()
 	return retval
 }
 
@@ -4423,6 +4597,47 @@ func GetEntireNCConePathsAsLinks(sst PoSST,orientation string,start []NodePtr,de
 }
 
 // **************************************************************************
+
+func GetConstraintConePathsAsLinks(sst PoSST,start []NodePtr,depth int,chapter string,context []string,arrowptrs []ArrowPtr,sttypes []int,limit int) ([][]Link,int) {
+
+	// orientation should be "fwd" or "bwd" else "both"
+
+	remove_accents,stripped := IsBracketedSearchTerm(chapter)
+	chapter = "%"+stripped+"%"
+	rm_acc := "false"
+
+	if remove_accents {
+		rm_acc = "true"
+	}
+
+	nod := FormatSQLNodePtrArray(start)
+	arr := FormatSQLIntArray(Arrow2Int(arrowptrs))
+	stt := FormatSQLIntArray(sttypes)
+	cnt := FormatSQLStringArray(context)
+
+	qstr := fmt.Sprintf("select ConstraintPathsAsLinks(%s,'%s',%s,%s,%s,%s,%d,%d);",nod,chapter,rm_acc,cnt,arr,stt,depth,limit)
+
+	row, err := sst.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("QUERY to ConstraintPathsAsLinks Failed",err,qstr)
+		os.Exit(-1)
+	}
+
+	var whole string
+	var retval [][]Link
+
+	for row.Next() {		
+		err = row.Scan(&whole)
+		retval = ParseLinkPath(whole)
+	}
+
+	row.Close()
+
+	return retval,len(retval)
+}
+
+// **************************************************************************
 // Bulk retrieval helper functions
 // **************************************************************************
 
@@ -4998,13 +5213,16 @@ func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,
 		return nil
 	}
 
-	if arrowptrs == nil {
-		arrowptrs, sttypes = ArrowPtrFromArrowsNames(sst, []string{"!then!"})
-	}
+	// Complete Adjoint types for inverse/acceptor wave
+
+	adj_arrowptrs := AdjointArrows(arrowptrs)
+	adj_sttypes := AdjointSTtype(sttypes)
+
+	// Expand waves
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		fmt.Println("Waves searching",ldepth,rdepth)
+		fmt.Println("   ..Waves searching",ldepth,rdepth)
 
 		// Keep these inside the loop, because there helps curtail exponential growth, despite repetition
 		// The interaction of limits can lead to obvious paths being dropped in favour of weird ones if we try 
@@ -5015,12 +5233,12 @@ func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,
 
 		go func() {
 			defer wg.Done() 
-			left_paths,Lnum = GetEntireNCConePathsAsLinks(sst,"any",start_set,ldepth,chapter,context,maxdepth)
+			left_paths,Lnum = GetConstraintConePathsAsLinks(sst,start_set,ldepth,chapter,context,arrowptrs,sttypes,maxdepth)
 		}()
 
 		go func() {
 			defer wg.Done() 
-			right_paths,Rnum = GetEntireNCConePathsAsLinks(sst,"any",end_set,rdepth,chapter,context,maxdepth)
+			right_paths,Rnum = GetConstraintConePathsAsLinks(sst,end_set,rdepth,chapter,context,adj_arrowptrs,adj_sttypes,maxdepth)
 		}()
 
 		wg.Wait()
@@ -5030,12 +5248,12 @@ func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,
 		solutions,loop_corrections = WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
 		if len(solutions) > 0 {
-			fmt.Println("DAG solutions")
+			fmt.Println("   ..DAG solutions:")
 			return solutions
 		}
 
 		if len(loop_corrections) > 0 {
-			fmt.Println("Only non-DAG solutions")
+			fmt.Println("   ..Only non-DAG solutions:")
 			return loop_corrections
 		}
 
@@ -5049,6 +5267,42 @@ func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,
 	// Calculate the supernode layer sets S[path][depth], factoring process symmetries
 
 	return solutions
+}
+
+// **************************************************************************
+
+func AdjointArrows(arrowptrs []ArrowPtr) []ArrowPtr {
+
+	var idemp = make(map[ArrowPtr]bool)
+	var result []ArrowPtr
+
+	for _,a := range arrowptrs {
+		idemp[INVERSE_ARROWS[a]] = true
+	}
+
+	for a := range idemp {
+		result = append(result,a)
+	}
+
+	return result
+}
+
+// **************************************************************************
+
+func AdjointSTtype(sttypes []int) []int {
+
+	var idemp = make(map[int]bool)
+	var result []int
+
+	for _,i := range sttypes {
+		idemp[-i] = true
+	}
+
+	for i := range idemp {
+		result = append(result,i)
+	}
+
+	return result
 }
 
 // **************************************************************************

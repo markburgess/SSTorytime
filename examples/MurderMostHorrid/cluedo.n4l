@@ -1,5 +1,5 @@
 
-- cluedo: Forensic map of a Murder Most Horrid
+-Cluedo: Forensic map of a Murder Most Horrid
 
  // invariants and dependencies define first, as we may need to refer to them
 
@@ -11,11 +11,11 @@
  plumb    (id-for) Professor Plumb, University of Oxford, Lincoln College.
  dibbly   (id-for) Florist working at the Summertown flower shop
     "     (also called) dibbly womble
- martin   (id-for) possible boyfriend, unknown
+ martin   (id-for) Manic Martin, possible boyfriend, unknown
 
- doorman (id-for) Fabian Merryweather, former Army officer, 24 Summertown Road
+ doorman  (id-for) Fabian Merryweather, former Army officer, 24 Summertown Road
 
- car     (id-for) Black Ford Cortina 1972, vehicle number 1234
+ car      (id-for) Black Ford Cortina 1972, vehicle number 1234
   "       (role) the get away vehicle
 
  #######################
@@ -37,13 +37,18 @@
 @scarlettarrives  entering the library on Monday at 10am
 @doormanarrives   doorman arrived at library for work on Monday 7 am
 
-@murder  Wednesday April 1st, around 11 am in the morning
+@murder Murder of Ms Scarlett with a gun Wednesday April 1st, around 11 am in the morning
+        " (weapon) gun
+        " (victim) scarlett
 
+@concert Opera Concert of 4/3/21
 
  #######################
 
  :: timeline, order, _sequence_ ::
 
+
+$concert   (timestamp) 4/3/21
 
 heavy traffic between >"18:00" and >"19:00"
 
@@ -87,25 +92,29 @@ jamie arrives >"20:30"
 
   >scarlett erratic behaviour (leads to) accusations and anger
 
+  martin  (is-memb) Gentleman's club (has activity) >gun range shooting
+
  #######################
 
- :: weapons ::
+ :: weapons found at the scene ::
 
  // we might be tempted to create a group of weapons, but why?
  // the role is clear and there is no need to prejudice the meaning
 
  bread knife 
- meat cleaver      (stateinv) excluded
+ meat cleaver        (stateinv) excluded
  mushrooms
  deadly nightshade
+ gun
 
  #######################
 
  :: hearsay, interviews ::
 
- >scarlet had a crush on >plum (question) was the crush reciprocated? 
+ >scarlett had a crush on >plum (question) was the crush reciprocated? 
             "                  (reported by) harriet
             "                  (motive) had a crush 
+ >martin was jealous of >plum because both dated >scarlett
 
  >jamie intended to be at the party by 7pm but got stuck in traffic, arriving at >"20:30"
 
@@ -114,14 +123,16 @@ jamie arrives >"20:30"
  >anne blamed >jamie for losing their house
           "   (motive) blame >jamie
 
- scarlet (partner) martin
- jamie   (partner) anne
- pumb    (partner) tiddles the cat
+ scarlett (partner) martin
+ jamie    (partner) anne
+ pumb     (partner) tiddles the cat
 
  Professor >plumb was reading in the library (where) library
                        "                     (while) reading Weapon Making (about) weapon
                        "                     (when)  $mondaymorning.1
 
+ plumb  (dated) scarlett
+ martin (dated) scarlett
 
  ######################
 
@@ -130,7 +141,7 @@ jamie arrives >"20:30"
  # First the unifying event is a distinct top level
  # spacetime hub unifying the contributing components
 
- Hypothesis: miss >scarlett murders professor >plumb (using weapon) bread knife
+ Hypothesis: miss >scarlett wanted to murder professor >plumb (using weapon) bread knife
 
                   "                    (where) in the library
 

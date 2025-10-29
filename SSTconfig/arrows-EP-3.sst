@@ -197,6 +197,7 @@
  + has service provider     (provider)  - is a service provider in (provides)
  + implicates the use of    (with)      - is implicated in         (implicated)
  + involves                 (involves)  - is involved in           (involved)
+ + has activity             (activity)  - is an activity of        (is-activ)
 
  + has start at             (start)     - is the start of          (start-of)
  + has ending at            (end)       - is the end of            (end-of)

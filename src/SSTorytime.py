@@ -224,7 +224,7 @@ def TryContext(conn,context):
         return
     str,ctxptr = GetDBContextByName(conn,ctxstr)
     if ctxptr == -1 or str != ctxstr:
-        ctxptr = UploadContextToDB(ctx,ctxstr,-1)
+        ctxptr = UploadContextToDB(conn,ctxstr,-1)
     return ctxptr
 
 #    

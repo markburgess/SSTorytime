@@ -5071,15 +5071,22 @@ func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
+		// Keep these inside the loop, because there helps curtail exponential growth, despite repetition
+		// The interaction of limits can lead to obvious paths being dropped in favour of weird ones if we try 
+		// to actor out the search from the start. Compromise by parallelizing the waves.
+
 		left_paths,Lnum = GetEntireNCSuperConePathsAsLinks(sst,"any",start_set,ldepth,chapter,context,maxdepth)
 		right_paths,Rnum = GetEntireNCSuperConePathsAsLinks(sst,"any",end_set,rdepth,chapter,context,maxdepth)
+
 		solutions,loop_corrections = WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
 		if len(solutions) > 0 {
+			fmt.Println("DAG solutions")
 			return solutions
 		}
 
 		if len(loop_corrections) > 0 {
+			fmt.Println("Only non-DAG solutions")
 			return loop_corrections
 		}
 

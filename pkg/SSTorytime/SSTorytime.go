@@ -2962,7 +2962,7 @@ func DefineStoredFunctions(sst PoSST) {
 
         // A more detailed path search that includes checks for chapter/context boundaries (NC/C functions)
 
-	qstr = "CREATE OR REPLACE FUNCTION AllNCPathsAsLinks(start NodePtr,chapter text,rm_acc boolean,context text[],orientation text,maxdepth INT,maxlimit int)\n"+
+/*	qstr = "CREATE OR REPLACE FUNCTION AllNCPathsAsLinks(start NodePtr,chapter text,rm_acc boolean,context text[],orientation text,maxdepth INT,maxlimit int)\n"+
 		"RETURNS Text AS $fn$\n" +
 		"DECLARE\n" +
 		"   hop Text;\n" +
@@ -2988,7 +2988,7 @@ func DefineStoredFunctions(sst PoSST) {
 		fmt.Println("Error defining postgres function:",qstr,err)
 	}
 
-	row.Close()
+	row.Close()*/
 
 	// SumAllNCPaths - a filtering version of the SumAllPaths recursive helper function, slower but more powerful
 	qstr = "CREATE OR REPLACE FUNCTION SumAllNCPaths(start Link,path TEXT,orientation text,depth int, maxdepth INT,chapter text,rm_acc boolean,context text[],exclude NodePtr[],maxlimit int)\n"+
@@ -3151,7 +3151,7 @@ func DefineStoredFunctions(sst PoSST) {
 		"    neighbours := ARRAY[]::Link[];\n" +
 		"    FOREACH lnk IN ARRAY fwdlinks\n" +
 		"    LOOP\n"+
-
+//MATCH ARROWDS
 		"      IF lnk.Arr = 0 THEN\n"+
 		"         CONTINUE;"+
 		"      END IF;\n"+
@@ -4415,7 +4415,7 @@ func GetEntireConePathsAsLinks(sst PoSST,orientation string,start NodePtr,depth 
 }
 
 // **************************************************************************
-
+/*
 func GetEntireNCConePathsAsLinks(sst PoSST,orientation string,start NodePtr,depth int,chapter string,context []string,limit int) ([][]Link,int) {
 
 	// orientation should be "fwd" or "bwd" else "both"
@@ -4455,7 +4455,7 @@ func GetEntireNCConePathsAsLinks(sst PoSST,orientation string,start NodePtr,dept
 
 	row.Close()
 	return retval,len(retval)
-}
+}*/
 
 // **************************************************************************
 

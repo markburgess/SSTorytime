@@ -412,10 +412,7 @@ func CausalCones(sst SST.PoSST,nptrs []SST.NodePtr, chap string, context []strin
 //******************************************************************
 
 func PathSolve(sst SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,context []string,arrowptrs []SST.ArrowPtr,sttype []int,maxdepth int) {
-
-	var Lnum,Rnum int
 	var count int
-	var left_paths, right_paths [][]SST.Link
 
 	if leftptrs == nil || rightptrs == nil {
 		return
@@ -427,38 +424,15 @@ func PathSolve(sst SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,con
 		fmt.Println("Solver/handler: GetEntireNCSuperConeAsLinks()")
 	}
 
-	var solutions [][]SST.Link
-	var ldepth,rdepth int = 2,2
+	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,maxdepth)
 
-	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
-
-		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(sst,"fwd",leftptrs,ldepth,chapter,context,maxdepth)
-		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(sst,"bwd",rightptrs,rdepth,chapter,context,maxdepth)
-
-		// try the reverse
-
-		if Lnum == 0 || Rnum == 0 {
-			left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(sst,"bwd",leftptrs,ldepth,chapter,context,maxdepth)
-			right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(sst,"fwd",rightptrs,rdepth,chapter,context,maxdepth)
+	if len(solutions) > 0 {
+		
+		for s := 0; s < len(solutions); s++ {
+			prefix := fmt.Sprintf(" - story path: ")
+			PrintConstrainedLinkPath(sst,solutions,s,prefix,chapter,context,arrowptrs,sttype)
 		}
-
-		solutions,_ = SST.WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
-
-		if len(solutions) > 0 {
-
-			for s := 0; s < len(solutions); s++ {
-				prefix := fmt.Sprintf(" - story path: ")
-				PrintConstrainedLinkPath(sst,solutions,s,prefix,chapter,context,arrowptrs,sttype)
-			}
-			count++
-			break
-		}
-
-		if turn % 2 == 0 {
-			ldepth++
-		} else {
-			rdepth++
-		}
+		count++
 	}
 }
 

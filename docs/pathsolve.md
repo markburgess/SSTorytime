@@ -121,4 +121,15 @@ In the search field, enter the Dirac notation, e.g. `<target|start>` and relevan
 
 Notice the reporting about supernodes and betweenness centrality scores. 
 
+## Speeding up path searches
 
+Path searches grow exponentially with the length of the path, so they get slower and slower as the distance between nodes
+increases. If you know the type of arrow along the whole path, you can speed up the search by specifying the arrow types, or the sttypes, e.g. using the STtypes:
+<pre>
+./searchN4L -v \\from \!gun\! \\to scarlet \\arrow +3,-3,0
+</pre>
+And using the arrows:
+<pre>
+./searchN4L -v \\from \!a1\! \\to b6 \\arrow 20,21
+</pre>
+Remember to always give pairs of arrow,inverse since the FROM and the TO match opposite arrow directions.

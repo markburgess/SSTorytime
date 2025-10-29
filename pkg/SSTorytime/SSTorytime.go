@@ -5266,6 +5266,7 @@ func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,
 
 	// Calculate the supernode layer sets S[path][depth], factoring process symmetries
 
+	fmt.Println("HINT: specify \\arrow fwd,bwd inverse-pairs to speed restrict search and speed up search")
 	return solutions
 }
 

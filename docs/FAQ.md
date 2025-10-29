@@ -23,7 +23,7 @@ Be careful to ensure that you haven't accidentally used any of the annotation ma
 
 This is probably a result of certain words and phrases belonging to more than one chapter, and thus bridging chapters that you didn't intend. This bridging is intentional, as it allows >"lateral thinking", which is an important source of discovery.
 
-* **Why doesn't pathsolve understan my search on the command line**
+* **Why doesn't pathsolve understand my search on the command line**
 
 Shell characters interfere with the syntax. We need to escape characters, e.g. using single quotes to avoid expansion:
 <pre>
@@ -36,6 +36,18 @@ $ ./searchN4L \\from '!a1!'
 Path solving is a potentially exponential process. Without some constraints it could take a very long time. You can restrict the time significantly by specifying precise start and end nodes, e.g. write `from !a1! to !b6!` to match the precise a1 (not a substring of many possibilities. You can also use a context `from a1 to b4 context connection`. See also 'Why are the results different each time?'
 
 By default, SSTorytime will also try to search all possible path types. Narrative links are neary always arrow type 1 (leads to), so you can try to limit by arrow too `from door arrow 1`.
+
+* **Why does a path search take so long?
+Path searches grow exponentially with the length of the path, so they get slower and slower as the distance between nodes
+increases. If you know the type of arrow along the whole path, you can speed up the search by specifying the arrow types, or the sttypes, e.g. using the STtypes:
+<pre>
+./searchN4L -v \\from \!gun\! \\to scarlet \\arrow +3,-3,0
+</pre>
+And using the arrows:
+<pre>
+./searchN4L -v \\from \!a1\! \\to b6 \\arrow 20,21
+</pre>
+Remember to always give pairs of arrow,inverse since the FROM and the TO match opposite arrow directions.
 
 * **Why are the results different each time?**
 

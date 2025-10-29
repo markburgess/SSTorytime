@@ -271,6 +271,10 @@ switch (obj.Response)
       break;
    case "PathSolve":
       title = "Path solutions";
+      if (obj.Content != null && obj.Content[0] != null)
+	 {
+	 title = obj.Content[0].Title;
+	 }
       break;
    case "Sequence":
       if (obj.Content != null && obj.Content[0] != null)
@@ -1921,6 +1925,7 @@ return '"'+ret+'"';
 function HeatColour(freq, pdelta, sat)
 {
 // pdelta is measured in seconds --> HSL
+
 const hottest = 100;
 const coldest = 3600 * 24 * 7 - hottest;
 

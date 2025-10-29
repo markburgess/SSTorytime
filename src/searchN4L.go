@@ -424,7 +424,7 @@ func PathSolve(sst SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,con
 		fmt.Println("Solver/handler: GetEntireNCSuperConeAsLinks()")
 	}
 
-	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,maxdepth)
+	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,maxdepth)
 
 	if len(solutions) > 0 {
 		

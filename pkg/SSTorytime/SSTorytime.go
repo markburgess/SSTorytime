@@ -5057,7 +5057,7 @@ func MakeCoordinateDirectory(XChannels []float64, unique [][]NodePtr,maxzlen,nth
 // Path integral matrix and coarse graining
 // **************************************************************************
 
-func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,context []string,maxdepth int) [][]Link {
+func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,context []string,arrowptrs []ArrowPtr,maxdepth int) [][]Link {
 
 	var left_paths, right_paths [][]Link
 	var ldepth,rdepth int = 1,1

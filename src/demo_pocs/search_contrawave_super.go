@@ -25,14 +25,14 @@ func main() {
 
 	// Contra colliding wavefronts as path integral solver
 
-	const maxdepth = 5
+	const maxdepth = 15
 	var ldepth,rdepth int = 2,2
 	var Lnum,Rnum int
 	var count int
 	var left_paths, right_paths [][]SST.Link
 
-	start_bc := "a1"
-	end_bc := "b6"
+	start_bc := "plum"
+	end_bc := "scarlet"
 
 	leftptrs := SST.GetDBNodePtrMatchingName(sst,start_bc,"")
 	rightptrs := SST.GetDBNodePtrMatchingName(sst,end_bc,"")
@@ -42,13 +42,13 @@ func main() {
 		return
 	}
 
-	chapter := "double"
+	chapter := ""
 	var context []string
 
-	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
+	left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(sst,"any",leftptrs,maxdepth,chapter,context,maxdepth)
+	right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(sst,"any",rightptrs,maxdepth,chapter,context,maxdepth)
 
-		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(sst,"fwd",leftptrs,ldepth,chapter,context,maxdepth)
-		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(sst,"bwd",rightptrs,rdepth,chapter,context,maxdepth)
+	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
 		solutions,loop_corrections := WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
@@ -63,6 +63,7 @@ func main() {
 			}
 			count++
 			fmt.Println("-------------------------------------------")
+			break
 		}
 
 		if len(loop_corrections) > 0 {
@@ -75,6 +76,7 @@ func main() {
 			}
 			count++
 			fmt.Println("+++++++++++++++++++++++++++++++++++++++++++")
+			break
 		}
 
 		if turn % 2 == 0 {

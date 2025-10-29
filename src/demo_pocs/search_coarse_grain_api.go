@@ -49,8 +49,9 @@ func main() {
 	}
 
 	var arrowptrs []SST.ArrowPtr
+	var sttypes []int
 
-	solutions := SST.GetPathsAndSymmetries(sst,start_set,end_set,chapter,context,arrowptrs,maxdepth)
+	solutions := SST.GetPathsAndSymmetries(sst,start_set,end_set,chapter,context,arrowptrs,sttypes,maxdepth)
 
 	var count int
 

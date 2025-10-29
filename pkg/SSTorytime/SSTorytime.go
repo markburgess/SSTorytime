@@ -3949,7 +3949,7 @@ func SelectStoriesByArrow(sst PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, st
 
 	for _,n := range nodeptrs {
 
-		// All these nodes should have Seq = true already from "SolveNodePtrs()"
+		// After changes, all these nodes should have Seq = true already from "SolveNodePtrs()"
 		// So all the searching is finished, we just need to match the requested arrow
 
 		node := GetDBNodeByNodePtr(sst,n)  // we are now caching this for later
@@ -5057,7 +5057,7 @@ func MakeCoordinateDirectory(XChannels []float64, unique [][]NodePtr,maxzlen,nth
 // Path integral matrix and coarse graining
 // **************************************************************************
 
-func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,context []string,arrowptrs []ArrowPtr,maxdepth int) [][]Link {
+func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,context []string,arrowptrs []ArrowPtr,sttypes []int,maxdepth int) [][]Link {
 
 	var left_paths, right_paths [][]Link
 	var ldepth,rdepth int = 1,1
@@ -5067,6 +5067,10 @@ func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,
 
 	if start_set == nil || end_set == nil {
 		return nil
+	}
+
+	if arrowptrs == nil {
+		arrowptrs, sttypes = ArrowPtrFromArrowsNames(sst, []string{"!then!"})
 	}
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {

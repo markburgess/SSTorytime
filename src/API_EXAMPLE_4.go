@@ -1,6 +1,6 @@
 //******************************************************************
 //
-// A path solving method, progressing from DAG to loop corrected
+// A low level view of the path solving method, progressing from DAG to loop corrected
 // paths containing cycles (like a quantum loop expansion)
 //
 // (This relies on the data from the double.n4l notes)

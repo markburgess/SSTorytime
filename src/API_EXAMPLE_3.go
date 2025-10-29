@@ -1,10 +1,6 @@
 //******************************************************************
 //
-// Try out neighbour search for all ST stypes together
-//
-// Prepare:
-// cd examples
-// ../src/N4L-db -u chinese.n4l
+// Maze solver, knowing start and end
 //
 //******************************************************************
 

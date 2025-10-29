@@ -5063,6 +5063,7 @@ func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,
 	var ldepth,rdepth int = 1,1
 	var Lnum,Rnum int
 	var solutions [][]Link
+	var loop_corrections [][]Link
 
 	if start_set == nil || end_set == nil {
 		return nil
@@ -5070,12 +5071,16 @@ func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		left_paths,Lnum = GetEntireNCSuperConePathsAsLinks(sst,"fwd",start_set,ldepth,chapter,context,maxdepth)
-		right_paths,Rnum = GetEntireNCSuperConePathsAsLinks(sst,"bwd",end_set,rdepth,chapter,context,maxdepth)
-		solutions,_ = WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
+		left_paths,Lnum = GetEntireNCSuperConePathsAsLinks(sst,"any",start_set,ldepth,chapter,context,maxdepth)
+		right_paths,Rnum = GetEntireNCSuperConePathsAsLinks(sst,"any",end_set,rdepth,chapter,context,maxdepth)
+		solutions,loop_corrections = WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
 		if len(solutions) > 0 {
-			break
+			return solutions
+		}
+
+		if len(loop_corrections) > 0 {
+			return loop_corrections
 		}
 
 		if turn % 2 == 0 {

@@ -335,7 +335,10 @@ Obtains the orbit around a starting node as a set of nodes to given depth
 
 Obtains all possible paths from a node along STtype links
 
-#### `GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodePtr,depth int,chapter string,context []string,limit int) ([][]Link,int)`
+#### `GetConstraintConePathsAsLinks(sst PoSST,start []NodePtr,depth int,chapter string,context []string,arrowptrs []ArrowPtr,sttypes []int,limit int) ([][]Link,int)`
+
+N.B. This was previously the function called:
+`GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodePtr,depth int,chapter string,context []string,limit int) ([][]Link,int)`
 
 Obtains all possible paths from a starting node, with orientation `fwd,bwd,any` as link arrays matching the chapter and context criteria
 

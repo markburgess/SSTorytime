@@ -4564,6 +4564,7 @@ func GetEntireConePathsAsLinks(sst PoSST,orientation string,start NodePtr,depth 
 
 func GetEntireNCConePathsAsLinks(sst PoSST,orientation string,start []NodePtr,depth int,chapter string,context []string,limit int) ([][]Link,int) {
 
+	// See also GetConstraintConePathsAsLinks for an interface with arrow matching
 	// orientation should be "fwd" or "bwd" else "both"
 
 	remove_accents,stripped := IsBracketedSearchTerm(chapter)
@@ -4600,6 +4601,7 @@ func GetEntireNCConePathsAsLinks(sst PoSST,orientation string,start []NodePtr,de
 
 func GetConstraintConePathsAsLinks(sst PoSST,start []NodePtr,depth int,chapter string,context []string,arrowptrs []ArrowPtr,sttypes []int,limit int) ([][]Link,int) {
 
+	// See also GetEntireNCConePathsAsLinks() for a differently optimized interface
 	// orientation should be "fwd" or "bwd" else "both"
 
 	remove_accents,stripped := IsBracketedSearchTerm(chapter)

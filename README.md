@@ -11,7 +11,8 @@
 > [!NOTE]
 > * Join the [SSTorytime LinedIn Group](https://www.linkedin.com/groups/15875004/) for questions and discussions.
 > * [Get Started using docker](docs/DOCKER.md)
-> Note, this is not an RDF project. <br>
+> * Note, SSTorytime is a knowledge graph that is not an RDF-based project. It aims to be both easier to use and more powerful than RDF. <br>
+> * Welcome!
 
 # SSTorytime
 

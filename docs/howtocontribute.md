@@ -39,7 +39,7 @@ The focus has been on obtaining a "responsive" design that will work on all devi
 
 * * Reading text out loud (in multiple languages) is desirable.
 
-* * Hosted platform for the compiler and database, with file uploading for portability.
+* * Hosted platform for the compiler and database, with file uploading for portability. This involves a whole new level of user authentication and security, etc. A major project.
 
 * * Validation of Events, Things, Concepts in graph compilation, and tagging of inferred type.
 
@@ -49,10 +49,16 @@ The focus has been on obtaining a "responsive" design that will work on all devi
 
 * * Help assistant for breaking down text into atomic structures with standard link types.
 
-* * UPnP scan and data input.
-
 * * Legal document analysis.
+
+## Conversion data projects
+
+* * UPnP scan and data input, e.g. music library.
 
 * * Index an existing SQL database.
 
 * * Convert an RDF graph into SST.
+
+* * Inventory / asset graph.
+
+* * Log data analysis.

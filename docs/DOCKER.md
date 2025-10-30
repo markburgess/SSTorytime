@@ -4,7 +4,7 @@ Complete guide for running SSTorytime in Docker.
 
 ---
 
-## Quick Start (see DOCKER_QUICKSTART.md)
+## Quick Start (see [The Docker quickstart guide](DOCKER_QUICKSTART.md))
 
 ```bash
 ./start_docker.sh

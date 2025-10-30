@@ -39,9 +39,13 @@ The focus has been on obtaining a "responsive" design that will work on all devi
 
 * * Reading text out loud (in multiple languages) is desirable.
 
+* * Improved learning goals and tracking.
+
 * * Hosted platform for the compiler and database, with file uploading for portability. This involves a whole new level of user authentication and security, etc. A major project.
 
-* * Validation of Events, Things, Concepts in graph compilation, and tagging of inferred type.
+* * Validation of Events, Things, Concepts in graph compilation, and tagging of inferred type (checking for nonsense).
+
+* * Provenance and attribution of sources, through notes.
 
 * * Inhibition contexts; implementation of NOT in searches.
 
@@ -51,7 +55,13 @@ The focus has been on obtaining a "responsive" design that will work on all devi
 
 * * Legal document analysis.
 
+## Hardware
+
+* * Raspberry Pi style wearable device.
+
 ## Conversion data projects
+
+* * Product catalogue with annotation.
 
 * * UPnP scan and data input, e.g. music library.
 

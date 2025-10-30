@@ -13,7 +13,19 @@ SSTorytime takes information that you enter in the form of
 * Personal notes (written in a simple format called N4L).
 * Data entered by a computer program (using the API for creating Nodes and Links).
 
-It turns these data into a graph, which you can then browse and query with the ready-made tools here, or by writing your own programs using the API. 
+It turns these data into a graph, which you can then browse and query
+with the ready-made tools here, or by writing your own programs using
+the API.
+
+
+## Five steps to heaven
+
+* JOT IT DOWN WHEN YOU THINK OF IT. . .
+* TYPE IT INTO N4L AS SOON AS YOU CAN. . .
+* ORGANIZE AND TIDY YOUR N4L NOTES EVERY DAY. . .
+* UPLOAD AND BROWSE THEM ONLINE. . .
+* REMEMBER, IT ISN'T KNOWLEDGE IF YOU DON'T ACTUALLY KNOW IT !!
+
 
 ## The tools
 
@@ -40,7 +52,7 @@ There are also tools for helping you to get started making notes about a text do
 
 * Use `text2N4L` to read a text file and select parts to produce an editable file in N4L that you can use as a starting point for your own notes.
 
-## The data model
+## The idea
 
 The knowledge database is divided into
 
@@ -120,7 +132,8 @@ collaborating with friends or colleagues (but only in small groups).
 you'll be shocked and disappointed by this project. If you're a teacher or a writer, you might
 quite like it.*
 
-## How to start
+
+## Go for it!
 
 With SSTorytime, the source files are your main focus, and the database is just a convenient
 aid to remembering, because retrieval sometimes needs help. You will spend most of your time

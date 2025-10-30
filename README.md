@@ -9,9 +9,10 @@
 
 
 > [!NOTE]
-> * Join the [SSTorytime LinedIn Group](https://www.linkedin.com/groups/15875004/) for questions and discussions.
+> * Join the [SSTorytime LinkedIn Group](https://www.linkedin.com/groups/15875004/) for questions and discussions.
 > * [Get Started using docker](docs/DOCKER.md)
 > * Note, SSTorytime is a knowledge graph that is not an RDF-based project. It aims to be both easier to use and more powerful than RDF. <br>
+> * <br> [TO-DO List and HOW **YOU** CAN CONTRIBUTE!](docs/howtocontribute.md)
 > * Welcome!
 
 # SSTorytime
@@ -44,8 +45,6 @@ book shown to the right. N.B. This book is not a tutorial or how to manual.
  Keywords, tags: Open Source Smart Graph Database API for Postgres, Go(lang) API, Explainability of Knowledge Representation
 
 
-
-<br> [TO-DO List and HOW **YOU** CAN CONTRIBUTE!](docs/howtocontribute.md)
 
 * See these Medium articles for a conceptual introduction
 * * [Why Semantic Spacetime (SST) is the answer to rescue property graphs](https://medium.com/@mark-burgess-oslo-mb/why-semantic-spacetime-sst-is-the-answer-to-rescue-property-graphs-2c004fe705b2)

@@ -19,7 +19,7 @@ func main() {
 	chapter := "double slit example"
 	context := []string{""}
 	arrowptrs := []SST.ArrowPtr{20,21}
-	sttype := []int{1,-1}
+	sttype := []int{1}
 	maxdepth := 10
 
 	leftptrs := SST.GetDBNodePtrMatchingName(sst,start_bc,"")
@@ -124,12 +124,15 @@ func IncConstraintConeLinks(sst SST.PoSST,cone [][]SST.Link,chapter string ,cont
 		for _,satellite := range shoots {
 			if !exclude[satellite.Dst] {
 				exclude[satellite.Dst] = true
-				delta := append(branch,satellite)
+				var delta []SST.Link
+				for _,prev := range branch {
+					delta = append(delta,prev)
+				}
+				delta = append(delta,satellite)
 				expanded_cone = append(expanded_cone,delta)
 			}
 		}
 	}
-
 	return expanded_cone
 }
 

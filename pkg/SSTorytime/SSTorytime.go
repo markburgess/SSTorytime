@@ -353,6 +353,7 @@ var (
 
 	NODE_DIRECTORY NodeDirectory  // Internal histo-representations
 	NO_NODE_PTR NodePtr // see Init()
+	NONODE NodePtr
 
 	// Uploading
 
@@ -517,6 +518,8 @@ func Open(load_arrows bool) PoSST {
 
 	NO_NODE_PTR.Class = 0
 	NO_NODE_PTR.CPtr =  -1
+	NONODE.Class = 0
+	NONODE.CPtr = 0
 
 	return sst
 }
@@ -3242,7 +3245,9 @@ func DefineStoredFunctions(sst PoSST) {
 		"    IF fwdlinks IS NULL THEN\n" +
 		"        RETURN '{}';\n" +
 		"    END IF;\n" +
+
 		"    neighbours := ARRAY[]::Link[];\n" +
+
 		"    FOREACH lnk IN ARRAY fwdlinks\n" +
 		"    LOOP\n"+
 
@@ -3257,11 +3262,13 @@ func DefineStoredFunctions(sst PoSST) {
                 "      IF context is not NULL AND NOT match_context(lnk.Ctx,context::text[]) THEN\n"+
                 "         CONTINUE;\n"+
                 "      END IF;\n"+
+
 		"      IF exclude is not NULL AND NOT lnk.dst=ANY(exclude) THEN\n" +
 		"         neighbours := array_append(neighbours, lnk);\n" +
 		"      END IF; \n" + 
 
 		"    END LOOP;\n" +
+
 		"    RETURN neighbours; \n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n")
@@ -5294,15 +5301,10 @@ func AdjointArrows(arrowptrs []ArrowPtr) []ArrowPtr {
 
 func AdjointSTtype(sttypes []int) []int {
 
-	var idemp = make(map[int]bool)
 	var result []int
 
-	for _,i := range sttypes {
-		idemp[-i] = true
-	}
-
-	for i := range idemp {
-		result = append(result,i)
+	for i := len(sttypes)-1; i >= 0; i-- {
+		result = append(result,-sttypes[i])
 	}
 
 	return result
@@ -5393,7 +5395,7 @@ func WaveFront(path [][]Link,num int) []NodePtr {
 
 	var front []NodePtr
 
-	for l := 0; l < num; l++ {
+	for l := 0; l < len(path); l++ {
 		front = append(front,path[l][len(path[l])-1].Dst)
 	}
 
@@ -9360,6 +9362,8 @@ func ParseLinkArray(s string) []Link {
 	var array []Link
 
 	s = strings.TrimSpace(s)
+	s = strings.ReplaceAll(s,"{","")
+	s = strings.ReplaceAll(s,"}","")
 
 	if len(s) <= 2 {
 		return array
@@ -9368,7 +9372,6 @@ func ParseLinkArray(s string) []Link {
 	strarray := strings.Split(s,"\",\"")
 
 	for i := 0; i < len(strarray); i++ {
-
 		link := ParseSQLLinkString(strarray[i])
 		array = append(array,link)
 	}

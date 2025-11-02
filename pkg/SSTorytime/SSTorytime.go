@@ -5232,7 +5232,7 @@ func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,
 	adj_arrowptrs := AdjointArrows(arrowptrs)
 	adj_sttypes := AdjointSTtype(sttypes)
 
-	// Prime paths
+	// Prime paths - the different starting points could be parallelized in principle, but we might not win much
 
 	left_paths,Lnum = GetConstraintConePathsAsLinks(sst,start_set,ldepth,chapter,context,arrowptrs,sttypes,maxdepth)
 	right_paths,Rnum = GetConstraintConePathsAsLinks(sst,end_set,rdepth,chapter,context,adj_arrowptrs,adj_sttypes,maxdepth)

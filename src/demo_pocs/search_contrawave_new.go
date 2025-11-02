@@ -21,11 +21,15 @@ func main() {
 
 //	start_bc := "start"
 //	end_bc := "target"
+
+//	start_bc := "maze_a7"
+//	end_bc := "maze_i6"
+
 	chapter := ""
 	context := []string{""}
 	arrowptrs := []SST.ArrowPtr{}
 	sttype := []int{1,2,3,0,-1,-2,-3}
-	maxdepth := 600
+	maxdepth := 50
 	mindepth := 2
 
 	leftptrs := SST.GetDBNodePtrMatchingName(sst,start_bc,"")
@@ -34,7 +38,7 @@ func main() {
 	fmt.Println("Boundary conditions: \nLEFT:",start_bc,leftptrs,"\n\nRIGHT:",end_bc,rightptrs)
 	// Contra colliding wavefronts as path integral solver
 
-	solutions := GetPathsAndSymmetries2(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
+	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
 
 	if len(solutions) > 0 {		
 		for s := 0; s < len(solutions); s++ {

@@ -3240,11 +3240,11 @@ func DefineStoredFunctions(sst PoSST) {
 		"    lnk Link;\n" +
 		"BEGIN\n" +
 
-		"    fwdlinks = GetNCNeighboursByType(start,chapter,rm_acc,sttype,maxlimit);\n"+
+		"   fwdlinks = GetNCNeighboursByType(start,chapter,rm_acc,sttype,maxlimit);\n"+
 
-		"    IF fwdlinks IS NULL THEN\n" +
-		"        RETURN '{}';\n" +
-		"    END IF;\n" +
+		"   IF fwdlinks IS NULL THEN\n" +
+		"       RETURN '{}';\n" +
+		"   END IF;\n" +
 
 		"    neighbours := ARRAY[]::Link[];\n" +
 
@@ -5212,6 +5212,164 @@ func MakeCoordinateDirectory(XChannels []float64, unique [][]NodePtr,maxzlen,nth
 // **************************************************************************
 
 func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,context []string,arrowptrs []ArrowPtr,sttypes []int,mindepth,maxdepth int) [][]Link {
+
+	var left_paths, right_paths [][]Link
+	var ldepth,rdepth int = 1,1
+	var Lnum,Rnum int
+	var solutions [][]Link
+	var loop_corrections [][]Link
+
+	if start_set == nil || end_set == nil {
+		return nil
+	}
+
+	if sttypes == nil || len(sttypes)== 0 {
+		sttypes = []int{1,2,3,0,-1,-2,-3}
+	}
+
+	// Complete Adjoint types for inverse/acceptor wave
+
+	adj_arrowptrs := AdjointArrows(arrowptrs)
+	adj_sttypes := AdjointSTtype(sttypes)
+
+	// Prime paths
+
+	left_paths,Lnum = GetConstraintConePathsAsLinks(sst,start_set,ldepth,chapter,context,arrowptrs,sttypes,maxdepth)
+	right_paths,Rnum = GetConstraintConePathsAsLinks(sst,end_set,rdepth,chapter,context,adj_arrowptrs,adj_sttypes,maxdepth)
+
+	fmt.Println("Constraint primer: \nleft",left_paths,"\n\nright",right_paths)
+
+	fmt.Println("Min-path:",mindepth)
+	fmt.Println("Max-path:",maxdepth)
+	fmt.Println("STtypes:",sttypes)
+
+	// Expand waves
+
+	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
+
+		fmt.Print("\r   ..Waves searching: ",ldepth,rdepth)
+
+		solutions,loop_corrections = WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
+
+		if len(solutions) > mindepth {
+			fmt.Println("   ..DAG solutions:",ldepth,rdepth)
+			return solutions
+		}
+
+		if len(loop_corrections) > mindepth {
+			fmt.Println("   ..Only non-DAG solutions:",ldepth,rdepth)
+			return loop_corrections
+		}
+
+		if turn % 2 == 0 {
+			left_paths = IncConstraintConeLinks(sst,left_paths,chapter,context,arrowptrs,sttypes,maxdepth)
+			ldepth++
+		} else {
+			right_paths = IncConstraintConeLinks(sst,right_paths,chapter,context,adj_arrowptrs,adj_sttypes,maxdepth)
+			rdepth++
+		}
+	}
+
+	// Calculate the supernode layer sets S[path][depth], factoring process symmetries
+
+	fmt.Println("HINT: specify \\arrow fwd,bwd inverse-pairs to speed restrict search and speed up search")
+	return solutions
+}
+
+// **************************************************************************
+
+func IncConstraintConeLinks(sst PoSST,cone [][]Link,chapter string ,context []string,arrowptrs []ArrowPtr,sttypes []int,maxdepth int) [][]Link {
+
+	// Provide an incremental cone expander, so we can preserve state to avoid recomputation
+	// This will be increasingly effective as path length increases
+
+	var expanded_cone [][]Link
+
+	for p := 0; p < len(cone); p++ {
+
+		branch := cone[p]
+		var exclude = make(map[NodePtr]bool)
+
+		for _,prev := range branch {
+			exclude[prev.Dst] = true
+		}
+
+		tip := []NodePtr{branch[len(branch)-1].Dst}
+
+		shoots := GetConstrainedFwdLinks(sst,tip,chapter,context,sttypes,arrowptrs,maxdepth)
+
+		// unfurl branches, checking for retracing
+
+		for _,satellite := range shoots {
+
+			if !exclude[satellite.Dst] {
+				exclude[satellite.Dst] = true
+				var delta []Link
+				for _,prev := range branch {
+					delta = append(delta,prev)
+				}
+
+				delta = append(delta,satellite)
+				expanded_cone = append(expanded_cone,delta)
+			}
+		}
+	}
+
+	return expanded_cone
+}
+
+// **************************************************************************
+
+func GetConstrainedFwdLinks(sst PoSST,start []NodePtr,chapter string,context []string,sttypes []int,arrows []ArrowPtr,maxlimit int) []Link {
+
+	var ret []Link
+
+	remove_accents,stripped := IsBracketedSearchTerm(chapter)
+	chapter = "%"+stripped+"%"
+	rm_acc := "false"
+
+	if remove_accents {
+		rm_acc = "true"
+	}
+
+	start = append(start,NONODE)
+	excl := FormatSQLNodePtrArray(start)
+	arr := FormatSQLIntArray(Arrow2Int(arrows))
+	cnt := FormatSQLStringArray(context)
+
+	startnode := fmt.Sprintf("(%d,%d)",start[0].Class,start[0].CPtr)
+
+	for _,st := range sttypes { 
+
+		qstr := fmt.Sprintf("select GetConstrainedFwdLinks('%s','%s',%s,%s,%s,%d,%s,%d);",startnode,chapter,rm_acc,cnt,excl,st,arr,maxlimit)
+
+		row, err := sst.DB.Query(qstr)
+		
+		if err != nil {
+			fmt.Println("QUERY to ConstraintPathsAsLinks Failed",err,qstr)
+			return ret
+		}
+		
+		var whole string
+
+		if row != nil {		
+			for row.Next() {		
+				err = row.Scan(&whole)
+				orbit := ParseLinkArray(whole)
+				for _,lnk := range orbit {
+					ret = append(ret,lnk)
+				}
+			}
+			row.Close()
+		}
+	}
+
+	return ret
+}
+
+// **************************************************************************
+
+func GetPathsAndSymmetries_legacy(sst PoSST,start_set,end_set []NodePtr,chapter string,context []string,arrowptrs []ArrowPtr,sttypes []int,mindepth,maxdepth int) [][]Link {
 
 	var left_paths, right_paths [][]Link
 	var ldepth,rdepth int = 1,1

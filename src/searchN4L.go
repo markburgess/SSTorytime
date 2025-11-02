@@ -187,20 +187,21 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 
 	arrows := arrowptrs != nil
 	sttypes := sttype != nil
-	limit := 0
+	minlimit := 2
+	maxlimit := 0
 
 	if search.Range > 0 {
-		limit = search.Range
+		maxlimit = search.Range
 	} else {
 		if from || to || sequence {
-			limit = 30 // many paths make hard work
+			maxlimit = 30 // many paths make hard work
 		} else {
 			const common_word = 5
 
 			if SST.SearchTermLen(search.Name) < common_word {
-				limit = 5
+				maxlimit = 5
 			} else {
-				limit = 10
+				maxlimit = 10
 			}
 		}
 	}
@@ -208,22 +209,22 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 	var nodeptrs,leftptrs,rightptrs []SST.NodePtr
 
 	if !pagenr && !sequence {
-		leftptrs = SST.SolveNodePtrs(sst,search.From,search,arrowptrs,limit)
-		rightptrs = SST.SolveNodePtrs(sst,search.To,search,arrowptrs,limit)
+		leftptrs = SST.SolveNodePtrs(sst,search.From,search,arrowptrs,maxlimit)
+		rightptrs = SST.SolveNodePtrs(sst,search.To,search,arrowptrs,maxlimit)
 	}
 
-	nodeptrs = SST.SolveNodePtrs(sst,search.Name,search,arrowptrs,limit)
+	nodeptrs = SST.SolveNodePtrs(sst,search.Name,search,arrowptrs,maxlimit)
 
 	// SEARCH SELECTION *********************************************
 
 	fmt.Println("------------------------------------------------------------------")
-	fmt.Println(" Limiting to maximum of",limit,"results")
+	fmt.Println(" Limiting to maximum of",maxlimit,"results")
 
 	// Table of contents
 
 	if (context || chapter) && !name && !sequence && !pagenr && !(from || to) {
 
-		ShowMatchingChapter(sst,search.Chapter,search.Context,limit)
+		ShowMatchingChapter(sst,search.Chapter,search.Context,maxlimit)
 		ShowTime(sst,search)
 		return
 	}
@@ -233,7 +234,7 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 	if name && ! sequence && !pagenr {
 
 		fmt.Println("------------------------------------------------------------------")
-		FindOrbits(sst, nodeptrs, limit)
+		FindOrbits(sst, nodeptrs, maxlimit)
 		ShowTime(sst,search)
 		return
 	}
@@ -249,7 +250,7 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 	if from && to {
 
 		fmt.Println("------------------------------------------------------------------")
-		PathSolve(sst,leftptrs,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+		PathSolve(sst,leftptrs,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,minlimit,maxlimit)
 		ShowTime(sst,search)
 		return
 	}
@@ -262,19 +263,19 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 		
 		if nodeptrs != nil {
 			fmt.Println("------------------------------------------------------------------")
-			CausalCones(sst,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+			CausalCones(sst,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,maxlimit)
 			ShowTime(sst,search)
 			return
 		}
 		if leftptrs != nil {
 			fmt.Println("------------------------------------------------------------------")
-			CausalCones(sst,leftptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+			CausalCones(sst,leftptrs,search.Chapter,search.Context,arrowptrs,sttype,maxlimit)
 			ShowTime(sst,search)
 			return
 		}
 		if rightptrs != nil {
 			fmt.Println("------------------------------------------------------------------")
-			CausalCones(sst,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+			CausalCones(sst,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,maxlimit)
 			ShowTime(sst,search)
 			return
 		}
@@ -304,7 +305,7 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 	// Look for axial trails following a particular arrow, like _sequence_ 
 
 	if sequence {
-		ShowStories(sst,nodeptrs,arrowptrs,sttype,limit)
+		ShowStories(sst,nodeptrs,arrowptrs,sttype,maxlimit)
 		ShowTime(sst,search)
 		return
 	}
@@ -411,7 +412,7 @@ func CausalCones(sst SST.PoSST,nptrs []SST.NodePtr, chap string, context []strin
 
 //******************************************************************
 
-func PathSolve(sst SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,context []string,arrowptrs []SST.ArrowPtr,sttype []int,maxdepth int) {
+func PathSolve(sst SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,context []string,arrowptrs []SST.ArrowPtr,sttype []int,mindepth,maxdepth int) {
 	var count int
 
 	if leftptrs == nil || rightptrs == nil {

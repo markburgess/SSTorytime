@@ -267,20 +267,21 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 
 	arrows := arrowptrs != nil
 	sttypes := sttype != nil
-	limit := 0
+	minlimit := 2
+	maxlimit := 0
 
 	if search.Range > 0 {
-		limit = search.Range
+		maxlimit = search.Range
 	} else {
 		if from || to || sequence {
-			limit = 30 // many paths make hard work
+			maxlimit = 30 // many paths make hard work
 		} else {
 			const common_word = 5
 
 			if SST.SearchTermLen(search.Name) < common_word {
-				limit = 5
+				maxlimit = 5
 			} else {
-				limit = 10
+				maxlimit = 10
 			}
 		}
 	}
@@ -295,7 +296,7 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 	fmt.Fprintln(tabWriter, "arrows:\t", SL(search.Arrows))
 	fmt.Fprintln(tabWriter, "pageNR:\t", search.PageNr)
 	fmt.Fprintln(tabWriter, "sequence/story:\t", search.Sequence)
-	fmt.Fprintln(tabWriter, "limit/range/depth:\t", limit)
+	fmt.Fprintln(tabWriter, "limit/range/depth:\t", maxlimit)
 	fmt.Fprintln(tabWriter, "show stats:\t", search.Stats)
 
 	tabWriter.Flush()
@@ -304,11 +305,11 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 	var nodeptrs, leftptrs, rightptrs []SST.NodePtr
 
 	if !pagenr && !sequence {
-		leftptrs = SST.SolveNodePtrs(PSST, search.From, search, arrowptrs, limit)
-		rightptrs = SST.SolveNodePtrs(PSST, search.To, search, arrowptrs, limit)
+		leftptrs = SST.SolveNodePtrs(PSST, search.From, search, arrowptrs, maxlimit)
+		rightptrs = SST.SolveNodePtrs(PSST, search.To, search, arrowptrs, maxlimit)
 	}
 
-	nodeptrs = SST.SolveNodePtrs(PSST, search.Name, search, arrowptrs, limit)
+	nodeptrs = SST.SolveNodePtrs(PSST, search.Name, search, arrowptrs, maxlimit)
 
 	fmt.Println("Solved search nodes ...")
 
@@ -322,12 +323,12 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 	}
 
 	if (context || chapter) && !name && !sequence && !pagenr && !(from || to) {
-		ShowChapterContexts(w, r, PSST, search, limit)
+		ShowChapterContexts(w, r, PSST, search, maxlimit)
 		return
 	}
 
 	if name && !sequence && !pagenr {
-		HandleOrbit(w, r, PSST, search, nodeptrs, limit)
+		HandleOrbit(w, r, PSST, search, nodeptrs, maxlimit)
 		return
 	}
 
@@ -340,7 +341,7 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 	// if we have BOTH from/to (maybe with chapter/context) then we are looking for paths
 
 	if from && to {
-		HandlePathSolve(w, r, PSST, leftptrs, rightptrs, search, arrowptrs, sttype, limit)
+		HandlePathSolve(w, r, PSST, leftptrs, rightptrs, search, arrowptrs, sttype,minlimit,maxlimit)
 		return
 	}
 
@@ -349,15 +350,15 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 	if (name || from || to) && !pagenr && !sequence {
 
 		if nodeptrs != nil {
-			HandleCausalCones(w, r, PSST, nodeptrs, search, arrowptrs, sttype, limit)
+			HandleCausalCones(w, r, PSST, nodeptrs, search, arrowptrs, sttype, maxlimit)
 			return
 		}
 		if leftptrs != nil {
-			HandleCausalCones(w, r, PSST, leftptrs, search, arrowptrs, sttype, limit)
+			HandleCausalCones(w, r, PSST, leftptrs, search, arrowptrs, sttype, maxlimit)
 			return
 		}
 		if rightptrs != nil {
-			HandleCausalCones(w, r, PSST, rightptrs, search, arrowptrs, sttype, limit)
+			HandleCausalCones(w, r, PSST, rightptrs, search, arrowptrs, sttype, maxlimit)
 			return
 		}
 	}
@@ -384,7 +385,7 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 	// Look for axial trails following a particular arrow, like _sequence_
 
 	if sequence {
-		HandleStories(w, r, PSST, search, nodeptrs, arrowptrs, sttype, limit)
+		HandleStories(w, r, PSST, search, nodeptrs, arrowptrs, sttype, maxlimit)
 		return
 	}
 
@@ -508,7 +509,7 @@ func PackageConeFromOrigin(sst SST.PoSST, nptr SST.NodePtr, nth int, sttype int,
 
 //******************************************************************
 
-func HandlePathSolve(w http.ResponseWriter, r *http.Request, sst SST.PoSST, leftptrs, rightptrs []SST.NodePtr, search SST.SearchParameters, arrowptrs []SST.ArrowPtr, sttype []int, maxdepth int) {
+func HandlePathSolve(w http.ResponseWriter, r *http.Request, sst SST.PoSST, leftptrs, rightptrs []SST.NodePtr, search SST.SearchParameters, arrowptrs []SST.ArrowPtr, sttype []int, mindepth,maxdepth int) {
 
 	chapter := search.Chapter
 	context := search.Context

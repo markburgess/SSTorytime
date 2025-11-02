@@ -58,6 +58,7 @@ func Solve(sst SST.PoSST) {
 
 	// Contra colliding wavefronts as path integral solver
 
+	const mindepth = 2;
 	const maxdepth = 16
 	var count int
 	var arrowptrs []SST.ArrowPtr
@@ -77,7 +78,7 @@ func Solve(sst SST.PoSST) {
 		return
 	}
 
-	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,maxdepth)
+	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
 
 	if len(solutions) > 0 {
 		for s := 0; s < len(solutions); s++ {

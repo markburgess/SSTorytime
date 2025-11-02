@@ -425,7 +425,7 @@ func PathSolve(sst SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,con
 		fmt.Println("Solver/handler: PathSolve()")
 	}
 
-	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,maxdepth)
+	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
 
 	if len(solutions) > 0 {
 		

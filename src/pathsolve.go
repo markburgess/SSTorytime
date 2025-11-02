@@ -118,6 +118,7 @@ func Init() []string {
 
 func PathSolve(sst SST.PoSST, chapter,cntext,begin, end string) {
 
+	const mindepth = 2
 	const maxdepth = 20
 	var count int
 	var arrowptrs []SST.ArrowPtr
@@ -144,7 +145,7 @@ func PathSolve(sst SST.PoSST, chapter,cntext,begin, end string) {
 
 	fmt.Printf("\n\n Paths < end_set= {%s} | {%s} = start set>\n\n",ShowNode(sst,rightptrs),ShowNode(sst,leftptrs))
 
-	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,maxdepth)
+	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
 
 	// Find the path matrix
 

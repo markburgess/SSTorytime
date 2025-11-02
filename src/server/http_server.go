@@ -516,7 +516,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request, sst SST.PoSST, left
 
 	fmt.Println("HandlePathSolve(", leftptrs, ",", rightptrs, ")")
 
-	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,maxdepth)
+	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
 
 	if len(solutions) > 0 {
 		// format paths

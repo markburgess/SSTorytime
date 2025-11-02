@@ -5522,9 +5522,8 @@ func WaveFrontsOverlap(sst PoSST,left_paths,right_paths [][]Link,Lnum,Rnum,ldept
 	rightfront := WaveFront(right_paths,Rnum)
 
 	incidence := NodesOverlap(sst,leftfront,rightfront)
-
+	
 	for lp := range incidence {
-
 		for alternative := range incidence[lp] {
 
 			rp := incidence[lp][alternative]

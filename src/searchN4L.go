@@ -187,7 +187,7 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 
 	arrows := arrowptrs != nil
 	sttypes := sttype != nil
-	minlimit := 2
+	minlimit := 1
 	maxlimit := 0
 
 	if search.Range > 0 {

@@ -58,7 +58,7 @@ func Solve(sst SST.PoSST) {
 
 	// Contra colliding wavefronts as path integral solver
 
-	const mindepth = 2;
+	const mindepth = 1;
 	const maxdepth = 16
 	var count int
 	var arrowptrs []SST.ArrowPtr

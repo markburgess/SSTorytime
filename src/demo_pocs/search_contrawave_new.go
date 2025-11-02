@@ -14,23 +14,23 @@ func main() {
 	load_arrows := true
 	sst := SST.Open(load_arrows)
 
-	start_bc := "!gun!"
-	end_bc := "scarlet"
+//	start_bc := "!gun!"
+//	end_bc := "scarlet"
 //	start_bc := "!A1!"
 //	end_bc := "B6"
 
 //	start_bc := "start"
 //	end_bc := "target"
 
-//	start_bc := "maze_a7"
-//	end_bc := "maze_i6"
+	start_bc := "maze_a7"
+	end_bc := "maze_i6"
 
 	chapter := ""
 	context := []string{""}
 	arrowptrs := []SST.ArrowPtr{}
 	sttype := []int{1,2,3,0,-1,-2,-3}
 	maxdepth := 50
-	mindepth := 2
+	mindepth := 1
 
 	leftptrs := SST.GetDBNodePtrMatchingName(sst,start_bc,"")
 	rightptrs := SST.GetDBNodePtrMatchingName(sst,end_bc,"")
@@ -38,7 +38,7 @@ func main() {
 	fmt.Println("Boundary conditions: \nLEFT:",start_bc,leftptrs,"\n\nRIGHT:",end_bc,rightptrs)
 	// Contra colliding wavefronts as path integral solver
 
-	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
+	solutions := GetPathsAndSymmetries2(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
 
 	if len(solutions) > 0 {		
 		for s := 0; s < len(solutions); s++ {
@@ -72,12 +72,13 @@ func GetPathsAndSymmetries2(sst SST.PoSST,start_set,end_set []SST.NodePtr,chapte
 	right_paths,Rnum = SST.GetConstraintConePathsAsLinks(sst,end_set,rdepth,chapter,context,adj_arrowptrs,adj_sttypes,maxdepth)
 
 	fmt.Println("Constraint primer: \nleft",left_paths,"\n\nright",right_paths)
+	fmt.Println("Arrows: \nleft",sttypes,"\n\nright",adj_sttypes)
 
 	// Expand waves
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		fmt.Println("   ..Waves searching",ldepth,rdepth)
+		fmt.Print("\r   ..Waves searching: ",ldepth,rdepth)
 
 		solutions,loop_corrections = SST.WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
@@ -134,6 +135,7 @@ func IncConstraintConeLinks(sst SST.PoSST,cone [][]SST.Link,chapter string ,cont
 				for _,prev := range branch {
 					delta = append(delta,prev)
 				}
+
 				delta = append(delta,satellite)
 				expanded_cone = append(expanded_cone,delta)
 			}

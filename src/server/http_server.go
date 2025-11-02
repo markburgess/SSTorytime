@@ -267,7 +267,7 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 
 	arrows := arrowptrs != nil
 	sttypes := sttype != nil
-	minlimit := 2
+	minlimit := 1
 	maxlimit := 0
 
 	if search.Range > 0 {

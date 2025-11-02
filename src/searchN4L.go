@@ -168,6 +168,7 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 		fmt.Println(" -    pagenr:",search.PageNr)
 		fmt.Println(" - sequence/story:",search.Sequence)
 		fmt.Println(" - limit/range/depth:",search.Range)
+		fmt.Println(" - at least/minimum:\t",search.Min)
 		fmt.Println()
 	}
 
@@ -189,6 +190,10 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 	sttypes := sttype != nil
 	minlimit := 1
 	maxlimit := 0
+
+	if search.Min > 0 {
+		minlimit = search.Min
+	}
 
 	if search.Range > 0 {
 		maxlimit = search.Range

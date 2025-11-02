@@ -270,6 +270,10 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 	minlimit := 1
 	maxlimit := 0
 
+	if search.Min > 0 {
+		minlimit = search.Min
+	}
+
 	if search.Range > 0 {
 		maxlimit = search.Range
 	} else {
@@ -297,6 +301,7 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 	fmt.Fprintln(tabWriter, "pageNR:\t", search.PageNr)
 	fmt.Fprintln(tabWriter, "sequence/story:\t", search.Sequence)
 	fmt.Fprintln(tabWriter, "limit/range/depth:\t", maxlimit)
+	fmt.Fprintln(tabWriter, "at least/minimum:\t", minlimit)
 	fmt.Fprintln(tabWriter, "show stats:\t", search.Stats)
 
 	tabWriter.Flush()

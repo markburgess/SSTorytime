@@ -7511,6 +7511,7 @@ type SearchParameters struct {
 	Arrows   []string
 	PageNr   int
 	Range    int
+	Min      int
 	Sequence bool
 	Stats    bool
 }
@@ -7560,6 +7561,9 @@ const (
 	CMD_LIMIT = "\\limit"
 	CMD_DEPTH = "\\depth"
 	CMD_RANGE = "\\range"
+	CMD_MIN = "\\min"
+	CMD_ATLEAST = "\\atleast"
+	CMD_GT = "\\gt"
 	CMD_DISTANCE = "\\distance"
 	CMD_STATS = "\\stats"
 	CMD_STATS_2 = "stats"
@@ -7581,6 +7585,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 		CMD_CONTEXT,CMD_CTX,CMD_AS,CMD_AS_2,
 		CMD_CHAPTER,CMD_IN,CMD_IN_2,CMD_SECTION,CMD_CONTENTS,CMD_TOC,CMD_TOC_2,
 		CMD_ARROW,
+		CMD_GT,CMD_MIN,CMD_ATLEAST,
 		CMD_ON,CMD_ON_2,CMD_ABOUT,CMD_FOR,CMD_FOR_2,
 		CMD_PAGE,
 		CMD_LIMIT,CMD_RANGE,CMD_DISTANCE,CMD_DEPTH,
@@ -7726,6 +7731,23 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 					fmt.Sscanf(cmd_parts[c][p],"%d",&no)
 					if no > 0 {
 						param.Range = no
+					} else {
+						param = AddOrphan(param,cmd_parts[c][p-1])
+						param = AddOrphan(param,cmd_parts[c][p])
+					}
+				} else {
+					param = AddOrphan(param,cmd_parts[c][p])
+				}
+				continue
+
+			case CMD_GT,CMD_MIN,CMD_ATLEAST:
+				// if followed by a number, else could be search term
+				if lenp > p+1 {
+					p++
+					var no int = -1
+					fmt.Sscanf(cmd_parts[c][p],"%d",&no)
+					if no > 0 {
+						param.Min = no
 					} else {
 						param = AddOrphan(param,cmd_parts[c][p-1])
 						param = AddOrphan(param,cmd_parts[c][p])

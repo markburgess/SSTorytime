@@ -14,20 +14,27 @@ func main() {
 	load_arrows := true
 	sst := SST.Open(load_arrows)
 
-	start_bc := "a1"
-	end_bc := "b6"
-	chapter := "double slit example"
+	start_bc := "!gun!"
+	end_bc := "scarlet"
+//	start_bc := "!A1!"
+//	end_bc := "B6"
+
+//	start_bc := "start"
+//	end_bc := "target"
+	chapter := ""
 	context := []string{""}
-	arrowptrs := []SST.ArrowPtr{20,21}
-	sttype := []int{1}
-	maxdepth := 10
+	arrowptrs := []SST.ArrowPtr{}
+	sttype := []int{1,2,3,0,-1,-2,-3}
+	maxdepth := 600
+	mindepth := 2
 
 	leftptrs := SST.GetDBNodePtrMatchingName(sst,start_bc,"")
 	rightptrs := SST.GetDBNodePtrMatchingName(sst,end_bc,"")
 
+	fmt.Println("Boundary conditions: \nLEFT:",start_bc,leftptrs,"\n\nRIGHT:",end_bc,rightptrs)
 	// Contra colliding wavefronts as path integral solver
 
-	solutions := GetPathsAndSymmetries2(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,maxdepth)
+	solutions := GetPathsAndSymmetries2(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
 
 	if len(solutions) > 0 {		
 		for s := 0; s < len(solutions); s++ {
@@ -38,10 +45,10 @@ func main() {
 
 //******************************************************************
 
-func GetPathsAndSymmetries2(sst SST.PoSST,start_set,end_set []SST.NodePtr,chapter string,context []string,arrowptrs []SST.ArrowPtr,sttypes []int,maxdepth int) [][]SST.Link {
+func GetPathsAndSymmetries2(sst SST.PoSST,start_set,end_set []SST.NodePtr,chapter string,context []string,arrowptrs []SST.ArrowPtr,sttypes []int,mindepth,maxdepth int) [][]SST.Link {
 
 	var left_paths, right_paths [][]SST.Link
-	var ldepth,rdepth int = 2,2
+	var ldepth,rdepth int = 1,1
 	var Lnum,Rnum int
 	var solutions [][]SST.Link
 	var loop_corrections [][]SST.Link
@@ -57,15 +64,10 @@ func GetPathsAndSymmetries2(sst SST.PoSST,start_set,end_set []SST.NodePtr,chapte
 
 	// Prime paths
 
-//	AUTOMATICALLY ALIGN + and - , prioritize intended direction
-
-//ADJOINT SHOULD REVERSE THE ORDER OF SSTYPE and ARROW
-
-//This is why we chose bwd if no fwd found.... because there might not be solutions +1 only -1 from a node
-//	If we choose "any", we need to relax the exclusion rules
-
 	left_paths,Lnum = SST.GetConstraintConePathsAsLinks(sst,start_set,ldepth,chapter,context,arrowptrs,sttypes,maxdepth)
 	right_paths,Rnum = SST.GetConstraintConePathsAsLinks(sst,end_set,rdepth,chapter,context,adj_arrowptrs,adj_sttypes,maxdepth)
+
+	fmt.Println("Constraint primer: \nleft",left_paths,"\n\nright",right_paths)
 
 	// Expand waves
 
@@ -75,12 +77,12 @@ func GetPathsAndSymmetries2(sst SST.PoSST,start_set,end_set []SST.NodePtr,chapte
 
 		solutions,loop_corrections = SST.WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
-		if len(solutions) > 0 {
-			fmt.Println("   ..DAG solutions:")
+		if len(solutions) > mindepth {
+			fmt.Println("   ..DAG solutions:",solutions)
 			return solutions
 		}
 
-		if len(loop_corrections) > 0 {
+		if len(loop_corrections) > mindepth {
 			fmt.Println("   ..Only non-DAG solutions:")
 			return loop_corrections
 		}
@@ -107,7 +109,7 @@ func IncConstraintConeLinks(sst SST.PoSST,cone [][]SST.Link,chapter string ,cont
 	var expanded_cone [][]SST.Link
 
 	for p := 0; p < len(cone); p++ {
-		
+
 		branch := cone[p]
 		var exclude = make(map[SST.NodePtr]bool)
 
@@ -174,7 +176,6 @@ func GetConstrainedFwdLinks(sst SST.PoSST,start []SST.NodePtr,chapter string,con
 			for row.Next() {		
 				err = row.Scan(&whole)
 				orbit := SST.ParseLinkArray(whole)
-
 				for _,lnk := range orbit {
 					ret = append(ret,lnk)
 				}

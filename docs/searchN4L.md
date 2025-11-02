@@ -29,7 +29,7 @@ to protect them.
 - `\arrow`
 
 - `\limit` or `\depth` or `\range` or `\distance`
-
+- `\min` or `\atleast` or `\gt` 
 
 SSToryline allows you to use node addresses, called NPtr-s, which are coordinates looking like `(a,b)`. These are shown in searches
 in case you want to go quickly to a specific dode.

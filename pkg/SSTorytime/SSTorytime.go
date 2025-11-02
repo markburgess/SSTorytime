@@ -4639,6 +4639,7 @@ func GetConstraintConePathsAsLinks(sst PoSST,start []NodePtr,depth int,chapter s
 	for row.Next() {		
 		err = row.Scan(&whole)
 		retval = ParseLinkPath(whole)
+		break
 	}
 
 	row.Close()
@@ -9419,7 +9420,9 @@ func ParseLinkPath(s string) [][]Link {
 
 			links := strings.Split(lines[line],";")
 
-			if len(links) < 2 {
+			// Actual paths need len > 1, but this is also used to seed longer paths
+
+			if len(links) < 1 {
 				continue
 			}
 
@@ -9983,7 +9986,8 @@ func IsExactMatch(org string) (bool,string) {
 
 	if org[0] == '!' && org[len(org)-1] == '!' {
 
-		return true,strings.Trim(org,"!")
+		tr := strings.Trim(org,"!")
+		return true,strings.ToLower(tr)
 	}
 
 	return false,org

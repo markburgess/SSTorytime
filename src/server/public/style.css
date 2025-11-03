@@ -32,9 +32,9 @@ header {
   & h2 {
     text-wrap: wrap;
     text-wrap-style: balance;
-    color: var(--blue-9);
+    color: var(--stone-6);
     text-shadow: -1px 3px 4px rgba(15, 51, 11, 0.2);
-    font-size: var(--font-size-fluid-1);
+    font-size: var(--font-size-fluid-2);
     text-align: start;
     overflow: hidden;
     display: -webkit-box;
@@ -168,14 +168,14 @@ h3 {
 
   & h3 {
     font-size: var(--font-size-fluid-0);
-    color: var(--blue-3);
+    color: var(--blue-6);
     min-width: fit-content;
     margin-top: 0.5ch;
   }
 
   & h4 {
     font-size: var(--font-size-fluid-1);
-    color: var(--blue-3);
+    color: var(--blue-6);
     min-width: fit-content;
     margin-top: 0.5ch;
   }
@@ -191,12 +191,12 @@ h3 {
 
   & span {
     padding-inline: 1ch;
-    color: var(--green-11);
+    color: var(--green-9);
     width: fit-content;
     flex-basis: 100%;
     text-wrap: wrap balance;
     overflow: clip;
-    font-size: var(--font-size-fluid-0);
+    font-size: var(--font-size-fluid-1);
     font-weight: var(--font-weight-4);
   }
 

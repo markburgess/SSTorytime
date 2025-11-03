@@ -1,6 +1,29 @@
 
 ## Frequently Asked Questions
 
+* **What does it do?**
+
+SSTorytime is a way of capturing information that you would like to know, make notes on, edit, and learn
+over time. 
+
+It turns written notes (or data input through an API) into a map or
+"Knowledge Graphs", to show you how you think about things. It creates
+your personal view, rather than someone else's imposed point of view.
+It encourages you to engage in the on-going process of learning by
+making notes, editing, compiling into a graph/map and iterating so
+that you learn as part of that process. If you choose to share the result, others can browse your view
+and see an explanation your terms, in your language.
+
+* **What is the process?**
+
+The five step programme is this:
+* * JOT IT DOWN WHEN YOU THINK OF IT. . .
+* * TYPE IT INTO N4L AS SOON AS YOU CAN. . .
+* * ORGANIZE AND TIDY YOUR N4L NOTES EVERY DAY. . .
+* * UPLOAD AND BROWSE THEM ONLINE. . .
+* * REMEMBER, IT ISN'T KNOWLEDGE IF YOU DON'T ACTUALLY KNOW IT !!
+
+
 * **Can I use URLs in N4L?**
 
 Yes, you should enclose them in quotes because they usually include the substring "//", which is also a comment designation.

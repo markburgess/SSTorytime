@@ -7,7 +7,7 @@
 
 SSTorytime tools allow you capture information that you would like to know, make notes on, edit, and learn
 over time, to yield a searchable database of "knowable" information: but, of course, it's not magic--it isn't
-knowledge unless you actually know it yourself.
+knowledge unless you actually know it yourself. It let's you see your own thinking in the mirror!
 
 It turns written notes (or data input through an API) into a map or
 "Knowledge Graphs", to show you how you think about things. It creates
@@ -17,8 +17,19 @@ making notes, editing, compiling into a graph/map and iterating so
 that you learn as part of that process. If you choose to share the result, others can browse your view
 and see an explanation your terms, in your language.
 
+Thinking is easier in free text, rather than trying to force feed your thoughts into a scheme for searching.
+
 Using the additional tools `text2N4L`, you can scan an existing text and create an initial set of notes
 automatically to make browsing a book easy, searchable, and informative.
+
+* **What would I use it for?**
+
+* * Do you have HR processes that track staff capablities?
+* * Are you designing team topologies without noting down your thinkning?
+* * Are you designing a process, a user interface, user journeys through a website or organization?
+* * Are you mapping supply chains or tracing work execution?
+* * Are you creating service directories, tracing dependencies?
+* * Do you want to annotate your music collection or photos, tracing attribution, comments, similarities, etc
 
 * **What is the process?**
 
@@ -29,6 +40,7 @@ The five step programme is this:
 * * UPLOAD AND BROWSE THEM ONLINE. . .
 * * REMEMBER, IT ISN'T KNOWLEDGE IF YOU DON'T ACTUALLY KNOW IT !!
 
+Look at your thinking in the mirror.
 
 * **Why does it take so long to upload data?**
 

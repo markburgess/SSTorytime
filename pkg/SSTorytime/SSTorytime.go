@@ -7554,6 +7554,7 @@ const (
 	CMD_CONTENTS = "\\contents"
 	CMD_TOC = "\\toc"
 	CMD_TOC_2 = "toc"
+	CMD_MAP = "\\map"
 	CMD_SECTION = "\\section"
 	CMD_IN = "\\in"
 	CMD_IN_2 = "in"
@@ -7583,7 +7584,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 		CMD_PATH,CMD_FROM,CMD_TO,CMD_TO_2,
 		CMD_SEQ1,CMD_SEQ2,CMD_STORY,CMD_STORIES,
 		CMD_CONTEXT,CMD_CTX,CMD_AS,CMD_AS_2,
-		CMD_CHAPTER,CMD_IN,CMD_IN_2,CMD_SECTION,CMD_CONTENTS,CMD_TOC,CMD_TOC_2,
+		CMD_CHAPTER,CMD_IN,CMD_IN_2,CMD_SECTION,CMD_CONTENTS,CMD_TOC,CMD_TOC_2,CMD_MAP,
 		CMD_ARROW,
 		CMD_GT,CMD_MIN,CMD_ATLEAST,
 		CMD_ON,CMD_ON_2,CMD_ABOUT,CMD_FOR,CMD_FOR_2,
@@ -7678,7 +7679,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				param.Name = []string{"any"}
 				continue
 
-				case CMD_CHAPTER,CMD_SECTION,CMD_IN,CMD_IN_2,CMD_CONTENTS,CMD_TOC,CMD_TOC_2:
+			case CMD_CHAPTER,CMD_SECTION,CMD_IN,CMD_IN_2,CMD_CONTENTS,CMD_TOC,CMD_TOC_2,CMD_MAP:
 				if lenp > p+1 {
 					str := cmd_parts[c][p+1]
 					str = strings.TrimSpace(str)

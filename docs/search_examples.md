@@ -36,6 +36,8 @@
 
 ## Table of contents
 <pre>
+\toc
+\map
 \chapters
 \chapter mychapter
 </pre>

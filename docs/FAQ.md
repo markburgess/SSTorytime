@@ -1,6 +1,8 @@
 
 ## Frequently Asked Questions
 
+### General
+
 * **What does it do?**
 
 SSTorytime tools allow you capture information that you would like to know, make notes on, edit, and learn
@@ -25,10 +27,6 @@ The five step programme is this:
 * * REMEMBER, IT ISN'T KNOWLEDGE IF YOU DON'T ACTUALLY KNOW IT !!
 
 
-* **Can I use URLs in N4L?**
-
-Yes, you should enclose them in quotes because they usually include the substring "//", which is also a comment designation.
-
 * **Why does it take so long to upload data?**
 
 Uploading to a database is a slow process compared to retrieving as there are many checks that have to happen. try to debug your data as far as possible using the text interface in N4L before actually committing to the database.
@@ -39,13 +37,22 @@ ASCII encoding, it's easy to get bad character conversion without using this lon
 * **Why do some searches take a long time?**
 Immediately after uploading the data, the database will be building its indices. Indexing takes time, then the return time should stabilize and be faster. After that, the scope of the search determines the speed of a query. If you are searching for a lot of data, it takes time to assemble into a graphable structure. 
 
+### Writing notes in N4L
+
+* **Can I use URLs in N4L?**
+
+Yes, you should enclose them in quotes because they usually include the substring "//", which is also a comment designation.
+
+
 * **Why are there relationships that I didn't intend when I browse the data?**
 
 Be careful to ensure that you haven't accidentally used any of the annotation markers (e.g. +,-,=) without surroundings spaces in your text, as these will be interpreted as annotations. Use the verbose mode in N4L to debug.
 
-* **Why do I see chapters that don't seem to be relevant?**
+* **Why do I see chapters that don't seem to be relevant in search results?**
 
-This is probably a result of certain words and phrases belonging to more than one chapter, and thus bridging chapters that you didn't intend. This bridging is intentional, as it allows >"lateral thinking", which is an important source of discovery.
+SSTorytime does some "lateral thinking". If you don't explicitly restrict to a particular chapter, it will
+take examples from everywhere.
+Seeing unexpected results is probably a result of certain words and phrases belonging to more than one chapter, and thus bridging chapters that you didn't intend. This bridging is intentional, as it allows >"lateral thinking", which is an important source of discovery.
 
 * **Why doesn't pathsolve understand my search on the command line**
 

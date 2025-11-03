@@ -17,6 +17,9 @@ making notes, editing, compiling into a graph/map and iterating so
 that you learn as part of that process. If you choose to share the result, others can browse your view
 and see an explanation your terms, in your language.
 
+Using the additional tools `text2N4L`, you can scan an existing text and create an initial set of notes
+automatically to make browsing a book easy, searchable, and informative.
+
 * **What is the process?**
 
 The five step programme is this:

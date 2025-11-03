@@ -10,7 +10,7 @@
 
 > [!NOTE]
 > * Join the [SSTorytime LinkedIn Group](https://www.linkedin.com/groups/15875004/) for questions and discussions.
-> * [Get Started using docker](docs/DOCKER.md)
+> * (Docker setup temporarily removed)
 > * Note, SSTorytime is a knowledge graph that is not an RDF-based project. It aims to be both easier to use and more powerful than RDF. <br>
 > * <br> [TO-DO List and HOW **YOU** CAN CONTRIBUTE!](docs/howtocontribute.md)
 > * Welcome!

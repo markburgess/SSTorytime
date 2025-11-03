@@ -3,8 +3,9 @@
 
 * **What does it do?**
 
-SSTorytime is a way of capturing information that you would like to know, make notes on, edit, and learn
-over time. 
+SSTorytime tools allow you capture information that you would like to know, make notes on, edit, and learn
+over time, to yield a searchable database of "knowable" information: but, of course, it's not magic--it isn't
+knowledge unless you actually know it yourself.
 
 It turns written notes (or data input through an API) into a map or
 "Knowledge Graphs", to show you how you think about things. It creates

@@ -100,9 +100,16 @@ history.forEach((item) =>
 var CANVAS = CreateCanvas();
 var CTX = CANVAS.getContext("2d");
 
+var CANVAS_LABEL_COLOUR = "white";
+var LEADSTO_COLOUR = "darkred";
+var CONTAINS_COLOUR = "lightblue";
+var EXPRESSES_COLOUR = "orange";
+var NEAR_COLOUR = "darkgray";
+
 // Adjust coordinates
 let WIDTH = CANVAS.offsetWidth;
 let HEIGHT = CANVAS.offsetHeight;
+let THEME = "style.css";
 
 CANVAS.width = WIDTH;
 
@@ -201,6 +208,7 @@ try
    let mynote = await response.json();
    DoHeader(mynote);
    DoOrbitPanel(mynote); // Start in orbit
+   SelectTheme(THEME);
    } 
 catch (error)
    {
@@ -215,27 +223,76 @@ finally
 /************************************************************/
 
 function AppRouter()
-	{
-		const urlParams = new URLSearchParams(window.location.search);
+{
+const urlParams = new URLSearchParams(window.location.search);
 
-		const searchQuery = urlParams.get("search");
+const searchQuery = urlParams.get("search");
 
-		if (searchQuery)
-		{
-			console.log("Routing to saved search:", searchQuery);
-			sendLinkSearch(searchQuery);
-		} else
-		{
-			console.log("Routing to default page.");
-			FetchPage();
-		}
-	}
+if (searchQuery)
+   {
+   console.log("Routing to saved search:", searchQuery);
+   sendLinkSearch(searchQuery);
+   } 
+else
+   {
+   console.log("Routing to default page.");
+   FetchPage();
+   }
+}
 
-	function DisplayError(message)
-	{
-		const main = document.querySelector("main");
-		main.innerHTML = `<div class="error-message"> <h5>An Error Occurred!</h5> <p>${message}</p> </div>`;
-	}
+/***********************************************************/
+
+function DisplayError(message)
+{
+const main = document.querySelector("main");
+main.innerHTML = `<div class="error-message"> <h5>An Error Occurred!</h5> <p>${message}</p> </div>`;
+}
+
+/***********************************************************/
+
+function SelectTheme(skintheme)
+{
+// Select the <link> element
+let theme = document.getElementById('theme');
+
+switch (skintheme)
+   {
+   case "dark":
+      theme.setAttribute('href', '/dark.css')
+      CANVAS_LABEL_COLOUR = "black";
+      LEADSTO_COLOUR = "darkred";
+      CONTAINS_COLOUR = "lightblue";
+      EXPRESSES_COLOUR = "orange";
+      NEAR_COLOUR = "darkgray";
+      break;
+   case "slate":
+      theme.setAttribute('href', '/slate.css');
+      CANVAS_LABEL_COLOUR = "white";
+      LEADSTO_COLOUR = "crimson";
+      CONTAINS_COLOUR = "lightblue";
+      EXPRESSES_COLOUR = "orange";
+      NEAR_COLOUR = "lightgray";
+      break;
+   case "space":
+   case "astronomy":
+   case "spaceblue":
+      theme.setAttribute('href', '/spaceblue.css');
+      CANVAS_LABEL_COLOUR = "white";
+      LEADSTO_COLOUR = "crimson";
+      CONTAINS_COLOUR = "lightblue";
+      EXPRESSES_COLOUR = "orange";
+      NEAR_COLOUR = "lightgray";
+      break;
+   default:
+      theme.setAttribute('href', '/style.css');
+      CANVAS_LABEL_COLOUR = "black";
+      LEADSTO_COLOUR = "darkred";
+      CONTAINS_COLOUR = "lightblue";
+      EXPRESSES_COLOUR = "orange";
+      NEAR_COLOUR = "darkgray";
+      break;
+   }
+}
 
 /***********************************************************/
 
@@ -915,7 +972,7 @@ if (ctx.length > 0)
    //   ctxlink.textContent = " context hints: " + ctx;
    ctxlink.onclick = function ()
       {
-	sendLinkSearch('any \\chapter '+ Quote(chap) +' \\context ' + CtxSplice(ctx));
+      sendLinkSearch('any \\chapter '+ Quote(chap) +' \\context ' + CtxSplice(ctx));
       };
 
    let cntx = document.createElement("i");
@@ -994,7 +1051,7 @@ for (let path = 0; path < array.length; path++)
             }
 
          Event(thisx, thisy, thisz);
-         Label(thisx, thisy, thisz, str.slice(0, 25), 12, "black");
+         Label(thisx, thisy, thisz, str.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
 
          if (array[path][i].NPtr != null)
             {
@@ -1178,7 +1235,7 @@ for (let line = 0; line < array.length; line++)
          lastz = thisz;
 
          Event(thisx, thisy, thisz);
-         Label(thisx, thisy, thisz, str.slice(0, 25), 12, "black");
+         Label(thisx, thisy, thisz, str.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
 
          if (array[line][i].NPtr != null)
             {
@@ -1206,7 +1263,7 @@ for (let line = 0; line < array.length; line++)
             lastline = line;
 
             let line_no = document.createElement("span");
-
+	    line_no.id = "line-num";
             line_no.textContent = "At line " + array[line][i].Line;
             parent.appendChild(line_no);
 
@@ -1215,6 +1272,7 @@ for (let line = 0; line < array.length; line++)
             if (chtxt.length > 4 && chtxt != lastchtxt)
                {
                let sec = document.createElement("i");
+	       sec.id = "line-num";
                sec.textContent = '  From: "' + chtxt + '"';
                parent.appendChild(sec);
                }
@@ -1534,9 +1592,6 @@ container.appendChild(label);
 }
 
 /***********************************************************/
-// Busy wheel of time...
-/***********************************************************/
-/***********************************************************/
 // Render line link list by STtype
 /***********************************************************/
 
@@ -1675,6 +1730,14 @@ async function sendsearchData()
 {
 const formData = new FormData(form);
 const searchQuery = formData.get("name");
+
+if (searchQuery.startsWith("\\theme"))
+   {
+   THEME = searchQuery.substring(7).trim();
+   SelectTheme(THEME);
+ console.log("xxxx1",THEME);
+   return;
+   }
 
 saveSearchToHistory(searchQuery);
 const state = { searchQuery: searchQuery };
@@ -1964,7 +2027,7 @@ let ty = event.XYZ.Y;
 let tz = event.XYZ.Z;
 
 Event(tx, ty, tz);
-Label(tx, ty, tz, event.Text.slice(0, 25), 12, "black");
+Label(tx, ty, tz, event.Text.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
 
 if (lastevent != event)
    {
@@ -2072,7 +2135,7 @@ switch (type)
    }
 
 const size = "12";
-const colour = "black";
+const colour = CANVAS_LABEL_COLOUR;
 
 Label(x, y, 0, fwd, size, colour);
 Label(-x, -y, 0, bwd, size, colour);
@@ -2237,7 +2300,7 @@ return yt;
 function LeadsTo(x0, y0, z0, xp, yp, zp)
 {
 //Arrow(x0,y0,z0,xp,yp,zp,"rgba(0,250,0,1)",3);
-Arrow(x0, y0, z0, xp, yp, zp, "darkred", 3 * mob);
+Arrow(x0, y0, z0, xp, yp, zp, LEADSTO_COLOUR, 3 * mob);
 }
 
 // *************************************************
@@ -2245,7 +2308,7 @@ Arrow(x0, y0, z0, xp, yp, zp, "darkred", 3 * mob);
 function Contains(x0, y0, z0, xp, yp, zp)
 {
 //Arrow(x0,y0,z0,xp,yp,zp,"rgba(60,60,60,1)",2);
-Arrow(x0, y0, z0, xp, yp, zp, "lightblue", 2 * mob);
+Arrow(x0, y0, z0, xp, yp, zp, CONTAINS_COLOUR, 2 * mob);
 }
 
 // *************************************************
@@ -2253,7 +2316,7 @@ Arrow(x0, y0, z0, xp, yp, zp, "lightblue", 2 * mob);
 function Expresses(x0, y0, z0, xp, yp, zp)
 {
 //Arrow(x0,y0,z0,xp,yp,zp,"rgba(106,236,255,1)",2);
-Arrow(x0, y0, z0, xp, yp, zp, "orange", 2 * mob);
+Arrow(x0, y0, z0, xp, yp, zp, EXPRESSES_COLOUR, 2 * mob);
 }
 
 // *************************************************
@@ -2261,7 +2324,7 @@ Arrow(x0, y0, z0, xp, yp, zp, "orange", 2 * mob);
 function Near(x0, y0, z0, xp, yp, zp)
 {
 //Arrow(x0,y0,z0,xp,yp,zp,"rgba(20,20,20,1)",1);
-Arrow(x0, y0, z0, xp, yp, zp, "darkgrey", 1 * mob);
+Arrow(x0, y0, z0, xp, yp, zp, NEAR_COLOUR, 1 * mob);
 }
 
 // *************************************************
@@ -2371,13 +2434,14 @@ CTX.restore();
 }
 
 
-	// Waiting Effect functions *****************************************************************
-	function startHipnotize()
-	{
-		const el = document.getElementById("wait");
-		if (el)
-		{
-			el.innerHTML = `<div class="hipnosis">
+// Waiting Effect functions *****************************************************************
+
+function startHipnotize()
+   {
+   const el = document.getElementById("wait");
+   if (el)
+      {
+      el.innerHTML = `<div class="hipnosis">
     <svg version="1.1" id="L1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
       <circle fill="none" stroke="#fff" stroke-width="6" stroke-miterlimit="15" stroke-dasharray="14.2472,14.2472" cx="50" cy="50" r="47">
 <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="5s" from="0 50 50" to="360 50 50" repeatCount="indefinite" />
@@ -2404,117 +2468,125 @@ CTX.restore();
       </g>
     </svg>
   </div>`;
-		}
-	}
+   }
+}
 
-	function stopHipnotize()
-	{
-		const el = document.getElementById("wait");
-		if (el)
-		{
-			el.innerHTML = "";
-		}
-	}
+//***************************************************************
 
-	window.addEventListener(
-		"scroll",
-		() =>
-		{
-			const indicator = document.getElementById("scroll-indicator");
-			if (indicator)
-			{
-				indicator.classList.remove("visible");
-			}
-		},
-		{ once: false },
-	);
+function stopHipnotize()
+{
+const el = document.getElementById("wait");
+if (el)
+   {
+   el.innerHTML = "";
+   }
+}
 
-	// Add this function somewhere in your main.js
+//***************************************************************
 
-	async function checkStatus()
-	{
-		const serverIndicator = document.getElementById("server-status");
-		const dbIndicator = document.getElementById("database-status");
+window.addEventListener("scroll",() =>
+   {
+   const indicator = document.getElementById("scroll-indicator");
+   if (indicator)
+      {
+      indicator.classList.remove("visible");
+      }
+   },
+   { once: false },
+   );
 
-		if (!serverIndicator || !dbIndicator) return;
+// Add this function somewhere in your main.js
 
-		try
-		{
-			const response = await fetch("/status");
+async function checkStatus()
+   {
+   const serverIndicator = document.getElementById("server-status");
+   const dbIndicator = document.getElementById("database-status");
 
-			if (!response.ok)
-			{
-				throw new Error("Server responded with an error");
-			}
+   if (!serverIndicator || !dbIndicator) return;
 
-			const status = await response.json();
+   try
+      {
+      const response = await fetch("/status");
 
-			// Update Server Status Indicator
-			if (status.server_status === "OK")
-			{
-				serverIndicator.className = "status-indicator status-ok";
-				serverIndicator.setAttribute("data-label", "Server OK");
-			} else
-			{
-				serverIndicator.className = "status-indicator status-error";
-				serverIndicator.setAttribute("data-label", "Server Error");
-			}
+      if (!response.ok)
+         {
+         throw new Error("Server responded with an error");
+         }
 
-			// Update Database Status Indicator
-			if (status.database_status === "OK")
-			{
-				dbIndicator.className = "status-indicator status-ok";
-				dbIndicator.setAttribute("data-label", "Database OK");
-			} else
-			{
-				dbIndicator.className = "status-indicator status-error";
-				dbIndicator.setAttribute("data-label", "Database Error");
-			}
-		} catch (error)
-		{
-			// If the fetch fails, both are in an error state
-			console.error("Status check failed:", error);
-			serverIndicator.className = "status-indicator status-error";
-			serverIndicator.setAttribute("data-label", "Server Unreachable");
-			dbIndicator.className = "status-indicator status-error";
-			dbIndicator.setAttribute("data-label", "Database Unreachable");
-		}
-	}
+      const status = await response.json();
 
-	/**
-	 * A safe wrapper for history.pushState that prevents pushing a new state
-	 * if the target URL is the same as the current one.
-	 * @param {object} state - The state object to save.
-	 * @param {string} title - The new document title.
-	 * @param {string} url - The new URL to push.
-	 */
-	function pushStateSafe(state, title, url)
-	{
-		// We compare the target URL with the browser's current URL.
-		if (
-			window.location.pathname +
-			window.location.search +
-			window.location.hash !==
-			url
-		)
-		{
-			history.pushState(state, title, url);
-		}
-	}
-	/***********************************************************/
-	// Main program starts here
-	/***********************************************************/
-	function initializeApp()
-	{
-		// checkStatus();
-		// setInterval(checkStatus, 30000);
+      // Update Server Status Indicator
+      if (status.server_status === "OK")
+         {
+         serverIndicator.className = "status-indicator status-ok";
+         serverIndicator.setAttribute("data-label", "Server OK");
+         } 
+      else
+         {
+         serverIndicator.className = "status-indicator status-error";
+         serverIndicator.setAttribute("data-label", "Server Error");
+         }
 
-		loadHistoryIntoDatalist();
-		SearchHandler();
-		AppRouter();
-	}
-	window.onresize = resizeCanvas;
-	initializeApp();
+      // Update Database Status Indicator
+      if (status.database_status === "OK")
+         {
+         dbIndicator.className = "status-indicator status-ok";
+         dbIndicator.setAttribute("data-label", "Database OK");
+         } 
+      else
+         {
+         dbIndicator.className = "status-indicator status-error";
+         dbIndicator.setAttribute("data-label", "Database Error");
+      }
+   }
+catch (error)
+   {
+   // If the fetch fails, both are in an error state
+   console.error("Status check failed:", error);
+   serverIndicator.className = "status-indicator status-error";
+   serverIndicator.setAttribute("data-label", "Server Unreachable");
+   dbIndicator.className = "status-indicator status-error";
+   dbIndicator.setAttribute("data-label", "Database Unreachable");
+   }
+}
 
-	/* THIS IS THE END OF WHOLE_JAVASCRIPT_HANDLER */
+/**
+ * A safe wrapper for history.pushState that prevents pushing a new state
+ * if the target URL is the same as the current one.
+ * @param {object} state - The state object to save.
+ * @param {string} title - The new document title.
+ * @param {string} url - The new URL to push.
+ */
+
+function pushStateSafe(state, title, url)
+{
+// We compare the target URL with the browser's current URL.
+
+if (window.location.pathname + window.location.search +	window.location.hash !== url)
+   {
+   history.pushState(state, title, url);
+   }
+}
+
+/***********************************************************/
+
+function InitializeApp()
+{
+// checkStatus();
+// setInterval(checkStatus, 30000);
+
+loadHistoryIntoDatalist();
+SearchHandler();
+AppRouter();
+}
+
+/***********************************************************/
+// Main program starts here
+/***********************************************************/
+
+window.onresize = resizeCanvas;
+
+InitializeApp();
+
+   /* N.B. !!!! THIS IS THE END OF WHOLE_JAVASCRIPT_HANDLER wrapper (goto start to see it) !!!! */
 });

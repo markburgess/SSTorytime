@@ -747,10 +747,13 @@ for (let ls of obj.Content)
       sub1.textContent = "Last viewed at " + ls.Last;
       sec.appendChild(sub1);
 
-      let sub2 = document.createElement("i");
-      sub2.textContent = "  total viewing count = " + ls.Freq;
-      sub2.id = "statcount";
+      let sub2 = document.createElement("br");
       sec.appendChild(sub2);
+
+      let sub3 = document.createElement("i");
+      sub3.textContent = "  total viewing count = " + ls.Freq;
+      sub3.id = "statcount";
+      sec.appendChild(sub3);
 
       card.appendChild(sec);
 

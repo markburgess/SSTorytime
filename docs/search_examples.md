@@ -1,6 +1,18 @@
 
 # Search examples
 
+## Style
+
+* Select a visual theme (web only)
+
+<pre>
+ \theme light
+ \theme dark
+ \theme slate
+ \theme spaceblue
+</pre>
+
+
 ## Word search
 
 * Search for a precise word

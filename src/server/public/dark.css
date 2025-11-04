@@ -258,7 +258,7 @@ h3 {
 }
 
 #statcount {
-  color: navy;
+  color: var(--cyan-3));
   margin-left: 100px;
   padding: 5px;
 }

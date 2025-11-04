@@ -258,7 +258,7 @@ h3 {
 }
 
 #statcount {
-  color: navy;
+  color: var(--cyan-3));
   margin-left: 100px;
   padding: 5px;
 }
@@ -495,7 +495,7 @@ mjx-container[display] {
   word-wrap: normal;
   white-space: nowrap;
   direction: ltr;
-  color: var(--blue-10);
+  color: var(--blue-3);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   -moz-osx-font-smoothing: grayscale;

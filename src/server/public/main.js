@@ -783,9 +783,9 @@ for (let ls of obj.Content)
          }
 
       nitem.id = "heatmap";
-      nitem.style.color = HeatColour(ls.Freq, ls.Pdelta, 70);
+      nitem.style.color = HeatColour(ls.Freq, ls.Ndelta, 70);
       nitem.style.fontSize = "80%";
-      nitem.style.backgroundColor = HeatColour(ls.Freq, ls.Pdelta, 100);
+      nitem.style.backgroundColor = HeatColour(ls.Freq, ls.Ndelta, 100);
       nitem.style.padding = "5px";
       nlink.appendChild(nitem);
       hmpanel.appendChild(nlink);
@@ -1987,31 +1987,35 @@ return '"'+ret+'"';
 // Graphics Drawing
 /***********************************************************/
 
-function HeatColour(freq, pdelta, sat)
+function HeatColour(freq,seconds,sat)
 {
-// pdelta is measured in seconds --> HSL
+const hottest = 10;  // red
+const coldest = 230;  // blue
+const horizon = 7 * 24 * 3600;
+const colour_range = coldest - hottest;
 
-const hottest = 100;
-const coldest = 3600 * 24 * 7 - hottest;
-
-let hue = ((pdelta - hottest) / coldest) * 230;
+// What fraction of the expiry range is expiry?
+ const day = 24 * 3600;
+let hue = hottest + colour_range * seconds/horizon;
 let saturation = sat;
 let lightness = 40 + freq * 2;
 
 if (hue < 0)
    {
-   hue = 0;
+   hue = hottest;
    }
 
 if (hue > 230)
    {
-   hue = 230;
+   hue = coldest;
    }
 
-if (lightness > 100)
+if (lightness > 90)
    {
-   lightness = 100;
+   lightness = 90;
    }
+
+
 
 let hsl = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 

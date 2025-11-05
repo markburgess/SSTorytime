@@ -100,7 +100,7 @@ history.forEach((item) =>
 var CANVAS = CreateCanvas();
 var CTX = CANVAS.getContext("2d");
 
-var CANVAS_LABEL_COLOUR = "white";
+var CANVAS_LABEL_COLOUR = "darkgray";
 var LEADSTO_COLOUR = "darkred";
 var CONTAINS_COLOUR = "lightblue";
 var EXPRESSES_COLOUR = "orange";
@@ -259,7 +259,7 @@ switch (skintheme)
    {
    case "dark":
       theme.setAttribute('href', '/dark.css')
-      CANVAS_LABEL_COLOUR = "black";
+      CANVAS_LABEL_COLOUR = "white";
       LEADSTO_COLOUR = "darkred";
       CONTAINS_COLOUR = "lightblue";
       EXPRESSES_COLOUR = "orange";
@@ -1738,7 +1738,6 @@ if (searchQuery.startsWith("\\theme"))
    {
    THEME = searchQuery.substring(7).trim();
    SelectTheme(THEME);
- console.log("xxxx1",THEME);
    return;
    }
 

@@ -65,4 +65,4 @@ $ docker volume rm docker_postgres_data
 docker_postgres_data
 ```
 
-The volume will be recreate (empty of course) next time `docker-compose up`is run.
+The volume will be recreated (empty of course) next time `docker-compose up`is run.

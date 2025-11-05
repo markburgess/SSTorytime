@@ -26,6 +26,7 @@ you may need to turn off modules:*
 go env -w GO111MODULE=off
 ```
 
+The PostgreSQL database dependency can by run in a Docker container to avoid local installation and configuration. See [Running the SSTorytime database in docker](postgres-docker/README.md) for further details.
 
 ## Installing database Postgres
 

@@ -287,7 +287,9 @@ END;"    (ex)  A recursive search in SQL
 
 "SolveNodePtrs(ctx PoSST,nodenames []string,search SearchParameters,arr []ArrowPtr,limit int) []NodePtr"  (use-for) finding a set of matching NPtrs satisfying the search parameters compiled by a search command
 
+ :: themes ::
 
+ You can select colour themes in the web browser by typing \theme <theme>. Currently supported: light, dark, slate, spaceblue/astronomy/blue
 
 
 

@@ -4,6 +4,12 @@
 
 As we figure out how to make the project easily available, you will need to compile
 the programs by following thee destructions below. You can get started with or without Docker (for those who know).
+You may need to install these prerequisites:
+
+* Git
+* Make
+* Postgres
+* Docker (optional, e.g. Docker desktop)
 
 ## Summary
 

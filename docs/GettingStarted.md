@@ -1,6 +1,9 @@
 # Setting up and getting started
 
-*At the moment, STTorytime is only supported on Linux based operating systems. Packaging for other systems will follow when things are more finished.*
+*At the moment, STTorytime is only supported on Linux based operating systems. Packaging for other systems will follow.*
+
+As we figure out how to make the project easily available, you will need to compile
+the programs by following thee destructions below. You can get started with or without Docker (for those who know).
 
 ## Summary
 

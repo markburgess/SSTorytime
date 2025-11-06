@@ -10,7 +10,7 @@
 
 > [!NOTE]
 > * Join the [SSTorytime LinkedIn Group](https://www.linkedin.com/groups/15875004/) for questions and discussions.
-> * [Quick setup and run of postgres in Docker](postgres-docker/README.md)
+> * [Quick installation options](docs/GettingStarted.md)
 > * [TO-DO List and HOW **YOU** CAN CONTRIBUTE!](docs/howtocontribute.md)
 > * Welcome!
 >
@@ -47,7 +47,6 @@ book shown to the right.
 ## Deep Dive into this Semantic Spacetime Project (SST)
 
  Keywords, tags: Open Source Smart Graph Database API for Postgres, Go(lang) API, Explainability of Knowledge Representation
-
 
 
 * See these Medium articles for a conceptual introduction

@@ -17,7 +17,7 @@
 **SSTorytime is an independent Knowledge Graph, based on Semantic Spacetime. It is not an Topic Map or  RDF-based project. It aims to be both easier to use and more powerful than RDF.**
 >
 
-# SSTorytime
+# SSTorytime - A Unified Process For Mapping Knowledge
 
 ## Graphs are the language of spacetime process
 

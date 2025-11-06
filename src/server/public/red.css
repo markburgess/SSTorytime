@@ -7,7 +7,7 @@ body {
 }
 
 page {
-  background-color: var(--gray-8);
+  background-color: var(--pink-12);
   min-height: 100svh;
   max-width: 100svw;
   overflow: hidden;
@@ -110,7 +110,7 @@ a {
   transition-property: transform, translate, scale, rotate;
   animation: fade-in 1s var(--ease-5);
   text-decoration: italic;
-  color: var(--gray-2);         // context labels
+  color: var(--orange-2);         // context labels
   padding-inline: 0;
   cursor: pointer;
   font-weight: var(--font-weight-6);
@@ -124,7 +124,7 @@ a {
     inset-inline-start: 0;
     inset-block-end: -1ch;
     transform: scale(0);
-    background-color: var(--gray-2);  // context labels
+    background-color: var(--orange-2);  // context labels
     transition: all ease-in-out 250ms;
   }
 
@@ -141,7 +141,7 @@ a {
 
 h3 {
   margin-block: 2ch;
-  color: var(--choco-2);
+  color: var(--red-5);
   font-size: var(--font-size-fluid-1);
   min-width: fit-content;
 }
@@ -150,7 +150,7 @@ h3 {
   border-radius: var(--radius-3);
   padding: 1rem 0.5rem;
   margin-bottom: 0.5rem;
-    color: var(--choco-0);
+    color: var(--yellow-0);
   width: 95svw;
   border: 1px var(--stone-4) solid;
   display: flex;
@@ -162,21 +162,21 @@ h3 {
 
   & pre {
     font-size: var(--font-size-fluid-0);
-    color: var(--green-0);      // fulltext with monospace
+    color: var(--yellow-7);      // fulltext with monospace
     display: inline-flex;
     text-wrap: wrap balance;
   }
 
   & h3 {
     font-size: var(--font-size-fluid-0);
-    color: var(--choco-2);      // card titles
+    color: var(--red-5);      // card titles
     min-width: fit-content;
     margin-top: 0.5ch;
   }
 
   & h4 {
     font-size: var(--font-size-fluid-1);
-    color: var(--choco-2);      // card titles
+    color: var(--red-5);      // card titles
     min-width: fit-content;
     margin-top: 0.5ch;
   }
@@ -192,7 +192,7 @@ h3 {
 
   & span {
     padding-inline: 1ch;
-    color: var(--green-2);  // Main subject fulltext
+    color: var(--yellow-7);  // Main subject fulltext
     width: fit-content;
     flex-basis: 100%;
     text-wrap: wrap balance;
@@ -202,7 +202,7 @@ h3 {
   }
 
   & td {
-    background-color: var(--stone-12); /* Default/unknown state */
+    background-color: var(--red-12); /* Default/unknown state */
     padding: 3ch;
     margin-left: 2ch;
   }
@@ -210,7 +210,7 @@ h3 {
   & > span:first-child {
     margin-bottom: 1ch;
     flex-basis: 100%;
-    color: var(--choco-0);
+    color: var(--yellow-0);
     pointer-events: auto;
     align-items: baseline;
     white-space: pre;
@@ -259,7 +259,7 @@ h3 {
 }
 
 #statcount {
-  color: var(--cyan-3));
+  color: var(--yello-7));
   margin-left: 100px;
   padding: 5px;
 }
@@ -304,7 +304,7 @@ h3 {
 }
 
 .NCM-N {
-  color: blue;
+  color: moccasin;
 }
 
 #cntxt {
@@ -316,7 +316,7 @@ h3 {
   /* -express */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: var(--purple-4);
+  color: var(--pink-4);
   font-size: var(--font-size-fluid-0);
 }
 
@@ -364,13 +364,13 @@ h3 {
   /* +express */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: var(--purple-4);
+  color: var(--pink-4);
   font-size: var(--font-size-fluid-0);
 }
 
 #toc-elem {
   padding-inline: 1ch;
-  color:  var(--pink-4);
+  color: var(--pink-1));
   font-size: 150%;
   line-height: 150%;
 }
@@ -387,7 +387,7 @@ h3 {
 
 #toc-single {
   padding-inline: 1ch;
-  color: var(--orange-4);
+  color: var(--yellow-5);
   font-size: 150%;
   line-height: 120%;
 }
@@ -496,7 +496,7 @@ mjx-container[display] {
   word-wrap: normal;
   white-space: nowrap;
   direction: ltr;
-  color: var(--gray-10);
+  color: var(--orange-3);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   -moz-osx-font-smoothing: grayscale;
@@ -529,7 +529,7 @@ mjx-container[display] {
 
 /* State Colors */
 .status-ok {
-  background-color: var(--green-5);
+  background-color: var(--yellow-7);
 }
 
 .status-error {

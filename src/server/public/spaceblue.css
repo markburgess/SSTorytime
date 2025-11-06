@@ -202,6 +202,7 @@ h3 {
   }
 
   & td {
+    background-color: var(--blue-12); /* Default/unknown state */
     padding: 3ch;
     margin-left: 2ch;
   }

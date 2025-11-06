@@ -245,7 +245,7 @@ else
 function DisplayError(message)
 {
 const main = document.querySelector("main");
-main.innerHTML = `<div class="error-message"> <h5>An Error Occurred!</h5> <p>${message}</p> </div>`;
+ main.innerHTML = `<div class="error-message"> <h5>Oops, nothing there</h5> <p>${message}</p> </div>`;
 }
 
 /***********************************************************/
@@ -258,6 +258,7 @@ let theme = document.getElementById('theme');
 switch (skintheme)
    {
    case "dark":
+   case "night":
       theme.setAttribute('href', '/dark.css')
       CANVAS_LABEL_COLOUR = "white";
       LEADSTO_COLOUR = "darkred";
@@ -266,6 +267,8 @@ switch (skintheme)
       NEAR_COLOUR = "darkgray";
       break;
    case "slate":
+   case "gray":
+   case "grey":
       theme.setAttribute('href', '/slate.css');
       CANVAS_LABEL_COLOUR = "white";
       LEADSTO_COLOUR = "crimson";
@@ -275,10 +278,22 @@ switch (skintheme)
       break;
    case "space":
    case "astronomy":
-   case "spaceblue":
+   case "spaceblue":   
+   case "space":
+   case "blue":
       theme.setAttribute('href', '/spaceblue.css');
       CANVAS_LABEL_COLOUR = "white";
       LEADSTO_COLOUR = "crimson";
+      CONTAINS_COLOUR = "lightblue";
+      EXPRESSES_COLOUR = "orange";
+      NEAR_COLOUR = "lightgray";
+      break;
+   case "red":
+   case "alert":
+   case "redalert":   
+      theme.setAttribute('href', '/red.css');
+      CANVAS_LABEL_COLOUR = "lightyellow";
+      LEADSTO_COLOUR = "gold";
       CONTAINS_COLOUR = "lightblue";
       EXPRESSES_COLOUR = "orange";
       NEAR_COLOUR = "lightgray";
@@ -2337,21 +2352,21 @@ Arrow(x0, y0, z0, xp, yp, zp, NEAR_COLOUR, 1 * mob);
 
 function Event(x, y, z)
 {
-Node(x, y, z, 6 * mob, "darkred", "red");
+Node(x, y, z, 6 * mob, "yellow", "red");
 }
 
 // *************************************************
 
 function Thing(x, y, z)
 {
-Node(x, y, z, 4 * mob, "darkgreen", "lightgreen");
+Node(x, y, z, 4 * mob, "darkgreen", "goldenrod");
 }
 
 // *************************************************
 
 function Concept(x, y, z)
 {
-Node(x, y, z, 4 * mob, "darkblue", "lightblue");
+Node(x, y, z, 4 * mob, "darkblue", "greenyellow");
 }
 
 // *************************************************

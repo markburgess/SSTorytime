@@ -11,9 +11,11 @@
 > [!NOTE]
 > * Join the [SSTorytime LinkedIn Group](https://www.linkedin.com/groups/15875004/) for questions and discussions.
 > * [Quick setup and run of postgres in Docker](postgres-docker/README.md)
-> * Note, SSTorytime is a knowledge graph that is not an RDF-based project. It aims to be both easier to use and more powerful than RDF. <br>
-> * <br> [TO-DO List and HOW **YOU** CAN CONTRIBUTE!](docs/howtocontribute.md)
+> * [TO-DO List and HOW **YOU** CAN CONTRIBUTE!](docs/howtocontribute.md)
 > * Welcome!
+
+**Note, SSTorytime is a knowledge graph that is not an RDF-based project. It aims to be both easier to use and more powerful than RDF.**
+>
 
 # SSTorytime
 

@@ -11,6 +11,9 @@ languages N4L and examples of scripting your own programs.
 
 * Install the `postgres` database, `postgres-contrib` extensions, and `psql` shell command line client.
 
+The PostgreSQL database dependency can by run in a Docker container to avoid local installation and configuration. See [Running the SSTorytime database in docker](../postgres-docker/README.md) for further details.
+
+
 * You need to make a decision about authentication credentials for the database. For personal use on a personal device, everything is local and private so there is no real need to set complex passwords for privacy. However, if you are setting up a shared resource, you might want to change the name of the database, user, and mickymouse password etc. That requires an extra step, changing the defaults and creating a file `$HOME/.SSTorytime` with those choices in your home directory.
 
 * Install the Go(lang) programming and build environment.
@@ -19,16 +22,10 @@ languages N4L and examples of scripting your own programs.
 
 * Read [Related series about semantic spacetime](https://mark-burgess-oslo-mb.medium.com/list/semantic-spacetime-and-data-analytics-28e9649c0ade)
 
-*Note about troubleshooting: the "hard part" of setting up is to work around the quirks of the `Go` language and the database `Postgresql`. These are both delicate beasts: when they work they will just work, but if they don't they are very hard to debug. Postgres, in particular, fails silently and mysteriously. It keeps log files in `/var/lib/pgsql/data/log`. Luckily the major linux distros are mostly similar these days, so cross fingers that these instructions work. If you experience problems with the go language,
-you may need to turn off modules:*
-
-```
-go env -w GO111MODULE=off
-```
-
-The PostgreSQL database dependency can by run in a Docker container to avoid local installation and configuration. See [Running the SSTorytime database in docker](../postgres-docker/README.md) for further details.
 
 ## Installing database Postgres
+
+*(See also [Running the SSTorytime database in docker](../postgres-docker/README.md).)*
 
 Hard part first; the postgres database is a bit of a monster. There are several steps to install it an set it up. 
 There is also an option to run the database in RAM memory, which is recommended unless you are already using it for
@@ -209,22 +206,12 @@ export GOPATH=~/go
 
 Don’t forget to restart your shell or command window after editing this.
 
-Since version 1.13 of Go, big changes have been made (and are expected to continue going forwards, sigh) concerning “modules” design. Unless you know what you’re doing, disable modules by running:
-
-```
-% go env -w GO111MODULE=off
-```
-
 To use the Go Driver, download it
 
 ```
 % go get github.com/lib/pq
 
 ```
-
-Try writing some simple programs in golang to learn its quirks. The
-most annoying of these is the forced placement of curly braces and
-indentations.
 
 ## Uploading the ready-made examples
 

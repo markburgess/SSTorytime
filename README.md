@@ -13,12 +13,12 @@
 > * [Quick setup and run of postgres in Docker](postgres-docker/README.md)
 > * [TO-DO List and HOW **YOU** CAN CONTRIBUTE!](docs/howtocontribute.md)
 > * Welcome!
-
-**SSTorytime is an independent Knowledge Graph, based on Semantic Spacetime. It is not an Topic Map or  RDF-based project. It aims to be both easier to use and more powerful than RDF.**
 >
 
 # SSTorytime
-### A Unified Process For Mapping Knowledge
+## (A Unified Process For Mapping Knowledge)
+
+**SSTorytime is an independent Knowledge Graph, based on Semantic Spacetime. It is not an Topic Map or  RDF-based project. It aims to be both easier to use and more powerful than RDF.**
 
 ## Graphs are the language of spacetime process
 
@@ -44,7 +44,7 @@ If you want to know the deep background behind the Semantic Spacetime concept an
 book shown to the right. 
 **N.B. This book is conceptual background, not a tutorial or HOW-TO manual.**
 
-## Take part in this Semantic Spacetime Project (SST)
+## Deep Dive into this Semantic Spacetime Project (SST)
 
  Keywords, tags: Open Source Smart Graph Database API for Postgres, Go(lang) API, Explainability of Knowledge Representation
 

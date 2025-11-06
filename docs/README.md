@@ -16,17 +16,17 @@
 
 * [A Quickstart Tutorial](Tutorial.md)
 * [Examples to try](search_examples.md)  
-* [Getting started writing notes in N4L](N4L.md)
+* [Creating Knowables: Getting Started Writing Notes In N4L](N4L.md)
 * [A Case Study Example](example.md)
 * [More Generally About The Idea](KnowledgeAndLearning.md)
 
-### APIs, Programming and Extending
+### Technical, APIs, Programming and Extending
 
-* (howdoescontextwork.md)
-* (namespaces.md)
-* (API.md)
-* (WebAPI.md)
-* (dynamic_functions.md)  
+* [How Context Works](howdoescontextwork.md)
+* [Namespaces Now and In Future](namespaces.md)
+* [A Basic Programming API](API.md)
+* [A Web/JSON Querying API](WebAPI.md)
+* [Dynamic Functions For Realtime Knowables](dynamic_functions.md)  
 
 ## The tools
 

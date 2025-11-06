@@ -14,7 +14,7 @@ languages N4L and examples of scripting your own programs.
 The PostgreSQL database dependency can by run in a Docker container to avoid local installation and configuration. See [Running the SSTorytime database in docker](../postgres-docker/README.md) for further details.
 
 
-* You need to make a decision about authentication credentials for the database. For personal use on a personal device, everything is local and private so there is no real need to set complex passwords for privacy. However, if you are setting up a shared resource, you might want to change the name of the database, user, and mickymouse password etc. That requires an extra step, changing the defaults and creating a file `$HOME/.SSTorytime` with those choices in your home directory.
+* In the long run, if running publicly, you will need to make a decision about authentication credentials for the database. For tesing, for personal use on a personal device, everything is local and private so there is no real need to set complex passwords for privacy. However, if you are setting up a shared resource, you might want to change the name of the database, user, and mickymouse password etc. That requires an extra step, changing the defaults and creating a file `$HOME/.SSTorytime` with those choices in your home directory.
 
 * Install the Go(lang) programming and build environment.
 

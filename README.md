@@ -14,7 +14,7 @@
 > * [TO-DO List and HOW **YOU** CAN CONTRIBUTE!](docs/howtocontribute.md)
 > * Welcome!
 
-**Note, SSTorytime is a knowledge graph that is not an RDF-based project. It aims to be both easier to use and more powerful than RDF.**
+**SSTorytime is an independent Knowledge Graph, based on Semantic Spacetime. It is not an Topic Map or  RDF-based project. It aims to be both easier to use and more powerful than RDF.**
 >
 
 # SSTorytime

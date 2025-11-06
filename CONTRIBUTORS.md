@@ -3,7 +3,7 @@
 
 * [Mark Burgess](http://markburgess.org)
 
-Concept, theory, design, programming. 
+Concept, Promise Theory and Semantic Spacetime, program design, architecture, implementation. 
 
 * Alex Shadrin
 

@@ -221,10 +221,12 @@ def UploadContextToDB(conn,ctxstr,cptr):
 def TryContext(conn,context):
     ctxstr = NormalizeContext(context)
     if len(ctxstr) == 0:
-        return
+        return 0
     str,ctxptr = GetDBContextByName(conn,ctxstr)
     if ctxptr == -1 or str != ctxstr:
         ctxptr = UploadContextToDB(conn,ctxstr,-1)
+    else:
+        ctxptr = 0
     return ctxptr
 
 #    

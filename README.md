@@ -16,7 +16,7 @@
 >
 
 # SSTorytime
-## (A Unified Process For Mapping Knowledge)
+## (A Unified Graph Process For Mapping Knowledge)
 
 Imagine a tool that would help you to know your own thinking, to capture it, visualize it, and make it searchable for those days when your scatterbrain isn’t working on all cylinders. This is the thinking behind SSTorytime.  We might not call such a tool Artificial Intelligence; rather, we might call it a "cyborg enhancement". Still, the results would be useful for training and teaching of human or machine intelligence alike. Such a toolset is the goal of the open source SSTorytime Knowledge project. The issue of what kind of graph you should make is secondary to the issue of understanding what knowledge means, and how we will use it. Neither topic maps nor rdf communities got this right in the past. 
 

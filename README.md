@@ -53,7 +53,9 @@ book shown to the right.
  Keywords, tags: Open Source Smart Graph Database API for Postgres, Go(lang) API, Explainability of Knowledge Representation
 
 
-* See these Medium articles for a conceptual introduction
+* See these Medium articles for a conceptual introduction:
+* * [Getting To Know Knowledge--How Can Semantic Graphs Actually Help Us?](https://medium.com/@mark-burgess-oslo-mb/getting-to-know-knowledge-how-can-semantic-graphs-actually-help-us-e3afb53fc6af)
+
 * * [Why Semantic Spacetime (SST) is the answer to rescue property graphs](https://medium.com/@mark-burgess-oslo-mb/why-semantic-spacetime-sst-is-the-answer-to-rescue-property-graphs-2c004fe705b2)
 * * [From cognition to understanding](https://medium.com/@mark-burgess-oslo-mb/from-cognition-to-understanding-677e3b7485de): 
 * * [Searching in Graphs, Artificial Reasoning, and Quantum Loop Corrections with Semantics Spacetime](https://medium.com/@mark-burgess-oslo-mb/searching-in-graphs-artificial-reasoning-and-quantum-loop-corrections-with-semantics-spacetime-ea8df54ba1c5)

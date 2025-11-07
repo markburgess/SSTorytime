@@ -261,7 +261,7 @@ switch (skintheme)
    case "night":
       theme.setAttribute('href', '/dark.css')
       CANVAS_LABEL_COLOUR = "white";
-      LEADSTO_COLOUR = "darkred";
+      LEADSTO_COLOUR = "red";
       CONTAINS_COLOUR = "lightblue";
       EXPRESSES_COLOUR = "orange";
       NEAR_COLOUR = "darkgray";
@@ -283,9 +283,9 @@ switch (skintheme)
    case "blue":
       theme.setAttribute('href', '/spaceblue.css');
       CANVAS_LABEL_COLOUR = "white";
-      LEADSTO_COLOUR = "crimson";
+      LEADSTO_COLOUR = "orange";
       CONTAINS_COLOUR = "lightblue";
-      EXPRESSES_COLOUR = "orange";
+      EXPRESSES_COLOUR = "crimson";
       NEAR_COLOUR = "lightgray";
       break;
    case "red":

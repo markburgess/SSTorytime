@@ -289,8 +289,7 @@ END;"    (ex)  A recursive search in SQL
 
  :: themes ::
 
- You can select colour themes in the web browser by typing \theme <theme>. Currently supported: light, dark, slate, spaceblue/astronomy/blue
-
+ You can select colour themes in the web browser by typing \theme and a colour style. Currently supported: light, dark, slate, spaceblue/astronomy/blue and red.
 
 
 

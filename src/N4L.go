@@ -1714,7 +1714,22 @@ func IsGeneralString(src []rune,pos int) bool {
 	switch src[pos] {
 
         case ')':
-	        ParseError(ERR_STRAY_PAREN)
+		var before,after int
+
+		if pos-20 > 0 {
+			before = pos-20
+		} else {
+			before = 0
+		}
+
+		if pos + 20 < len(src) {
+			after = pos+20
+		} else {
+			after = len(src)-1
+		}
+
+		msg := fmt.Sprintf("%s at position %d near '...%s...'",ERR_STRAY_PAREN,pos,string(src[before:after]))
+	        ParseError(msg)
 		os.Exit(-1)
 	case '(':
 		return false

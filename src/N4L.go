@@ -1483,9 +1483,9 @@ func IdempAddLink(from string, frptr SST.NodePtr, link SST.Link,to string, toptr
 	}
 
 	if link.Wgt != 1 {
-		PVerbose("... Relation:",from,"--(",SST.ARROW_DIRECTORY[link.Arr].Long,",",link.Wgt,")->",to,link.Ctx)
+		PVerbose("... Relation:",from,"--(",SST.ARROW_DIRECTORY[link.Arr].Long,",",link.Wgt,")->",to,SST.CONTEXT_DIRECTORY[link.Ctx])
 	} else {
-		PVerbose("... Relation:",from,"--",SST.ARROW_DIRECTORY[link.Arr].Long,"->",to,link.Ctx)
+		PVerbose("... Relation:",from,"--",SST.ARROW_DIRECTORY[link.Arr].Long,"->",to,SST.CONTEXT_DIRECTORY[link.Ctx])
 	}
 
         // Build PageMap

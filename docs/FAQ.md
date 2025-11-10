@@ -24,8 +24,8 @@ automatically to make browsing a book easy, searchable, and informative.
 
 * **What would I use it for?**
 
-* * Do you have HR processes that track staff capablities?
-* * Are you designing team topologies without noting down your thinkning?
+* * Do you have HR processes that track staff capabilities?
+* * Are you designing team topologies without noting down your thinking?
 * * Are you designing a process, a user interface, user journeys through a website or organization?
 * * Are you mapping supply chains or tracing work execution?
 * * Are you creating service directories, tracing dependencies?
@@ -81,7 +81,7 @@ $ ./searchN4L \\from '!a1!'
 
 Path solving is a potentially exponential process. Without some constraints it could take a very long time. You can restrict the time significantly by specifying precise start and end nodes, e.g. write `from !a1! to !b6!` to match the precise a1 (not a substring of many possibilities. You can also use a context `from a1 to b4 context connection`. See also 'Why are the results different each time?'
 
-By default, SSTorytime will also try to search all possible path types. Narrative links are neary always arrow type 1 (leads to), so you can try to limit by arrow too `from door arrow 1`.
+By default, SSTorytime will also try to search all possible path types. Narrative links are nearly always arrow type 1 (leads to), so you can try to limit by arrow too `from door arrow 1`.
 
 * **Why does a path search take so long?
 Path searches grow exponentially with the length of the path, so they get slower and slower as the distance between nodes
@@ -104,3 +104,9 @@ Lookup in a database is not a deterministic process. The database may select dif
 * **I have no errors in my N4L, but when I try to upload without wiping previous data `N4L -u ...` I keep getting "Warning: Redefinition of arrow ...". What's wrong?**
 
 If you don't wipe the database, you need to ensure that all your arrows are compatible across the whole database. If you've already used an arrow name for something else, then you can't reuse it with a different meaning now. It's not an error when you are just checking the syntax. It only becomes a problem when you try to merge with earlier data. 
+
+Although one could, in principle merge the definitions in a kind of
+private namespace, this would be laze and not pedagogically well
+motivated. If we are going to put data into the same database, and
+allow cross-pollenation of ideas, then we need to resolve those
+inconsistencies.

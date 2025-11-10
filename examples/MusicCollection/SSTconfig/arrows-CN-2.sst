@@ -1,0 +1,10 @@
+
+- contains
+
+ + contains (contain)     - belongs to          (belong)
+ + genre contains (ghas)  - belongs to category/genre (genre) 
+
+ + contains track (track) - is a track belonging to (track in)
+
+ + collection contains (collected in) - is part of the collection (in collection)
+

@@ -1,0 +1,15 @@
+
+#
+# LEADSTO relations are about processes and events (sequences of)
+#
+# Note that passive things cannot cause or affect changes, only active processes
+# (meaning events) so events always affect events
+#
+
+
+- leadsto 
+
+  + was followed by (next release) - followed on from (followed)
+  + is continued by (nextpart)     - is a continuation, following on from (continues)
+
+

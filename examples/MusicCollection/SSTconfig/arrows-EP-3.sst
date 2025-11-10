@@ -1,0 +1,41 @@
+
+
+- properties
+
+  // THE FIRST PART IS TYPICALLY MADE BY THINGS OR CONCEPTS
+
+ :: basic annotation ::
+
+ + note/remark             (note)    - is a note or remark about         (isnotefor)
+ + added remark            (remark)  - is a remark about                 (remabout)
+ + please note!            (NB)      - is an important remark concerning (important regarding)
+ + refers to               (ref)     - is referred to in                 (ref-in)
+
+ :: music collection ::
+
+ + total number of tracks (tracks)     - is the track count for (tracks-on)
+ + was released on        (released)   - was the release date for (release-of)
+ + was remastered on      (remastered) - a remaster was issued for (remast-of)
+ + was performed          (performance)- was the event of performance (date-perf)
+
+ + released an album (album)        - is an album release by (album by) 
+ + released a single (single)       - is a single release by (single by)
+
+ + music written by (music by)      - wrote the music for (wrote music)
+ + words/text written by (words by) - wrote the words/text for (words for)
+
+ + published the release (published) - was published by (publisher)
+
+ + performance by ensemble type  (ensemble)     - has performed (e-perforamce)
+ + has track length/playing time (length)       - is the track length/playing time of (length-of)
+ + has lyrics                    (lyrics)       - are the lyrics for (lyrics-for)
+ + has instrumental description  (instrumental) - describes an instrumental (descr-instr)
+
+ + has mood roughly...      (mood)     - is the mood describing (mood-of)
+ + has hi-fi quality/rating (hif)      - hifi quality/rating for
+
+ + was produced by (producer)      - produced the recording (produced)
+ + was composed by (composer)      - composed the work (composed)
+ + was conducted by (conductor)    - conducted the performance (conducted)
+ + was performed by (performed by) - performed (performed)
+

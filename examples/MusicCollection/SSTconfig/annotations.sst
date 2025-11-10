@@ -1,0 +1,19 @@
+
+
+ - annotations   // for marking up a text body: body (relation) annotation
+
+ // slashes and () # - are illegal, as used in comments/grammar
+ // also avoid +,* and mathematical symbols
+
+ // Note, you must have defined these arrows already under the arrow types
+
+  % (ref)                    # refers to, a generic way of linking components
+  = (involves)
+ ** (is a special case of)
+
+ # Longer matches should come first to ensure we don't pick up the substring instead
+
+ >> (is an example of)
+ > (has actor/subject role)    // careful, when we reserve a character, it's potentially going to interfere with data
+ < (has affected object role)  // e.g. this will break  "syntax: command <ARG1> <ARG2>"
+

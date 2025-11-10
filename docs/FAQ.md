@@ -98,3 +98,9 @@ Remember to always give pairs of arrow,inverse since the FROM and the TO match o
 * **Why are the results different each time?**
 
 Lookup in a database is not a deterministic process. The database may select different values on each search and return them in a different order. The default number of data returned is 10 items. If there are many possible matches, the probability of getting the same 10 will decrease with more possibilities. You can also increase the number of matches `mysearch limit 20`. The more you constrain your search the more likely you are to get the same answer each time. 
+
+### Errors
+
+* **I have no errors in my N4L, but when I try to upload without wiping previous data `N4L -u ...` I keep getting "Warning: Redefinition of arrow ...". What's wrong?**
+
+If you don't wipe the database, you need to ensure that all your arrows are compatible across the whole database. If you've already used an arrow name for something else, then you can't reuse it with a different meaning now. It's not an error when you are just checking the syntax. It only becomes a problem when you try to merge with earlier data. 

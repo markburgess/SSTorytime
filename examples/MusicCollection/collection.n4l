@@ -1,0 +1,147 @@
+
+-music collection template
+
+
+  :: rush albums, progressive rock ::
+
+@al_1 2112 (album by) Rush
+        "  (tracks) 6
+        "  (released) March 1976
+        "  (remastered) 2012
+        "  (publisher) Mercury Records
+        "  (genre) Progressive Rock  // Separate to make direct connection
+        "  (genre) Concept Album
+        "  (ensemble) electric rock band
+        "  (music by) %"Alex Lifeson", %"Geddy Lee", %"Neil Peart"
+        "  (words by) %"Neil Peart"
+        "  (producer) Terry Brown
+
+ +:: _sequence_ ::
+
+ 1. 2112                   (track in) 2112
+      "                    (length) 20:33
+
+ 2. A Passage To Bangkok   (track in) 2112
+      "                    (length) 3:35
+
+ 3. The Twilight Zone      (track in) 2112
+      "                    (length) 3:20
+
+ 4. Lessons                (track in) 2112
+      "                    (length) 3:53
+
+ 5. Tears                  (track in) 2112
+      "                    (length) 3:34
+
+ 6. Something For Northing (track in) 2112
+      "                    (length) 3:59
+
+ -:: _sequence_ ::
+
+
+
+@al_2 Farewell To Kinds (album by) Rush
+        "  (tracks) 6
+        "  (released) August 29 1977
+        "  (remastered) 2017
+        "  (publisher) Mercury Records
+        "  (genre) Progressive Rock  // Separate to make direct connection
+        "  (genre) Concept Album
+        "  (ensemble) electric rock band
+        "  (music by) %"Alex Lifeson", %"Geddy Lee", %"Neil Peart"
+        "  (words by) %"Neil Peart"
+        "  (followed) 2112
+        "  (producer) Terry Brown
+
+ +:: _sequence_ ::
+
+ 1. A Farewell To Kinds    (track in) $al_2.1
+      "                    (length) 5:53
+ 2. Xanadu                 (track in) $al_2.1
+      "                    (length) 11:07
+ 3. CloserTo The Heart     (track in) $al_2.1
+      "                    (length) 2:55
+ 4. Cinderella Man         (track in) $al_2.1
+      "                    (length) 4:22
+ 5. Madrigal               (track in) $al_2.1
+      "                    (length) 2:36
+ 6. Cygnus X-1             (track in) $al_2.1
+      "                    (length) 10:22
+ -:: _sequence_ ::
+
+
+
+@al_3 Hemispheres (album by) Rush
+        "  (tracks) 4
+        "  (released) October 24 1978
+        "  (remastered) 2015
+        "  (publisher) Mercury Records
+        "  (genre) Progressive Rock  // Separate to make direct connection
+        "  (genre) Concept Album
+        "  (ensemble) electric rock band
+        "  (music by) %"Alex Lifeson", %"Geddy Lee", %"Neil Peart"
+        "  (words by) %"Neil Peart"
+        "  (followed) $al_2.1
+        "  (producer) Terry Brown
+
+ +:: _sequence_ ::
+
+ "1. Cygnus X-1 (Book II: Hemispheres)"  (track in) $al_3.1
+      "                    (length) 18:08
+      "                    (continues) 6. Cygnus X-1
+
+ 2. Circumstances          (track in) $al_3.1
+      "                    (length) 3:44
+
+3, The Trees               (track in) $al_3.1
+      "                    (length) 4:44
+      "                    (lyrics) "There is unrest in the forest
+Trouble with the trees
+For the maples want more sunlight
+And the oaks ignore their pleas
+The trouble with the maples
+(And they're quite convinced they're right)
+They say the oaks are just too lofty
+And they grab up all the light
+But the oaks can't help their feelings
+If they like the way they're made
+And they wonder why the maples
+Can't be happy in their shade
+There is trouble in the forest
+And the creatures all have fled
+As the maples scream, "Oppression"
+And the oaks just shake their heads
+So the maples formed a union
+And demanded equal rights
+They say, "The oaks are just too greedy
+We will make them give us light"
+Now there's no more oak oppression
+For they passed a noble law
+And the trees are all kept equal
+By hatchet, axe, and saw"
+
+"4. La Villa Strangiato (An Exercise in Self-Indulgence)"  (track in) $al_3.1
+      "                    (length) 9:35
+      "                    (instrumental) Guitar, bass, synth, bass pedals, drums
+
+ -:: _sequence_ ::
+
+####################################
+
+  :: orchestra ::
+
+  # Classical metadata is very messed up, trying to squeeze categories into a schema
+  # designed for pop music, so expect to do a lot of editing
+
+@al_99  The World of Borodin
+             " (released) 1995
+             " (note) This seems to be ripped from a Russian digital release
+             " (publisher) Decca
+
+    9. Symphony No. 2 in B Minor: Ii. Scherzo - Prestissimo - Allegretto  (track in) $al_99.1
+            " (composer) Александр Порфирьевич Бородин i.e. Alexander Porfiryevich %Borodin
+            " (composer) "Alexander Borodin"
+            " (performed by) London Symphony Orchestra
+            " (conductor) Jean Martinon
+            " (performance) March 7, 1958 at Kingsway Hall, London
+ 

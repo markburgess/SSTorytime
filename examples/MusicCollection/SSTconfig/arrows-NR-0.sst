@@ -1,0 +1,78 @@
+
+
+- similarity # nearness, proximity
+
+ :: mistakes, warnings ::
+ 
+ looks like                      (ll)
+ sounds like        	         (sl)
+ don't confuse with              (confuse)
+ alternate spelling              (sp)
+ not the same as                 (is-not)
+ compare to                      (compare)
+ stands for                      (sfor)
+
+ is sometimes mistaken for       (mistaken)
+
+ :: similar backgrounds, histories ::
+
+ has same supplier               (sm-sup)
+ has common origin               (cm-org)
+ is entangled with               (entg)
+
+ has same destination            (sm-dir)
+
+ same class                      (sm_cls)
+ same group                      (sm_grp)
+ same tribe                      (sm_trb)
+ same hometown                   (sm_hmt)
+ same modus operandi             (sm_MO)
+ same school                     (sm_sch)
+ same college                    (sm_coll)
+ same university                 (sm_uni)
+ same graduation year            (sm_gyr)
+
+ same weight class               (sm_wgt)
+ same achievement level          (sm_lev)
+
+ same process group              (sm_prgr)
+ same execution script           (sm_scrp)
+
+ :: symmetrical relationships::
+
+ is a variant of                 (variant)
+ similar to         	         (sim)
+ associated with         	 (ass)  # (loose coupling)
+ see also                        (see)
+ also called                     (alias)
+ near to              	         (nr)
+
+ terminates together with        (termwith)
+ https connection with           (https)
+ equals             	         (eq)
+ same as                         (=)
+ is approximately equivalent to  (simeq)
+ 
+ is not the same as 	         (!eq)
+ is nothing like                 (different!)
+
+ runs alongside                  (runs-with)
+
+ :: coincidence::
+
+ comes together with             (and)
+ connects to                     (connects)
+ is adjacent with                (adj)
+
+ associated with    	         (ass)  # (loose coupling)
+ is the partner of               (partner)
+ has met                         (met)
+ dated/was in relationshi with   (dated)
+
+ connects to                     (connects)
+ is adjacent with                (adj)
+
+
+
+
+

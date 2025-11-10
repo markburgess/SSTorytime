@@ -94,7 +94,7 @@ if $DB_TEST_PROG > /dev/null;
    then 
       echo -e "3. ${GREEN} database API ok ${END}"
    else 
-      echo -e "3. ${RED} DATABASE NOT CONFIGURED ${END}"
+      echo -e "3. ${RED} DATABASE NOT CONFIGURED -- add data (cd examples; make) first ${END}"
 
 fi
 
@@ -105,7 +105,7 @@ if $DB_TEST_PROG > /dev/null;
    then 
       echo -e "4. ${GREEN} link mode consistency ok ${END}"
    else 
-      echo -e "4. ${RED} link model consistency, try rebuilding (also (cd examples; make) first)${END}"
+      echo -e "4. ${RED} link model consistency, try rebuilding and add data (cd examples; make) first)${END}"
 fi
 
 DB_TEST_PROG="../src/demo_pocs/dotest_entirecone"

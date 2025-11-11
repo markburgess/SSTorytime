@@ -1676,15 +1676,17 @@ func CreateDBNode(sst PoSST, n Node) Node {
 	var whole string
 	var cl,ch int
 
-	for row.Next() {		
-		err = row.Scan(&whole)
-		fmt.Sscanf(whole,"(%d,%d)",&cl,&ch)
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&whole)
+			fmt.Sscanf(whole,"(%d,%d)",&cl,&ch)
+		}
+		
+		n.NPtr.Class = cl
+		n.NPtr.CPtr = ClassedNodePtr(ch)
+		
+		row.Close()
 	}
-
-	n.NPtr.Class = cl
-	n.NPtr.CPtr = ClassedNodePtr(ch)
-
-	row.Close()
 
 	return n
 }
@@ -1726,15 +1728,17 @@ func IdempDBAddNode(sst PoSST,n Node) Node {
 	var whole string
 	var cl,ch int
 
-	for row.Next() {		
-		err = row.Scan(&whole)
-		fmt.Sscanf(whole,"(%d,%d)",&cl,&ch)
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&whole)
+			fmt.Sscanf(whole,"(%d,%d)",&cl,&ch)
+		}
+		
+		n.NPtr.Class = cl
+		n.NPtr.CPtr = ClassedNodePtr(ch)
+		
+		row.Close()
 	}
-
-	n.NPtr.Class = cl
-	n.NPtr.CPtr = ClassedNodePtr(ch)
-
-	row.Close()
 
 	return n
 }
@@ -3817,25 +3821,28 @@ func GetDBChaptersMatchingName(sst PoSST,src string) []string {
 	var chapters = make(map[string]int)
 	var retval []string
 
-	for row.Next() {		
-		err = row.Scan(&whole)
-		several := strings.Split(whole,",")
-
-		for s := range several {
-			chapters[several[s]]++
-		}
-	}
-
-	for c := range chapters {
-		if strings.Contains(c,src) {
-			if len(c) > 0 {
-				retval = append(retval,c)
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&whole)
+			several := strings.Split(whole,",")
+			
+			for s := range several {
+				chapters[several[s]]++
 			}
 		}
+
+		for c := range chapters {
+			if strings.Contains(c,src) {
+				if len(c) > 0 {
+					retval = append(retval,c)
+				}
+			}
+		}
+
+		sort.Strings(retval)
+		row.Close()
 	}
 
-	sort.Strings(retval)
-	row.Close()
 	return retval
 }
 
@@ -3866,10 +3873,12 @@ func GetDBContextByName(sst PoSST,src string) (string,ContextPtr) {
 
 	// Assume unique match for this, to be fixed elsewhere
 
-	for row.Next() {
-		err = row.Scan(&whole,&ptr)
+	if row != nil {
+		for row.Next() {
+			err = row.Scan(&whole,&ptr)
+		}
+		row.Close()
 	}
-	row.Close()
 
 	return whole,ContextPtr(ptr)
 
@@ -3892,11 +3901,13 @@ func GetDBContextByPtr(sst PoSST,ptr ContextPtr) (string,ContextPtr) {
 
 	// Assume unique match for this, to be fixed elsewhere
 
-	for row.Next() {
-		err = row.Scan(&retctx,&retptr)
-	}
+	if row != nil {
+		for row.Next() {
+			err = row.Scan(&retctx,&retptr)
+		}
 
-	row.Close()
+		row.Close()
+	}
 
 	return retctx,ContextPtr(retptr)
 }
@@ -3945,30 +3956,32 @@ func GetDBNodeByNodePtr(sst PoSST,db_nptr NodePtr) Node {
 	// NB, there seems to be a "bug" in the SQL package, which cannot always populate the links, so try not to
 	//     rely on this and work around when needed using GetEntireCone(any,2..) separately
 
-	for row.Next() {
-		err = row.Scan(&n.L,&n.S,&n.Chap,&whole[0],&whole[1],&whole[2],&whole[3],&whole[4],&whole[5],&whole[6])
+	if row != nil {
+		for row.Next() {
+			err = row.Scan(&n.L,&n.S,&n.Chap,&whole[0],&whole[1],&whole[2],&whole[3],&whole[4],&whole[5],&whole[6])
 
-		for i := 0; i < ST_TOP; i++ {
-			n.I[i] = ParseLinkArray(whole[i])
+			for i := 0; i < ST_TOP; i++ {
+				n.I[i] = ParseLinkArray(whole[i])
+			}
+			count++
 		}
-		count++
-	}
 
-	if count > 1 {
-		fmt.Println("GetDBNodeByNodePtr returned too many matches (multi-model conflict?):",count,"for ptr",db_nptr)
-		os.Exit(-1)
-	}
+		if count > 1 {
+			fmt.Println("GetDBNodeByNodePtr returned too many matches (multi-model conflict?):",count,"for ptr",db_nptr)
+			os.Exit(-1)
+		}
 
-	// Expand any dynamic inbuilt functions
+		// Expand any dynamic inbuilt functions
 
-	if strings.HasPrefix(n.S,"Dynamic: ") {
-		n.S = ExpandDynamicFunctions(n.S)
-	}
+		if strings.HasPrefix(n.S,"Dynamic: ") {
+			n.S = ExpandDynamicFunctions(n.S)
+		}
 
-	row.Close()
+		row.Close()
 
-	if !cached {
-		CacheNode(n)
+		if !cached {
+			CacheNode(n)
+		}
 	}
 
 	n.NPtr = db_nptr
@@ -4019,24 +4032,26 @@ func GetDBSingletonBySTType(sst PoSST,sttypes []int,chap string,cn []string) ([]
 
 	var src_nptrs,snk_nptrs []NodePtr
 
-	for row.Next() {		
+	if row != nil {
+		for row.Next() {		
 		
-		var n NodePtr
-		var nstr string
+			var n NodePtr
+			var nstr string
+			
+			err = row.Scan(&nstr)
 		
-		err = row.Scan(&nstr)
+			if err != nil {
+				fmt.Println("Error scanning sql data case",dim,"gave error",err,qstr)
+				row.Close()
+				return nil,nil
+			}
 		
-		if err != nil {
-			fmt.Println("Error scanning sql data case",dim,"gave error",err,qstr)
-			row.Close()
-			return nil,nil
+			fmt.Sscanf(nstr,"(%d,%d)",&n.Class,&n.CPtr)
+		
+			src_nptrs = append(src_nptrs,n)
 		}
-		
-		fmt.Sscanf(nstr,"(%d,%d)",&n.Class,&n.CPtr)
-		
-		src_nptrs = append(src_nptrs,n)
+		row.Close()
 	}
-	row.Close()
 
 	// and sinks  -> -
 
@@ -4062,25 +4077,27 @@ func GetDBSingletonBySTType(sst PoSST,sttypes []int,chap string,cn []string) ([]
 		return nil,nil
 	}
 
-	for row.Next() {		
+	if row != nil {
+		for row.Next() {		
 		
-		var n NodePtr
-		var nstr string
+			var n NodePtr
+			var nstr string
+			
+			err = row.Scan(&nstr)
 		
-		err = row.Scan(&nstr)
-		
-		if err != nil {
-			fmt.Println("Error scanning sql data case",dim,"gave error",err,qstr)
-			row.Close()
-			return nil,nil
+			if err != nil {
+				fmt.Println("Error scanning sql data case",dim,"gave error",err,qstr)
+				row.Close()
+				return nil,nil
+			}
+			
+			fmt.Sscanf(nstr,"(%d,%d)",&n.Class,&n.CPtr)
+			
+			snk_nptrs = append(snk_nptrs,n)
 		}
-		
-		fmt.Sscanf(nstr,"(%d,%d)",&n.Class,&n.CPtr)
-		
-		snk_nptrs = append(snk_nptrs,n)
+		row.Close()
 	}
-	row.Close()
-	
+
 	return src_nptrs,snk_nptrs
 	
 }
@@ -4430,26 +4447,30 @@ func GetDBPageMap(sst PoSST,chap string,cn []string,page int) []PageMap {
 	var pagemap []PageMap
 	var line int
 	var ctxptr ContextPtr
-	for row.Next() {		
 
-		var event PageMap
+	if row != nil {
+		for row.Next() {		
 
-		err = row.Scan(&chap,&ctxptr,&line,&path)
+			var event PageMap
 
-		if err != nil {
-			fmt.Println("Error reading GetDBPageMap",err)
+			err = row.Scan(&chap,&ctxptr,&line,&path)
+
+			if err != nil {
+				fmt.Println("Error reading GetDBPageMap",err)
+			}
+
+			event.Path = ParseMapLinkArray(path)
+
+			event.Chapter = chap
+			event.Context = ctxptr
+			event.Line = line;
+
+			pagemap = append(pagemap,event)
 		}
 
-		event.Path = ParseMapLinkArray(path)
-
-		event.Chapter = chap
-		event.Context = ctxptr
-		event.Line = line;
-
-		pagemap = append(pagemap,event)
+		row.Close()
 	}
 
-	row.Close()
 	return pagemap
 }
 
@@ -4471,13 +4492,16 @@ func GetFwdConeAsNodes(sst PoSST, start NodePtr, sttype,depth int,limit int) []N
 	var n NodePtr
 	var retval []NodePtr
 
-	for row.Next() {		
-		err = row.Scan(&whole)
-		fmt.Sscanf(whole,"(%d,%d)",&n.Class,&n.CPtr)
-		retval = append(retval,n)
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&whole)
+			fmt.Sscanf(whole,"(%d,%d)",&n.Class,&n.CPtr)
+			retval = append(retval,n)
+		}
+
+		row.Close()
 	}
 
-	row.Close()
 	return retval
 }
 
@@ -4498,13 +4522,15 @@ func GetFwdConeAsLinks(sst PoSST, start NodePtr, sttype,depth int) []Link {
 	var whole string
 	var retval []Link
 
-	for row.Next() {		
-		err = row.Scan(&whole)
-		l := ParseSQLLinkString(whole)
-		retval = append(retval,l)
-	}
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&whole)
+			l := ParseSQLLinkString(whole)
+			retval = append(retval,l)
+		}
 
-	row.Close()
+		row.Close()
+	}
 
 	return retval
 }
@@ -4524,12 +4550,15 @@ func GetFwdPathsAsLinks(sst PoSST, start NodePtr, sttype,depth int, maxlimit int
 	var whole string
 	var retval [][]Link
 
-	for row.Next() {		
-		err = row.Scan(&whole)
-		retval = ParseLinkPath(whole)
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&whole)
+			retval = ParseLinkPath(whole)
+		}
+
+		row.Close()
 	}
 
-	row.Close()
 	return retval,len(retval)
 }
 
@@ -4553,12 +4582,14 @@ func GetEntireConePathsAsLinks(sst PoSST,orientation string,start NodePtr,depth 
 	var whole string
 	var retval [][]Link
 
-	for row.Next() {		
-		err = row.Scan(&whole)
-		retval = ParseLinkPath(whole)
-	}
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&whole)
+			retval = ParseLinkPath(whole)
+		}
 
-	row.Close()
+		row.Close()
+	}
 
 	sort.Slice(retval, func(i,j int) bool {
 		return len(retval[i]) < len(retval[j])
@@ -4594,12 +4625,14 @@ func GetEntireNCConePathsAsLinks(sst PoSST,orientation string,start []NodePtr,de
 	var whole string
 	var retval [][]Link
 
-	for row.Next() {		
-		err = row.Scan(&whole)
-		retval = ParseLinkPath(whole)
-	}
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&whole)
+			retval = ParseLinkPath(whole)
+		}
 
-	row.Close()
+		row.Close()
+	}
 
 	return retval,len(retval)
 }
@@ -4636,13 +4669,15 @@ func GetConstraintConePathsAsLinks(sst PoSST,start []NodePtr,depth int,chapter s
 	var whole string
 	var retval [][]Link
 
-	for row.Next() {		
-		err = row.Scan(&whole)
-		retval = ParseLinkPath(whole)
-		break
-	}
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&whole)
+			retval = ParseLinkPath(whole)
+			break
+		}
 
-	row.Close()
+		row.Close()
+	}
 
 	return retval,len(retval)
 }
@@ -4689,26 +4724,28 @@ func DownloadArrowsFromDB(sst PoSST) {
 	var ptr ArrowPtr
 	var ad ArrowDirectory
 
-	for row.Next() {		
-		err = row.Scan(&staidx,&long,&short,&ptr)
-		ad.STAindex = staidx
-		ad.Long = long
-		ad.Short = short
-		ad.Ptr = ptr
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&staidx,&long,&short,&ptr)
+			ad.STAindex = staidx
+			ad.Long = long
+			ad.Short = short
+			ad.Ptr = ptr
 
-		ARROW_DIRECTORY = append(ARROW_DIRECTORY,ad)
-		ARROW_SHORT_DIR[short] = ARROW_DIRECTORY_TOP
-		ARROW_LONG_DIR[long] = ARROW_DIRECTORY_TOP
+			ARROW_DIRECTORY = append(ARROW_DIRECTORY,ad)
+			ARROW_SHORT_DIR[short] = ARROW_DIRECTORY_TOP
+			ARROW_LONG_DIR[long] = ARROW_DIRECTORY_TOP
 
-		if ad.Ptr != ARROW_DIRECTORY_TOP {
-			fmt.Println(ERR_MEMORY_DB_ARROW_MISMATCH,ad,ad.Ptr,ARROW_DIRECTORY_TOP)
-			os.Exit(-1)
+			if ad.Ptr != ARROW_DIRECTORY_TOP {
+				fmt.Println(ERR_MEMORY_DB_ARROW_MISMATCH,ad,ad.Ptr,ARROW_DIRECTORY_TOP)
+				os.Exit(-1)
+			}
+
+			ARROW_DIRECTORY_TOP++
 		}
 
-		ARROW_DIRECTORY_TOP++
+		row.Close()
 	}
-
-	row.Close()
 
 	// Get Inverses
 
@@ -4722,15 +4759,18 @@ func DownloadArrowsFromDB(sst PoSST) {
 
 	var plus,minus ArrowPtr
 
-	for row.Next() {		
+	if row != nil {
+		for row.Next() {		
 
-		err = row.Scan(&plus,&minus)
+			err = row.Scan(&plus,&minus)
 
-		if err != nil {
-			fmt.Println("QUERY Download Arrows Failed",err)
+			if err != nil {
+				fmt.Println("QUERY Download Arrows Failed",err)
+			}
+
+			INVERSE_ARROWS[plus] = minus
 		}
-
-		INVERSE_ARROWS[plus] = minus
+		row.Close()
 	}
 }
 
@@ -4752,25 +4792,27 @@ func DownloadContextsFromDB(sst PoSST) {
 	var context string
 	var ptr ContextPtr
 
-	for row.Next() {		
-		err = row.Scan(&context,&ptr)
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&context,&ptr)
 
-		var c ContextDirectory
+			var c ContextDirectory
 
-		c.Context = context
-		c.Ptr = ptr
+			c.Context = context
+			c.Ptr = ptr
 
-		if c.Ptr != CONTEXT_TOP {
-			fmt.Println(ERR_MEMORY_DB_CONTEXT_MISMATCH,c,CONTEXT_TOP)
-			os.Exit(-1)
+			if c.Ptr != CONTEXT_TOP {
+				fmt.Println(ERR_MEMORY_DB_CONTEXT_MISMATCH,c,CONTEXT_TOP)
+				os.Exit(-1)
+			}
+
+			CONTEXT_DIRECTORY = append(CONTEXT_DIRECTORY,c)
+			CONTEXT_DIR[context] = CONTEXT_TOP
+			CONTEXT_TOP++
 		}
 
-		CONTEXT_DIRECTORY = append(CONTEXT_DIRECTORY,c)
-		CONTEXT_DIR[context] = CONTEXT_TOP
-		CONTEXT_TOP++
+		row.Close()
 	}
-
-	row.Close()
 }
 
 // **************************************************************************
@@ -4791,44 +4833,47 @@ func SynchronizeNPtrs(sst PoSST) {
 
 		var cptr int
 
-		for row.Next() {			
-			err = row.Scan(&cptr)
+		if row != nil {
+			for row.Next() {			
+				err = row.Scan(&cptr)
 			
-			if err != nil {
-				continue // maybe not defined yet
-			}
+				if err != nil {
+					continue // maybe not defined yet
+				}
 
-			if cptr > 0 {
+				if cptr > 0 {
 
-				var empty Node
+					var empty Node
 
-				// Remember this for uploading later ..
-				BASE_DB_CHANNEL_STATE[channel] = ClassedNodePtr(cptr)
+					// Remember this for uploading later ..
+					BASE_DB_CHANNEL_STATE[channel] = ClassedNodePtr(cptr)
 
-				for n := 0; n <= cptr; n++ {
+					for n := 0; n <= cptr; n++ {
 
-					switch channel {
-					case N1GRAM:
-						NODE_DIRECTORY.N1_top++
-						NODE_DIRECTORY.N1directory = append(NODE_DIRECTORY.N1directory,empty)
-					case N2GRAM:
-						NODE_DIRECTORY.N2directory = append(NODE_DIRECTORY.N2directory,empty)
-						NODE_DIRECTORY.N2_top++
-					case N3GRAM:
-						NODE_DIRECTORY.N3directory = append(NODE_DIRECTORY.N3directory,empty)
-						NODE_DIRECTORY.N3_top++
-					case LT128:
-						NODE_DIRECTORY.LT128 = append(NODE_DIRECTORY.LT128,empty)
-						NODE_DIRECTORY.LT128_top++
-					case LT1024:
-						NODE_DIRECTORY.LT1024 = append(NODE_DIRECTORY.LT1024,empty)
-						NODE_DIRECTORY.LT1024_top++
-					case GT1024:
-						NODE_DIRECTORY.GT1024 = append(NODE_DIRECTORY.GT1024,empty)
-						NODE_DIRECTORY.GT1024_top++
+						switch channel {
+						case N1GRAM:
+							NODE_DIRECTORY.N1_top++
+							NODE_DIRECTORY.N1directory = append(NODE_DIRECTORY.N1directory,empty)
+						case N2GRAM:
+							NODE_DIRECTORY.N2directory = append(NODE_DIRECTORY.N2directory,empty)
+							NODE_DIRECTORY.N2_top++
+						case N3GRAM:
+							NODE_DIRECTORY.N3directory = append(NODE_DIRECTORY.N3directory,empty)
+							NODE_DIRECTORY.N3_top++
+						case LT128:
+							NODE_DIRECTORY.LT128 = append(NODE_DIRECTORY.LT128,empty)
+							NODE_DIRECTORY.LT128_top++
+						case LT1024:
+							NODE_DIRECTORY.LT1024 = append(NODE_DIRECTORY.LT1024,empty)
+							NODE_DIRECTORY.LT1024_top++
+						case GT1024:
+							NODE_DIRECTORY.GT1024 = append(NODE_DIRECTORY.GT1024,empty)
+							NODE_DIRECTORY.GT1024_top++
+						}
 					}
 				}
 			}
+			row.Close()
 		}
 	}
 
@@ -5731,72 +5776,75 @@ func GetDBAdjacentNodePtrBySTType(sst PoSST,sttypes []int,chap string,cn []strin
 	var nodekey []NodePtr
 	var counter int
 
-	for row.Next() {		
+	if row != nil {
+		for row.Next() {		
 
-		var n NodePtr
-		var nstr string
+			var n NodePtr
+			var nstr string
 
-		switch dim {
+			switch dim {
 
-		case 1: err = row.Scan(&nstr,&linkstr[0])
-		case 2: err = row.Scan(&nstr,&linkstr[0],&linkstr[1])
-		case 3: err = row.Scan(&nstr,&linkstr[0],&linkstr[1],&linkstr[2])
-		case 4: err = row.Scan(&nstr,&linkstr[0],&linkstr[1],&linkstr[2],&linkstr[3])
+			case 1: err = row.Scan(&nstr,&linkstr[0])
+			case 2: err = row.Scan(&nstr,&linkstr[0],&linkstr[1])
+			case 3: err = row.Scan(&nstr,&linkstr[0],&linkstr[1],&linkstr[2])
+			case 4: err = row.Scan(&nstr,&linkstr[0],&linkstr[1],&linkstr[2],&linkstr[3])
 
-		default:
-			fmt.Println("Maximum 4 sttypes in GetDBAdjacentNodePtrBySTType - shouldn't happen")
-			row.Close()
-			return nil,nil
-		}
-
-		if err != nil {
-			fmt.Println("Error scanning sql data case",dim,"gave error",err,qstr)
-			row.Close()
-			return nil,nil
-		}
-
-		fmt.Sscanf(nstr,"(%d,%d)",&n.Class,&n.CPtr)
-
-		// idempotently gather nptrs into a map, keeping linked nodes close in order
-
-		index,already := lookup[n]
-
-		if already {
-			rowindex = index
-		} else {
-			rowindex = counter
-			lookup[n] = counter
-			counter++
-			nodekey = append(nodekey,n)
-		}
-
-		// Run through the nodes linked and add them now
-
-		for lnks := range linkstr {
-
-			links := ParseMapLinkArray(linkstr[lnks])
-
-			// we have to go through one by one to avoid duplicates
-			// and keep adjacent nodes closer in order
-			
-			for l := range links {	
-				_,already := lookup[links[l].Dst]
-				
-				if !already {
-					lookup[links[l].Dst] = counter
-					counter++
-					nodekey = append(nodekey,links[l].Dst)
-				}
+			default:
+				fmt.Println("Maximum 4 sttypes in GetDBAdjacentNodePtrBySTType - shouldn't happen")
+				row.Close()
+				return nil,nil
 			}
-			// Now we have a vector row for each NPtr, with a list of links
-			protoadj[rowindex] = append(protoadj[rowindex],links...)
+
+			if err != nil {
+				fmt.Println("Error scanning sql data case",dim,"gave error",err,qstr)
+				row.Close()
+				return nil,nil
+			}
+
+			fmt.Sscanf(nstr,"(%d,%d)",&n.Class,&n.CPtr)
+
+			// idempotently gather nptrs into a map, keeping linked nodes close in order
+
+			index,already := lookup[n]
+			
+			if already {
+				rowindex = index
+			} else {
+				rowindex = counter
+				lookup[n] = counter
+				counter++
+				nodekey = append(nodekey,n)
+			}
+
+			// Run through the nodes linked and add them now
+
+			for lnks := range linkstr {
+
+				links := ParseMapLinkArray(linkstr[lnks])
+
+				// we have to go through one by one to avoid duplicates
+				// and keep adjacent nodes closer in order
+			
+				for l := range links {	
+					_,already := lookup[links[l].Dst]
+					
+					if !already {
+						lookup[links[l].Dst] = counter
+						counter++
+						nodekey = append(nodekey,links[l].Dst)
+					}
+				}
+				// Now we have a vector row for each NPtr, with a list of links
+				protoadj[rowindex] = append(protoadj[rowindex],links...)
+			}
 		}
+		row.Close()
 	}
 
 	// Now we know the dimension of the square matrix = counter
-        // and an ordered directory vector[index] ->  NPtr, as well as lookup table
+	// and an ordered directory vector[index] ->  NPtr, as well as lookup table
 	// So we assemble the adjacency matrix (or its transpose on request)
-
+	
 	adj := make([][]float32,counter)
 
 	for r := 0; r < counter; r++ {
@@ -5804,7 +5852,7 @@ func GetDBAdjacentNodePtrBySTType(sst PoSST,sttypes []int,chap string,cn []strin
 		adj[r] = make([]float32,counter)
 
 		row := protoadj[r]
-
+		
 		for l := 0; l < len(row); l++ {
 
 			lnk := row[l]
@@ -5817,8 +5865,6 @@ func GetDBAdjacentNodePtrBySTType(sst PoSST,sttypes []int,chap string,cn []strin
 			}
 		}
 	}
-	
-	row.Close()
 	return adj,nodekey
 }
 
@@ -6496,21 +6542,23 @@ func GetLastSawSection(sst PoSST) []LastSeen {
 
 	var ret []LastSeen
 
-	for row.Next() {		
-		var ls LastSeen
-		var nptrstr string // last because if empty fails
+	if row != nil {
+		for row.Next() {		
+			var ls LastSeen
+			var nptrstr string // last because if empty fails
+			
+			err = row.Scan(&ls.Section,&nptrstr,&ls.Last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
+			fmt.Sscanf(nptrstr,"(%d,%d)",&ls.NPtr.Class,&ls.NPtr.CPtr)
+			
+			ret = append(ret,ls)
+		}
 
-		err = row.Scan(&ls.Section,&nptrstr,&ls.Last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
-		fmt.Sscanf(nptrstr,"(%d,%d)",&ls.NPtr.Class,&ls.NPtr.CPtr)
+		for c := 0; c < len(ret); c++ {
+			ret[c].XYZ = AssignChapterCoordinates(c,len(ret))
+		}
 
-		ret = append(ret,ls)
+		row.Close()
 	}
-
-	for c := 0; c < len(ret); c++ {
-		ret[c].XYZ = AssignChapterCoordinates(c,len(ret))
-	}
-
-	row.Close()
 
 	return ret
 }
@@ -6530,17 +6578,17 @@ func GetLastSawNPtr(sst PoSST, nptr NodePtr) LastSeen {
 		return ls
 	}
 
-	for row.Next() {		
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&ls.Section,&ls.Last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
+		}
 
-		err = row.Scan(&ls.Section,&ls.Last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
+		ls.NPtr = nptr
+
+		row.Close()
 	}
 
-	ls.NPtr = nptr
-
-	row.Close()
-
 	return ls
-
 }
 
 // *********************************************************************
@@ -7084,39 +7132,42 @@ func GetChaptersByChapContext(sst PoSST,chap string,cn []string,limit int) map[s
 	var rcontext ContextPtr
 	var toc = make(map[string][]string)
 
-	for row.Next() {		
-		err = row.Scan(&rchap,&rcontext)
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&rchap,&rcontext)
 
-		// Each chapter can be a comma separated list
+			// Each chapter can be a comma separated list
 
-		chps := SplitChapters(rchap)
+			chps := SplitChapters(rchap)
 
-		for c := 0; c < len(chps); c++ {
+			for c := 0; c < len(chps); c++ {
 
-			if len(toc) == limit {
-				row.Close()
-				return toc
-			}
+				if len(toc) == limit {
+					row.Close()
+					return toc
+				}
 
-			rc := chps[c]
+				rc := chps[c]
 
-			cn := strings.Split(GetContext(rcontext),",")
-			ctx_grp := ""
+				cn := strings.Split(GetContext(rcontext),",")
+				ctx_grp := ""
 
-			for s := 0; s < len(cn); s++ {
-				ctx_grp += cn[s]
-				if s < len(cn)-1 {
-					ctx_grp += ", "
+				for s := 0; s < len(cn); s++ {
+					ctx_grp += cn[s]
+					if s < len(cn)-1 {
+						ctx_grp += ", "
+					}
+				}
+
+				if len(ctx_grp) > 0 {
+					toc[rc] = append(toc[rc],ctx_grp)
 				}
 			}
-
-			if len(ctx_grp) > 0 {
-				toc[rc] = append(toc[rc],ctx_grp)
-			}
 		}
+
+		row.Close()
 	}
 
-	row.Close()
 	return toc
 }
 
@@ -7245,15 +7296,17 @@ func GetAppointedNodesByArrow(sst PoSST,arrow ArrowPtr,cn []string,chap string,s
 
 	var retval = make(map[ArrowPtr][]Appointment)
 	
-	for row.Next() {
-		err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
+	if row != nil {
+		for row.Next() {
+			err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
 
-		next := ParseAppointedNodeCluster(whole)
-		retval[next.Arr] = append(retval[next.Arr],next)
+			next := ParseAppointedNodeCluster(whole)
+			retval[next.Arr] = append(retval[next.Arr],next)
+		}
+	
+		row.Close()
 	}
-	
-	row.Close()
-	
+
 	return retval
 }
 
@@ -7292,15 +7345,16 @@ func GetAppointedNodesBySTType(sst PoSST,sttype int,cn []string,chap string,size
 
 	var retval = make(map[ArrowPtr][]Appointment)
 	
-	for row.Next() {
-		err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
+	if row != nil {
+		for row.Next() {
+			err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
 
-		next := ParseAppointedNodeCluster(whole)
-		retval[next.Arr] = append(retval[next.Arr],next)
+			next := ParseAppointedNodeCluster(whole)
+			retval[next.Arr] = append(retval[next.Arr],next)
+		}	
+		row.Close()
 	}
-	
-	row.Close()
-	
+
 	return retval
 }
 

@@ -14,7 +14,7 @@
  :: music collection ::
 
  + total number of tracks (tracks)     - is the track count for (tracks-on)
- + was released on        (released)   - was the release date for (release-of)
+ + release date           (released)   - is the release date for (release-of)
  + was remastered on      (remastered) - a remaster was issued for (remast-of)
  + was performed          (performance)- was the event of performance (date-perf)
 
@@ -27,15 +27,24 @@
  + published the release (published) - was published by (publisher)
 
  + performance by ensemble type  (ensemble)     - has performed (e-perforamce)
- + has track length/playing time (length)       - is the track length/playing time of (length-of)
+ + has playing time              (duration)     - is the playing time of (length-of)
  + has lyrics                    (lyrics)       - are the lyrics for (lyrics-for)
  + has instrumental description  (instrumental) - describes an instrumental (descr-instr)
+ + has narrator                  (narrator)     - is the narrator for (narrator-for)
 
- + has mood roughly...      (mood)     - is the mood describing (mood-of)
- + has hi-fi quality/rating (hif)      - hifi quality/rating for
+ + has solo performance by (soloist)         - is the soloist on  (soloist-on)
+ + features solo           (solo instrument) - solo instrument in (solo-on)
 
- + was produced by (producer)      - produced the recording (produced)
- + was composed by (composer)      - composed the work (composed)
+
+ + has mood roughly...      (mood)        - is the mood describing (mood-of)
+ + has hi-fi quality/rating (hif)         - hifi quality/rating for
+ + has sampling rate        (sample rate) - is the sampling rate for (samp-for)
+
+ + was produced by  (producer)      - produced the recording (produced)
+ + was engineered by (engineer)     - was the engineer for (engineer-for)
+ + was composed by  (composer)      - composed the work (composed)
  + was conducted by (conductor)    - conducted the performance (conducted)
  + was performed by (performed by) - performed (performed)
+ + features orchestra (orchestra) - orchestra features in (orch-for)
 
+ 

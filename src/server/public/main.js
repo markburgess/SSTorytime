@@ -367,6 +367,10 @@ switch (obj.Response)
    case "Arrows":
       title = "Arrow lookup";
       break;
+   case "Error":
+     console.log(obj.Response);
+     title = obj.Content;
+     break;
    default:
       title = "SSToryGraph browser";
       break;
@@ -1969,12 +1973,15 @@ fetch("/searchN4L", { method: POST_METHOD, body: formData })
       case "Arrows":
          DoArrowsPanel(resp);
          break;
+      case "Error":
+	console.log(resp.Response);
+	break;
       }
    })
 
 .catch((error) =>
    {
-   console.log("error ", error);
+   console.log("error ", error + " No solver found");
    });
 }
 

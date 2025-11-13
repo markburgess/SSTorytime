@@ -401,6 +401,13 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+
+	data,_ := json.Marshal("No solver matched this search")
+	response := PackageResponse(PSST, search, "Error", string(data))
+
+	w.Write(response)
+
 	fmt.Println("Didn't find a solver")
 }
 

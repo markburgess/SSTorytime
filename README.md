@@ -68,6 +68,7 @@ book shown to the right.
 * * [Using Knowledge Maps for Learning Comprehension](https://mark-burgess-oslo-mb.medium.com/using-knowledge-maps-for-learning-comprehension-15e162a251cd)
 * * [Unifying Data Structures and Knowledge Graphs](https://medium.com/@mark-burgess-oslo-mb/unifying-data-structures-and-knowledge-graphs-5c9fa32e74ea)
 * * [Using Knowledge Graphs For Inferential Reasoning](https://medium.com/@mark-burgess-oslo-mb/using-knowledge-graphs-for-inferential-reasoning-8a06e583b4d4)
+* * [Building A Knowledge Graph of a Music Collection: A case study in building Knowledge Graphs from Data Structures](https://medium.com/@mark-burgess-oslo-mb/building-a-knowledge-graph-of-a-music-collection-81c9a9ea1b8b)
 
 This project aims to turn intentionally created data (like written
 notes or snippets cut and pasted into a file) into linked and

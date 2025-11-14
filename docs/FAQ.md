@@ -44,10 +44,9 @@ Look at your thinking in the mirror.
 
 * **Why does it take so long to upload data?**
 
-Uploading to a database is a slow process compared to retrieving as there are many checks that have to happen. try to debug your data as far as possible using the text interface in N4L before actually committing to the database.
+Uploading to a database is a slow process compared to retrieving as there are many checks that have to happen. try to debug your data as far as possible using the text interface in N4L before actually committing to the database. Normally, we don't notice the  overhead in uploading to a database because we add things one at a time, but when we upload large amounst of bulk data, it's quite noticable. Be patient, make yourself a snack and except long files to take hours or even daysfor the largest data sets. Fortunately, searching the data is much faster.
 
-In addition, *Unicode* decoding is a very slow process so long files seem to take forever to read, never mind the actual database uploading. I don't know of any way to speed this up presently. Unless we know that a file is simple
-ASCII encoding, it's easy to get bad character conversion without using this longwinded decoding.
+Even after loading has finished, the database will be working on creating indexing and text optimization, so when data get very large, we try not to change it too often!
 
 * **Why do some searches take a long time?**
 Immediately after uploading the data, the database will be building its indices. Indexing takes time, then the return time should stabilize and be faster. After that, the scope of the search determines the speed of a query. If you are searching for a lot of data, it takes time to assemble into a graphable structure. 

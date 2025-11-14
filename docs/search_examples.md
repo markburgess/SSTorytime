@@ -1,6 +1,7 @@
 
 # Search examples
 
+
 ## Style
 
 * Select a visual theme (web only)
@@ -16,16 +17,40 @@
 ## Word search
 
 * Search for a precise word
+
+The strings you type are normally treated as potential substrings to match within words.
+If you want to insist a precise word match with nothing else included, i.e. the search term is
+the entire node string,then you can usethe pling/bang/exclamation character !on both sides of the term:
 <pre>
    !a1!
    "ephemeral or persistent"
 </pre>
 
-* Search for any combination of a set of words
+* Search with spaces in the string
+
+If your search term contains spaces, exclose them in double quotes:
+<pre>
+  "fish soup"
+</pre>
+This treats "fish soup" as a single string,rather than as "fish" OR "soup".
+
+* Search for any "OR" combination of a set of words
+
+If your words are implicitly ORed together, then just separate by spaces.
 <pre>
   word1 word2 word3
   recipe fish soup
 </pre>
+Conversely, words separated by spaces are ORed together.
+
+* Search with logical expressions
+
+You can use [postgres ts_vector search logic](https://www.postgresql.org/docs/current/textsearch-controls.html) in search terms, if you place them in quotes. This is very powerful. Notice that the !character is also used for hard-delimiting of strings. You might need to enclose your expression in quotes to keep it together.
+<pre>
+ a1&!b6
+ "a1 & !b6"
+</pre>
+Note that, without the quotes, the latter string would  be understood as `a1 OR & OR NOT b6`.
 
 * Search for any combination of a set of words in a chapter
 <pre>

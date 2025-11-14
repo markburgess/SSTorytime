@@ -3687,6 +3687,8 @@ func DefineStoredFunctions(sst PoSST) {
 
 func GetDBNodePtrMatchingName(sst PoSST,name,chap string) []NodePtr {
 
+	// simplified, retain for compatibility
+
 	return GetDBNodePtrMatchingNCCS(sst,name,chap,nil,nil,false,CAUSAL_CONE_MAXLIMIT)
 }
 
@@ -3763,9 +3765,9 @@ func NodeWhereString(name,chap string,context []string,arrow []ArrowPtr,seq bool
 		nm_col = ""
 	} else {
 		if remove_name_accents {
-			nm_col = fmt.Sprintf(" AND Unsearch @@ phraseto_tsquery('english', '%s')",bare_name)
+			nm_col = fmt.Sprintf(" AND Unsearch @@ to_tsquery('english', '%s')",bare_name)
 		} else {
-			nm_col = fmt.Sprintf(" AND Search @@ phraseto_tsquery('english', '%s')",bare_name)
+			nm_col = fmt.Sprintf(" AND Search @@ to_tsquery('english', '%s')",bare_name)
 		}
 	}
 
@@ -4334,6 +4336,7 @@ func SolveNodePtrs(sst PoSST,nodenames []string,search SearchParameters,arr []Ar
 	for r := 0; r < len(rest); r++ {
 
 		// Takes care of general context matching
+
 		nptrs := GetDBNodePtrMatchingNCCS(sst,rest[r],chap,cntx,arr,seq,limit)
 
 		for n := 0; n < len(nptrs); n++ {

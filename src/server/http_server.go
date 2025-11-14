@@ -62,7 +62,7 @@ func main() {
 
 	// 3. Create an http.Server instance for graceful shutdown.
 
-	srv := &http.Server{Addr:    "0.0.0.0:8080", Handler: EnableCORS(mux), }
+	srv := &http.Server{Addr: "0.0.0.0:8080", Handler: EnableCORS(mux), }
 
 	// 4. Run the server in a goroutine so it doesn't block.
 
@@ -124,41 +124,6 @@ func EnableCORS(next http.Handler) http.Handler {
 
 // *********************************************************************
 // Handlers
-// *********************************************************************
-
-func SignalHandler() {
-
-	signal_chan := make(chan os.Signal, 1)
-
-	signal.Notify(signal_chan,
-		syscall.SIGHUP,  // 1
-		syscall.SIGINT,  // 2 ctrl-c
-		syscall.SIGQUIT, // 3
-		syscall.SIGTERM) // 15, CTRL-c
-
-	sig := <-signal_chan // block until signal
-
-	switch sig {
-
-	case syscall.SIGHUP:
-		fmt.Println("hungup")
-
-	case syscall.SIGINT:
-		fmt.Println("Warikomi, cutting in, sandoichi")
-
-	case syscall.SIGTERM:
-		fmt.Println("force stop")
-
-	case syscall.SIGQUIT:
-		fmt.Println("stop and core dump")
-
-	default:
-		fmt.Println("Unknown signal.")
-	}
-}
-
-// *********************************************************************
-// SEARCH
 // *********************************************************************
 
 func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {

@@ -45,10 +45,11 @@ Conversely, words separated by spaces are ORed together.
 
 * Search with logical expressions
 
-You can use [postgres ts_vector search logic](https://www.postgresql.org/docs/current/textsearch-controls.html) in search terms, if you place them in quotes. This is very powerful. Notice that the !character is also used for hard-delimiting of strings. You might need to enclose your expression in quotes to keep it together.
+You can use `& = AND`, `! = NOT`, `| = OR` in expressions, i.e. [postgres ts_vector search logic](https://www.postgresql.org/docs/current/textsearch-controls.html) in search terms, if you place them in quotes. This is very powerful. Notice that the !character is also used for hard-delimiting of strings. You might need to enclose your expression in quotes to keep it together.
 <pre>
  a1&!b6
  "a1 & !b6"
+ brain&!notes
 </pre>
 Note that, without the quotes, the latter string would  be understood as `a1 OR & OR NOT b6`.
 

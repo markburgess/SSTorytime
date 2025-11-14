@@ -53,6 +53,8 @@ You can use `& = AND`, `! = NOT`, `| = OR` in expressions, i.e. [postgres ts_vec
 </pre>
 Note that, without the quotes, the latter string would  be understood as `a1 OR & OR NOT b6`.
 
+Postgres' `ts_vector()` functionalityis very powerful, but it relies on a dictionary. Currently only English language is supported. Hopefully this will change in the future.
+
 * Search for any combination of a set of words in a chapter
 <pre>
   word1 word2 word3 \chapter dictionary

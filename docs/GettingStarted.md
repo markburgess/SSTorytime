@@ -1,7 +1,5 @@
 # Setting up and getting started
 
-*At the moment, STTorytime is only supported on Linux based operating systems. Packaging for other systems will follow.*
-
 As we figure out how to make the project easily available, you will need to compile
 the programs by following thee destructions below. You can get started with or without Docker (for those who know).
 You may need to install these prerequisites:
@@ -12,6 +10,14 @@ You may need to install these prerequisites:
 * Docker (optional, e.g. Docker desktop)
 
 ## Summary
+
+* Linux: Use packages to install postgres,git,make download Go(lang), then compile the software
+
+* MacOS: Use homebrew to install go,make,git, download Docker Desktop, use docker to run postgres, compile software
+
+* Windows: Use docker to run postgres, download git and go, compile software
+
+### Steps
 
 These are the things you will need to do:
 

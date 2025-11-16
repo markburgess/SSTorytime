@@ -9,7 +9,7 @@ You may need to install these prerequisites:
 * Postgres
 * Docker (optional, e.g. Docker desktop)
 
-## Find your operating system
+## 1. Find your operating system
 
 Here is the rough plan:
 
@@ -20,74 +20,32 @@ Here is the rough plan:
 * **Windows**: Use docker to run postgres, download git and go, compile software.
 
 
-### Steps for running postgres in a Docker container
+## 2. Install Postgres database
+
+### 2a. Steps for running postgres in a Docker container
 
 The PostgreSQL database dependency can by run in a Docker container to avoid local installation and configuration. See [Running the SSTorytime database in docker](../postgres-docker/README.md) for further details.
 
-### Steps for postgres with package installation
+### or 2b. Steps for postgres with package installation
 
-These are the things you will need to do:
-
-* Download this repository, which contains examples of data input
-languages N4L and examples of scripting your own programs.
-
-* Install the `postgres` database, `postgres-contrib` extensions, and `psql` shell command line client.
-
-
-## Installing database Postgres
-
-*(See also [Running the SSTorytime database in docker](../postgres-docker/README.md).)*
-
-Hard part first; the postgres database is a bit of a monster. There are several steps to install it an set it up. 
-There is also an option to run the database in RAM memory, which is recommended unless you are already using it for
-something else, since SSTorytime uses postgres basically as a cache.
+The postgres database is a bit of a monster. There are several steps to install it an set it up. 
+You can choose to keep the database in RAM memory or on disk. Running in RAM is recommended unless you are 
+already using it for something else, since SSTorytime uses postgres basically as a cache and some SSDs wear
+out more quickly with heavy usage from a read/write database.
 
 Here's the summary:
 
-* Use your local package manager to download and install packages for `postgres databaser server` and `psql client`.
-* In postgres, you need root privileges to configure and create a database.
-* Locate and edit the configuration file `pg_hba.conf` and make sure it's owned by the `postgres` user.
-* Set the server to run in your systemd configuration.
+* Use your local package manager to download and install packages for `postgres databaser server`, `postgres-contrib` extensions, and `psql` shell command line client.
+
+* 1. To configure postgres, you need root (sudo) privileges to configure and create a database before you can being.
+* 2. Locate and edit the configuration file `pg_hba.conf` and make sure it's owned by the `postgres` user.
+* 3. Set the server to run in your systemd configuration.
 
 You need privileged `root` access to access the postgres management account. Postgres prefers you to do everything as the postgres user not as root.
 
-* To begin with, you need to start the database as root.
-If this command doesn't work, check your local Linux instruction page as distros vary.
-
-```
-$ sudo systemctl enable postgresql
-$ sudo systemctl start postgresql
-
-$ ps waux | grep postgres
-```
-You should now see a number of processes running as the postgres user.
-
-* To complete the setup you need to locate the file `locate pg_hba.conf` for your distribution (you might have to search for it) and edit it as the postgres user and edit it go grant connection access.
-
-```
-$ myfavouriteeditor /var/lib/pgsql/data/pg_hba.conf
-
-# TYPE  DATABASE        USER            ADDRESS                 METHOD
-
-# "local" is for Unix domain socket connections only
-local   all             all                                     peer
-# IPv4 local connections:
-host    all             all             127.0.0.1/32            <b>password</b>
-# IPv6 local connections:
-host    all             all             ::1/128                 <b>password</b>
-```
-
-This will allow you to connect to the database using the shell command `psql` command using password
-authentication. 
-
-Note that, if you accidentally edit the file as root, the owner of the file will be changed and postgres will fail to start.
 
 
-Notice that the `psql` is a tool that accepts commands of two kind: backslash commands, e.g. describe tables for the current database `\dt`,  `\d tablename`, and describing stored functions `\df`. Also note that direct SQL commands, which must end in a semi-colon `;`.
-
-
-
-## Setting up the SST database in postgres - two methods
+### 3a. Setting up the SST database in postgres - two methods
 
 You can set up postgres directly or run it in RAM disk memory. Running in a RAM disk is fast and protects
 your storage device (SSD or harddisk) from unnecessary wear while reloading and changing data a lot.
@@ -95,7 +53,7 @@ If you choose a RAM disk, rebooting the computer or powering off will lose all t
 However, if you are only using the database to keep N4L notes, you can rebuild it anytime from source.
 
 
-## SST Postgres in RAM disk memory [Linux]
+### 3b. SST Postgres in RAM disk memory [Linux]
 
 You can install Postgres in memory to increase performance of the upload and search, and to preserve your laptop SSD disks. The downside is that each time you reboot you will have to repeat this procedure and all will be lost.
 
@@ -192,6 +150,42 @@ should learn more about the security of postgres. We won't go into that here.
 
 
 * In the long run, if running publicly, you will need to make a decision about authentication credentials for the database. For tesing, for personal use on a personal device, everything is local and private so there is no real need to set complex passwords for privacy. However, if you are setting up a shared resource, you might want to change the name of the database, user, and mickymouse password etc. That requires an extra step, changing the defaults and creating a file `$HOME/.SSTorytime` with those choices in your home directory.
+
+### Configuring Postgres for client internet access
+
+To begin with, you need to start the database as root.
+If this command doesn't work, check your local Linux instruction page as distros vary.
+
+```
+$ sudo systemctl enable postgresql
+$ sudo systemctl start postgresql
+
+$ ps waux | grep postgres
+```
+You should now see a number of processes running as the postgres user.
+
+* To complete the setup you need to locate the file `locate pg_hba.conf` for your distribution (you might have to search for it) and edit it as the postgres user and edit it go grant connection access.
+
+```
+$ myfavouriteeditor /var/lib/pgsql/data/pg_hba.conf
+
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+# "local" is for Unix domain socket connections only
+local   all             all                                     peer
+# IPv4 local connections:
+host    all             all             127.0.0.1/32            <b>password</b>
+# IPv6 local connections:
+host    all             all             ::1/128                 <b>password</b>
+```
+
+This will allow you to connect to the database using the shell command `psql` command using password
+authentication. 
+
+Note that, if you accidentally edit the file as root, the owner of the file will be changed and postgres will fail to start.
+
+
+Notice that the `psql` is a tool that accepts commands of two kind: backslash commands, e.g. describe tables for the current database `\dt`,  `\d tablename`, and describing stored functions `\df`. Also note that direct SQL commands, which must end in a semi-colon `;`.
 
 
 

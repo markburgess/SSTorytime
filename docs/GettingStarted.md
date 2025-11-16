@@ -188,7 +188,7 @@ Notice that the `psql` is a tool that accepts commands of two kind: backslash co
 
 
 
-## Installing the Go programming language for building and scripting
+## 4. Installing the Go programming language for building and scripting
 
 The Go language is easy like "Python" but fast and strongly typed, with compiler checks.
 You can think of it as a "better Python" -- in spite of some questionable aesthetic choices.

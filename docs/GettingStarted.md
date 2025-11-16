@@ -44,8 +44,7 @@ Here's the summary:
 You need privileged `root` access to access the postgres management account. Postgres prefers you to do everything as the postgres user not as root.
 
 
-
-### 3a. Setting up the SST database in postgres - two methods
+## 3. Setting up the SST database in postgres - two methods
 
 You can set up postgres directly or run it in RAM disk memory. Running in a RAM disk is fast and protects
 your storage device (SSD or harddisk) from unnecessary wear while reloading and changing data a lot.
@@ -53,7 +52,7 @@ If you choose a RAM disk, rebooting the computer or powering off will lose all t
 However, if you are only using the database to keep N4L notes, you can rebuild it anytime from source.
 
 
-### 3b. SST Postgres in RAM disk memory [Linux]
+### 3a. SST Postgres in RAM disk memory [Linux]
 
 You can install Postgres in memory to increase performance of the upload and search, and to preserve your laptop SSD disks. The downside is that each time you reboot you will have to repeat this procedure and all will be lost.
 
@@ -96,7 +95,7 @@ CREATE EXTENSION UNACCENT;
 * In the long run, if running publicly, you will need to make a decision about authentication credentials for the database. For tesing, for personal use on a personal device, everything is local and private so there is no real need to set complex passwords for privacy. However, if you are setting up a shared resource, you might want to change the name of the database, user, and mickymouse password etc. That requires an extra step, changing the defaults and creating a file `$HOME/.SSTorytime` with those choices in your home directory.
 
 
-### SST Postgres on secondary disk storage
+### 3b. SST Postgres on secondary disk storage
 
 To complete the setup, login to the postgres user account and run the `psql` command.
 Only postgres user can CREATE or DROP a database. Since you probably don't know the postgres password,

@@ -5,6 +5,7 @@
 
 @al_1 2112 (album by) Rush
         "  (tracks) 6
+        "  (img) "/Resources/Rush/2112\ Delux\ Edition/folder.jpg"
         "  (released) March 1976
         "  (remastered) 2012
         "  (publisher) Mercury Records
@@ -42,6 +43,7 @@
 
 @al_2 Farewell To Kings (album by) Rush
         "  (tracks) 6
+        "  (img)  "/Resources/Rush/A\ Farewell\ to\ Kings/Folder.jpg"
         "  (released) August 29 1977
         "  (remastered) 2017
         "  (publisher) Mercury Records
@@ -75,6 +77,7 @@
 @al_3 Hemispheres (album by) Rush
         "  (tracks) 4
         "  (released) October 24 1978
+        "  (img) "/Resources/Rush/Hemispheres/folder.jpg"
         "  (remastered) 2015
         "  (publisher) Mercury Records
         "  (genre) Progressive Rock  // Separate to make direct connection
@@ -156,7 +159,6 @@ By hatchet, axe, and saw"
 
 
   ###################################
- 
 
  Vaughan Williams: Lark Ascending, A Sea Symphony [Symphony No1]
      "    (release date)  2018

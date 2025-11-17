@@ -537,7 +537,7 @@ function DoSeqPanel(obj)
 {
 let section = document.querySelector("main");
 let panel = document.createElement("div");
-panel.id = "main_content_panel";
+panel.id = "main-content-panel";
 section.appendChild(panel);
 
 CANVAS = CreateCanvas();
@@ -967,7 +967,7 @@ else
 
       let img = document.createElement("img");
       img.src = str;
-      box.appendChild(img);
+      parent.appendChild(img);
       } 
    else
       {

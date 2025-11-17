@@ -284,12 +284,14 @@ color: tomato;
 margin-left: 200px; 
 }
 
+#main-content-panel { 
+  color: var(--choco-2);
+}
 
 img {
   max-width: 50%;
   display: inline-block;
-  margin-top: 0px;
-  margin-bottom: 0px;
+  margin: auto;
   padding: 5px;
 }
 

@@ -286,11 +286,13 @@ margin-left: 200px;
 img {
   max-width: 50%;
   display: inline-block;
-  margin-top: 0px;
-  margin-bottom: 0px;
+  margin: auto;
   padding: 5px;
 }
 
+#main-content-panel { 
+  color: var(--red-5);
+}
 
 #nptr-chapter-context-hepline {
   text-indent: 3ch;

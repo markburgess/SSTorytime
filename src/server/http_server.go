@@ -21,24 +21,64 @@ import (
 	"syscall"
 	"text/tabwriter"
 	"time"
+	"flag"
 
 	SST "SSTorytime"
 )
 
-// Ugly Go directive to embed text files into the binary
+// *********************************************************************
+//  Go Embedded filesystem for HTML/CSS resources
+// *********************************************************************
 
+//This is an ugly Go directive to embed text files into the binary
 //go:embed all:public
 var content embed.FS
 
 // *********************************************************************
 
 var PSST SST.PoSST // just one persistent connection
+var VERBOSE bool
 
 // *********************************************************************
 // Main
 // *********************************************************************
 
 func main() {
+
+	rootpath := Init()
+	Start(rootpath)
+}
+
+//**************************************************************
+
+func Init() string {
+
+	flag.Usage = Usage
+
+	verbosePtr := flag.Bool("v", false,"verbose")
+	resourcePtr := flag.String("resources", "/mnt", "Root directory for serving /Resource/ files")
+
+	flag.Parse()
+
+	if *verbosePtr {
+		VERBOSE = true
+	}
+
+	return *resourcePtr
+}
+
+//**************************************************************
+
+func Usage() {
+	
+	fmt.Printf("usage: http_server [-resources string]\n")
+	flag.PrintDefaults()
+	os.Exit(1)
+}
+
+// *********************************************************************
+
+func Start(resources string) {
 
 	PSST = SST.Open(true)
 
@@ -50,15 +90,25 @@ func main() {
 		log.Fatal("failed to create sub-filesystem:", err)
 	}
 
-	// 2. Create a router (ServeMux) and register handlers.
+	// 2. Create a router (ServeMux) and register various handlers.
 
 	mux := http.NewServeMux()
 
-	fileServer := http.FileServer(http.FS(publicFS))
+	// Files requested directly as /file are embedded public support
+	fileserver := http.FileServer(http.FS(publicFS))
+	mux.Handle("/", fileserver)
 
-	mux.Handle("/", fileServer)
+	// Files requested directly as /Resources/ are embedded public support
+
+	fmt.Println("File resources, set to",resources)
+	fileServer := http.FileServer(http.Dir(resources))
+	mux.Handle("/Resources/", http.StripPrefix("/Resources/", fileServer))
+
+	// Handle web requests from Javascript main.js
 	mux.HandleFunc("/searchN4L", SearchN4LHandler)
-	mux.HandleFunc("/status", StatusHandler)
+
+	// Currently unused
+	//mux.HandleFunc("/status", StatusHandler)
 
 	// 3. Create an http.Server instance for graceful shutdown.
 
@@ -94,6 +144,8 @@ func main() {
 
 	log.Println("Server exited properly")
 }
+
+
 
 // *********************************************************************
 // Handlers

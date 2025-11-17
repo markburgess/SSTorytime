@@ -11,7 +11,7 @@
 > [!NOTE]
 > * Join the [SSTorytime LinkedIn Group](https://www.linkedin.com/groups/15875004/) for questions and discussions.
 > * [Quick installation options](docs/GettingStarted.md)
-> * [TO-DO List](ToDo.md) and [HOW **YOU** CAN CONTRIBUTE!](docs/howtocontribute.md)
+> * [TO-DO List](docs/ToDo.md) and [HOW **YOU** CAN CONTRIBUTE!](docs/howtocontribute.md)
 > * Welcome!
 >
 

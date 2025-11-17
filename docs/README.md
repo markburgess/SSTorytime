@@ -11,7 +11,7 @@
 * [How YOU can contribute!](howtocontribute.md)
 * [Links and Outreach](outreach.md)
 * [The Mission of STTorytime](Storytelling.md)
-* [The To-Do List](docs/ToDo.md)
+* [The To-Do List](ToDo.md)
 
 ### Tutorials
 

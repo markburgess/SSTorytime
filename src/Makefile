@@ -16,7 +16,7 @@ N4L: N4L.go ../pkg/SSTorytime/SSTorytime.go
 searchN4L: searchN4L.go ../pkg/SSTorytime/SSTorytime.go
 	go build -o $@ $@.go
 
-http_server: ./server/http_server.go ../pkg/SSTorytime/SSTorytime.go server/public/main.js ../pkg/SSTorytime/SSTorytime.go server/public/style.css
+http_server: ./server/http_server.go ../pkg/SSTorytime/SSTorytime.go server/public/main.js ../pkg/SSTorytime/SSTorytime.go server/public/style.css server/public/spaceblue.css server/public/red.css server/public/dark.css server/public/slate.css
 	go build -o $@ ./server/http_server.go
 
 notes: notes.go ../pkg/SSTorytime/SSTorytime.go

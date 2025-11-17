@@ -953,14 +953,18 @@ else
    let text_link = document.createElement("a");
    let spantext = document.createElement("span"); // replaces <pre>
 
-   if (IsURL(str, arrow))
+   if (IsURL(str,arrow))
       {
       text_link.href = str;
       text_link.target = "_blank";
       text_link.rel = "noopener";
       } 
-   else if (IsImage(str, arrow))
+   else if (IsImage(str,arrow))
       {
+      text_link.href = str;
+      text_link.target = "_blank";
+      text_link.rel = "noopener";
+
       let img = document.createElement("img");
       img.src = str;
       box.appendChild(img);
@@ -987,11 +991,10 @@ else
    ProgressCheckBox(box, nclass, ncptr, chap, ctx);
    }
 
-if (ctx.length > 0)
+if (ctx.length > 0)  
    {
    let ctxlink = document.createElement("a");
 
-   //   ctxlink.textContent = " context hints: " + ctx;
    ctxlink.onclick = function ()
       {
       sendLinkSearch('any \\chapter '+ Quote(chap) +' \\context ' + CtxSplice(ctx));
@@ -1005,7 +1008,7 @@ if (ctx.length > 0)
    }
 
 parent.appendChild(box);
-return parent;
+//return parent;
 }
 
 /***********************************************************/
@@ -1400,7 +1403,8 @@ if (counter == 0)
    text = "--> " + '"' + event.Text + '"';
    }
 
-   // ** BEGIN 1: Here we print the full text for column_1of3 either as pre or p
+ // ** BEGIN 1: Here we print the full text for column_1of3 either as pre or p
+
 if (text.includes("\n"))
    {
    let from_link = document.createElement("a");
@@ -1481,25 +1485,26 @@ if (counter == 0)
    ProgressCheckBox(setting,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
    }
 
-// See what pathways we are part of and add notes
+// See what ST-vector pathways we are part of and add notes
 CheckSingleCone(child,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1,event.Orbits[Im1],event.Orbits[Il1]);
 CheckSingleCone(child,"[CN]",event.NPtr.Class,event.NPtr.CPtr,2,event.Orbits[Im2],event.Orbits[Ic2]);
 CheckSingleCone(child,"[EP]",event.NPtr.Class,event.NPtr.CPtr,3,event.Orbits[Im3],event.Orbits[Ie3]);
 CheckSingleCone(child,"[NR]",event.NPtr.Class,event.NPtr.CPtr,0,event.Orbits[In0],event.Orbits[In0]);
 
-// Next we add the satellite nodes in column_2of3 and column_3of3
+// Now enumerate the orbits, properties of the parent first
 // Each vector from Im3...Ie3, one by one
+
 AddLinkOrbits(panel, child, event, Im3, skiparrow);
 AddLinkOrbits(panel, child, event, Ie3, skiparrow);
 
-// Then any equivalents
+// Any equivalent satellites
 AddLinkOrbits(panel, child, event, In0, skiparrow);
 
-// Then containment
+// Containment satellites
 AddLinkOrbits(panel, child, event, Im2, skiparrow);
 AddLinkOrbits(panel, child, event, Ic2, skiparrow);
 
-// Lastly, from-->to
+// Lastly event navigation, from-->to neighbours
 AddLinkOrbits(panel, child, event, Im1, skiparrow);
 AddLinkOrbits(panel, child, event, Il1, skiparrow);
 }
@@ -1617,26 +1622,57 @@ container.appendChild(label);
 // Render line link list by STtype
 /***********************************************************/
 
-function AddLinkOrbits(panel, child, event, sttype, skiparrow)
+function AddLinkOrbits(panel,child, event, sttype, skiparrow)
 {
+var outer = child;
+var inner = child;
+var previous;
+
 if (event.Orbits[sttype] != null)
    {
-   for (let ngh of event.Orbits[sttype])
-      {
-      if (skiparrow != ngh.Arrow)
-         {
-         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,event.Chap,ngh.Ctx);
-         panel.appendChild(child);
+   // Render links in 2 radii
 
-         if (sttype == Im3 && IsImage(event.Text, ngh.Arrow))
-            {
-            let img = document.createElement("img");
-            img.src = event.Text;
-            panel.appendChild(img);
-            }
+   for (let sat of event.Orbits[sttype]) //
+      {
+      if (skiparrow != sat.Arrow)
+         {
+	 switch (sat.Radius)
+	    {
+	    case 1:
+	       PrintLink(inner,sat.Radius,sat.STindex,sat.Arrow,sat.Text,sat.Dst.Class,sat.Dst.CPtr,event.Chap,sat.Ctx);
+	       panel.appendChild(inner);
+	       outer = inner; // reset
+	       break;
+
+	    case 2:  // Make this layer collapsible
+
+	      if (inner == outer)  // create new orbit
+		 {
+		 outer = CollapseDetails(inner,previous.Text);
+		 }
+
+	       PrintLink(outer,sat.Radius,sat.STindex,sat.Arrow,sat.Text,sat.Dst.Class,sat.Dst.CPtr,event.Chap,sat.Ctx);
+	       break;
+	    }
+
+	 previous = sat;
          }
       }
    }
+}
+
+/***********************************************************/
+
+function CollapseDetails(inner,text)
+{
+const details = document.createElement('details');
+inner.appendChild(details);
+
+const summary = document.createElement('summary');
+summary.id = "orbit-details"
+summary.textContent = ' ╠═▹ ' + text.slice(0,40) + "...";
+details.appendChild(summary);
+return details;
 }
 
 /***********************************************************/
@@ -1699,11 +1735,11 @@ if (bwd[0] != null && fwd[0] != null)
 
 /***********************************************************/
 
-function IsImage(str, arrow)
+function IsImage(str,arrow)
 {
 if (arrow == "has image" || arrow == "is an image for")
    {
-   if (str.slice(0, 6) == "http:/" || str.slice(0, 7) == "https:/")
+   if (str.slice(0,6) == "http:/" || str.slice(0,7) == "https:/" || str.slice(0,1) == "/")
       {
       return true;
       }
@@ -2359,7 +2395,7 @@ Arrow(x0, y0, z0, xp, yp, zp, NEAR_COLOUR, 1 * mob);
 
 function Event(x, y, z)
 {
-Node(x, y, z, 6 * mob, "yellow", "red");
+Node(x, y, z, 6 * mob, "yellow", "brown");
 }
 
 // *************************************************

@@ -273,6 +273,28 @@ h3 {
   font-size: var(--font-size-fluid-1);
 }
 
+
+details { 
+background-color: darkslategray;
+}
+
+details summary { 
+background-color: lightslategray;
+color: orange;
+margin-left: 200px; 
+}
+
+
+
+img {
+  max-width: 50%;
+  display: inline-block;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding: 5px;
+}
+
+
 #nptr-chapter-context-hepline {
   text-indent: 3ch;
   text-wrap: wrap balance;

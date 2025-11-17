@@ -14,3 +14,14 @@ This is a directory path which serves as a root for any file paths referenced in
 where images of documents may be cached in order to be accessible from links rendered in the
 browser. It may include any kind of MIME type, such as music files, images, documents etc.
 
+* The web server exposes port 8080 for now.
+
+## Four search formats
+
+The web server renders four different kinds of page.
+
+* Ad hoc topic view, showing the orbits of random search sets (e.g. `brain&!whale)
+* Page notes (N4L view, e.g. `\notes chinese`)
+* Story/Sequence view (`\seq astronomy` or `\story (huli)`)
+* Path solutions (`\from` a set of nodes `\to` a set of nodes).
+

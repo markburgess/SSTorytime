@@ -213,7 +213,7 @@ The tool-set consistent of several components, starting with:
 
 * [graph_report](docs/graph_report.md) - a simple and experimental command line tool for reporting on graph data, detecting loops, sources, sinks, etc, symmetrizing on different links and finding eigenvector centrality.
 
-* [http_server](docs/Tutorial.md) - a prototype webserver providing the SSTorytime browsing service
+* [http_server](docs/http_server.md) - a prototype webserver providing the SSTorytime browsing service
 
 * [API_EXAMPLE_1](src/API_EXAMPLE_1.go) - a simple store and retrieve example of the graph database.
 

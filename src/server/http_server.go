@@ -107,9 +107,6 @@ func Start(resources string) {
 	// Handle web requests from Javascript main.js
 	mux.HandleFunc("/searchN4L", SearchN4LHandler)
 
-	// Currently unused
-	//mux.HandleFunc("/status", StatusHandler)
-
 	// 3. Create an http.Server instance for graceful shutdown.
 
 	srv := &http.Server{Addr: "0.0.0.0:8080", Handler: EnableCORS(mux), }
@@ -950,44 +947,3 @@ func SL(list []string) string {
 	return s
 }
 
-//******************************************************************
-
-// StatusResponse defines the structure for our JSON response.
-
-type StatusResponse struct {
-	ServerStatus    string    `json:"server_status"`
-	DatabaseStatus  string    `json:"database_status"`
-	AvailableTopics []string  `json:"available_topics"`
-	Timestamp       time.Time `json:"timestamp"`
-}
-
-//******************************************************************
-
-func StatusHandler(w http.ResponseWriter, r *http.Request) {
-	toc := SST.GetChaptersByChapContext(PSST, "", nil, 1000) // "" for chapter and nil for context should get all
-
-	var topics []string
-	for chapter := range toc {
-		topics = append(topics, chapter)
-	}
-	sort.Strings(topics)
-
-	// Create the response object.
-	status := StatusResponse{
-		ServerStatus:    "OK",
-		DatabaseStatus:  "OK",
-		AvailableTopics: topics,
-		Timestamp:       time.Now(),
-	}
-
-	// Marshal the struct into JSON.
-	responseJSON, err := json.Marshal(status)
-	if err != nil {
-		http.Error(w, "Failed to generate status response", http.StatusInternalServerError)
-		return
-	}
-
-	// Set the content type and send the response.
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(responseJSON)
-}

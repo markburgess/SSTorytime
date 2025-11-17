@@ -1670,7 +1670,7 @@ inner.appendChild(details);
 
 const summary = document.createElement('summary');
 summary.id = "orbit-details"
-summary.textContent = 'Expand "' + text.slice(0,40) +'" ╠═▹ ';
+summary.textContent = 'Orbit around "' + text.slice(0,40) +'" ╠═▹ ';
 details.appendChild(summary);
 return details;
 }
@@ -2559,60 +2559,7 @@ window.addEventListener("scroll",() =>
    { once: false },
    );
 
-// Add this function somewhere in your main.js
-
-async function checkStatus()
-   {
-   const serverIndicator = document.getElementById("server-status");
-   const dbIndicator = document.getElementById("database-status");
-
-   if (!serverIndicator || !dbIndicator) return;
-
-   try
-      {
-      const response = await fetch("/status");
-
-      if (!response.ok)
-         {
-         throw new Error("Server responded with an error");
-         }
-
-      const status = await response.json();
-
-      // Update Server Status Indicator
-      if (status.server_status === "OK")
-         {
-         serverIndicator.className = "status-indicator status-ok";
-         serverIndicator.setAttribute("data-label", "Server OK");
-         } 
-      else
-         {
-         serverIndicator.className = "status-indicator status-error";
-         serverIndicator.setAttribute("data-label", "Server Error");
-         }
-
-      // Update Database Status Indicator
-      if (status.database_status === "OK")
-         {
-         dbIndicator.className = "status-indicator status-ok";
-         dbIndicator.setAttribute("data-label", "Database OK");
-         } 
-      else
-         {
-         dbIndicator.className = "status-indicator status-error";
-         dbIndicator.setAttribute("data-label", "Database Error");
-      }
-   }
-catch (error)
-   {
-   // If the fetch fails, both are in an error state
-   console.error("Status check failed:", error);
-   serverIndicator.className = "status-indicator status-error";
-   serverIndicator.setAttribute("data-label", "Server Unreachable");
-   dbIndicator.className = "status-indicator status-error";
-   dbIndicator.setAttribute("data-label", "Database Unreachable");
-   }
-}
+/***********************************************************/
 
 /**
  * A safe wrapper for history.pushState that prevents pushing a new state

@@ -1670,7 +1670,7 @@ inner.appendChild(details);
 
 const summary = document.createElement('summary');
 summary.id = "orbit-details"
-summary.textContent = ' ╠═▹ ' + text.slice(0,40) + "...";
+summary.textContent = 'Expand "' + text.slice(0,40) +'" ╠═▹ ';
 details.appendChild(summary);
 return details;
 }

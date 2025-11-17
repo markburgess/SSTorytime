@@ -1,13 +1,25 @@
 # Setting up and getting started
 
 As we figure out how to make the project easily available, you will need to compile
-the programs by following thee destructions below. You can get started with or without Docker (for those who know).
-You may need to install these prerequisites:
+the programs by following these destructions below. You can get started with or without Docker (for those who know). You may need to install these prerequisites:
 
 * Git
 * Make
 * Postgres
 * Docker (optional, e.g. Docker desktop)
+
+Once you've compiled and the database is running, you can upload the example data to play with:
+
+<pre>
+$ cd examples/
+$ make
+</pre>
+With data, you can now run the web server:
+<pre>
+cd src
+./http_server
+</pre>
+and open a web browser `http://localhost:8080`. Try searching for SSTorytime!
 
 ## 1. Find your operating system
 

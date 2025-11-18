@@ -1386,6 +1386,14 @@ func AssessGrammarCompletions(token string, prior_state int) {
 
 	this_item := token
 
+	const BOM_UTF8 = "\xef\xbb\xbf"
+
+	if this_item == BOM_UTF8 {
+		// Skip a unicode header, needed for text editors
+		Verbose("Skipping embedded Unicode Header")
+		return
+	}
+
 	switch prior_state {
 
 	case ROLE_RELATION:
@@ -1396,22 +1404,22 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		last_iptr := LINE_ITEM_REFS[LINE_ITEM_COUNTER-2]
 		this_iptr := HandleNode(this_item)
 		IdempAddLink(last_item,last_iptr,last_reln,this_item,this_iptr)
-		CheckSection()
+		CheckSection(this_item)
 
 	case ROLE_CONTEXT:
 		Box("Reset context: ->",this_item)
 		ContextEval(this_item,"=")
-		CheckSection()
+		CheckSection(this_item)
 
 	case ROLE_CONTEXT_ADD:
 		PVerbose("Add to context:",this_item)
 		ContextEval(this_item,"+")
-		CheckSection()
+		CheckSection(this_item)
 
 	case ROLE_CONTEXT_SUBTRACT:
 		PVerbose("Remove from context:",this_item)
 		ContextEval(this_item,"-")
-		CheckSection()
+		CheckSection(this_item)
 
 	case ROLE_SECTION:
 		Box("Set chapter/section: ->",this_item)
@@ -1419,7 +1427,7 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		SECTION_STATE = this_item
 
 	default:
-		CheckSection()
+		CheckSection(this_item)
 
 		if NoteToSelf(token) {
 			ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
@@ -2378,7 +2386,7 @@ func CheckNonNegative(i int) {
 
 //**************************************************************
 
-func CheckSection() {
+func CheckSection(item string) {
 
 	if len(SECTION_STATE) == 0 {
 		ParseError(ERR_MISSING_SECTION)

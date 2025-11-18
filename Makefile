@@ -18,5 +18,8 @@ clean:
 ramdisk:
 	contrib/ramify.sh
 
-database:
+ramdb:
+	contrib/makeramdb.sh
+
+db:
 	contrib/makedb.sh

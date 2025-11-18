@@ -10,7 +10,7 @@ test: src/N4L
 	(cd src/demo_pocs; make)
 	(cd tests; make)
 clean:
-	rm -f *~ N4L
+	rm -f *~ \#* N4L
 	(cd src; make clean)
 	(cd examples; make clean)
 	(cd src/demo_pocs; make clean)

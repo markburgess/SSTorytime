@@ -42,7 +42,7 @@ API_EXAMPLE_4: API_EXAMPLE_4.go ../pkg/SSTorytime/SSTorytime.go
 
 clean:
 	rm -f $(OBJ)
-	rm -f *~ demo_pocs/*~
+	rm -f *~ \#* demo_pocs/*~ demo_pocs/\#~
 
 % : %.go
 	go build $<

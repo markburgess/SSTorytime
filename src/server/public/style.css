@@ -268,11 +268,11 @@ h3 {
   font-size: var(--font-size-fluid-1);
 }
 
-details { 
+details {
 background-color: #eeeeee;
 }
 
-details summary { 
+details summary {
 background-color: pink;
 margin-left: 200px; 
 }

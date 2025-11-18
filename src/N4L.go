@@ -109,6 +109,9 @@ var (
 	SEQUENCE_START bool = false
 	SEQUENCE_RELN string = "then" 
 	SEQUENCE_RELN_INV string = "from"
+	SEQUENCE_RELN_LONG string = "then followed by" 
+	SEQUENCE_RELN_INV_LONG string = "follows on from"
+
 	LAST_IN_SEQUENCE string = ""
 
 	// Flags
@@ -1169,8 +1172,8 @@ func AddMandatory() {
 
 	// Reserved for special UX handling
 
-	arr = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
-	inv = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN_INV,SEQUENCE_RELN_INV,"-")
+	arr = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN_LONG,"+")
+	inv = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN_INV,SEQUENCE_RELN_INV_LONG,"-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 	
 	arr = SST.InsertArrowDirectory("properties","url","has URL","+")

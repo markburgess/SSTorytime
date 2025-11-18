@@ -2226,12 +2226,12 @@ jiǔdiàn wài yǒuyī liàng chūzū chē (ph) 酒店外有一辆出租车 (he)
 shù shàng yǒu liù zhǐ niǎo        (ph) 树上有六只鸟     (he) there are six birds in the tree
 zhuōzǐ shàng yǒu yī běn shū        (ph) 桌子上有一本书    (he) there is a book on the table
    " (similar) bīngxiāng li yǒu niúnǎi           (ph) 冰箱里有牛奶      (he) there is milk in the fridge
-zhàopiàn zài jiàzǐ shàng          (ph) 照片在架子上      (he) the photo is on the shelf
+   " (contrast) zhàopiàn zài jiàzǐ shàng          (ph) 照片在架子上      (he) the photo is on the shelf
 diànnǎo li yǒu wǒ de zhàopiàn    (ph) 电脑里有我的照片    (he) the computer contains my photos
 wǒ jiā li yǒuyī zhǐ māo          (ph) 我家里有一只猫     (he) there is a cat at home
 
 wǒ de xínglǐ zài fángjiān lǐ (ph) 我的行李在房间里 (he) my luggage is in the room
-fángjiān li yǒu wǒ de xínglǐ (ph) 房间里有我的行李 (he) the room has my luggage in it
+   " (contrast) fángjiān li yǒu wǒ de xínglǐ (ph) 房间里有我的行李 (he) the room has my luggage in it
 
 the lift is going up   (eh) 电梯正在上升 (hp) diàntī zhèngzài shàngshēng
 the lift is going down (eh) 电梯正在下降 (hp) diàntī zhèngzài xiàjiàng
@@ -2461,7 +2461,12 @@ click  (eh) 点击 (hp)  diǎnjī
 
 :: play , recreation , entertainment , performance ::
 
-玩  (hp) wán  (pe)play
+玩  (hp) wán  (pe)play ... a game
+
+$PREV.3 (contrast) play an instrument (ep) =zòu =奏 
+    "   (contrast) play a sport (ep) dǎ
+$PREV.2 (contrast) play an instrument
+
 游戏  (hp) yóuxì  (pe)game
 音乐  (hp) yīnyuè  (pe)music
 听  (hp) tīng  (pe)listen

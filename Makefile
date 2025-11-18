@@ -15,3 +15,8 @@ clean:
 	(cd examples; make clean)
 	(cd src/demo_pocs; make clean)
 
+ramdisk:
+	contrib/ramify.sh
+
+database:
+	contrib/makedb.sh

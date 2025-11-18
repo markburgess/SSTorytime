@@ -83,7 +83,8 @@ func Usage() {
 
 func DeleteChapter(sst SST.PoSST,chapter string) {
 
-	qstr := fmt.Sprintf("select DeleteChapter('%s')",chapter)
+	escaped := SST.SQLEscape(chapter) 
+	qstr := fmt.Sprintf("select DeleteChapter('%s')",escaped)
 
 	row,err := sst.DB.Query(qstr)
 	

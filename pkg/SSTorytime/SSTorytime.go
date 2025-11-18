@@ -1856,7 +1856,9 @@ func UploadContextToDB(sst PoSST,contextstring string,ptr ContextPtr) ContextPtr
 
 func UploadPageMapEvent(sst PoSST, line PageMap) {
 
-	qstr := fmt.Sprintf("INSERT INTO PageMap (Chap,Alias,Ctx,Line) VALUES ('%s','%s',%d,%d)",line.Chapter,line.Alias,line.Context,line.Line)
+	chap := SQLEscape(line.Chapter)
+
+	qstr := fmt.Sprintf("INSERT INTO PageMap (Chap,Alias,Ctx,Line) VALUES ('%s','%s',%d,%d)",chap,line.Alias,line.Context,line.Line)
 
 	row,err := sst.DB.Query(qstr)
 	
@@ -1879,7 +1881,7 @@ func UploadPageMapEvent(sst PoSST, line PageMap) {
 
 		literal := fmt.Sprintf("%s::Link",linkval)
 		
-		qstr := fmt.Sprintf("UPDATE PageMap SET Path=array_append(Path,%s) WHERE Chap = '%s' AND Line = '%d'",literal,line.Chapter,line.Line)
+		qstr := fmt.Sprintf("UPDATE PageMap SET Path=array_append(Path,%s) WHERE Chap = '%s' AND Line = '%d'",literal,chap,line.Line)
 		
 		row,err := sst.DB.Query(qstr)
 		
@@ -3803,7 +3805,7 @@ func GetDBChaptersMatchingName(sst PoSST,src string) []string {
 
 	var qstr string
 
-	remove_accents,stripped := IsBracketedSearchTerm(src)
+	remove_accents,stripped := IsBracketedSearchTerm(SQLEscape(src))
 
 	if remove_accents {
 		search := "%"+stripped+"%"
@@ -4000,7 +4002,7 @@ func GetDBSingletonBySTType(sst PoSST,sttypes []int,chap string,cn []string) ([]
 	var dim = len(sttypes)
 
 	context := FormatSQLStringArray(cn)
-	chapter := "%"+chap+"%"
+	chapter := "%"+SQLEscape(chap)+"%"
 
 	if dim == 0 || dim > 4 {
 		fmt.Println("Maximum 4 sttypes in GetDBSingletonBySTType")
@@ -5743,7 +5745,7 @@ func GetDBAdjacentNodePtrBySTType(sst PoSST,sttypes []int,chap string,cn []strin
 	var dim = len(sttypes)
 
 	context := FormatSQLStringArray(cn)
-	chapter := "%"+chap+"%"
+	chapter := "%"+SQLEscape(chap)+"%"
 
 	if dim > 4 {
 		fmt.Println("Maximum 4 sttypes in GetDBAdjacentNodePtrBySTType")

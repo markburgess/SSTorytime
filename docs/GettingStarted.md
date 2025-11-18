@@ -9,7 +9,16 @@ the programs by following these destructions below. You can get started with or 
 * Docker (optional, e.g. Docker desktop)
 
 Once you've compiled and the database is running, you can upload the example data to play with:
-
+<pre>
+$ make db
+</pre>
+or (the preferred option for Linux):
+<pre>
+$ make ramify
+$ make ramdb
+</pre>
+If this succeeds (the scripts are not exhaustive), then you can begin to try out some example data.
+The default options should get you started:
 <pre>
 $ cd examples/
 $ make

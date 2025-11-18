@@ -349,7 +349,7 @@ img {
   /* -leadsto */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: darkred;
+  color: red;
   font-size: var(--font-size-fluid-0);
 }
 
@@ -357,7 +357,7 @@ img {
   /* near */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: blue;
+  color: var(--gray-6);
   font-size: var(--font-size-fluid-0);
 }
 
@@ -373,7 +373,7 @@ img {
   /* +contain */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: darkcyan;
+  color: darkblue;
   font-size: var(--font-size-fluid-0);
 }
 

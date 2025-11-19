@@ -31,6 +31,12 @@ automatically to make browsing a book easy, searchable, and informative.
 * * Are you creating service directories, tracing dependencies?
 * * Do you want to annotate your music collection or photos, tracing attribution, comments, similarities, etc
 
+* **What are the DON'T DOs of graphs?**
+
+Graphs are fragile structures so there are some modelling issues you should avoid.
+
+* * Don't try to link everything in a large data set to one or two nodes, e.g. make groups, say classifying all your music into mp3, flac, and m4a. This will lead to nodes for mp3, flac, and m4a that have thousands of radial links--with very long data structures that skew the database and cause memory problems! If something belongs to a small number of categories, use contexts instead. If you try to look up mp3 files the list would be so long as to be useless anyway. Instead you should look up `fred* \context mp3`
+
 * **What is the process?**
 
 The five step programme is this:
@@ -109,3 +115,5 @@ private namespace, this would be laze and not pedagogically well
 motivated. If we are going to put data into the same database, and
 allow cross-pollenation of ideas, then we need to resolve those
 inconsistencies.
+
+

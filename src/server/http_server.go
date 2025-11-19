@@ -281,28 +281,8 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 
 	arrows := arrowptrs != nil
 	sttypes := sttype != nil
-	minlimit := 1
-	maxlimit := 0
 
-	if search.Min > 0 {
-		minlimit = search.Min
-	}
-
-	if search.Range > 0 {
-		maxlimit = search.Range
-	} else {
-		if from || to || sequence {
-			maxlimit = 30 // many paths make hard work
-		} else {
-			const common_word = 5
-
-			if SST.SearchTermLen(search.Name) < common_word {
-				maxlimit = 5
-			} else {
-				maxlimit = 10
-			}
-		}
-	}
+	minlimit,maxlimit := SST.MinMaxPolicy(search)
 
 	fmt.Println()
 	tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.AlignRight)

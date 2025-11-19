@@ -7968,6 +7968,43 @@ func IsParam(i,lenp int,keys []string,keywords []string) bool {
 
 //******************************************************************
 
+func MinMaxPolicy(search SearchParameters) (int,int) {
+
+	minlimit := 1
+	maxlimit := 0
+	from := search.From != nil
+	to := search.To != nil
+
+	if search.Min > 0 {
+		minlimit = search.Min
+	}
+
+	if search.Chapter == "TableOfContents" {
+
+		// We want to see all contents
+		maxlimit = 50
+
+	} else 	if search.Range > 0 {
+		maxlimit = search.Range
+	} else {
+		if from || to || search.Sequence {
+			maxlimit = 30 // many paths make hard work
+		} else {
+			const common_word = 5
+
+			if SearchTermLen(search.Name) < common_word {
+				maxlimit = 5
+			} else {
+				maxlimit = 10
+			}
+		}
+	}
+
+	return minlimit,maxlimit
+}
+
+//******************************************************************
+
 func IsLiteralNptr(s string) bool {
 	
 	var a,b int = -1,-1

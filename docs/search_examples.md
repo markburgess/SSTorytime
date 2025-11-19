@@ -20,9 +20,11 @@
 
 The strings you type are normally treated as potential substrings to match within words.
 If you want to insist a precise word match with nothing else included, i.e. the search term is
-the entire node string,then you can usethe pling/bang/exclamation character !on both sides of the term:
+the entire node string,then you can usethe pling/bang/exclamation character !on both sides of the term,
+or the vertical bar "pipe" symbol (which is not confused with the ! not operator):
 <pre>
    !a1!
+   |a1|
    "ephemeral or persistent"
 </pre>
 

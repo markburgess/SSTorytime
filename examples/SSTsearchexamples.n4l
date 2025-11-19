@@ -42,7 +42,7 @@
 
  :: Word search , _sequence_ ::
 
-Search for a precise word (e.g.) Just type: !a1!
+Search for a precise word (e.g.) Just type: !a1! or |a1|
       "                   (e.g.) Just type: "ephemeral or persistent"
       "                   (e.g.) 'Use the NPtr address: (4,4138)'
 

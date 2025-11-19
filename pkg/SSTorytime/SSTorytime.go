@@ -10261,8 +10261,12 @@ func IsExactMatch(org string) (bool,string) {
 	}
 
 	if org[0] == '!' && org[len(org)-1] == '!' {
-
 		tr := strings.Trim(org,"!")
+		return true,strings.ToLower(tr)
+	}
+
+	if org[0] == '|' && org[len(org)-1] == '|' {
+		tr := strings.Trim(org,"|")
 		return true,strings.ToLower(tr)
 	}
 

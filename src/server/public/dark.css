@@ -276,6 +276,7 @@ h3 {
 
 details { 
 background-color: slategray;
+margin-left: 200px; 
 }
 
 details summary { 

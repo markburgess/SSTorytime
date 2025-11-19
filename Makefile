@@ -16,10 +16,9 @@ clean:
 	(cd src/demo_pocs; make clean)
 
 ramdisk:
-	contrib/ramify.sh
-
 ramdb:
-	contrib/makeramdb.sh
+	(cd contrib; sh ramify.sh)
+	(cd contrib; sh makeramdb.sh)
 
 db:
-	contrib/makedb.sh
+	(cd contrib/makedb.sh)

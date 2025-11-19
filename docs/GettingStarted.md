@@ -14,7 +14,6 @@ $ make db
 </pre>
 or (the preferred option for Linux):
 <pre>
-$ make ramify
 $ make ramdb
 </pre>
 If this succeeds (the scripts are not exhaustive), then you can begin to try out some example data.

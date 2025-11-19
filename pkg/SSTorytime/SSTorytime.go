@@ -261,7 +261,7 @@ const LINK_TYPE = "CREATE TYPE Link AS  " +
 	"Dst      NodePtr     " +
 	")"
 
-const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
+const NODE_TABLE = "CREATE UNLOGGED TABLE IF NOT EXISTS Node " +
 	"( " +
 	"NPtr      NodePtr,        \n" +
 	"L         int,            \n" +
@@ -279,7 +279,7 @@ const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
 	I_PEXPR+"  Link[]          \n" + // Ie3
 	")"
 
-const PAGEMAP_TABLE = "CREATE TABLE IF NOT EXISTS PageMap " +
+const PAGEMAP_TABLE = "CREATE UNLOGGED TABLE IF NOT EXISTS PageMap " +
 	"( " +
 	"Chap     Text,  " +
 	"Alias    Text,  " +
@@ -288,7 +288,7 @@ const PAGEMAP_TABLE = "CREATE TABLE IF NOT EXISTS PageMap " +
 	"Path     Link[] " +
 	")"
 
-const ARROW_DIRECTORY_TABLE = "CREATE TABLE IF NOT EXISTS ArrowDirectory " +
+const ARROW_DIRECTORY_TABLE = "CREATE UNLOGGED TABLE IF NOT EXISTS ArrowDirectory " +
 	"(    " +
 	"STAindex int,           " +
 	"Long text,              " +
@@ -296,7 +296,7 @@ const ARROW_DIRECTORY_TABLE = "CREATE TABLE IF NOT EXISTS ArrowDirectory " +
 	"ArrPtr int primary key  " +
 	")"
 
-const ARROW_INVERSES_TABLE = "CREATE TABLE IF NOT EXISTS ArrowInverses " +
+const ARROW_INVERSES_TABLE = "CREATE UNLOGGED TABLE IF NOT EXISTS ArrowInverses " +
 	"(    " +
 	"Plus int,  " +
 	"Minus int,  " +
@@ -1604,47 +1604,7 @@ func HubJoin(sst PoSST,name,chap string,nptrs []NodePtr,arrow string,context []s
 // Lower level functions, for self-managed NPtr values
 // **************************************************************************
 
-func ForceDBNode(sst PoSST, n Node) {
-
-	// Add node version setting explicit CPtr value, note different function call
-	// We use this function when we ARE managing/counting CPtr values ourselves
-
-	var qstr,seqstr string
-
-        n.L,n.NPtr.Class = StorageClass(n.S)
-	
-	cptr := n.NPtr.CPtr
-
-	es := SQLEscape(n.S)
-	ec := SQLEscape(n.Chap)
-
-	if n.Seq {
-		seqstr = "true"
-	} else {
-		seqstr = "false"
-	}
-
-	qstr = fmt.Sprintf("SELECT InsertNode(%d,%d,%d,'%s','%s',%s)",n.L,n.NPtr.Class,cptr,es,ec,seqstr)
-
-	row,err := sst.DB.Query(qstr)
-
-	if err != nil {
-		s := fmt.Sprint("Failed to insert",err)
-		
-		if strings.Contains(s,"duplicate key") {
-		} else {
-			fmt.Println(s,"FAILED \n",qstr,err)
-		}
-		return
-	}
-
-	row.Close()
-
-	return
-}
-
-
-func ForceDBNodePart(sst PoSST, n Node) string {
+func FormDBNode(sst PoSST, n Node) string {
 
 	// Add node version setting explicit CPtr value, note different function call
 	// We use this function when we ARE managing/counting CPtr values ourselves
@@ -1777,17 +1737,13 @@ func UploadNodeToDB(sst PoSST, org Node) {
 
 	const nolink = 999
 
-	qstr := "BEGIN;\n" + ForceDBNodePart(sst,org)
+	qstr := "BEGIN;\n" + FormDBNode(sst,org)
 
 	for stindex := 0; stindex < len(org.I); stindex++ {
 
-		for lnk := range org.I[stindex] {
-
-			dstlnk := org.I[stindex][lnk]
-			sttype := STIndexToSTType(stindex)
-
-			qstr += AppendDBLinkToNodeCommand(sst,org.NPtr,dstlnk,sttype)
-		}
+		lnkarray := FormatSQLLinkArray(org.I[stindex])
+		sttype := STIndexToSTType(stindex)
+		qstr += AppendDBLinkArrayToNode(sst,org.NPtr,lnkarray,sttype)
 	}
 
 	qstr += "\nCOMMIT;"
@@ -2023,6 +1979,28 @@ func AppendDBLinkToNodeCommand(sst PoSST, n1ptr NodePtr, lnk Link, sttype int) s
 		link_table,
 		literal,
 		link_table)
+
+	return qstr
+}
+
+// **************************************************************************
+
+func AppendDBLinkArrayToNode(sst PoSST, nptr NodePtr, array string, sttype int) string {
+
+	// Want to make this idempotent, because SQL is not (and not clause)
+
+	if sttype < -EXPRESS || sttype > EXPRESS {
+		fmt.Println(ERR_ST_OUT_OF_BOUNDS,sttype)
+		os.Exit(-1)
+	}
+
+	link_table := STTypeDBChannel(sttype)
+
+	qstr := fmt.Sprintf("UPDATE NODE SET %s='%s' WHERE (NPtr).CPtr = '%d' AND (NPtr).Chan = '%d';\n",
+		link_table,
+		array,
+		nptr.CPtr,
+		nptr.Class)
 
 	return qstr
 }
@@ -9644,6 +9622,25 @@ func FormatSQLNodePtrArray(array []NodePtr) string {
 	ret += " }' "
 
 	return ret
+}
+
+// **************************************************************************
+
+func FormatSQLLinkArray(array []Link) string {
+
+	// {"(81,1,2,\"(1,0)\")","(108,1,2,\"(3,11)\")","(118,1,2,\"(2,1348)\")"}
+
+	var s string
+
+	for _,lnk := range array {
+
+		l := fmt.Sprintf("(%d, %f, %d, \\\"(%d,%d)\\\")",lnk.Arr,lnk.Wgt,lnk.Ctx,lnk.Dst.Class,lnk.Dst.CPtr)
+		s += fmt.Sprintf("\"%s\",",l)
+	}
+
+	s = "{" + strings.Trim(s,",") + "}"
+
+	return s
 }
 
 // **************************************************************************

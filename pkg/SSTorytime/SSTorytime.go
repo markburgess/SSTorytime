@@ -1643,6 +1643,32 @@ func ForceDBNode(sst PoSST, n Node) {
 	return
 }
 
+
+func ForceDBNodePart(sst PoSST, n Node) string {
+
+	// Add node version setting explicit CPtr value, note different function call
+	// We use this function when we ARE managing/counting CPtr values ourselves
+
+	var qstr,seqstr string
+
+        n.L,n.NPtr.Class = StorageClass(n.S)
+	
+	cptr := n.NPtr.CPtr
+
+	es := SQLEscape(n.S)
+	ec := SQLEscape(n.Chap)
+
+	if n.Seq {
+		seqstr = "true"
+	} else {
+		seqstr = "false"
+	}
+
+	qstr = fmt.Sprintf("SELECT InsertNode(%d,%d,%d,'%s','%s',%s);\n",n.L,n.NPtr.Class,cptr,es,ec,seqstr)
+	return qstr
+}
+
+
 // **************************************************************************
 
 func CreateDBNode(sst PoSST, n Node) Node {
@@ -1751,7 +1777,7 @@ func UploadNodeToDB(sst PoSST, org Node) {
 
 	const nolink = 999
 
-	ForceDBNode(sst,org)
+	qstr := "BEGIN;\n" + ForceDBNodePart(sst,org)
 
 	for stindex := 0; stindex < len(org.I); stindex++ {
 
@@ -1760,9 +1786,25 @@ func UploadNodeToDB(sst PoSST, org Node) {
 			dstlnk := org.I[stindex][lnk]
 			sttype := STIndexToSTType(stindex)
 
-			AppendDBLinkToNode(sst,org.NPtr,dstlnk,sttype)
+			qstr += AppendDBLinkToNodeCommand(sst,org.NPtr,dstlnk,sttype)
 		}
 	}
+
+	qstr += "\nCOMMIT;"
+
+	row,err := sst.DB.Query(qstr)
+
+	if err != nil {
+		s := fmt.Sprint("Failed to insert",err)
+		
+		if strings.Contains(s,"duplicate key") {
+		} else {
+			fmt.Println(s,"FAILED \n",qstr,err)
+		}
+		return
+	}
+
+	row.Close()
 }
 
 // **************************************************************************
@@ -1937,33 +1979,7 @@ func IdempDBAddLink(sst PoSST,from Node,link Link,to Node) {
 
 func AppendDBLinkToNode(sst PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 
-	// Want to make this idempotent, because SQL is not (and not clause)
-
-	if sttype < -EXPRESS || sttype > EXPRESS {
-		fmt.Println(ERR_ST_OUT_OF_BOUNDS,sttype)
-		os.Exit(-1)
-	}
-
-	if n1ptr == lnk.Dst {
-		return false
-	}
-
-	//                       Arr,Wgt,Ctx,  Dst
-	linkval := fmt.Sprintf("(%d, %f, %d, (%d,%d)::NodePtr)",lnk.Arr,lnk.Wgt,lnk.Ctx,lnk.Dst.Class,lnk.Dst.CPtr)
-
-	literal := fmt.Sprintf("%s::Link",linkval)
-
-	link_table := STTypeDBChannel(sttype)
-
-	qstr := fmt.Sprintf("UPDATE NODE SET %s=array_append(%s,%s) WHERE (NPtr).CPtr = '%d' AND (NPtr).Chan = '%d' AND (%s IS NULL OR NOT %s = ANY(%s))",
-		link_table,
-		link_table,
-		literal,
-		n1ptr.CPtr,
-		n1ptr.Class,
-		link_table,
-		literal,
-		link_table)
+	qstr := AppendDBLinkToNodeCommand(sst,n1ptr,lnk,sttype)
 
 	row,err := sst.DB.Query(qstr)
 
@@ -1976,6 +1992,40 @@ func AppendDBLinkToNode(sst PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 	return true
 }
 
+// **************************************************************************
+
+func AppendDBLinkToNodeCommand(sst PoSST, n1ptr NodePtr, lnk Link, sttype int) string {
+
+	// Want to make this idempotent, because SQL is not (and not clause)
+
+	if sttype < -EXPRESS || sttype > EXPRESS {
+		fmt.Println(ERR_ST_OUT_OF_BOUNDS,sttype)
+		os.Exit(-1)
+	}
+
+	if n1ptr == lnk.Dst {
+		return ""
+	}
+
+	//                       Arr,Wgt,Ctx,  Dst
+	linkval := fmt.Sprintf("(%d, %f, %d, (%d,%d)::NodePtr)",lnk.Arr,lnk.Wgt,lnk.Ctx,lnk.Dst.Class,lnk.Dst.CPtr)
+
+	literal := fmt.Sprintf("%s::Link",linkval)
+
+	link_table := STTypeDBChannel(sttype)
+
+	qstr := fmt.Sprintf("UPDATE NODE SET %s=array_append(%s,%s) WHERE (NPtr).CPtr = '%d' AND (NPtr).Chan = '%d' AND (%s IS NULL OR NOT %s = ANY(%s));\n",
+		link_table,
+		link_table,
+		literal,
+		n1ptr.CPtr,
+		n1ptr.Class,
+		link_table,
+		literal,
+		link_table)
+
+	return qstr
+}
 
 // **************************************************************************
 // Postgres interface

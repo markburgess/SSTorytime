@@ -31,10 +31,10 @@ A %pod (consists) multiple co-located containers that are tightly coupled
 This pattern (use-for) %sidecars, %init containers, and %debugging
 
 A %pod (behaves) persists until deleted
-   "   (is-not) a %process
+   "   (!same) a %process
    "   (ex) an %environment for running containers
 
-Restarting a %container (is-not) the same as restarting a %pod
+Restarting a %container (!same) the same as restarting a %pod
 
 %init containers (runs) during pod startup
         "        (runbefore) main application containers

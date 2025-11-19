@@ -6,9 +6,9 @@
  
  looks like                      (ll)
  sounds like        	         (sl)
- don't confuse with              (confuse)
+ don't confuse with              (!confuse)
  alternate spelling              (sp)
- not the same as                 (is-not)
+ not the same as                 (!same)
  compare to                      (compare)
  stands for                      (sfor)
 
@@ -55,7 +55,6 @@
  same as                         (=)
  is approximately equivalent to  (simeq)
  
- is not the same as 	         (!eq)
  is nothing like                 (different!)
 
  runs alongside                  (runs-with)

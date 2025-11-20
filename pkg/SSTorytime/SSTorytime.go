@@ -10325,7 +10325,9 @@ func IsStringFragment(s string) bool {
 		}
 	}
 
-	if strings.Contains(s," ") {
+	// The tsvector cannot handle spaces or apostrophes(!), so fall back on LIKE %%
+
+	if strings.Contains(s," ") || strings.Contains(s,"'") {
 		return true
 	}
 

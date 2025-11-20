@@ -653,6 +653,7 @@ func Configure(sst PoSST,load_arrows bool) {
 		sst.DB.QueryRow("DROP INDEX sst_gin")
 		sst.DB.QueryRow("DROP INDEX sst_ungin")
 		sst.DB.QueryRow("DROP INDEX sst_s")
+		sst.DB.QueryRow("DROP INDEX sst_cnt")
 
 		sst.DB.QueryRow("drop function fwdconeaslinks")
 		sst.DB.QueryRow("drop function fwdconeasnodes")
@@ -1503,6 +1504,7 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_gin on Node USING GIN (to_tsvector('english',Search))")
 	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_ungin on Node USING GIN (to_tsvector('english',UnSearch))")
 	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_s on Node USING GIN (S)")
+	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_cnt on ContextDirectory USING GIN (Context)")
 	sst.DB.QueryRow("ALTER TABLE Node SET LOGGED")
 	sst.DB.QueryRow("ALTER TABLE PageMap SET LOGGED")
 

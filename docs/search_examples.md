@@ -36,6 +36,9 @@ If your search term contains spaces, exclose them in double quotes or use the `<
   strange<->kind<->of<->woman  // neighbouring lexemes (separated by space)
   strange<2>woman              // skip 2 lexemes
 </pre>
+(NB: the ts_vector method ignores insignificant words like "a", "in", "of", etc, so it will tend to ignore these
+if you include them in a search string.)
+
 If you simply want a (sub)string match, character by character, then quote the string:
 <pre>
   "fish soup"

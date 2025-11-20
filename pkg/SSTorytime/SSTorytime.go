@@ -3696,7 +3696,6 @@ func GetDBNodePtrMatchingNCCS(sst PoSST,nm,chap string,cn []string,arrow []Arrow
 	chap = SQLEscape(chap)
 
 	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L,NPtr LIMIT %d",NodeWhereString(nm,chap,cn,arrow,seq),limit)
-
 	row, err := sst.DB.Query(qstr)
 
 	if err != nil {
@@ -7999,6 +7998,10 @@ func MinMaxPolicy(search SearchParameters) (int,int) {
 			} else {
 				maxlimit = 10
 			}
+
+			if len(search.Name) < 3 {
+				maxlimit = 30
+			}
 		}
 	}
 
@@ -9417,7 +9420,21 @@ func List2String(list []string) string {
 
 func SQLEscape(s string) string {
 
-	return strings.Replace(s, `'`, `''`, -1)
+	var escaped []rune
+
+	runeform := []rune(s)
+
+	for r := 0; r < len(runeform); r++ {
+
+		if runeform[r] == '\'' {
+			if (r < len(runeform)-1 && runeform[r+1] != '\'') && (r > 0 && runeform[r-1] != '\'') {
+				escaped = append(escaped,runeform[r])
+			}
+		}
+		escaped = append(escaped,runeform[r])
+	}
+
+	return string(escaped)
 }
 
 // **************************************************************************

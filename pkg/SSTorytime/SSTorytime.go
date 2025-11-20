@@ -2175,60 +2175,13 @@ func DefineStoredFunctions(sst PoSST) {
 		"    st int;\n"+
 		"BEGIN\n"+
 		
-		// If there are no arrows
+		// If there are no arrows, we only need to look for the Node context in lp1 for "empty" == 0
+
 		"IF array_length(arrows,1) IS NULL THEN\n"+
 
 		"   IF lp1 IS NOT NULL THEN"+		
 		"      FOREACH lnk IN ARRAY lp1 LOOP\n"+
-		"         IF match_context(lnk.Ctx,context) THEN"+
-		"            RETURN true;"+
-		"         END IF;"+
-		"      END LOOP;\n"+
-		"   END IF;\n"+
-
-		"   IF lp2 IS NOT NULL THEN"+		
-		"      FOREACH lnk IN ARRAY lp2 LOOP\n"+
-		"         IF match_context(lnk.Ctx,context) THEN"+
-		"            RETURN true;"+
-		"         END IF;"+
-		"      END LOOP;\n"+
-		"   END IF;\n"+
-
-		"   IF lp3 IS NOT NULL THEN"+				
-		"      FOREACH lnk IN ARRAY lp3 LOOP\n"+
-		"         IF match_context(lnk.Ctx,context) THEN"+
-		"            RETURN true;"+
-		"         END IF;"+
-		"      END LOOP;\n"+
-		"   END IF;\n"+
-
-		"   IF lm1 IS NOT NULL THEN"+		
-		"      FOREACH lnk IN ARRAY lm1 LOOP\n"+
-		"         IF match_context(lnk.Ctx,context) THEN"+
-		"            RETURN true;"+
-		"         END IF;"+
-		"      END LOOP;\n"+
-		"   END IF;\n"+
-
-		"   IF lm2 IS NOT NULL THEN"+		
-		"      FOREACH lnk IN ARRAY lm2 LOOP\n"+
-		"         IF match_context(lnk.Ctx,context) THEN"+
-		"            RETURN true;"+
-		"         END IF;"+
-		"      END LOOP;\n"+
-		"   END IF;\n"+
-
-		"   IF lm3 IS NOT NULL THEN"+		
-		"      FOREACH lnk IN ARRAY lm3 LOOP\n"+
-		"         IF match_context(lnk.Ctx,context) THEN"+
-		"            RETURN true;"+
-		"         END IF;"+
-		"      END LOOP;\n"+
-		"   END IF;\n"+
-
-		"   IF ln0 IS NOT NULL THEN"+		
-		"      FOREACH lnk IN ARRAY ln0 LOOP\n"+
-		"         IF match_context(lnk.Ctx,context) THEN"+
+                "         IF lnk.Arr = 0 AND match_context(lnk.Ctx,context) THEN\n"+
 		"            RETURN true;"+
 		"         END IF;"+
 		"      END LOOP;\n"+
@@ -2237,6 +2190,7 @@ func DefineStoredFunctions(sst PoSST) {
 		"ELSE\n"+
 
 		// If there are arrows
+
 		"   FOREACH st IN ARRAY sttypes LOOP\n"+
 		"      CASE st \n"		
 	for st := -EXPRESS; st <= EXPRESS; st++ {
@@ -2793,6 +2747,8 @@ func DefineStoredFunctions(sst PoSST) {
 		"   end_result int = 0;\n"+
 		"   or_list text[] = ARRAY[]::text[];\n"+
 		"   item text;\n" +
+		"   item_db text;\n" +
+		"   item_us text;\n" +
 		"   ref text;\n" +
 		"   c text;\n"+
 		"BEGIN \n" +
@@ -2817,23 +2773,25 @@ func DefineStoredFunctions(sst PoSST) {
 		"END IF;\n"+
 
 		// if both are empty, then match
-		"IF array_length(db_set,1) IS NULL THEN\n"+
+		"IF array_length(db_set,1) IS NULL AND array_length(user_set,1) IS NULL THEN\n"+
 		"   RETURN true;\n"+
 		"END IF;\n"+
 
 		// clean and unaccent sets
 
+		"FOREACH item_db IN ARRAY db_set LOOP\n" +
+		"   FOREACH item_us IN ARRAY user_set LOOP\n" +
+		"      IF item_db = item_us THEN\n" +
+		"         RETURN true;\n"+
+		"      END IF;\n"+
+		"   END LOOP;\n" +
+		"END LOOP;\n" +
+
 		"FOREACH item IN ARRAY db_set LOOP\n" +
-		"   IF thisctxptr = 0 AND (item = 'any' OR item = '') THEN\n" +
-		"      RETURN true;\n"+
-		"   END IF;\n"+
 		"   notes = array_append(notes,lower(unaccent(item)));\n" +
 		"END LOOP;\n" +
 
 		"FOREACH item IN ARRAY user_set LOOP\n" +
-		"   IF thisctxptr = 0 AND (item = 'any' OR item = '') THEN\n" +
-		"      RETURN true;\n"+
-		"   END IF;\n"+
 		"   client = array_append(client,lower(unaccent(item)));\n" +
 		"END LOOP;\n" +
 
@@ -3739,7 +3697,6 @@ func GetDBNodePtrMatchingNCCS(sst PoSST,nm,chap string,cn []string,arrow []Arrow
 
 	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L,NPtr LIMIT %d",NodeWhereString(nm,chap,cn,arrow,seq),limit)
 
-	fmt.Println("QSTR",qstr)
 	row, err := sst.DB.Query(qstr)
 
 	if err != nil {
@@ -3839,7 +3796,7 @@ func NodeWhereString(name,chap string,context []string,arrow []ArrowPtr,seq bool
 	dbcols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
 
 	qstr = fmt.Sprintf("%s %s %s AND NCC_match(NPtr,%s,%s,%s,%s)",
-		chap_col,nm_col,seq_col,ctx_col,arrows,sttypes,dbcols)
+		chap_col,nm_col,seq_col, ctx_col,arrows,sttypes,dbcols)
 
 	return qstr
 }

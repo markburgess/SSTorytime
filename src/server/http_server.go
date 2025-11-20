@@ -427,6 +427,7 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request, sst SST.PoSST, search S
 		orb := SST.GetNodeOrbit(PSST, nptrs[n], "", limit)
 		// create a set of coords for len(nptrs) disconnected nodes
 
+		fmt.Printf("...Setting coordinates\n")
 		xyz := SST.RelativeOrbit(origin, SST.R0, n, len(nptrs))
 		orb = SST.SetOrbitCoords(xyz, orb)
 

@@ -652,6 +652,7 @@ func Configure(sst PoSST,load_arrows bool) {
 		sst.DB.QueryRow("DROP INDEX sst_type")
 		sst.DB.QueryRow("DROP INDEX sst_gin")
 		sst.DB.QueryRow("DROP INDEX sst_ungin")
+		sst.DB.QueryRow("DROP INDEX sst_s")
 
 		sst.DB.QueryRow("drop function fwdconeaslinks")
 		sst.DB.QueryRow("drop function fwdconeasnodes")
@@ -1499,8 +1500,9 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 	fmt.Println("Indexing ....")
 
 	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_type on Node (((NPtr).Chan),L,S)")
-	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_gin on Node USING GIN (Search)")
-	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_ungin on Node USING GIN (UnSearch)")
+	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_gin on Node USING GIN (to_tsvector('english',Search))")
+	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_ungin on Node USING GIN (to_tsvector('english',UnSearch))")
+	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_s on Node USING GIN (S)")
 
 	fmt.Println("Finally done!")
 }
@@ -3733,6 +3735,7 @@ func GetDBNodePtrMatchingNCCS(sst PoSST,nm,chap string,cn []string,arrow []Arrow
 
 	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L,NPtr LIMIT %d",NodeWhereString(nm,chap,cn,arrow,seq),limit)
 
+	fmt.Println("QSTR",qstr)
 	row, err := sst.DB.Query(qstr)
 
 	if err != nil {
@@ -3791,18 +3794,28 @@ func NodeWhereString(name,chap string,context []string,arrow []ArrowPtr,seq bool
 
 	is_exact_match := outer_exact_match || inner_exact_match
 
-	if name == "any" || name == "%%" {
-		nm_col = ""
-	} else {
-		if remove_name_accents {
-			nm_col = fmt.Sprintf(" AND Unsearch @@ to_tsquery('english', '%s')",bare_name)
-		} else {
-			nm_col = fmt.Sprintf(" AND Search @@ to_tsquery('english', '%s')",bare_name)
-		}
-	}
-
 	if is_exact_match {
+
 		nm_col += fmt.Sprintf(" AND lower(S) = '%s'",bare_name)
+
+	} else if IsStringFragment(bare_name) {
+
+		if name == "any" || name == "%%" {
+			nm_col = fmt.Sprintf(" AND lower(S) LIKE '%%%%'")
+		} else {
+			nm_col = fmt.Sprintf(" AND lower(S) LIKE '%%%s%%'",bare_name)
+		}
+	} else {
+
+		if name == "any" || name == "%%" {
+			nm_col = ""
+		} else {
+			if remove_name_accents {
+				nm_col = fmt.Sprintf(" AND Unsearch @@ to_tsquery('english', '%s')",bare_name)
+			} else {
+				nm_col = fmt.Sprintf(" AND Search @@ to_tsquery('english', '%s')",bare_name)
+			}
+		}
 	}
 
         var seq_col string
@@ -10318,6 +10331,33 @@ func IsExactMatch(org string) (bool,string) {
 	}
 
 	return false,org
+}
+
+//****************************************************************************
+
+func IsStringFragment(s string) bool {
+
+	tsvec_patterns := []string{"|","&","!","<->","<1>","<2>","<3>","<4>"}
+
+	// if this is a ts_vec pattern, it's not for us
+
+	for _,p := range tsvec_patterns {
+		if strings.Contains(s,p) {
+			return false
+		}
+	}
+
+	if strings.Contains(s," ") {
+		return true
+	}
+
+	const theshold_for_uniqueness = 12 // skjønn
+
+	if len(s) > theshold_for_uniqueness {
+		return true
+	}
+
+	return false
 }
 
 //****************************************************************************

@@ -25,16 +25,22 @@ or the vertical bar "pipe" symbol (which is not confused with the ! not operator
 <pre>
    !a1!
    |a1|
+   "|deep purple|"              (exact match with space needs quotes!)
    "ephemeral or persistent"
 </pre>
 
 * Search with spaces in the string
 
-If your search term contains spaces, exclose them in double quotes:
+If your search term contains spaces, exclose them in double quotes or use the `<->` search operator (belonging to postgres *ts_vector*). If want to use logical operators to select or exclude certain words (or find matches based in related/derivative words) then the algorithm uses the ts_vector mathods and searching is by exact words. Then you need to use the substitute space `<->` and `<N>` (not integer N) to represent spaces
+<pre>
+  strange<->kind<->of<->woman  // neighbouring lexemes (separated by space)
+  strange<2>woman              // skip 2 lexemes
+</pre>
+If you simply want a (sub)string match, character by character, then quote the string:
 <pre>
   "fish soup"
 </pre>
-This treats "fish soup" as a single string,rather than as "fish" OR "soup".
+This treats "fish soup" as a single possible substring, rather than as "fish" OR "soup".
 
 * Search for any "OR" combination of a set of words
 
@@ -52,6 +58,7 @@ You can use `& = AND`, `! = NOT`, `| = OR` in expressions, i.e. [postgres ts_vec
  a1&!b6
  "a1 & !b6"
  brain&!notes
+ pink<->flo:*    // the :* operator completes a word starting with the prefix
 </pre>
 Note that, without the quotes, the latter string would  be understood as `a1 OR & OR NOT b6`.
 

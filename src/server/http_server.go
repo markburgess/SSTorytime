@@ -56,7 +56,7 @@ func Init() string {
 	flag.Usage = Usage
 
 	verbosePtr := flag.Bool("v", false,"verbose")
-	resourcePtr := flag.String("resources", "/mnt", "Root directory for serving /Resource/ files")
+	resourcePtr := flag.String("resources", "/mnt", "Root directory for serving /Resources/ files")
 
 	flag.Parse()
 

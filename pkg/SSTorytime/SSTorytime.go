@@ -1503,6 +1503,8 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_gin on Node USING GIN (to_tsvector('english',Search))")
 	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_ungin on Node USING GIN (to_tsvector('english',UnSearch))")
 	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_s on Node USING GIN (S)")
+	sst.DB.QueryRow("ALTER TABLE Node SET LOGGED")
+	sst.DB.QueryRow("ALTER TABLE PageMap SET LOGGED")
 
 	fmt.Println("Finally done!")
 }

@@ -14,6 +14,23 @@ This is a directory path which serves as a root for any file paths referenced in
 where images of documents may be cached in order to be accessible from links rendered in the
 browser. It may include any kind of MIME type, such as music files, images, documents etc.
 
+For example, if we share a folder called `/mnt/Recordings`, then start the server
+<pre>
+./http_server -resources /mnt/Recordings
+</pre>
+which leads to a disk file
+<pre>
+/mnt/Recordings/Rush/Presto/Folder.jpg
+</pre>
+which maps an image reference
+<pre>
+/Resources/Rush/Presto/Folder.jpg
+</pre>
+to the URL
+<pre>
+http://localhost:8080/Resources/Rush/Presto/Folder.jpg
+</pre>
+
 * The web server exposes port 8080 for now.
 
 ## Four search formats

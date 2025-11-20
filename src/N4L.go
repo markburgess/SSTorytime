@@ -187,6 +187,12 @@ func main() {
 		ParseN4L(input)
 	}
 
+	// Post process, complete NEAR cliques
+
+	CompleteNearEquilibria(sst)
+
+	// Outputs
+
 	if SUMMARIZE {
 		SummarizeGraph()
 	}
@@ -200,30 +206,7 @@ func main() {
 	}
 
 	if UPLOAD {
-		dbchapters := SST.GetDBChaptersMatchingName(sst,"")
-		memchapters := GetMemChapters()
-
-		conflict := false
-
-		for m := range memchapters {
-			for d := range dbchapters {
-				if memchapters[m] == dbchapters[d] {
-
-					fmt.Println(" Database already contains a chapter: ",dbchapters[d])
-					conflict = true
-				}
-			}
-		}
-
-		if conflict && !FORCE_UPLOAD {
-
-			fmt.Println("\nUploading to a pre-existing chapter might corrupt the data. You can remove it first with removeN4L or force using -force. It's recommended to rebuilt everything unless replacing the last added chapter(s) for reminders.")
-
-		} else {
-			fmt.Println("\n\nUploading nodes..")
-			SST.GraphToDB(sst,true)
-		}
-
+		Upload(sst)
 		SST.Close(sst)
 	}
 }
@@ -284,6 +267,37 @@ func Init() []string {
 	return args
 }
 
+//**************************************************************
+
+func Upload(sst SST.PoSST) {
+
+	dbchapters := SST.GetDBChaptersMatchingName(sst,"")
+	memchapters := GetMemChapters()
+	
+	conflict := false
+	
+	for m := range memchapters {
+		for d := range dbchapters {
+			if memchapters[m] == dbchapters[d] {
+				
+				fmt.Println(" Database already contains a chapter: ",dbchapters[d])
+				conflict = true
+			}
+		}
+	}
+	
+	if conflict && !FORCE_UPLOAD {
+		
+		fmt.Println("\nUploading to a pre-existing chapter might corrupt the data. You can remove it first with removeN4L or force using -force. It's recommended to rebuilt everything unless replacing the last added chapter(s) for reminders.")
+		
+	} else {
+		fmt.Println("\n\nUploading nodes..")
+		SST.GraphToDB(sst,true)
+	}
+}
+
+//**************************************************************
+// Parsing
 //**************************************************************
 
 func NewFile(filename string) {
@@ -659,9 +673,102 @@ func SummarizeAndTestConfig() {
 
 //**************************************************************
 
+func CompleteNearEquilibria(sst SST.PoSST) {
+
+	Box("Completing implicit ST-NEAR cliques.....")
+
+	for class := SST.N1GRAM; class <= SST.GT1024; class++ {
+		switch class {
+		case SST.N1GRAM:
+			for _,node := range SST.NODE_DIRECTORY.N1directory {
+				CompleteCloseness(sst,node)
+			}
+		case SST.N2GRAM:
+			for _,node := range SST.NODE_DIRECTORY.N2directory {
+				CompleteCloseness(sst,node)
+			}
+		case SST.N3GRAM:
+			for _,node := range SST.NODE_DIRECTORY.N3directory {
+				CompleteCloseness(sst,node)
+			}
+		case SST.LT128:
+			for _,node := range SST.NODE_DIRECTORY.LT128 {
+				CompleteCloseness(sst,node)
+			}
+		case SST.LT1024:
+			for _,node := range SST.NODE_DIRECTORY.LT1024 {
+				CompleteCloseness(sst,node)
+			}
+		case SST.GT1024:
+			for _,node := range SST.NODE_DIRECTORY.GT1024 {
+				CompleteCloseness(sst,node)
+			}
+		}
+	}
+}
+
+//**************************************************************
+
+func CompleteCloseness(sst SST.PoSST,node SST.Node) {
+
+	var equivalences = make(map[SST.ArrowPtr]int)
+
+	// Only NEAR links can be completed by inference
+
+	near_nodes := node.I[SST.ST_ZERO + SST.NEAR]
+
+	if len(near_nodes) == 0 {
+		return
+	}
+
+	// Count references with same NEAR arrow type
+
+	for _,link := range near_nodes {
+		equivalences[link.Arr]++
+	}
+
+	for arrow := range equivalences {
+		if equivalences[arrow] > 1 {
+
+			var neighbours []SST.NodePtr
+
+			// Get the semamntically NEAR neighbours
+
+			for _,link := range near_nodes {
+				if link.Arr == arrow {
+					neighbours = append(neighbours,link.Dst)
+				}
+			}
+
+			// complete the subgraph
+			for n := 0; n < len(neighbours); n++ {
+				for o := n+1; o < len(neighbours); o++{
+
+					var link SST.Link
+					link.Arr = arrow
+
+					t1 := SST.GetNodeTxtFromPtr(neighbours[n])
+					t2 := SST.GetNodeTxtFromPtr(neighbours[o])
+					arrname := SST.ARROW_DIRECTORY[arrow].Short
+
+					// NOTs are not close
+
+					if !strings.HasPrefix(arrname,"!") {
+						m := fmt.Sprintf("   Complete: %s -(%s)-> %s",t1,arrname,t2)
+						Verbose(m)
+						SST.AppendLinkToNode(neighbours[n],link,neighbours[o])
+					}
+				}
+			}
+		}
+	}
+}
+
+//**************************************************************
+
 func SummarizeGraph() {
 
-	Box("SUMMARIZE GRAPH.....\n")
+	Box("Summarizing Graph.....\n")
 
 	var count_nodes int = 0
 	var count_links [4]int
@@ -670,38 +777,32 @@ func SummarizeGraph() {
 	for class := SST.N1GRAM; class <= SST.GT1024; class++ {
 		switch class {
 		case SST.N1GRAM:
-			for n := range SST.NODE_DIRECTORY.N1directory {
-				org := SST.NODE_DIRECTORY.N1directory[n]
+			for n,org := range SST.NODE_DIRECTORY.N1directory {
 				count_nodes++
 				PrintNodeSystem(n,org,&count_links)
 			}
 		case SST.N2GRAM:
-			for n := range SST.NODE_DIRECTORY.N2directory {
-				org := SST.NODE_DIRECTORY.N2directory[n]
+			for n,org := range SST.NODE_DIRECTORY.N2directory {
 				count_nodes++
 				PrintNodeSystem(n,org,&count_links)
 			}
 		case SST.N3GRAM:
-			for n := range SST.NODE_DIRECTORY.N3directory {
-				org := SST.NODE_DIRECTORY.N3directory[n]
+			for n,org := range SST.NODE_DIRECTORY.N3directory {
 				count_nodes++
 				PrintNodeSystem(n,org,&count_links)
 			}
 		case SST.LT128:
-			for n := range SST.NODE_DIRECTORY.LT128 {
-				org := SST.NODE_DIRECTORY.LT128[n]
+			for n,org := range SST.NODE_DIRECTORY.LT128 {
 				count_nodes++
 				PrintNodeSystem(n,org,&count_links)
 			}
 		case SST.LT1024:
-			for n := range SST.NODE_DIRECTORY.LT1024 {
-				org := SST.NODE_DIRECTORY.LT1024[n]
+			for n,org := range SST.NODE_DIRECTORY.LT1024 {
 				count_nodes++
 				PrintNodeSystem(n,org,&count_links)
 			}
 		case SST.GT1024:
-			for n := range SST.NODE_DIRECTORY.GT1024 {
-				org := SST.NODE_DIRECTORY.GT1024[n]
+			for n,org := range SST.NODE_DIRECTORY.GT1024 {
 				count_nodes++
 				PrintNodeSystem(n,org,&count_links)
 			}
@@ -738,11 +839,6 @@ func CreateAdjacencyMatrix(searchlist string) (int,[]SST.NodePtr,[][]float32,[][
 	for f := 0; f < len(filtered_node_list); f++ {
 		Verbose("    - row/col key [",f,"/",dim,"]",SST.GetNodeTxtFromPtr(filtered_node_list[f]))
 	}
-
-	// Debugging mainly
-	//for f := range path_weights {
-	//	Verbose("    - path weight",path_weights[f],"from",GetNodeTxtFromPtr(f.Row),"to",GetNodeTxtFromPtr(f.Col))
-	//}
 
 	var subadj_matrix [][]float32 = make([][]float32,dim)
 	var symadj_matrix [][]float32 = make([][]float32,dim)

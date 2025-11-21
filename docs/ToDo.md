@@ -8,6 +8,8 @@ suggestions, please get in touch and offer some feedback.
 * The user interface is only provisional, so there are many things to do to improve style and colouration.
 The focus has been on obtaining a "responsive" design that will work on all devices, large and small. This is obviously both a challenge and a matter of individual taste.
 
+* * Fetch on demand for second orbit layer in NCCS search
+
 * * Focal view for naturally hierarchical data (like music collection or directory listing).
 
 * * Exploit the ts_vector combinatorics in search

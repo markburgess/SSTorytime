@@ -3697,6 +3697,7 @@ func GetDBNodePtrMatchingNCCS(sst PoSST,nm,chap string,cn []string,arrow []Arrow
 
 	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L ASC,(CARDINALITY(Ie3)+CARDINALITY(Im3)+CARDINALITY(Il1)) DESC LIMIT %d",NodeWhereString(nm,chap,cn,arrow,seq),limit)
 
+	fmt.Println("QSTR",qstr)
 	row, err := sst.DB.Query(qstr)
 
 	if err != nil {
@@ -3758,7 +3759,7 @@ func NodeWhereString(name,chap string,context []string,arrow []ArrowPtr,seq bool
 	// First ignore technical references from ad hoc search results, like img paths
 
 	if !strings.HasPrefix(bare_name,"/") {
-		nm_col = "S NOT LIKE '/%'"
+		nm_col = "AND S NOT LIKE '/%'"
 	}
 
 	if is_exact_match {
@@ -10326,8 +10327,12 @@ func IsStringFragment(s string) bool {
 
 	// The tsvector cannot handle spaces or apostrophes(!), so fall back on LIKE %%
 
-	if strings.Contains(s," ") || strings.Contains(s,"'") {
-		return true
+	str_patterns := []string{" ","-","_","'","\""}
+
+	for _,p := range str_patterns {
+		if strings.Contains(s,p) {
+			return true
+		}
 	}
 
 	const theshold_for_uniqueness = 12 // skjønn

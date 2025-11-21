@@ -6424,6 +6424,7 @@ func IdempAddSatellite(list []Orbit, item Orbit,already map[string]bool) []Orbit
 	if already[key] {
 		return list
 	} else {
+		already[key] = true
 		return append(list,item)
 	}
 }

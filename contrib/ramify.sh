@@ -10,6 +10,6 @@ echo Mounting ram disk
 if mount | grep -q /mnt/pg_ram; then 
    echo ram disk already mounted
 else 
-   sudo mount -t tmpfs -o size=1000M tmpfs /mnt/pg_ram
+   sudo mount -t tmpfs -o size=800M tmpfs /mnt/pg_ram
 fi
 

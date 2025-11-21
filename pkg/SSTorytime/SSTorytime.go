@@ -3754,6 +3754,12 @@ func NodeWhereString(name,chap string,context []string,arrow []ArrowPtr,seq bool
 
 	is_exact_match := outer_exact_match || inner_exact_match
 
+	// First ignore technical references from ad hoc search results, like img paths
+
+	if !strings.HasPrefix(bare_name,"/") {
+		nm_col = "S NOT LIKE '/%'"
+	}
+
 	if is_exact_match {
 
 		nm_col += fmt.Sprintf(" AND lower(S) = '%s'",bare_name)
@@ -6337,6 +6343,8 @@ func GetNodeOrbit(sst PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TO
 
 func AssembleSatellitesBySTtype(sst PoSST,stindex int,satellite []Orbit,sweep [][]Link,exclude_vector string,probe_radius int,limit int) []Orbit {
 
+	var already = make(map[string]bool)
+
 	// Sweep different radial paths [angle][depth]
 	
 	for angle := 0; angle < len(sweep); angle++ {
@@ -6369,7 +6377,7 @@ func AssembleSatellitesBySTtype(sst PoSST,stindex int,satellite []Orbit,sweep []
 					continue
 				}
 				
-				satellite = IdempAddSatellite(satellite,nt)
+				satellite = IdempAddSatellite(satellite,nt,already)
 				
 				// are there more satellites at this angle?
 				
@@ -6394,7 +6402,7 @@ func AssembleSatellitesBySTtype(sst PoSST,stindex int,satellite []Orbit,sweep []
 					arthis := STIndexToSTType(arrow.STAindex)
 					// No backtracking
 					if arthis != -arprev {	
-						satellite = IdempAddSatellite(satellite,nt)
+						satellite = IdempAddSatellite(satellite,nt,already)
 						arprev = arthis
 					}
 				}
@@ -6407,17 +6415,17 @@ func AssembleSatellitesBySTtype(sst PoSST,stindex int,satellite []Orbit,sweep []
 
 // **************************************************************************
 
-func IdempAddSatellite(list []Orbit, item Orbit) []Orbit {
+func IdempAddSatellite(list []Orbit, item Orbit,already map[string]bool) []Orbit {
 
 	// crude check but effective, since the list is fairly short unless the graph is sick
 
-	for o := range list {
-		if list[o].Dst == item.Dst && list[o].Arrow == item.Arrow && list[o].Text == item.Text {
-			return list
-		}
-	}
+	key := fmt.Sprintf("%v,%s",item.Dst,item.Arrow)
 
-	return append(list,item)
+	if already[key] {
+		return list
+	} else {
+		return append(list,item)
+	}
 }
 
 // **************************************************************************

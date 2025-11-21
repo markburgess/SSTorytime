@@ -3695,7 +3695,7 @@ func GetDBNodePtrMatchingNCCS(sst PoSST,nm,chap string,cn []string,arrow []Arrow
 	nm = SQLEscape(nm)
 	chap = SQLEscape(chap)
 
-	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L,NPtr LIMIT %d",NodeWhereString(nm,chap,cn,arrow,seq),limit)
+	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L ASC,(CARDINALITY(Ie3)+CARDINALITY(Im3)+CARDINALITY(Il1)) DESC LIMIT %d",NodeWhereString(nm,chap,cn,arrow,seq),limit)
 	row, err := sst.DB.Query(qstr)
 
 	if err != nil {

@@ -100,7 +100,11 @@ func Start(resources string) {
 
 	// Files requested directly as /Resources/ are embedded public support
 
-	fmt.Println("File resources, set to",resources)
+	fmt.Println("\n***********************************************\n")
+	fmt.Println(" *  File serving resources, set to: ",resources)
+	fmt.Println("\n *  Use -resources=/a/b/c to configure")
+	fmt.Println("\n***********************************************\n")
+
 	fileServer := http.FileServer(http.Dir(resources))
 	mux.Handle("/Resources/", http.StripPrefix("/Resources/", fileServer))
 

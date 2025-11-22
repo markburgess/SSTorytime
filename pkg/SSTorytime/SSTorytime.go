@@ -1864,7 +1864,15 @@ func UploadPageMapEvent(sst PoSST, line PageMap) {
 
 	chap := SQLEscape(line.Chapter)
 
-	qstr := fmt.Sprintf("INSERT INTO PageMap (Chap,Alias,Ctx,Line) VALUES ('%s','%s',%d,%d)",chap,line.Alias,line.Context,line.Line)
+	qstr := "BEGIN;\n"
+
+	qstr += fmt.Sprintf("INSERT INTO PageMap (Chap,Alias,Ctx,Line) VALUES ('%s','%s',%d,%d);\n",chap,line.Alias,line.Context,line.Line)
+
+	lnkarray := FormatSQLLinkArray(line.Path)
+
+	qstr += fmt.Sprintf("\nUPDATE PageMap SET Path='%s' WHERE Chap = '%s' AND Line = '%d';",lnkarray,chap,line.Line)
+
+	qstr += "COMMIT;"
 
 	row,err := sst.DB.Query(qstr)
 	
@@ -1880,23 +1888,6 @@ func UploadPageMapEvent(sst PoSST, line PageMap) {
 	}
 
 	row.Close()
-
-	for lnk := 0; lnk < len(line.Path); lnk++ {
-
-		linkval := fmt.Sprintf("(%d, %f, %d, (%d,%d)::NodePtr)",line.Path[lnk].Arr,line.Path[lnk].Wgt,line.Path[lnk].Ctx,line.Path[lnk].Dst.Class,line.Path[lnk].Dst.CPtr)
-
-		literal := fmt.Sprintf("%s::Link",linkval)
-		
-		qstr := fmt.Sprintf("UPDATE PageMap SET Path=array_append(Path,%s) WHERE Chap = '%s' AND Line = '%d'",literal,chap,line.Line)
-		
-		row,err := sst.DB.Query(qstr)
-		
-		if err != nil {
-			fmt.Println("Failed to append",err,qstr)
-		}
-		
-		row.Close()
-	}
 }
 
 //**************************************************************

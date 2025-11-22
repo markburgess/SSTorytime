@@ -101,10 +101,10 @@ const (
 
 	// This is a "contained-by something that expresses" shortcut => NEAR
 
-	NEAR_FRAG_L = "appears close to"      // intentional characteristic
-	NEAR_FRAG_S = "intend-expr"
-	INV_NEAR_FRAG_IN_L = "appears near"   // explains intentional context
-	INV_NEAR_FRAG_IN_S = "intent-nr"
+	CONT_FRAG_L = "contains intented characteristic"      // intentional characteristic
+	CONT_FRAG_S = "intend-expr"
+	INV_CONT_FRAG_IN_L = "characteristic of"   // explains intentional context
+	INV_CONT_FRAG_IN_S = "intent-nr"
 
 )
 

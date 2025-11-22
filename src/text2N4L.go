@@ -137,6 +137,10 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.INV_CONT_FOUND_IN_S,part)
 
+		fmt.Fprintf(fp,"   # \n")
+
+		fmt.Fprintf(fp,"%s\n",part)
+
 		AddIntentionalContext(fp,anom_by_part[selection[i].Partition])
 
 		if !partcheck[part] {
@@ -212,7 +216,7 @@ func SpliceSet(ctx []string) string {
 func AddIntentionalContext(fp *os.File,ctx []string) {
 	
 	for w := 0; w < len(ctx); w++ {
-		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.NEAR_FRAG_S,ctx[w])
+		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.CONT_FRAG_S,ctx[w])
 	}
 }
 

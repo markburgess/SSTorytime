@@ -1254,8 +1254,8 @@ func AddMandatory() {
         inv = SST.InsertArrowDirectory("contains",SST.INV_CONT_FOUND_IN_S,SST.INV_CONT_FOUND_IN_L,"-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
-	arr = SST.InsertArrowDirectory("similarity",SST.NEAR_FRAG_S,SST.NEAR_FRAG_L,"+")
-        inv = SST.InsertArrowDirectory("similarity",SST.INV_NEAR_FRAG_IN_S,SST.INV_NEAR_FRAG_IN_L,"-")
+	arr = SST.InsertArrowDirectory("contains",SST.CONT_FRAG_S,SST.CONT_FRAG_L,"+")
+        inv = SST.InsertArrowDirectory("contains",SST.INV_CONT_FRAG_IN_S,SST.INV_CONT_FRAG_IN_L,"-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
 	arr = SST.InsertArrowDirectory("properties",SST.EXPR_INTENT_S,SST.EXPR_INTENT_L,"+")

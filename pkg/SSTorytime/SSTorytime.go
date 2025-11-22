@@ -1501,7 +1501,7 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 
 	fmt.Println("Indexing ....")
 
-	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_type on Node (((NPtr).Chan),L,S)")
+//	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_type on Node (((NPtr).Chan),L,S)")
 	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_gin on Node USING GIN (to_tsvector('english',Search))")
 	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_ungin on Node USING GIN (to_tsvector('english',UnSearch))")
 	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_s on Node USING GIN (S)")
@@ -7631,6 +7631,7 @@ const (
 	CMD_IN = "\\in"
 	CMD_IN_2 = "in"
 	CMD_ARROW = "\\arrow"
+	CMD_ARROWS = "\\arrows"
 	CMD_LIMIT = "\\limit"
 	CMD_DEPTH = "\\depth"
 	CMD_RANGE = "\\range"
@@ -7657,7 +7658,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 		CMD_SEQ1,CMD_SEQ2,CMD_STORY,CMD_STORIES,
 		CMD_CONTEXT,CMD_CTX,CMD_AS,CMD_AS_2,
 		CMD_CHAPTER,CMD_IN,CMD_IN_2,CMD_SECTION,CMD_CONTENTS,CMD_TOC,CMD_TOC_2,CMD_MAP,
-		CMD_ARROW,
+		CMD_ARROW,CMD_ARROWS,
 		CMD_GT,CMD_MIN,CMD_ATLEAST,
 		CMD_ON,CMD_ON_2,CMD_ABOUT,CMD_FOR,CMD_FOR_2,
 		CMD_PAGE,
@@ -7830,7 +7831,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				}
 				continue
 
-			case CMD_ARROW:
+			case CMD_ARROW,CMD_ARROWS:
 				if lenp > p+1 {
 					for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 						p++

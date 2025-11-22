@@ -102,9 +102,9 @@ const (
 	// This is a "contained-by something that expresses" shortcut => NEAR
 
 	CONT_FRAG_L = "contains intented characteristic"      // intentional characteristic
-	CONT_FRAG_S = "intend-expr"
+	CONT_FRAG_S = "has-frag"
 	INV_CONT_FRAG_IN_L = "characteristic of"   // explains intentional context
-	INV_CONT_FRAG_IN_S = "intent-nr"
+	INV_CONT_FRAG_IN_S = "charct-in"
 
 )
 
@@ -8012,13 +8012,27 @@ func MinMaxPolicy(search SearchParameters) (int,int) {
 				maxlimit = 10
 			}
 
-			if len(search.Name) < 3 {
+			if len(search.Name) < 3 && AllExact(search.Name) {
 				maxlimit = 30
 			}
 		}
 	}
 
 	return minlimit,maxlimit
+}
+
+//******************************************************************
+
+func AllExact(list []string) bool {
+
+	is_exact := false
+
+	for _,s := range list {
+		is,_ := IsExactMatch(s)
+		is_exact = is_exact || is
+	}
+
+	return is_exact
 }
 
 //******************************************************************

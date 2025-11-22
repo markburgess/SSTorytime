@@ -97,6 +97,8 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 	// See AddMandatory() in N4L.go for reserved names (TBD, collect these one day as const)
 
+	var collected_fragments = make(map[string][]string)
+
 	outputfile := filename + "_edit_me.n4l"
 
 	fp, err := os.Create(outputfile)
@@ -137,18 +139,15 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.INV_CONT_FOUND_IN_S,part)
 
-		fmt.Fprintf(fp,"   # \n")
-
-		fmt.Fprintf(fp,"%s\n",part)
-
-		AddIntentionalContext(fp,anom_by_part[selection[i].Partition])
+		AddIntentionalContext(collected_fragments,part,anom_by_part[selection[i].Partition])
 
 		if !partcheck[part] {
 			parts = append(parts,part)
 			partcheck[part] = true
 		}
 	}
-	
+
+	fmt.Fprintf(fp,"\n -:: _sequence_ , %s::\n", filealias)	
 	fmt.Fprintf(fp,"\n# (end) ************\n")
 
 	// some stats
@@ -162,6 +161,18 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 		}
 	
 	fmt.Fprintf(fp,"\n#\n")
+
+
+	// add the parts' fragments
+
+	for key := range collected_fragments {
+
+		fmt.Fprintf(fp,"\n\n %s\n",key)
+		for _,s := range collected_fragments[key] {
+			fmt.Fprintf(fp,"              \" (%s) %s\n",SST.CONT_FRAG_S,s)
+		}
+
+	}
 
 	// document the parts
 
@@ -201,7 +212,11 @@ func PartName(p int,file string,context string) string {
 
 	// include ambient context in the section name
 
-	return fmt.Sprintf("part %d of %s with %s",p,file,context)
+	if len(context) > 0 {
+		return fmt.Sprintf("part %d of %s about: %s",p,file,context)
+	} else {
+		return fmt.Sprintf("part %d of %s",p,file)
+	}
 }
 
 //*******************************************************************
@@ -213,10 +228,10 @@ func SpliceSet(ctx []string) string {
 
 //*******************************************************************
 
-func AddIntentionalContext(fp *os.File,ctx []string) {
+func AddIntentionalContext(collected map[string][]string,key string,ctx []string) {
 	
 	for w := 0; w < len(ctx); w++ {
-		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.CONT_FRAG_S,ctx[w])
+		collected[key] = append(collected[key],ctx[w])
 	}
 }
 

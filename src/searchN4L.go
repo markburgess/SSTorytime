@@ -198,7 +198,7 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 
 	var nodeptrs,leftptrs,rightptrs []SST.NodePtr
 
-	if !pagenr && !sequence {
+	if (from || to) && !pagenr && !sequence {
 		leftptrs = SST.SolveNodePtrs(sst,search.From,search,arrowptrs,maxlimit)
 		rightptrs = SST.SolveNodePtrs(sst,search.To,search,arrowptrs,maxlimit)
 	}

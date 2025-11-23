@@ -306,7 +306,7 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 
 	var nodeptrs, leftptrs, rightptrs []SST.NodePtr
 
-	if !pagenr && !sequence {
+	if (from || to) && !pagenr && !sequence {
 		leftptrs = SST.SolveNodePtrs(PSST, search.From, search, arrowptrs, maxlimit)
 		rightptrs = SST.SolveNodePtrs(PSST, search.To, search, arrowptrs, maxlimit)
 	}

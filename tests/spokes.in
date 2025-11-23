@@ -1,0 +1,37 @@
+
+# any  \finding abc&def                // We can use the context
+
+# any  \arrows "have wc" \min 0,1,1,1 \max 1,1,2,4
+
+# station \finding toilet,bakery   
+
+-spokes
+
+ none
+
+ one (then) another
+
+ two (then) abc
+  "  (then) def
+ 
+ three (then) ghi
+    "  (then) jkl
+    "  (then) mno
+
+ four 1 (contains) pqr
+   "  (then)       stu
+   "  (then)       vwx
+   "  (contains)   yz
+
+ four 2 (contains) pqr
+   "  (contains)   stu
+   "  (contains)   vwx
+   "  (contains)   yz
+
+
+  seaview station
+     " (wc)   east entrance female toilet
+     " (wc)   east entrance male toilet
+     " (wc)   north entrance female toilet with changing facilities
+     " (changing)        "
+

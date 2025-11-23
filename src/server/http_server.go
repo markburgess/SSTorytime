@@ -291,7 +291,7 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 	fmt.Println("          finding:", SL(search.Finds))
 	fmt.Println("             from:", SL(search.From))
 	fmt.Println("               to:", SL(search.To))
-	fmt.Println(          "chapter:", search.Chapter)
+	fmt.Println("          chapter:", search.Chapter)
 	fmt.Println("          context:", SL(search.Context))
 	fmt.Println("           arrows:", SL(search.Arrows))
 	fmt.Println("           pageNR:", search.PageNr)

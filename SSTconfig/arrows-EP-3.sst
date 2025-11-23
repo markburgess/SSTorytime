@@ -158,6 +158,13 @@
  + is based in     (based)    - is the base of operations for (base-of)
  + is an organization in (org)     - is the home of organization (has-org)
 
+
+  :: facilities ::
+
+ + has toilets             (wc)       - provides toilets for (wc-for)
+ + has changing facilities (changing) - provides changing for (chng-for)
+
+
   :: information properties relating to web browsing ::
 
    # RESERVED + has url (url) - is a URL for (isurl)

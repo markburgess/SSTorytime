@@ -207,6 +207,7 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 
 	// SEARCH SELECTION *********************************************
 
+	fmt.Println()
 	fmt.Println("------------------------------------------------------------------")
 	fmt.Println(" Limiting to maximum of",maxlimit,"results")
 

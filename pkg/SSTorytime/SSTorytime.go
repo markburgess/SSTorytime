@@ -2157,7 +2157,7 @@ func DefineStoredFunctions(sst PoSST) {
 
 	row.Close()
 
-	// For lookup by arrow
+	// For lookup include name,chapter,context,arrow
 	
 	qstr = "CREATE OR REPLACE FUNCTION NCC_match(thisnptr NodePtr,context text[],arrows int[],sttypes int[],lm3 Link[],lm2 Link[],lm1 Link[],ln0 Link[],lp1 Link[],lp2 Link[],lp3 Link[])\n"+
 		"RETURNS boolean AS $fn$\n"+
@@ -2195,7 +2195,6 @@ func DefineStoredFunctions(sst PoSST) {
 		
 		"      FOREACH lnk IN ARRAY lnkarray LOOP\n"+
 		"         IF match_arrows(lnk.arr,arrows) AND match_context(lnk.ctx,context) THEN\n"+
-// HERE COUNT
 		"            RETURN true;\n"+
 
 		"         END IF;\n"+
@@ -5292,6 +5291,8 @@ func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,
 
 	fmt.Println("Constraint primer: \nleft",left_paths,"\n\nright",right_paths)
 
+	// There is a minimum depth to avoid finding oneself in the mirror
+
 	fmt.Println("Min-path:",mindepth)
 	fmt.Println("Max-path:",maxdepth)
 	fmt.Println("STtypes:",sttypes)
@@ -7576,7 +7577,9 @@ type SearchParameters struct {
 	Arrows   []string
 	PageNr   int
 	Range    int
-	Min      int
+	Min      []int
+	Max      []int
+	Finds    []string
 	Sequence bool
 	Stats    bool
 }
@@ -7628,15 +7631,23 @@ const (
 	CMD_LIMIT = "\\limit"
 	CMD_DEPTH = "\\depth"
 	CMD_RANGE = "\\range"
-	CMD_MIN = "\\min"
-	CMD_ATLEAST = "\\atleast"
-	CMD_GT = "\\gt"
 	CMD_DISTANCE = "\\distance"
 	CMD_STATS = "\\stats"
 	CMD_STATS_2 = "stats"
 	CMD_REMIND = "\\remind"
 	CMD_HELP = "\\help"
 	CMD_HELP_2 = "help"
+	// What to find in orbit
+	CMD_FINDS = "\\finds"
+	CMD_FINDS2 = "\\finding"
+	// bounding linear path and parallel arrows
+	CMD_GT = "\\gt"
+	CMD_LT = "\\lt"
+	CMD_MIN = "\\min"	
+	CMD_MAX = "\\max"
+	CMD_ATLEAST = "\\atleast"
+	CMD_ATMOST = "\\atmost"
+
 )
 
 //******************************************************************
@@ -7653,6 +7664,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 		CMD_CHAPTER,CMD_IN,CMD_IN_2,CMD_SECTION,CMD_CONTENTS,CMD_TOC,CMD_TOC_2,CMD_MAP,
 		CMD_ARROW,CMD_ARROWS,
 		CMD_GT,CMD_MIN,CMD_ATLEAST,
+		CMD_LT,CMD_MAX,CMD_ATMOST,
 		CMD_ON,CMD_ON_2,CMD_ABOUT,CMD_FOR,CMD_FOR_2,
 		CMD_PAGE,
 		CMD_LIMIT,CMD_RANGE,CMD_DISTANCE,CMD_DEPTH,
@@ -7814,7 +7826,24 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 					var no int = -1
 					fmt.Sscanf(cmd_parts[c][p],"%d",&no)
 					if no > 0 {
-						param.Min = no
+						param.Min = append(param.Min,no)
+					} else {
+						param = AddOrphan(param,cmd_parts[c][p-1])
+						param = AddOrphan(param,cmd_parts[c][p])
+					}
+				} else {
+					param = AddOrphan(param,cmd_parts[c][p])
+				}
+				continue
+
+			case CMD_LT,CMD_MAX,CMD_ATMOST:
+				// if followed by a number, else could be search term
+				if lenp > p+1 {
+					p++
+					var no int = -1
+					fmt.Sscanf(cmd_parts[c][p],"%d",&no)
+					if no > 0 {
+						param.Max = append(param.Max,no)
 					} else {
 						param = AddOrphan(param,cmd_parts[c][p-1])
 						param = AddOrphan(param,cmd_parts[c][p])
@@ -7977,23 +8006,68 @@ func IsParam(i,lenp int,keys []string,keywords []string) bool {
 
 func MinMaxPolicy(search SearchParameters) (int,int) {
 
+	// The min max doubles as context dependent role as
+	// i) limits on path length and ii) limits on matches arrow matches
+
 	minlimit := 1
 	maxlimit := 0
 	from := search.From != nil
 	to := search.To != nil
 
-	if search.Min > 0 {
-		minlimit = search.Min
+	// Validate
+
+	if len(search.Min) > 4 {
+		fmt.Println("\nWARNING: minimum arrow matches exceeds the number of ST-types")
 	}
+
+	if len(search.Max) > 4 {
+		fmt.Println("\nWARNING: maximum arrow matches exceeds the number of ST-types")
+	}
+
+	if len(search.Min) != 4 && len(search.Max) != 4 {
+
+		// Only "abusing" the min max for linear path length or search depth
+
+		if search.Min[0] > search.Max[0] {
+			fmt.Println("\nWARNING: minimum arrow limit greater than maximum limit!")
+			fmt.Println("Depth/range:","min =",search.Min[0],", max =",search.Max[0])
+		}
+
+		if len(search.Min) == 1 {
+			minlimit = search.Min[0]
+		}
+		
+		if len(search.Max) == 1 && search.Range > 0 {
+			fmt.Println("\nWARNING: conflict between \\depth,\\range and \\max,\\lt,\\atmost ")
+		}
+	} else {
+		// Full ST-type arrow match limits
+
+		for i := 0; i < 4; i++ {
+			if search.Min[i] > search.Max[i] {
+				fmt.Println("\nWARNING: minimum arrow limit greater than maximum limit!")
+				fmt.Println("ST-type:",i,"min =",search.Min[i],", max =",search.Max[i])
+			}
+		}
+	}
+
+	// Defaults
 
 	if search.Chapter == "TableOfContents" {
 
 		// We want to see all contents
 		maxlimit = 50
 
-	} else 	if search.Range > 0 {
+	} else if search.Range > 0 {
+
 		maxlimit = search.Range
+
+	} else if len(search.Max) == 1 {  // if only one, we probably meant Range
+
+		maxlimit = search.Max[0]
+
 	} else {
+
 		if from || to || search.Sequence {
 			maxlimit = 30 // many paths make hard work
 		} else {

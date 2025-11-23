@@ -19,7 +19,6 @@ import (
 	"sort"
 	"strings"
 	"syscall"
-	"text/tabwriter"
 	"time"
 	"flag"
 
@@ -288,20 +287,18 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 	minlimit,maxlimit := SST.MinMaxPolicy(search)
 
 	fmt.Println()
-	tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.AlignRight)
-	fmt.Fprintln(tabWriter, "start set:\t", SL(search.Name))
-	fmt.Fprintln(tabWriter, "from:\t", SL(search.From))
-	fmt.Fprintln(tabWriter, "to:\t", SL(search.To))
-	fmt.Fprintln(tabWriter, "chapter:\t", search.Chapter)
-	fmt.Fprintln(tabWriter, "context:\t", SL(search.Context))
-	fmt.Fprintln(tabWriter, "arrows:\t", SL(search.Arrows))
-	fmt.Fprintln(tabWriter, "pageNR:\t", search.PageNr)
-	fmt.Fprintln(tabWriter, "sequence/story:\t", search.Sequence)
-	fmt.Fprintln(tabWriter, "limit/range/depth:\t", maxlimit)
-	fmt.Fprintln(tabWriter, "at least/minimum:\t", minlimit)
-	fmt.Fprintln(tabWriter, "show stats:\t", search.Stats)
-
-	tabWriter.Flush()
+	fmt.Println("        start set:\t", SL(search.Name))
+	fmt.Println("          finding:\t", SL(search.Finds))
+	fmt.Println("             from:\t", SL(search.From))
+	fmt.Println("               to:\t", SL(search.To))
+	fmt.Println(          "chapter:\t", search.Chapter)
+	fmt.Println("          context:\t", SL(search.Context))
+	fmt.Println("           arrows:\t", SL(search.Arrows))
+	fmt.Println("           pageNR:\t", search.PageNr)
+	fmt.Println("   sequence/story:\t", search.Sequence)
+	fmt.Println("limit/range/depth:\t", maxlimit)
+	fmt.Println(" at least/minimum:\t", minlimit)
+	fmt.Println("       show stats:\t", search.Stats)
 	fmt.Println()
 
 	var nodeptrs, leftptrs, rightptrs []SST.NodePtr

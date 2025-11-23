@@ -496,7 +496,7 @@ for (let head_nptr of obj.Content)
       for (let centrality of head_nptr.BTWC)
          {
          let li = document.createElement("li");
-         li.textContent = centrality;
+         li.textContent = centrality.slice(0,40)+". . .";
          lst1.appendChild(li);
          }
 
@@ -515,7 +515,7 @@ for (let head_nptr of obj.Content)
          for (let snode of head_nptr.SuperNodes)
             {
             let li = document.createElement("li");
-            li.textContent = '"'+snode+'",';
+            li.textContent = '"'+ snode.slice(0,40) + ". . ." +'",';
             lst2.appendChild(li);
             }
 	 }

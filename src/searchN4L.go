@@ -165,6 +165,7 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 	if VERBOSE {
 		fmt.Println("Your starting expression generated this set: ",line,"\n")
 		fmt.Println(" - start set:",SL(search.Name))
+		fmt.Println(" -   finding:",SL(search.Finds))
 		fmt.Println(" -      from:",SL(search.From))
 		fmt.Println(" -        to:",SL(search.To))
 		fmt.Println(" -   chapter:",search.Chapter)

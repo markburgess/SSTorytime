@@ -7639,7 +7639,7 @@ const (
 	CMD_HELP_2 = "help"
 	// What to find in orbit
 	CMD_FINDS = "\\finds"
-	CMD_FINDS2 = "\\finding"
+	CMD_FINDING = "\\finding"
 	// bounding linear path and parallel arrows
 	CMD_GT = "\\gt"
 	CMD_LT = "\\lt"
@@ -7671,6 +7671,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 		CMD_STATS,CMD_STATS_2,
 		CMD_REMIND,
 		CMD_HELP,CMD_HELP_2,
+		CMD_FINDS,CMD_FINDING,
         }
 	
 	// parentheses are reserved for unaccenting
@@ -7953,6 +7954,20 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 					}
 				} else {
 					param = AddOrphan(param,cmd_parts[c][p])
+				}
+				continue
+
+			case CMD_FINDS,CMD_FINDING:
+
+				for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
+					p++
+					ult := SplitQuotes(cmd_parts[c][pp])
+					for u := range ult {
+						if ult[u] == "any" {
+							ult[u] = "%%"
+						}
+						param.Finds = append(param.Finds,DeQ(ult[u]))
+					}
 				}
 				continue
 

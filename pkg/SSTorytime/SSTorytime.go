@@ -2195,7 +2195,9 @@ func DefineStoredFunctions(sst PoSST) {
 		
 		"      FOREACH lnk IN ARRAY lnkarray LOOP\n"+
 		"         IF match_arrows(lnk.arr,arrows) AND match_context(lnk.ctx,context) THEN\n"+
+// HERE COUNT
 		"            RETURN true;\n"+
+
 		"         END IF;\n"+
 		"      END LOOP;\n"+
 		"   END LOOP;\n"+

@@ -162,22 +162,6 @@ func GetArgs() []string {
 
 func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 
-	if VERBOSE {
-		fmt.Println("Your starting expression generated this set: ",line,"\n")
-		fmt.Println(" - start set:",SL(search.Name))
-		fmt.Println(" -   finding:",SL(search.Finds))
-		fmt.Println(" -      from:",SL(search.From))
-		fmt.Println(" -        to:",SL(search.To))
-		fmt.Println(" -   chapter:",search.Chapter)
-		fmt.Println(" -   context:",SL(search.Context))
-		fmt.Println(" -    arrows:",SL(search.Arrows))
-		fmt.Println(" -    pagenr:",search.PageNr)
-		fmt.Println(" - sequence/story:",search.Sequence)
-		fmt.Println(" - limit/range/depth:",search.Range)
-		fmt.Println(" - at least/minimum:\t",search.Min)
-		fmt.Println()
-	}
-
 	// OPTIONS *********************************************
 
 	name := search.Name != nil
@@ -196,6 +180,23 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 	sttypes := sttype != nil
 
 	minlimit,maxlimit := SST.MinMaxPolicy(search)
+
+	if VERBOSE {
+		fmt.Println("Your starting expression generated this set: ",line,"\n")
+		fmt.Println(" -         start set:",SL(search.Name))
+		fmt.Println(" -           finding:",SL(search.Finds))
+		fmt.Println(" -              from:",SL(search.From))
+		fmt.Println(" -                to:",SL(search.To))
+		fmt.Println(" -           chapter:",search.Chapter)
+		fmt.Println(" -           context:",SL(search.Context))
+		fmt.Println(" -            arrows:",SL(search.Arrows))
+		fmt.Println(" -            pagenr:",search.PageNr)
+		fmt.Println(" -    sequence/story:",search.Sequence)
+		fmt.Println(" - limit/range/depth:",maxlimit)
+		fmt.Println(" -  at least/minimum:",minlimit)
+		fmt.Println()
+	}
+
 
 	var nodeptrs,leftptrs,rightptrs []SST.NodePtr
 
@@ -728,5 +729,3 @@ func ShowTime(sst SST.PoSST,search SST.SearchParameters) {
 	SST.ShowContext(ambient,now_ctx,key)
 
 }
-
-

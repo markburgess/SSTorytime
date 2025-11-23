@@ -8043,16 +8043,17 @@ func MinMaxPolicy(search SearchParameters) (int,int) {
 
 		// Only "abusing" the min max for linear path length or search depth
 
-		if search.Min[0] > search.Max[0] {
-			fmt.Println("\nWARNING: minimum arrow limit greater than maximum limit!")
-			fmt.Println("Depth/range:","min =",search.Min[0],", max =",search.Max[0])
-		}
-
-		if len(search.Min) == 1 {
-			minlimit = search.Min[0]
-		}
-		
-		if len(search.Max) == 1 && search.Range > 0 {
+		if len(search.Min) > 0 && len(search.Max) > 0 {
+			if search.Min[0] > search.Max[0] {
+				fmt.Println("\nWARNING: minimum arrow limit greater than maximum limit!")
+				fmt.Println("Depth/range:","min =",search.Min[0],", max =",search.Max[0])
+			}
+			
+			if len(search.Min) == 1 {
+				minlimit = search.Min[0]
+			}
+			
+		} else if len(search.Max) == 1 && search.Range > 0 {
 			fmt.Println("\nWARNING: conflict between \\depth,\\range and \\max,\\lt,\\atmost ")
 		}
 	} else {

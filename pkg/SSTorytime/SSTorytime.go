@@ -5289,14 +5289,6 @@ func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,
 	left_paths,Lnum = GetConstraintConePathsAsLinks(sst,start_set,ldepth,chapter,context,arrowptrs,sttypes,maxdepth)
 	right_paths,Rnum = GetConstraintConePathsAsLinks(sst,end_set,rdepth,chapter,context,adj_arrowptrs,adj_sttypes,maxdepth)
 
-	fmt.Println("Constraint primer: \nleft",left_paths,"\n\nright",right_paths)
-
-	// There is a minimum depth to avoid finding oneself in the mirror
-
-	fmt.Println("Min-path:",mindepth)
-	fmt.Println("Max-path:",maxdepth)
-	fmt.Println("STtypes:",sttypes)
-
 	// Expand waves
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {

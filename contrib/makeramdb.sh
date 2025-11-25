@@ -7,27 +7,28 @@ echo "TRY TO CONFIGURE database with a GNU/Linux ram disk"
 echo ""
 
 if /usr/bin/id postgres > /dev/null; then
- sudo chown postgres:postgres /mnt/pg_ram
- echo Stopping existing postgres
- sudo systemctl stop postgresql
- echo ""
- echo initialize database
+    PG_BINDIR=$(pg_config --bindir)
+    sudo chown postgres:postgres /mnt/pg_ram
+    echo Stopping existing postgres
+    sudo systemctl stop postgresql
+    echo ""
+    echo initialize database
 
- if [ -f /mnt/pg_ram/pgdata ]; then
-    echo The database /mnt/pg_ram/pgdata already exists, remove and try again?
-    exit 1
- else
-    if sudo su postgres -c "/usr/lib/postgresql17/bin/initdb -D /mnt/pg_ram/pgdata" > /dev/null; then
-       echo done
+    if [ -f /mnt/pg_ram/pgdata ]; then
+        echo The database /mnt/pg_ram/pgdata already exists, remove and try again?
+        exit 1
     else
-       echo ""
-       echo "Looks like postgres is already running"
+        if sudo su postgres -c "${PG_BINDIR}/initdb -D /mnt/pg_ram/pgdata" > /dev/null; then
+            echo done
+        else
+            echo ""
+            echo "Looks like postgres is already running"
+        fi
     fi
- fi
 
- echo restarting postgres
- sudo su postgres -c "/usr/lib/postgresql17/bin/pg_ctl -D /mnt/pg_ram/pgdata stop"
- sudo su postgres -c "/usr/lib/postgresql17/bin/pg_ctl -D /mnt/pg_ram/pgdata -l /mnt/pg_ram/logfile start"
+    echo restarting postgres
+    sudo su postgres -c "${PG_BINDIR}/pg_ctl -D /mnt/pg_ram/pgdata stop"
+ sudo su postgres -c "${PG_BINDIR}/pg_ctl -D /mnt/pg_ram/pgdata -l /mnt/pg_ram/logfile start"
  echo ""
  echo -n "Ramdisk: "
  mount | grep /mnt/pg_ram

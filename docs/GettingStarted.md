@@ -8,7 +8,12 @@ the programs by following these destructions below. You can get started with or 
 * Postgres
 * Docker (optional, e.g. Docker desktop)
 
-Once you've compiled and the database is running, you can upload the example data to play with:
+First compile the software. From the project root, run:
+
+<pre>
+$ make
+<pre>
+Next, setup the PostgreSQL database:
 <pre>
 $ make db
 </pre>
@@ -16,8 +21,7 @@ or (the preferred option for Linux):
 <pre>
 $ make ramdb
 </pre>
-If this succeeds (the scripts are not exhaustive), then you can begin to try out some example data.
-The default options should get you started:
+Now that you've compiled and the database is running, you can upload the example data to play with:
 <pre>
 $ cd examples/
 $ make

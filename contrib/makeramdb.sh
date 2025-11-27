@@ -7,7 +7,7 @@ echo "TRY TO CONFIGURE database with a GNU/Linux ram disk"
 echo ""
 
 if /usr/bin/id postgres > /dev/null; then
-    PG_BINDIR=$(pg_config --bindir)
+    PG_BINDIR=/usr/bin
     sudo chown postgres:postgres /mnt/pg_ram
     echo Stopping existing postgres
     sudo systemctl stop postgresql

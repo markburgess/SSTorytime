@@ -24,6 +24,47 @@ usage:
 
 This is enough. Now make notes!
 
+<pre>
+
+-some notes
+
+  # basic sequence
+
+  You put your left leg in (then) you put your left leg out (then) you do the hokey cokey and you turn about
+
+  # We can add a note
+
+  $PREV.3 (note) In the US, they say hokey pokey, not hokey cokey
+
+  :: instructions , destructions ::
+
+
+  +:: _sequence_ ::   # short cut to using (then)
+  
+You put ONE HAND in    (e.g.) like Napoleon
+One hand out           (e.g.) like Oliver Twist
+In, out, in out, shake it all about
+You do the Hokey Cokey
+And you turn around
+That’s what it’s all about.
+
+Whoa-o the Hokey Cokey  (note) how does this change in America?
+Whoa-o the Hokey Cokey
+Whoa-o the Hokey Cokey
+Knees bend, arms stretch rah, rah, rah!  (tbd) this is a kind of yoga for hokey people
+
+  -:: _sequence_ ::  # end auto (then)
+
+Hokey Cokey (see also) Hokey Pokey
+
+</pre>
+
+Then searching try it:
+
+<pre>
+\notes "some notes"
+</pre>
+
 ## Editing your own arrows
 
 To create new arrows, you go to the `SST-config/` sub-directory, either in your current directory

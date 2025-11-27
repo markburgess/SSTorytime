@@ -19,7 +19,7 @@
  + is a group of      (grp-of)   - is an element of    (in-grp)
  + is a herd of       (herd)     - is part of herd     (in-herd)
  + is a tribe of      (tribe)    - is part of tribe    (in-tribe)
- + is a region of     (region)   - is within region    (within)
+ + is a region of     (region)   - is within region    (in-region)
  + is an interval of  (interval) - is part of interval (in-intvl)
 
  + species has member (smember)  -  belongs to species (sbelongs)

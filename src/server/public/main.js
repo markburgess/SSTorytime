@@ -431,7 +431,7 @@ for (let node_event of obj.Content)
    ShowNodeEvent(panel, node_event, separates, "all", "", "h4");
 
    last_node_event = node_event; // don't link up
-   PlotGraphics(node_event, last_node_event);
+   PlotGraphics(node_event, last_node_event, obj.Content.length);
    }
 }
 
@@ -559,7 +559,7 @@ for (let story of obj.Content)
       }
 
    ShowSequenceItem(panel, story, counter, "fwd", "then", "span");
-   PlotGraphics(story, laststory);
+   PlotGraphics(story, laststory, obj.Content.length);
    laststory = story; // link up
 
    counter++;
@@ -1374,6 +1374,7 @@ for (let line = 0; line < array.length; line++)
          arrow_link.style.fontFamily = "Verdana";
 
          subline.appendChild(arrow_link);
+
          } // if not i % 2 = arrow
       } // for each item i
    } // for each line
@@ -2084,7 +2085,7 @@ return hsl;
 
 /***********************************************************/
 
-function PlotGraphics(event, lastevent)
+function PlotGraphics(event, lastevent, number)
 {
 let tx = event.XYZ.X;
 let ty = event.XYZ.Y;
@@ -2092,6 +2093,9 @@ let tz = event.XYZ.Z;
 
 Event(tx, ty, tz);
 Label(tx, ty, tz, event.Text.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
+
+// if the display is uncluttered, we can print all the labels
+let showtext = (number < 10);
 
 if (lastevent != event)
    {
@@ -2110,6 +2114,10 @@ if (event.Orbits[Il1] != null)
       {
       Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
       LeadsTo(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+      if (showtext)
+	{
+        Label(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.Text.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
+        }
       }
    }
 
@@ -2119,6 +2127,10 @@ if (event.Orbits[Im1] != null)
       {
       Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
       LeadsTo(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
+      if (showtext)
+	{
+        Label(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.Text.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
+        }
       }
    }
 
@@ -2128,6 +2140,10 @@ if (event.Orbits[Ic2] != null)
       {
       Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
       Contains(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+      if (showtext)
+	{
+        Label(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.Text.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
+        }
       }
    }
 
@@ -2137,6 +2153,10 @@ if (event.Orbits[Im2] != null)
       {
       Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
       Contains(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
+      if (showtext)
+	{
+        Label(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.Text.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
+        }
       }
    }
 
@@ -2146,6 +2166,10 @@ if (event.Orbits[Ie3] != null)
       {
       Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
       Expresses(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+      if (showtext)
+	{
+        Label(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.Text.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
+        }
       }
    }
 
@@ -2155,6 +2179,10 @@ if (event.Orbits[Im3] != null)
       {
       Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
       Expresses(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
+      if (showtext)
+	{
+        Label(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.Text.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
+        }
       }
    }
 
@@ -2164,6 +2192,10 @@ if (event.Orbits[In0] != null)
       {
       Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
       Near(ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z, ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+      if (showtext)
+	{
+        Label(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.Text.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
+        }
       }
    }
 }

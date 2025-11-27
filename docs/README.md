@@ -18,6 +18,7 @@
 * [A Quickstart Tutorial](Tutorial.md)
 * [Examples to try](search_examples.md)  
 * [Creating Knowables: Getting Started Writing Notes In N4L](N4L.md)
+* [How to use arrows](arrows.md)
 * [A Case Study Example](example.md)
 * [More Generally About The Idea](KnowledgeAndLearning.md)
 * [Building A Knowledge Graph of a Music Collection: A case study in building Knowledge Graphs from Data Structures](https://medium.com/@mark-burgess-oslo-mb/building-a-knowledge-graph-of-a-music-collection-81c9a9ea1b8b)

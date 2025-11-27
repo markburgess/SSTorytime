@@ -1,0 +1,10 @@
+
+-context checking
+
+ :: first context ::
+
+  test string (next) alt 1
+
+ :: second context ::
+
+  test string (next) alt 2

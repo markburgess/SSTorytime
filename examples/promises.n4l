@@ -1,0 +1,28 @@
+
+- Promise Theory
+
+  :: basics ::
+
+ A theory of agents that declare their intentions as set-valued specification called promises.
+
+ Agents are autonomous: an agent can only make promises about its own behaviour.
+
+ "An agent is written \( A_i \)"
+
+ "Several agents are written \( \lbrack A_i \rbrack  \)"
+
+ "A promise is written: \[ A_i \promise{\pm b}  A_j \] i.e. An agent \( A_i \) makes a promise with content/body \( b\) to another \( A_j\), where \( i,j\) are integer labels."
+
+  "Promise bodies have signs, e.g. \(+b\) or \(-b\). A plus sign indicates an offer, a minus sign indicates an promise to accept."
+
+ "A promise binding with both plus and minus promises is needed to promise a transfer of intent: \[  
+   \begin{aligned}  
+    A_i &\promise{+b}  A_j\\ 
+    A_j &\promise{-b'} A_i\\  
+   \end{aligned} \] This results in a transmitted intention \( b \cap b' \)"
+
+ Impositions are uninvited attempts to induce an agent into promising a behaviour, i.e. according to the imposed body. Like throwing someone a ball uninvited. Impositions are generally ineffective at making agents behave as desired. An imposition is written:  \[  A_i \imposition{\pm b}  A_j  \] with an arrow looking like a "fist".
+
+ "A scoped promise has an extra argument \[ A_i \scopepromise{\pm b}{\sigma}  A_j \] where \(\sigma\) is the set-valued scope, i.e. the set of agents that are able to observe the promise."
+
+

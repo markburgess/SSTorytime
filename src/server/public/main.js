@@ -34,6 +34,21 @@ MathJax = {
 		preFilters: [], // A list of pre-filters to add to the output jax
 		postFilters: [], // A list of post-filters to add to the output jax
 	},
+
+  loader: {load: ['[tex]/ams']},
+
+  tex: {
+
+    packages: {'[+]': ['ams']},
+
+    macros: {
+      RR: "{\\bf R}",
+      bold: ["{\\bf #1}", 1],
+      promise: ["{\\xrightarrow{#1}}", 1],
+      imposition: ["{\\stackrel{#1}{\\;\\vcenter{\\hbox{\\rule{8mm}{0.5mm}}} \\vcenter{\\hbox{\\rule{3.0mm}{2.9mm}}}\\;}}",1],
+      scopepromise: ["\\xrightarrow[#2]{#1}",2],
+    }
+  }
 };
 
 // *****************************************************
@@ -1084,7 +1099,7 @@ for (let path = 0; path < array.length; path++)
             nclass = array[path][i].NPtr.Class;
             }
 
-         if (str.includes("\n"))
+         if (str.includes("\n") && !IsMath(str))
             {
             let text_link = document.createElement("a");
             text_link.onclick = function ()
@@ -1320,7 +1335,7 @@ for (let line = 0; line < array.length; line++)
         // Subsequent items on same line inside a card
         // if pre-formatted
 
-         if (str.includes("\n"))
+         if (str.includes("\n") && !IsMath(str))
             {
             let text_link = document.createElement("a");
             text_link.onclick = function ()
@@ -1406,7 +1421,7 @@ if (counter == 0)
 
  // ** BEGIN 1: Here we print the full text for column_1of3 either as pre or p
 
-if (text.includes("\n"))
+if (text.includes("\n") && !IsMath(event.Text))
    {
    let from_link = document.createElement("a");
    from_link.onclick = function ()
@@ -1435,20 +1450,13 @@ else
    from_link.appendChild(from_text);
    child.appendChild(from_link);
 
-   if (!IsMath(event.Text))
-      {
-      // Insert a card overview title summary (blue)
-      from_text.textContent = event.Text.slice(0, 70) + "...";
+   // Insert a card overview title summary (blue)
+   from_text.textContent = event.Text.slice(0, 70) + "...";
 
-      let small_tot_text = document.createElement("div");
-      small_tot_text.textContent = text;
-      small_tot_text.id = "orbital-full-text";
-      child.appendChild(small_tot_text);
-      }
-   else
-      {
-      from_text.textContent = text; // event.Text;
-      }
+   let small_tot_text = document.createElement("div");
+   small_tot_text.textContent = text;
+   small_tot_text.id = "orbital-full-text";
+   child.appendChild(small_tot_text);
    }
 
 if (counter == 0)
@@ -1461,7 +1469,7 @@ if (counter == 0)
    setting.appendChild(text1);
 
    let chplink = document.createElement("a");
-   chplink.textContent = '"' + Quote(event.Chap) + '"';
+   chplink.textContent = Quote(event.Chap);
    chplink.onclick = function ()
       {
       sendLinkSearch('any \\chapter ' + Quote(event.Chap));
@@ -1532,7 +1540,8 @@ let text = counter + ". " + event.Text;
 let nptrtxt = "(" + event.NPtr.Class + "," + event.NPtr.CPtr + ")";
 
 // ** BEGIN 1: Here we print the full text for column_1of3 either as pre or p
-if (text.includes("\n"))
+
+if (text.includes("\n") && !IsMath(text))
    {
    let from_link = document.createElement("a");
    from_link.onclick = function ()
@@ -1754,6 +1763,11 @@ return false;
 function IsMath(str)
 {
 if (str.includes("\\(") && str.includes("\\)"))
+   {
+   return true;
+   }
+
+if (str.includes("\\[") && str.includes("\\]"))
    {
    return true;
    }

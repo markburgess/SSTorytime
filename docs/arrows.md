@@ -80,9 +80,9 @@ You do the Hokey Cokey
 And you turn around
 That’s what it’s all about.
 
-Whoa-o the Hokey Cokey  (note) how does this change in America?
-Whoa-o the Hokey Cokey
-Whoa-o the Hokey Cokey
+Whoa-o the Hokey Cokey [1st]  (note) how does this change in America? Nothing to do with Cola.
+Whoa-o the Hokey Cokey [2nd]
+Whoa-o the Hokey Cokey [3rd]
 Knees bend, arms stretch rah, rah, rah!  (tbd) this is a kind of yoga for hokey people
 
   -:: _sequence_ ::  # end auto (then)

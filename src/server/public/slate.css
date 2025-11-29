@@ -328,7 +328,7 @@ img {
 }
 
 .NCM-N {
-  color: blue;
+  color: var(--green-2);  // --> math colour
 }
 
 #cntxt {

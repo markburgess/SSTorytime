@@ -322,7 +322,7 @@ img {
 
 
 .NCM-N {
-  color: blue;
+  color: var(--green-9);  // --> math colour
 }
 
 #cntxt {
@@ -422,10 +422,15 @@ img {
   display: none;
 }
 
-mjx-container[display] {
+*)mjx-container[display] {
   text-align: start !important;
   text-indent: 2ch;
+   color: red;
 }
+
+/*mjx-container, mjx-mo,mjx-mfrac,mjx-mtext,mjx-mi,mjx-mn {
+    color: red;
+}*/
 
 .hipnosis {
   position: absolute;

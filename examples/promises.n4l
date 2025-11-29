@@ -9,7 +9,7 @@
 
  "An agent is written \( A_i \)"
 
- "Several agents are written \( \lbrack A_i \rbrack  \)"
+ "Several agents are written \( \lbrace A_i \rbrace  \)"
 
  "A promise is written: \[ A_i \promise{\pm b}  A_j \] i.e. An agent \( A_i \) makes a promise with content/body \( b\) to another \( A_j\), where \( i,j\) are integer labels."
 

@@ -7,12 +7,21 @@ echo "TRY TO CONFIGURE database with a GNU/Linux ram disk"
 echo ""
 
 if /usr/bin/id postgres > /dev/null; then
+
     # Try to get the path from pg_config; mute errors if not found
     PG_BINDIR=$(pg_config --bindir 2>/dev/null)
 
     # If PG_BINDIR is empty (pg_config failed), default to /usr/bin
     if [ -z "$PG_BINDIR" ]; then
-        PG_BINDIR="/usr/bin"
+       look_ps=/$(ps waux | grep -E "[p]ostgres.*/.*postgres" | cut -d/ -f2- | awk '{sub(/bin.*/, ""); print}')
+
+       if [ -z "$look_ps" ]; then
+          echo Looking for postgres in /usr/bin
+          PG_BINDIR="/usr/bin"
+       else
+          echo Found postgres dir ${look_ps}bin
+          PG_BINDIR=${look_ps}bin
+       fi
     fi
 
     sudo chown postgres:postgres /mnt/pg_ram

@@ -9,12 +9,29 @@ So it's better to write this:
 <pre>
 
   I saw three ships (blah) it's a song we used to sing
-        "           (something) christmas party
+        "           (something) primary school song
         "           (tbd) get the lyrics 
 </pre>
 than to stop and try to write a perfect documentation, with correct labels.
 Later, when you look at it again, you can start changing "blah", "something", and "tbd"
 into more useful arrow names that will mean something when you want to search for them later.
+
+For example, you might want to change this to:
+<pre>
+  I saw three ships (blah) it's a song we used to sing
+        "           (first heard) in primary school
+        "           (wiki) "https://en.wikipedia.org/wiki/I_Saw_Three_Ships"
+        "           (has lyrics) "I saw three ships come sailing in
+On Christmas day, on Christmas day
+I saw three ships come sailing in
+On Christmas day in the morning
+And what was in those ships, all three
+On Christmas day, on Christmas day?
+And what was in those ships, all three
+On Christmas day in the morning?
+..."
+
+</pre>
 
 ## Starting with a few ...
 

@@ -4,6 +4,19 @@
 Getting to grips with notes can feel like a challenge, so don't try to do too much.
 It's a simple knowledge management lesson: start with fundamentals and turn them into habits,
 then you can build on that.
+The important thing is to write things down quickly, before you forget or lose the will.
+So it's better to write this:
+<pre>
+
+  I saw three ships (blah) it's a song we used to sing
+        "           (something) christmas party
+        "           (tbd) get the lyrics 
+</pre>
+than to stop and try to write a perfect documentation, with correct labels.
+Later, when you look at it again, you can start changing "blah", "something", and "tbd"
+into more useful arrow names that will mean something when you want to search for them later.
+
+## Starting with a few ...
 
 Try starting with these basic arrows:
 

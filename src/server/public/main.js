@@ -35,15 +35,13 @@ MathJax = {
 		postFilters: [], // A list of post-filters to add to the output jax
 	},
 
-  loader: {load: ['[tex]/ams']},
+	loader: { load: ['[tex]/ams'], load: ['[tex]/color'] },
 
   tex: {
 
-    packages: {'[+]': ['ams']},
+  packages: {'[+]': ['ams'], '[+]': ['color']},
 
     macros: {
-      RR: "{\\bf R}",
-      bold: ["{\\bf #1}", 1],
       promise: ["{\\xrightarrow{#1}}", 1],
       imposition: ["{\\stackrel{#1}{\\;\\vcenter{\\hbox{\\rule{8mm}{0.5mm}}} \\vcenter{\\hbox{\\rule{3.0mm}{2.9mm}}}\\;}}",1],
       scopepromise: ["\\xrightarrow[#2]{#1}",2],
@@ -433,7 +431,7 @@ DrawGrid(0, 0, 1);
 
 const separates = 0;
 
-if (obj.Content.length == 0)
+if (obj.Content == null || obj.Content.length == 0)
    {
    panel.textContent = "No result";
    return;

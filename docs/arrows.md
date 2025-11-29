@@ -16,9 +16,9 @@ than to stop and try to write a perfect documentation, with correct labels.
 Later, when you look at it again, you can start changing "blah", "something", and "tbd"
 into more useful arrow names that will mean something when you want to search for them later.
 
-For example, you might want to change this to:
+For example, later when you are calm, you might want to change this to something like this:
 <pre>
-  I saw three ships (blah) it's a song we used to sing
+  I saw three ships (note) it's a song we used to sing
         "           (first heard) in primary school
         "           (wiki) "https://en.wikipedia.org/wiki/I_Saw_Three_Ships"
         "           (has lyrics) "I saw three ships come sailing in
@@ -32,6 +32,8 @@ On Christmas day in the morning?
 ..."
 
 </pre>
+To do that, you would have to define the arrows in parentheses. But you can also 
+get quite far with just a few that are already defined.
 
 ## Starting with a few ...
 

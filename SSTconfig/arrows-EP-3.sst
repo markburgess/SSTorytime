@@ -70,6 +70,9 @@
 
    + has condition           (cond)    - is the condition of (cond-of)
    + has an attribute        (attr)    - is an attribute of  (attr-of)
+   + has colour              (colour)  - is the colour of    (colour-of)
+   + requires payment of     (cost)    - is the cost of      (cost-of)
+   + action to take          (do)      - when arriving at    (do-at)
 
  :: long term, persistent properties ::
 

@@ -1,0 +1,33 @@
+
+- extensive decision tree for a game
+
+  :: objects ::
+
+  axe
+  key
+  wand
+
+  :: forest ::
+
+@r0   You are standing in a forest. There are exits North, South, and East.
+@r1   You are in the forest. There is an exit South.
+@r2   You are in the forest next to a tree. There are exits East and West.
+@r3   You are in the forest by the babbling brook. There is an exit North.
+
+  :: castle ::
+
+@r99  Congratulations. You are in the castle treasure room. There is an exit West.
+
+   :: map, directions ::
+
+  $r0.1
+        " (go north) $r1.1
+        " (go south) $r3.1
+        " (go east)  $r2.1 (go east) $r99.1
+
+
+   #
+   # To do, place moveable objects.... and dynamic states
+   # 
+
+

@@ -22,8 +22,14 @@
   + succeeded by         (succ2)     - preceded by          (pre-by)
   + comes before         (bfr)       - comes after          (after)
   + supplies             (suppl)     - has been supplied by (suppl-by)
-
   + evolved to           (evolve)    - evolved from         (evolve-fr)
+
+    :: games ::
+
+  + go north (north)              - go south (south)
+  + go east (east)                - go west (west)
+  + pick up object (take)         - drop object (drop)
+  + release if sentence (release) - NO ENTRY (noentry)
 
     :: conditional transitions :: 
 

@@ -1,0 +1,151 @@
+
+-Monopoly UK edition
+
+ :: board locations, rat race, _sequence_ ::
+
+  Monopoly (url) "https://en.wikipedia.org/wiki/Monopoly_(game)"
+
+     "     (img) "https://ih1.redbubble.net/image.974302134.9132/flat,750x,075,f-pad,750x1000,f8f8f8.jpg"
+
+     "     (note) This covers the UK version of the game. 
+
+@start  GO! Collect £200 pounds salary as you pass.
+
+  Old Kent Road 
+       "   (cost)   £60 
+       "   (colour )purple
+
+  Community Chest #1
+       "   (do) Pick a card
+
+  Whitechapel Road
+       "   (cost)   £60 
+       "   (colour) purple
+
+  Income Tax Pay 
+       "   (cost) £200
+
+  Kings Cross Station L.N.E.R. 
+       "   (cost) £200
+
+  Angel of Islington 
+       " (colour) blue
+       " (cost) £100
+
+  Chance? #1
+       "   (do) Pick a card
+
+  Euson Road
+       " (colour) blue
+       " (cost) £100
+
+  Pentonville Road
+       " (colour) blue
+       " (cost) £120
+
+  Visiting Jail  (note) Interesting that it uses US spelling, not goal
+
+  Pall Mall 
+       " (cost)  £140
+       " (colour) pink
+
+  Electric Company
+       " (cost) £150
+
+  Whitehall
+       " (cost)  £140
+       " (colour) pink
+
+  Northumberland Avenue
+       " (cost)  £160
+       " (colour) pink
+
+  Marylebone Station L.N.E.R. 
+       " (cost) £200
+
+  Bow Street 
+       " (colour) orange
+       " (cost)   £180
+
+  Community Chest #2
+       "   (do) Pick a card
+
+  Marlborough Street
+        " (colour) orange 
+        " (cost)  £180
+
+  Vine Street
+        " (colour) orange 
+        " (cost)  £200
+
+  Free Parking
+
+  Strand
+        " (colour) red
+        " (cost)  £220
+
+  Chance? #2
+       "   (do) Pick a card
+
+  Fleet Street
+        " (colour) red
+        " (cost)  £220
+
+  Trafalgar Square
+        " (colour) red
+        " (cost)  £240
+
+  Fenchurch St Station L.N.E.R. £200
+
+  Leiscester Square yellow £260
+        " (colour) yellow
+        " (cost)  £260
+
+  Coventry Street £260 yellow
+        " (colour) yellow
+        " (cost)  £260
+
+  Water Works £150
+
+  Picadilly
+        " (colour) yellow
+        " (cost)  £280
+
+  Go to Jail
+       "   (do) Go straight to jail, do not pass GO, do not collect £200
+
+  Regent Street
+        " (colour) green
+        " (cost)  £300
+
+  Oxford Street
+        " (colour) green
+        " (cost)  £300
+
+  Community Chest #3
+       "   (do) Pick a card
+
+  Bond Street
+        " (colour) green
+        " (cost)  £320
+
+  Liverpool St Station L.N.E.R. £200
+
+  Chance? #3
+       "   (do) Pick a card
+
+  Park Lane
+        " (colour) navy
+        " (cost)  £350
+
+  Super Tax £100
+
+  Mayfair
+        " (colour) navy
+        " (cost)  £400
+
+  $start.1
+
+  -:: _sequence, miscellaneous, outside locations ::
+
+   In Jail (release) visiting

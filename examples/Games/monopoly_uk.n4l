@@ -115,6 +115,7 @@
   Go to Jail
        "   (do) Go straight to jail, do not pass GO, do not collect £200
        "   (note) Game rules say there is no path from Jail to next Regent Street, but this model is the board not the dice jumps
+       "   (then) In Jail
 
   Regent Street
         " (colour) green

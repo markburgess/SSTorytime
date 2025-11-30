@@ -15,7 +15,7 @@
        "   (cost)   £60 
        "   (colour )purple
 
-  Community Chest #1
+  "Community Chest #1"
        "   (do) Pick a card
 
   Whitechapel Road
@@ -32,7 +32,7 @@
        " (colour) blue
        " (cost) £100
 
-  Chance? #1
+  "Chance? #1"
        "   (do) Pick a card
 
   Euson Road
@@ -67,7 +67,7 @@
        " (colour) orange
        " (cost)   £180
 
-  Community Chest #2
+  "Community Chest #2"
        "   (do) Pick a card
 
   Marlborough Street
@@ -84,7 +84,7 @@
         " (colour) red
         " (cost)  £220
 
-  Chance? #2
+  "Chance? #2"
        "   (do) Pick a card
 
   Fleet Street
@@ -97,15 +97,16 @@
 
   Fenchurch St Station L.N.E.R. £200
 
-  Leiscester Square yellow £260
+  Leiscester Square
         " (colour) yellow
         " (cost)  £260
 
-  Coventry Street £260 yellow
+  Coventry Street
         " (colour) yellow
         " (cost)  £260
 
-  Water Works £150
+  Water Works 
+        " (cost) £150
 
   Picadilly
         " (colour) yellow
@@ -113,6 +114,7 @@
 
   Go to Jail
        "   (do) Go straight to jail, do not pass GO, do not collect £200
+       "   (note) Game rules say there is no path from Jail to next Regent Street, but this model is the board not the dice jumps
 
   Regent Street
         " (colour) green
@@ -122,7 +124,7 @@
         " (colour) green
         " (cost)  £300
 
-  Community Chest #3
+  "Community Chest #3"
        "   (do) Pick a card
 
   Bond Street
@@ -131,7 +133,7 @@
 
   Liverpool St Station L.N.E.R. £200
 
-  Chance? #3
+  "Chance? #3"
        "   (do) Pick a card
 
   Park Lane
@@ -146,6 +148,6 @@
 
   $start.1
 
-  -:: _sequence, miscellaneous, outside locations ::
+  -:: _sequence_, miscellaneous, outside locations ::
 
    In Jail (release) visiting

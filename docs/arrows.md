@@ -107,3 +107,31 @@ in the form:
  +  forward arrow meaning (short name) - backward arrow meaning (bwd alias)
 </pre>
 
+## Advanced arrow features
+
+The `N4L` compiler can reduce the pain of adding arrows where there are small clusters of
+arrows that form cliques.
+
+* `NEAR/SIMILAR` arrows (which do not start with ! in their short name) are completed.
+If A is NEAR B and B is NEAR C, then A is NEAR C, as long as the arrow is not a negative.
+This is computed and completed without further ado.
+
+* Arrows forming polygon sequences can be closed automatically from end to start, e.g.
+the path sequence in `chinese.n4l` from Pinyin to Hanzi to English
+<pre>
+ qǐng (ph) 请 (he) please
+</pre>
+also needs an arrow `please (ep) qǐng`, but this is a pain to add manually.
+By defining a rule in `SSTconfig/closures.sst`, this can be made automatically, by adding rules
+to complete sequences of the relevant arrows:
+<pre>
+- closures
+
+ (ph) + (he) => (ep)
+ (eh) + (hp) => (pe)
+ (he) + (ep) => (ph)
+ (pe) + (eh) => (hp)
+
+</pre>
+
+

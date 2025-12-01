@@ -123,7 +123,6 @@ $PREV.2 (note) adding past "le" can mean not anymore
 
   :: no, not, didn't, won't ::
 
-
  méi (ph) 没 (he) negative not / none / have not etc
   "  (e.g.) Wǒ méi qù    (ph) 我没去  (he) I didn't go ..
   "  (e.g.) Wǒ méi qù guò (ph) 我没去过 (he) I haven't been ..
@@ -516,7 +515,7 @@ soup (eh)  汤 (hp) tāng
 sugar (eh)  糖 (hp) táng
 porridge  (eh) 粥 (hp) zhōu
 cake  (eh) 蛋糕 (hp) dàngāo
-Fried dough sticks (ep)  yóutiáo(ph)  油条
+fried dough sticks (ep)  yóutiáo(ph)  油条
 
 garlic (eh) 大蒜 (hp) dàsuàn
 
@@ -529,7 +528,7 @@ fried rice (eh)  炒饭  (hp) chǎofàn
 dumplings (eh)  饺子  (hp) jiǎozi
 soup dumplings (eh)  小笼包 (hp) xiǎolóngbāo
 sticky rice leaf wrapped dumplings (eh)  粽子 (hp)  zòngzi
-mocha dumplings/glutinous rice balls  (eh) 汤圆  (hp) tāngyuán
+mochi dumplings/glutinous rice balls  (eh) 汤圆  (hp) tāngyuán
 
 bread(he)  面包 (hp) miànbāo
 rice (he) 米 (hp) mǐ
@@ -682,15 +681,27 @@ diǎnxīn (sl) duǎnxìn
 
 the taste (eh)  味道 (hp) wèidào
 
+
 ####################################
 
-:: eating | restaurant ::
+ :: restaurant scenario ::
 
-add  (eh) 加 (hp) Jiā
+# write the notes in order of the process, then a _sequence_
 
 fànguǎn  (ph) 饭馆  (he) restaurant
+at the restaurant (eh) 在餐厅 (hp) zài cāntīng
+zài fànguǎn lǐ (ph) 在饭馆里 (he) in the restaurant
+
+welcome  (eh) 欢迎 (hp) huānyíng
+wait (eh) 等 (hp) děng
+
+dìngfáng (ph) 订房 (he) reservation
+    "    (e.g.) wǒmen yǒu dìngfáng     (ph) 我们有订房  (he) We have a reservation
+    "    (e.g.) wǒ yào qǔxiāo dìngfáng (ph) 我要取消订房 (he) I want to cancel the reservation
 
 chīhuò (ph) 吃货 (he) foodie
+
+wǒmen xiǎng zuò zài zhèlǐ (ph) 我们想坐在这里 (he) We would like to sit here
 
 diǎn cān (ph) 点餐 (he)  order food 
    "     (e.g.) wǒ xiǎng diǎn cài (ph) 我想点菜 (he) I want to order food
@@ -699,29 +710,29 @@ càidān (ph) 菜单 (he) menu
 
    " (e.g.) wǒmen méiyǒu yīngwén càidān (ph) 我们没有英文菜单 (he) We don’t have an english menu
 
-wait (eh) 等 (hp) děng
-dìngfáng (ph) 订房 (he) reservation
-    "    (e.g.) wǒmen yǒu dìngfáng     (ph) 我们有订房  (he) We have a reservation
-    "    (e.g.) wǒ yào qǔxiāo dìngfáng (ph) 我要取消订房 (he) I want to cancel the reservation
 
 
 zuò (ph) 坐 (he) sit 
  "  (e.g.) wǒmen xiǎng zuò zài zhèlǐ (ph) 我们想坐在这里 (he) We would like to sit here
 
 
-mǎidān (ph) 买单 (he) pay the bill/bill please!
+mǎidān (ph) 买单 (he) bill please!
+
+add  (eh) 加 (hp) Jiā
+
 tip/gratuity  (eh) 小费 (hp) xiǎofèi
+
 waiter / server (eh) 服务员 (hp) fúwùyuán
 
 wǒ zěnme fù qián (ph) 我怎么付钱 (he) how do I pay?
  fù   (ph) 付 (he) pay
 
 jiézhàng (ph) 结账 (he) settle the bill
-   " (e.g.) wǒmen yīnggāi qù nǎlǐ jiézhàng  (ph) 我们应该去哪里结账 (he)  where should we go to settle the bill?
-   " (e.g.) wǒmen yīnggāi zài nǎlǐ jiézhàng (ph) 我们应该在哪里结账 (he) Where should we settle the bill
+   " (e.g.) wǒmen yīnggāi qù nǎlǐ jiézhàng  (ph) 我们应该去哪里结账 (he) where should we go to settle the bill?
+   " (e.g.) wǒmen yīnggāi zài nǎlǐ jiézhàng (ph) 我们应该在哪里结账 (he) where should we settle the bill
 
 
-shéi jiézhàng?  (ph) 谁结账 (he) Who will settle the bill?
+shéi jiézhàng?  (ph) 谁结账 (he) who will settle the bill?
 
 
 cheers  (eh) 干杯 (hp) gānbēi
@@ -764,11 +775,11 @@ fruit juice (eh) 果汁  (hp) guǒzhī
 juice       (eh) 汁   (hp)  zhī
 plate       (eh) 盘子  (hp) pánzi
 bottle      (eh) 瓶子  (hp)  píngzi
-cup         (eh) 杯子  (hp) bēizi
+cup/glass   (eh) 杯子  (hp) bēizi
 knife       (eh) 刀   (hp)  dāo
 fork        (eh)  叉  (hp)  chā
 spoon       (eh) 勺子  (hp) sháozǐ
-chopstick   (eh) 筷子 (hp)  kuàizi
+chopsticks   (eh) 筷子 (hp)  kuàizi
     "       (eh) 勺子  (hp) sháozi
 glass/of    (eh)  杯   (hp)  bēi
 
@@ -2067,7 +2078,7 @@ canteen  (eh) 食堂 (hp) shítáng
 飞机场  (hp) fēijī chǎng  (pe) airport
 机场  (hp) jī chǎng  (pe) airport
 fànguǎn  (ph) 饭馆  (he) restaurant 
-洗手间  (hp) xǐshǒujiān  (he) bathroom
+洗手间  (hp) xǐshǒujiān  (he) bathroom / washroom
 cèsuǒ  (ph) 厕所  (he) toilet
 医院  (hp) yīyuàn  (pe) hospital
 

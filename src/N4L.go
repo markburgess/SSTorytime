@@ -47,6 +47,9 @@ const (
 	ROLE_LINE_ALIAS = 8
 	ROLE_LOOKUP = 9
 
+	ROLE_COMPOSITION = 11
+	ROLE_RESULT = 12
+
 	WORD_MISTAKE_LEN = 2 // a string shorter than this is probably a mistake
 
 	WARN_NOTE_TO_SELF = "WARNING: Found a possible note to self in the text"
@@ -80,6 +83,23 @@ const (
 	ERR_SHORT_WORD="Short word, possible mistake or unquoted annotation: "
 	ERR_ILLEGAL_ANNOT_CHAR="Cannot use +/- reserved tokens for annotation"
 )
+
+//**************************************************************
+// DATA structures for input
+//**************************************************************
+
+type RCtype struct {
+
+	Row SST.NodePtr
+	Col SST.NodePtr
+}
+
+type Closure struct {
+
+	Sequence []SST.ArrowPtr
+	Result   SST.ArrowPtr
+	Sum      int
+}
 
 //**************************************************************
 
@@ -131,17 +151,9 @@ var (
 	TEST_DIAG_FILE string
 
 	RELN_BY_SST [4][]SST.ArrowPtr // From an EventItemNode
+
+	ARROW_CLOSURES []Closure
 )
-
-//**************************************************************
-// DATA structures for input
-//**************************************************************
-
-type RCtype struct {
-
-	Row SST.NodePtr
-	Col SST.NodePtr
-}
 
 //**************************************************************
 // BEGIN
@@ -189,7 +201,7 @@ func main() {
 
 	// Post process, complete NEAR cliques
 
-	CompleteNearEquilibria(sst)
+	CompleteInferences(sst)
 
 	// Outputs
 
@@ -514,8 +526,34 @@ func ClassifyConfigRole(token string) {
 
 		}
 
+	case "closures":
+
+		switch token[0] {
+
+		case '(':
+
+			if LINE_ITEM_STATE == ROLE_RESULT {
+
+				AddArrowClosure(LINE_ITEM_CACHE["THIS"],token)
+			} else {
+				LINE_ITEM_COUNTER++
+				LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
+				LINE_ITEM_STATE = ROLE_COMPOSITION
+			}
+
+		case '+',',':
+			LINE_ITEM_STATE = ROLE_COMPOSITION
+
+		case '=':
+			LINE_ITEM_STATE = ROLE_RESULT
+			
+		default:
+			ParseError(ERR_ILLEGAL_CONFIGURATION+" "+SECTION_STATE)
+			os.Exit(-1)
+		}
+
 	default:
-		ParseError(ERR_ILLEGAL_CONFIGURATION+" "+SECTION_STATE)
+		ParseError(ERR_ILLEGAL_CONFIGURATION + " " + SECTION_STATE)
 		os.Exit(-1)
 	}
 }
@@ -657,6 +695,25 @@ func ResolveAliasedItem(token string) string {
 
 //**************************************************************
 
+func AddArrowClosure(sequence []string,result string) {
+
+	var closure Closure
+
+	for _,arrow := range sequence {
+		arr := GetLinkArrowByName(arrow).Arr
+		closure.Sum += int(arr)
+		closure.Sequence = append(closure.Sequence,arr)
+	}
+
+	closure.Result = GetLinkArrowByName(result).Arr
+
+	ARROW_CLOSURES = append(ARROW_CLOSURES,closure)
+
+	PVerbose("Arrow sequences",sequence,"to be closed with cyclic",result)
+}
+
+//**************************************************************
+
 func SummarizeAndTestConfig() {
 
 	Box("Raw Summary")
@@ -673,35 +730,41 @@ func SummarizeAndTestConfig() {
 
 //**************************************************************
 
-func CompleteNearEquilibria(sst SST.PoSST) {
+func CompleteInferences(sst SST.PoSST) {
 
-	Box("Completing implicit ST-NEAR cliques.....")
+	Box("Completing node inferences and cliques.....")
 
 	for class := SST.N1GRAM; class <= SST.GT1024; class++ {
 		switch class {
 		case SST.N1GRAM:
 			for _,node := range SST.NODE_DIRECTORY.N1directory {
 				CompleteCloseness(sst,node)
+				CompleteSequences(sst,node)
 			}
 		case SST.N2GRAM:
 			for _,node := range SST.NODE_DIRECTORY.N2directory {
 				CompleteCloseness(sst,node)
+				CompleteSequences(sst,node)
 			}
 		case SST.N3GRAM:
 			for _,node := range SST.NODE_DIRECTORY.N3directory {
 				CompleteCloseness(sst,node)
+				CompleteSequences(sst,node)
 			}
 		case SST.LT128:
 			for _,node := range SST.NODE_DIRECTORY.LT128 {
 				CompleteCloseness(sst,node)
+				CompleteSequences(sst,node)
 			}
 		case SST.LT1024:
 			for _,node := range SST.NODE_DIRECTORY.LT1024 {
 				CompleteCloseness(sst,node)
+				CompleteSequences(sst,node)
 			}
 		case SST.GT1024:
 			for _,node := range SST.NODE_DIRECTORY.GT1024 {
 				CompleteCloseness(sst,node)
+				CompleteSequences(sst,node)
 			}
 		}
 	}
@@ -760,6 +823,31 @@ func CompleteCloseness(sst SST.PoSST,node SST.Node) {
 					}
 				}
 			}
+		}
+	}
+}
+
+//**************************************************************
+
+func CompleteSequences(sst SST.PoSST,node SST.Node) {
+
+	for _,cl := range ARROW_CLOSURES {
+
+		nptr,found := GetNodePointedTo(node,cl.Sequence)
+
+		if found {
+			// Link nptr to node.NPtr with cl.Result arrow
+
+			t2 := node.S
+			t1 := SST.GetNodeTxtFromPtr(nptr)
+
+			var link SST.Link
+			link.Arr = cl.Result
+			arrname := SST.ARROW_DIRECTORY[link.Arr].Short
+
+			m := fmt.Sprintf("   Complete: %s -(%s)-> %s",t1,arrname,t2)
+			Verbose(m)
+			SST.AppendLinkToNode(nptr,link,node.NPtr)
 		}
 	}
 }
@@ -1286,7 +1374,7 @@ func AddMandatory() {
 
 func ReadConfig() []string {
 
-	files := []string{"arrows-LT-1.sst","arrows-NR-0.sst","arrows-CN-2.sst","arrows-EP-3.sst","annotations.sst"}
+	files := []string{"arrows-LT-1.sst","arrows-NR-0.sst","arrows-CN-2.sst","arrows-EP-3.sst","annotations.sst","closures.sst"}
 	dir := os.Getenv("SST_CONFIG_PATH")
 
 	var configs []string
@@ -2009,6 +2097,8 @@ func Dangler() bool {
 		return false
 	case HAVE_MINUS:
 		return false
+	case ROLE_RESULT:
+		return false
 	}
 
 	return true
@@ -2281,6 +2371,31 @@ func GetMemChapters() []string {
 	}
 
 	return SST.Map2List(chapters)
+}
+
+//**************************************************************
+
+func GetNodePointedTo(node SST.Node,sequence []SST.ArrowPtr) (SST.NodePtr,bool) {
+
+	for _,s_arr := range sequence {
+
+		found := false
+		arrow := SST.ARROW_DIRECTORY[s_arr]
+		stindex := arrow.STAindex
+		
+		for _,lnk := range node.I[stindex] {
+			if lnk.Arr == s_arr {
+				found = true
+				node = SST.GetMemoryNodeFromPtr(lnk.Dst)
+			}
+		}
+
+		if !found {
+			return node.NPtr,false
+		}
+	}
+
+	return node.NPtr,true
 }
 
 //**************************************************************

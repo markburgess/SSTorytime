@@ -1,17 +1,19 @@
 
+ - annotations   
 
- - annotations   // for marking up a text body: body (relation) annotation
+ // for highlighting a substring of a text body: body (relation) annotation
 
- // slashes and () # - are illegal, as used in comments/grammar
- // also avoid +,* and mathematical symbols
+ // BEST PRACTICE
+ // comment slashes and () # - are illegal, as used in comments/grammar
+ // also avoid +,*,$ and mathematical/coding symbols if you need them in text
+ // Note, you MUST have defined these arrows already under the arrow types 
 
- // Note, you must have defined these arrows already under the arrow types
 
-  % (ref)                    # refers to, a generic way of linking components
+  % (ref)
   = (involves)
  ** (is a special case of)
 
- # Longer matches should come first to ensure we don't pick up the substring instead
+ # Longer matches are a better idea, and should come first to ensure we don't pick up the substring instead
 
  >> (is an example of)
  > (has actor/subject role)    // careful, when we reserve a character, it's potentially going to interfere with data

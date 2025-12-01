@@ -4441,8 +4441,7 @@ func GetDBPageMap(sst PoSST,chap string,cn []string,page int) []PageMap {
 	offset := (page-1) * hits_per_page;
 
 	qstr = fmt.Sprintf("SELECT DISTINCT Chap,Ctx,Line,Path FROM PageMap\n"+
-		"WHERE match_context(Ctx,%s)=true AND lower(Chap) LIKE lower('%s') ORDER BY Chap,Line OFFSET %d LIMIT %d",
-		context,chapter,offset,hits_per_page)
+		"WHERE match_context(Ctx,%s)=true AND lower(Chap) LIKE lower('%s') ORDER BY Chap,Line OFFSET %d LIMIT %d",context,chapter,offset,hits_per_page)
 
 	row, err := sst.DB.Query(qstr)
 
@@ -7752,11 +7751,15 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				continue
 
 			case CMD_CHAPTER,CMD_SECTION,CMD_IN,CMD_IN_2,CMD_CONTENTS,CMD_TOC,CMD_TOC_2,CMD_MAP:
+
 				if lenp > p+1 {
 					str := cmd_parts[c][p+1]
 					str = strings.TrimSpace(str)
 					str = strings.Trim(str,"'")
 					str = strings.Trim(str,"\"")
+					if str == "any" {
+						str = "%%"
+					}
 					param.Chapter = str
 					break
 				} else {
@@ -7769,9 +7772,13 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				if param.PageNr < 1 {
 					param.PageNr = 1
 				}
-			
+
 				if lenp > p+1 {
-					param.Chapter = cmd_parts[c][p+1]
+					if cmd_parts[c][p+1] == "any" {
+						param.Chapter = "%%"
+					} else {
+						param.Chapter = cmd_parts[c][p+1]
+					}
 				} else {
 					if lenp > 1 {
 						param = AddOrphan(param,cmd_parts[c][p+1])

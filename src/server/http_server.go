@@ -364,9 +364,14 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 
 	// if we have page number then we are looking for notes by pagemap
 
-	if (name || chapter) && pagenr {
+	if (name || chapter || context) && pagenr {
 
 		var notes []SST.PageMap
+
+		if !(name || chapter) {
+			search.Chapter = "%%"
+			chapter = true
+		}
 
 		if chapter {
 			notes = SST.GetDBPageMap(PSST, search.Chapter, search.Context, search.PageNr)

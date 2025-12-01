@@ -4,6 +4,9 @@
 #
 #########################################################
 
+  # After consideration, try to order the items
+  #   pinyin (pe) english (eh) hanzi
+
 -chinese language
 
  :: please, thank you, thank you ::
@@ -512,7 +515,7 @@ lamb  (eh) 羊肉  (hp) yángròu
 chicken (eh)  鸡肉 (hp)  jīròu
 pork  (eh) 猪肉  (hp) zhūròu
 soup (eh)  汤 (hp) tāng
-sugar (eh)  糖 (hp) táng
+sugar (eh)  糖 (hp) táng (sl) tāng
 porridge  (eh) 粥 (hp) zhōu
 cake  (eh) 蛋糕 (hp) dàngāo
 fried dough sticks (ep)  yóutiáo(ph)  油条

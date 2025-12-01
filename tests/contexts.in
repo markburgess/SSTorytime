@@ -1,5 +1,5 @@
 
--context checking
+-chapter for context checking
 
  :: first context ::
 
@@ -8,3 +8,8 @@
  :: second context ::
 
   test string (next) alt 2
+
+  \context :: first context :: (then) \context :: second context ::
+
+  a (then) b
+

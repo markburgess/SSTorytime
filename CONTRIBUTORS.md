@@ -12,7 +12,7 @@ architecture, design, and implementation. Slow learner.
 
 * Alex Shadrin
 
-Many helpful discussions, critique and helpful feedback, full CSS rewrite, as well as improvements to the server, Golang methodology, pointing out several things I didn't know existed in the language!
+Many helpful discussions, critique and helpful feedback, full CSS rewrite, upgraded MathJax, as well as improvements to the server, Golang methodology, pointing out several cryptic things I didn't know existed in the language!
 
 * Jarle Bjørnengen
 

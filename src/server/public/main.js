@@ -1726,7 +1726,7 @@ if (bwd == null || fwd == null)
    return;
    }
 
-if (bwd[0] != null && fwd[0] != null)
+if (bwd[0] != null || fwd[0] != null)
    {
    // we are in the middle of a cone
    let link = document.createElement("a");

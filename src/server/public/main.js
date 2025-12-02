@@ -681,7 +681,7 @@ for (let chpblk of obj.Content)
          let link = document.createElement("a");
          link.onclick = function ()
             {
-	      sendLinkSearch("any \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx.Text));
+	      sendLinkSearch("\\notes \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx.Text));
             };
          link.textContent = " !! ";
 
@@ -705,7 +705,7 @@ for (let chpblk of obj.Content)
          let sitem = document.createElement("span");
          link.onclick = function ()
             {
-            sendLinkSearch("any \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx.Text));
+            sendLinkSearch("\\notes \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx.Text));
             };
          link.textContent = "Ambient context:: ";
          link.id = "toc-frag";
@@ -804,7 +804,7 @@ for (let ls of obj.Content)
          {
          nlink.onclick = function ()
             {
-	    sendLinkSearch('any \\chapter ' + Quote(ls.Section));
+	    sendLinkSearch('\\notes \\chapter ' + Quote(ls.Section));
             };
          nitem.textContent = "browse";
          } 
@@ -1010,7 +1010,7 @@ if (ctx.length > 0)
 
    ctxlink.onclick = function ()
       {
-      sendLinkSearch('any \\chapter '+ Quote(chap) +' \\context ' + CtxSplice(ctx));
+      sendLinkSearch('\\notes \\chapter '+ Quote(chap) +' \\context ' + CtxSplice(ctx));
       };
 
    let cntx = document.createElement("i");
@@ -1470,7 +1470,7 @@ if (counter == 0)
    chplink.textContent = Quote(event.Chap);
    chplink.onclick = function ()
       {
-      sendLinkSearch('any \\chapter ' + Quote(event.Chap));
+      sendLinkSearch('\\notes \\chapter ' + Quote(event.Chap));
       };
    setting.appendChild(chplink);
 
@@ -1483,7 +1483,7 @@ if (counter == 0)
 
    ctxlink.onclick = function()
       {
-      sendLinkSearch('any \\chapter '+ Quote(event.Chap) +' \\context ' + CtxSplice(event.Context));
+      sendLinkSearch('\\notes \\chapter '+ Quote(event.Chap) +' \\context ' + CtxSplice(event.Context));
       };
 
    setting.appendChild(ctxlink);
@@ -1589,7 +1589,7 @@ let ctxlink = document.createElement("a");
 ctxlink.textContent = '"' + event.Context + '"';
 ctxlink.onclick = function ()
    {
-   sendLinkSearch('any \\chapter '+ Quote(event.Chap) +' \\context ' + CtxSplice(event.Context));
+   sendLinkSearch('\\notes \\chapter '+ Quote(event.Chap) +' \\context ' + CtxSplice(event.Context));
    };
 
 maintext.appendChild(ctxlink);

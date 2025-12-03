@@ -776,8 +776,19 @@ for (let ls of obj.Content)
       sec.id = "toc-panel";
 
       let sub1 = document.createElement("i");
-      sub1.textContent = "Last viewed at " + ls.Last;
+      let firstdate = new Date(ls.First * 1000);
+      sub1.textContent = "First viewed at " + firstdate.toString();
+      sub1.id = "statcount";
       sec.appendChild(sub1);
+
+      let sub2a = document.createElement("br");
+      sec.appendChild(sub2a);
+
+      let sub1a = document.createElement("i");
+      let lastdate = new Date(ls.Last * 1000);
+      sub1a.textContent = "Last viewed at " + lastdate.toString();
+      sub1a.id = "statcount";
+      sec.appendChild(sub1a);
 
       let sub2 = document.createElement("br");
       sec.appendChild(sub2);
@@ -804,7 +815,7 @@ for (let ls of obj.Content)
          {
          nlink.onclick = function ()
             {
-	    sendLinkSearch('\\notes \\chapter ' + Quote(ls.Section));
+	    sendLinkSearch('any \\context ' + Quote(ls.Section));
             };
          nitem.textContent = "browse";
          } 
@@ -814,10 +825,14 @@ for (let ls of obj.Content)
             {
             sendLinkSearch("(" + ls.NPtr.Class + "," + ls.NPtr.CPtr + ")");
             };
-         nitem.textContent = "(" + ls.NPtr.Class + "," + ls.NPtr.CPtr + ")";
+
+         nitem.textContent = "(" + ls.NPtr.Class + "," + ls.NPtr.CPtr + ") ";
+	 let dateobject = new Date(ls.Last * 1000);
+	 // + "Last viewed at " + dateobject.toString();
          }
 
       nitem.id = "heatmap";
+      nitem.class = "heatmaptooltip";
       nitem.style.color = HeatColour(ls.Freq, ls.Ndelta, 70);
       nitem.style.fontSize = "80%";
       nitem.style.backgroundColor = HeatColour(ls.Freq, ls.Ndelta, 100);
@@ -1952,7 +1967,6 @@ fetch("/searchN4L", { method: POST_METHOD, body: formData })
 
 .then((resp) =>
    {
-   console.log("LASTSAW ACK", resp.Content);
    return;
    })
 

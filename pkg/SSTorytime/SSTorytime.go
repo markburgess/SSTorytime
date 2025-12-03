@@ -307,6 +307,7 @@ const LASTSEEN_TABLE = "CREATE TABLE IF NOT EXISTS LastSeen " +
 	"(    " +
 	"Section text," +
 	"NPtr    NodePtr," +
+	"First   timestamp,"+
 	"Last    timestamp," +
 	"Delta   real," +
 	"Freq    int" +
@@ -470,7 +471,8 @@ type ChCtx struct {
 
 type LastSeen struct {
 	Section string
-	Last    string   // timestamp of last access
+	First   int64    // timestamp of first access
+	Last    int64    // timestamp of last access
         Pdelta  float64  // previous average of access intervals
 	Ndelta  float64  // current last access interval
 	Freq    int      // count of total accesses
@@ -3588,7 +3590,7 @@ func DefineStoredFunctions(sst PoSST) {
 		"BEGIN\n"+
 		"  SELECT last,EXTRACT(EPOCH FROM NOW()-last),delta,freq INTO prev,deltat,prevdelta,f FROM LastSeen WHERE section=this;\n"+
 		"  IF NOT FOUND THEN\n"+
-		"     INSERT INTO LastSeen (section,last,delta,freq,nptr) VALUES (this, NOW(),0,1,'(-1,-1)');\n"+
+		"     INSERT INTO LastSeen (section,first,last,delta,freq,nptr) VALUES (this,NOW(),NOW(),0,1,'(-1,-1)');\n"+
 		"  ELSE\n"+
 		"     avdeltat = 0.5 * deltat::real + 0.5 * prevdelta::real;\n"+
 		"     f = f + 1;\n"+
@@ -3624,7 +3626,7 @@ func DefineStoredFunctions(sst PoSST) {
 		"BEGIN\n"+
 		"  SELECT last,EXTRACT(EPOCH FROM NOW()-last),delta,freq INTO prev,deltat,prevdelta,f FROM LastSeen WHERE nptr=this;\n"+
 		"  IF NOT FOUND THEN\n"+
-		"     INSERT INTO LastSeen (section,nptr,last,freq,delta) VALUES (name,this,NOW(),1,0);\n"+
+		"     INSERT INTO LastSeen (section,nptr,first,last,freq,delta) VALUES (name,this,NOW(),NOW(),1,0);\n"+
 		"  ELSE\n"+
 		"     avdeltat = 0.5 * deltat::real + 0.5 * prevdelta::real;\n"+
 		"     f = f + 1;\n"+
@@ -6534,7 +6536,7 @@ func UpdateLastSawNPtr(sst PoSST,class,cptr int,name string) {
 
 func GetLastSawSection(sst PoSST) []LastSeen {
 
-	qstr := fmt.Sprintf("SELECT section,nptr,last,freq,delta as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen ORDER BY section")
+	qstr := fmt.Sprintf("SELECT section,nptr,EXTRACT(EPOCH FROM first),EXTRACT(EPOCH FROM last),freq,delta as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen ORDER BY section")
 
 	row,err := sst.DB.Query(qstr)
 
@@ -6549,10 +6551,11 @@ func GetLastSawSection(sst PoSST) []LastSeen {
 		for row.Next() {		
 			var ls LastSeen
 			var nptrstr string // last because if empty fails
-			
-			err = row.Scan(&ls.Section,&nptrstr,&ls.Last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
+			var first,last float64
+			err = row.Scan(&ls.Section,&nptrstr,&first,&last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
+			ls.Last = int64(last)
+			ls.First = int64(first)
 			fmt.Sscanf(nptrstr,"(%d,%d)",&ls.NPtr.Class,&ls.NPtr.CPtr)
-			
 			ret = append(ret,ls)
 		}
 
@@ -6572,7 +6575,7 @@ func GetLastSawNPtr(sst PoSST, nptr NodePtr) LastSeen {
 
 	var ls LastSeen
 
-	qstr := fmt.Sprintf("SELECT section,last,freq,delta as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen WHERE NPTR='(%d,%d)'::NodePtr",nptr.Class,nptr.CPtr)
+	qstr := fmt.Sprintf("SELECT section,EXTRACT(EPOCH FROM first),EXTRACT(EPOCH FROM last),freq,delta as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen WHERE NPTR='(%d,%d)'::NodePtr",nptr.Class,nptr.CPtr)
 
 	row,err := sst.DB.Query(qstr)
 
@@ -6582,8 +6585,11 @@ func GetLastSawNPtr(sst PoSST, nptr NodePtr) LastSeen {
 	}
 
 	if row != nil {
-		for row.Next() {		
-			err = row.Scan(&ls.Section,&ls.Last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
+		for row.Next() {
+			var first,last float64
+			err = row.Scan(&ls.Section,&first,&last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
+			ls.Last = int64(last)
+			ls.First = int64(first)
 		}
 
 		ls.NPtr = nptr

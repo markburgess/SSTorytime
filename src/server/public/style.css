@@ -254,6 +254,7 @@ h3 {
 }
 
 #statcount {
+  text-wrap: nowrap;
   color: navy;
   margin-left: 100px;
   padding: 5px;
@@ -262,6 +263,7 @@ h3 {
 #heatmap { 
    margin: 2px;
 }
+
 
 #orbital-full-text {
   font-family: var(--font-serif);

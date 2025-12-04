@@ -80,7 +80,7 @@ const (
         ERR_STRAY_PAREN="Stray ) in an event/item - illegal character"
 	ERR_MISSING_LINE_LABEL_IN_REFERENCE="Missing a line label in reference, should be in the form $label.n"
 	ERR_NON_WORD_WHITE="Non word (whitespace) character after an annotation: "
-	ERR_SHORT_WORD="Short word, possible mistake or unquoted annotation: "
+	ERR_SHORT_WORD="Short word, possible mistake or mistaken annotation (try spaces around symbol): "
 	ERR_ILLEGAL_ANNOT_CHAR="Cannot use +/- reserved tokens for annotation"
 )
 

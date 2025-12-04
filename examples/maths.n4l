@@ -1,0 +1,28 @@
+
+- mathematical language
+
+  :: symbols ::
+
+
+  x         (typically denotes) a variable, or unknown quantity to solve for
+  a,b,c     (typically denotes) constant fixed parameters to substitute values for
+
+
+  '\( (y,x) \)'    (typically denotes) two dimensional Euclidean coordinates in a plane
+
+  "\( (x,y,z) \)"  (typically denotes)  three dimensional Euclidean coordinate in a volume
+
+  "\( \int \)" (denotes) the integral sign
+       "       (note)    this is an old language S intended to imply summation
+       "       (e.g.)  "\( \int_0^1 x^2\;dx \)"
+
+  "\( \sum \)"  (denotes) "a summation (addition of terms)"
+        "       (e.g.)  "\( \sum_{n = 1}^4 n(n+1) \)"
+
+  "\( \frac{d}{dx} \)" (denotes) a total derivative operation on the variable x, i.e. the contributsion from all directions and parameters that vary along x
+            "          (e.g.) "\(  \frac{dy}{dx} , \frac{df}{dx} \)"
+
+  "\( \frac{\partial}{\partial x} \)" (denotes) a partial derivative operation on the variable x, i.e. a derivative along an exclusive direction
+            "          (e.g.) "\(  \frac{\partial y}{\partial x} , \frac{\partial f}{\partial x} \)"
+
+  

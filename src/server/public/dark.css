@@ -49,7 +49,7 @@ header {
     text-wrap: wrap;
     text-align: end;
     padding-block: 1ch;
-    overflow-x: clip;
+//    overflow-x: clip;
     font-size: clamp(0.3rem, 0.5rem + 1svw, 1.2rem);
     font-weight: var(--font-weight-4);
     color: rgba(24, 50, 77, 0.6);
@@ -196,7 +196,6 @@ h3 {
     width: fit-content;
     flex-basis: 100%;
     text-wrap: wrap balance;
-    overflow: clip;
     font-size: var(--font-size-fluid-1);
     font-weight: var(--font-weight-4);
   }
@@ -430,6 +429,7 @@ img {
 mjx-container[display] {
   text-align: start !important;
   text-indent: 2ch;
+  overflow: visible;
 }
 
 mjx-container, mjx-mo,mjx-mfrac,mjx-mtext,mjx-mi,mjx-mn {
@@ -448,7 +448,6 @@ mjx-container, mjx-mo,mjx-mfrac,mjx-mtext,mjx-mi,mjx-mn {
   background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  overflow: clip;
   z-index: 45;
 
   transition: transform 1s var(--ease-spring-2) 1s, opacity 1s ease 1s;

@@ -195,7 +195,7 @@ h3 {
     width: fit-content;
     flex-basis: 100%;
     text-wrap: wrap balance;
-    overflow: clip;
+//    overflow: clip;
     font-size: var(--font-size-fluid-1);
     font-weight: var(--font-weight-4);
   }
@@ -427,11 +427,12 @@ img {
 *)mjx-container[display] {
   text-align: start !important;
   text-indent: 2ch;
-   color: red;
+  overflow: visible;
+  color: red;
 }
 
 /*mjx-container, mjx-mo,mjx-mfrac,mjx-mtext,mjx-mi,mjx-mn {
-    color: red;
+  line-height: 130%;
 }*/
 
 .hipnosis {
@@ -445,7 +446,7 @@ img {
   background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  overflow: clip;
+//  overflow: clip;
   z-index: 45;
 
   transition: transform 1s var(--ease-spring-2) 1s, opacity 1s ease 1s;

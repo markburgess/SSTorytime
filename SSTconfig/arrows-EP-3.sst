@@ -66,6 +66,9 @@
    + has abstract            (abstract)- is an abstract for         (abstr-for)
    + is expressed in formula (formula) - is a formula for           (isformula)
 
+   + typically denotes (typically) - is typically denoted by (typden-by)
+   + denotes           (denotes)   - is denoted by           (den-by)
+
  :: condition, state ::
 
    + has condition           (cond)    - is the condition of (cond-of)

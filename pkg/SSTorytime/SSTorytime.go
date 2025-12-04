@@ -1818,7 +1818,6 @@ func UploadInverseArrowToDB(sst PoSST,arrow ArrowPtr) {
 		}
 		return
 	}
-
 	row.Close()
 }
 
@@ -6601,6 +6600,45 @@ func GetLastSawNPtr(sst PoSST, nptr NodePtr) LastSeen {
 }
 
 // *********************************************************************
+
+func GetNewlySeenNPtrs(sst PoSST,search SearchParameters) map[NodePtr]bool {
+
+	var qstr string
+	var nptrs = make (map[NodePtr]bool)
+
+	switch search.Horizon {
+
+	case RECENT:
+		qstr = fmt.Sprintf("SELECT NPtr FROM LastSeen WHERE last > NOW() - INTERVAL '%d hour'",search.Horizon)
+	case NEVER:
+		qstr = "SELECT NPtr FROM LastSeen"
+	default:
+		return nptrs
+	}
+
+	row,err := sst.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Failed to get LastSeen",err)
+	}
+
+	var whole string
+	var nptr NodePtr
+
+	if row != nil {
+		for row.Next() {
+			err = row.Scan(&whole)
+			fmt.Sscanf(whole,"(%d,%d)",&nptr.Class,&nptr.CPtr)
+			nptrs[nptr] = true
+		}
+		
+		row.Close()
+	}
+
+	return nptrs
+}
+
+// *********************************************************************
 // Dynamic context / sensory input evaluation STM tracking
 // *********************************************************************
 
@@ -7579,6 +7617,7 @@ type SearchParameters struct {
 	Finds    []string
 	Sequence bool
 	Stats    bool
+	Horizon  int
 }
 
 // ******************************************************************
@@ -7645,7 +7684,11 @@ const (
 	CMD_MAX = "\\max"
 	CMD_ATLEAST = "\\atleast"
 	CMD_ATMOST = "\\atmost"
+	CMD_NEVER = "\\never"
+	CMD_NEW = "\\new"
 
+	RECENT = 4  // Four hours between a morning and afternoon
+        NEVER = -1   // Haven't seen in this long
 )
 
 //******************************************************************
@@ -7667,7 +7710,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 		CMD_PAGE,
 		CMD_LIMIT,CMD_RANGE,CMD_DISTANCE,CMD_DEPTH,
 		CMD_STATS,CMD_STATS_2,
-		CMD_REMIND,
+		CMD_REMIND,CMD_NEVER,CMD_NEW,
 		CMD_HELP,CMD_HELP_2,
 		CMD_FINDS,CMD_FINDING,
         }
@@ -7948,6 +7991,13 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 
 			case CMD_SEQ1,CMD_SEQ2,CMD_STORY,CMD_STORIES:
 				param.Sequence = true
+				continue
+
+			case CMD_NEW:
+				param.Horizon = RECENT
+				continue
+			case CMD_NEVER:
+				param.Horizon = NEVER
 				continue
 
 			case CMD_ON,CMD_ON_2,CMD_ABOUT,CMD_FOR,CMD_FOR_2:

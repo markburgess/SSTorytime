@@ -299,6 +299,7 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 	fmt.Println("limit/range/depth:", maxlimit)
 	fmt.Println(" at least/minimum:", minlimit)
 	fmt.Println("       show stats:", search.Stats)
+	fmt.Println("   not seen hours:", search.Horizon)
 	fmt.Println()
 
 	var nodeptrs, leftptrs, rightptrs []SST.NodePtr
@@ -575,7 +576,9 @@ func HandlePageMap(w http.ResponseWriter, r *http.Request, sst SST.PoSST, search
 
 	fmt.Println("Solver/handler: HandlePageMap()")
 
-	jstr := SST.JSONPage(PSST, notes)
+	displayset := FilterSeen(sst,notes,search)
+
+	jstr := SST.JSONPage(PSST,displayset)
 	response := PackageResponse(sst, search, "PageMap", jstr)
 
 	if notes != nil {
@@ -586,6 +589,43 @@ func HandlePageMap(w http.ResponseWriter, r *http.Request, sst SST.PoSST, search
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 	fmt.Println("Done/sent pagemap")
+}
+
+//******************************************************************
+
+func FilterSeen(sst SST.PoSST,notes []SST.PageMap,search SST.SearchParameters) []SST.PageMap {
+
+	if search.Horizon == 0 {
+		return notes
+	}
+
+	excluded_nptrs := SST.GetNewlySeenNPtrs(sst,search)
+
+	var filtered []SST.PageMap
+
+	for _,note := range notes {
+
+		var newline SST.PageMap
+ 
+		for _,l := range note.Path {
+			if excluded_nptrs[l.Dst] {
+				continue
+			}
+			newline.Path = append(newline.Path,l)
+		}
+
+		if newline.Path == nil {
+			continue
+		}
+		newline.Chapter = note.Chapter
+		newline.Alias  = note.Alias
+		newline.Context  = note.Context
+		newline.Line = note.Line
+
+		filtered = append(filtered,newline)
+	}
+
+	return filtered
 }
 
 //******************************************************************

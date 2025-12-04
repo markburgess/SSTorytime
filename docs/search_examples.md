@@ -99,8 +99,22 @@ Postgres' `ts_vector()` functionalityis very powerful, but it relies on a dictio
 * Print original notes from a chapter
 <pre>
 \notes mychapter
-
 </pre>
+
+* Print original notes from a context
+<pre>
+\notes \context mycontext
+<pre>
+
+* Print original notes not seen in the last four hours
+<pre>
+\notes chapter \new
+<pre>
+
+* Print original notes never seen
+<pre>
+\notes chapter \never
+<pre>
 
 ## Stories and sequences
 <pre>

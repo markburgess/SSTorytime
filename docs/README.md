@@ -22,6 +22,8 @@
 * [A Case Study Example](example.md)
 * [More Generally About The Idea](KnowledgeAndLearning.md)
 * [Building A Knowledge Graph of a Music Collection: A case study in building Knowledge Graphs from Data Structures](https://medium.com/@mark-burgess-oslo-mb/building-a-knowledge-graph-of-a-music-collection-81c9a9ea1b8b)
+* [Using N4L notes and SST Knowledge Graphs For Foreign Language Learning](https://medium.com/@mark-burgess-oslo-mb/using-n4l-notes-and-sst-knowledge-graphs-for-foreign-language-learning-ac4c0731320d)
+
 
 ### Technical, APIs, Programming and Extending
 

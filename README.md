@@ -70,6 +70,7 @@ book shown to the right.
 * * [Unifying Data Structures and Knowledge Graphs](https://medium.com/@mark-burgess-oslo-mb/unifying-data-structures-and-knowledge-graphs-5c9fa32e74ea)
 * * [Using Knowledge Graphs For Inferential Reasoning](https://medium.com/@mark-burgess-oslo-mb/using-knowledge-graphs-for-inferential-reasoning-8a06e583b4d4)
 * * [Building A Knowledge Graph of a Music Collection: A case study in building Knowledge Graphs from Data Structures](https://medium.com/@mark-burgess-oslo-mb/building-a-knowledge-graph-of-a-music-collection-81c9a9ea1b8b)
+* * [Using N4L notes and SST Knowledge Graphs For Foreign Language Learning](https://medium.com/@mark-burgess-oslo-mb/using-n4l-notes-and-sst-knowledge-graphs-for-foreign-language-learning-ac4c0731320d)
 
 This project aims to turn intentionally created data (like written
 notes or snippets cut and pasted into a file) into linked and

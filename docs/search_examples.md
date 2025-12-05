@@ -114,7 +114,7 @@ Postgres' `ts_vector()` functionalityis very powerful, but it relies on a dictio
 * Print original notes never seen
 <pre>
 \notes chapter \never
-<pre>
+</pre>
 
 ## Stories and sequences
 <pre>

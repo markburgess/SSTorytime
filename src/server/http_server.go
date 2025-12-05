@@ -853,58 +853,6 @@ func GetContextFragments(clist []string, ooo SST.Coords) []SST.Loc {
 // Misc
 // *********************************************************************
 
-func JSONStoryNodeEvent(en SST.NodeEvent) string {
-
-	var jstr string
-
-	//	j,_ := json.Marshal(en)
-
-	//	jstr = string(j)
-
-	if len(en.Text) == 0 {
-		return ""
-	}
-
-	t, _ := json.Marshal(en.Text)
-
-	//text = SST.EscapeString(string(t))
-	text := SST.SQLEscape(string(t))
-
-	jstr += fmt.Sprintf("{\"Text\": \"%s\",\n", text)
-	jstr += fmt.Sprintf("\"L\": \"%d\",\n", en.L)
-
-	c, _ := json.Marshal(en.Chap)
-	chap := SST.EscapeString(string(c))
-	chap = SST.SQLEscape(chap)
-
-	jstr += fmt.Sprintf("\"Chap\": \"%s\",\n", chap)
-
-	jstr += fmt.Sprintf("\"Context\": \"%s\",\n", SST.EscapeString(en.Context))
-	jstr += fmt.Sprintf("\"NPtr\": { \"Class\": \"%d\", \"CPtr\" : \"%d\"},\n", en.NPtr.Class, en.NPtr.CPtr)
-	jxyz, _ := json.Marshal(en.XYZ)
-	jstr += fmt.Sprintf("\"XYZ\": %s,\n", jxyz)
-
-	var arrays string
-
-	for sti := 0; sti < SST.ST_TOP; sti++ {
-		var arr string
-		if en.Orbits[sti] != nil {
-			js, _ := json.Marshal(en.Orbits[sti])
-			arr = fmt.Sprintf("%s,", string(js))
-		} else {
-			arr = "[],"
-		}
-		arrays += arr
-	}
-
-	arrays = strings.Trim(arrays, ",")
-
-	jstr += fmt.Sprintf("\"Orbits\": [%s] }", arrays)
-	return jstr
-}
-
-// *********************************************************************
-
 func GenHeader(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	origin := r.Header.Get("Origin")

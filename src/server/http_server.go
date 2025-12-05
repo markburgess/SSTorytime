@@ -309,6 +309,10 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 		rightptrs = SST.SolveNodePtrs(PSST, search.To, search, arrowptrs, maxlimit)
 	}
 
+	if search.Sequence && len(search.Name) == 0 {
+		search.Name = append(search.Name,"any")
+	}
+
 	nodeptrs = SST.SolveNodePtrs(PSST, search.Name, search, arrowptrs, maxlimit)
 
 	fmt.Println("Solved search nodes ...")
@@ -640,24 +644,18 @@ func HandleStories(w http.ResponseWriter, r *http.Request, sst SST.PoSST, search
 
 	stories := SST.GetSequenceContainers(sst, nodeptrs, arrowptrs, sttypes, limit)
 
-	jarray := ""
+	var node_events []SST.NodeEvent
 
 	for s := 0; s < len(stories); s++ {
 
-		var jstory string
-
-		for a := 0; a < len(stories[s].Axis); a++ {
-			jstr := JSONStoryNodeEvent(stories[s].Axis[a])
-			jstory += fmt.Sprintf("%s,", jstr)
+		for _, ne := range stories[s].Axis {
+			node_events = append(node_events,ne)
 		}
-
-		jstory = strings.Trim(jstory, ",")
-		jarray = fmt.Sprintf("[%s],", jstory)
 	}
 
-	jarray = strings.Trim(jarray, ",")
+	jarray,_ := json.Marshal(node_events)
 
-	response := PackageResponse(sst, search, "Sequence", jarray)
+	response := PackageResponse(sst, search, "Sequence", string(jarray))
 
 	//fmt.Println("Sequence...",string(response))
 
@@ -868,8 +866,9 @@ func JSONStoryNodeEvent(en SST.NodeEvent) string {
 	}
 
 	t, _ := json.Marshal(en.Text)
-	text := SST.EscapeString(string(t))
-	text = SST.SQLEscape(text)
+
+	//text = SST.EscapeString(string(t))
+	text := SST.SQLEscape(string(t))
 
 	jstr += fmt.Sprintf("{\"Text\": \"%s\",\n", text)
 	jstr += fmt.Sprintf("\"L\": \"%d\",\n", en.L)

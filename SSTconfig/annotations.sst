@@ -16,6 +16,6 @@
  # Longer matches are a better idea, and should come first to ensure we don't pick up the substring instead
 
  >> (is an example of)
- > (has actor/subject role)    // careful, when we reserve a character, it's potentially going to interfere with data
- < (has affected object role)  // e.g. this will break  "syntax: command <ARG1> <ARG2>"
+ %> (has actor/subject role)    // careful, when we reserve a character, it's potentially going to interfere with data
+ %< (has affected object role)  // e.g. this will break  "syntax: command <ARG1> <ARG2>"
 

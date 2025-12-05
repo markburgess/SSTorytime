@@ -15,6 +15,7 @@
 
  + to be decided     (tbd)          - to be figured out    (tbf)
  + has example       (e.g.)         - is an example of     (ex)
+ + has warning       (warning)      - is a warning about   (warn-abt)
  + has no example    (noex)         - is not an example of (not-ex)
  + has abbreviation  (abbrev)       - is short for         (short for)
  + has name          (name)         - is the name of       (nom-de)

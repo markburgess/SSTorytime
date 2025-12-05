@@ -14,7 +14,7 @@ The tides raised by the Moon are dragged ahead of the line of centres due to the
 
  :: calculation, _sequence_ ::
 
-# Note, we have to put \[ \] in quotes
+# Note, we have to put \( \) in quotes
 
 "The total angular momentum \(L\) of the Earth-Moon system is approximately constant. \[ L_{\rm TOT} = I\omega_{\rm earth} + \mu R^2 \omega_{\rm moon} \] where \(\mu\) is the reduced mass \[ \mu = \frac{mM}{m+M} = 7.4 \times 10^{22} kg \]"
 

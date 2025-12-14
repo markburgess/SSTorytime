@@ -499,15 +499,24 @@ func Open(load_arrows bool) PoSST {
 
 	user,password,dbname = OverrideCredentials(user,password,dbname)
 
-        connStr := "user="+user+" dbname="+dbname+" password="+password+" sslmode=disable"
+        connect_str := "user="+user+" dbname="+dbname+" password="+password+" sslmode=disable"
 
-        sst.DB, err = sql.Open("postgres", connStr)
+	// Check environment variable
+        // postgresql://<USER>:<PASSWORD>@<HOST>:<PORT>/<DATABASE>
+	// export POSTGRESQL_URI=postgresql://sstoryline:sst1234@localhost:5432/sstoryline?sslmode=disable
 
-	if err != nil {
-	   	fmt.Println("Error connecting to the database: ", err)
-		os.Exit(-1)
+	env := os.Getenv("POSTGRESQL_URI")
+
+	if len(env) == 0 {
+		sst.DB, err = sql.Open("postgres", connect_str)
+	} else {
+		sst.DB, err = sql.Open("postgres",env)
+		if err != nil {
+			fmt.Println("Error connecting to the database: ", err)
+			os.Exit(-1)
+		}
 	}
-	
+
 	err = sst.DB.Ping()
 	
 	if err != nil {

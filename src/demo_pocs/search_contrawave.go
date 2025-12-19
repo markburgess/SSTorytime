@@ -52,11 +52,13 @@ func main() {
 		return
 	}
 
+	limit := 10
+
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		left_paths,Lnum = SST.GetEntireConePathsAsLinks(sst,"fwd",leftptrs[0],ldepth)
+		left_paths,Lnum = SST.GetEntireConePathsAsLinks(sst,"fwd",leftptrs[0],ldepth,limit)
 		fmt.Println(left_paths)
-		right_paths,Rnum = SST.GetEntireConePathsAsLinks(sst,"bwd",rightptrs[0],rdepth)		
+		right_paths,Rnum = SST.GetEntireConePathsAsLinks(sst,"bwd",rightptrs[0],rdepth,limit)
 		
 		solutions,loop_corrections := WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 

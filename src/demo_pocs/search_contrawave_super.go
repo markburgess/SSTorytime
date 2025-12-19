@@ -45,8 +45,8 @@ func main() {
 	chapter := ""
 	var context []string
 
-	left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(sst,"any",leftptrs,maxdepth,chapter,context,maxdepth)
-	right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(sst,"any",rightptrs,maxdepth,chapter,context,maxdepth)
+	left_paths,Lnum = SST.GetEntireNCConePathsAsLinks(sst,"any",leftptrs,maxdepth,chapter,context,maxdepth)
+	right_paths,Rnum = SST.GetEntireNCConePathsAsLinks(sst,"any",rightptrs,maxdepth,chapter,context,maxdepth)
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 

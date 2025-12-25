@@ -7,7 +7,7 @@
 
 -->
 
-> [!WARNING]
+> [!TIP]
 > Due to other commitments, this project will resume in February 2026.
 
 > [!NOTE]

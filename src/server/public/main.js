@@ -372,7 +372,7 @@ switch (obj.Response)
          }
       break;
    case "PageMap":
-      title = "Page notes about " + obj.Content.Title;
+      title = "Notes on " + obj.Content.Title;
       break;
    case "TOC":
       title = "Table of contents";

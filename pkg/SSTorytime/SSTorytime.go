@@ -6344,7 +6344,7 @@ func AssembleSatellitesBySTtype(sst PoSST,stindex int,satellite []Orbit,sweep []
 	var already = make(map[string]bool)
 
 	// Sweep different radial paths [angle][depth]
-	
+
 	for angle := 0; angle < len(sweep); angle++ {
 		
 		// len(sweep[angle]) is the length of the probe path at angle
@@ -6370,7 +6370,7 @@ func AssembleSatellitesBySTtype(sst PoSST,stindex int,satellite []Orbit,sweep []
 				if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
 					continue
 				}
-				
+
 				satellite = IdempAddSatellite(satellite,nt,already)
 				
 				// are there more satellites at this angle?

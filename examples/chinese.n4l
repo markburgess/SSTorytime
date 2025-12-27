@@ -4,16 +4,12 @@
 #
 #########################################################
 
-  # After consideration, try to order the items
-  #   pinyin (pe) english (eh) hanzi
+-chinese language
 
   #
   # NB - some of the chinese characters may be wrong, 
-  # due to font encodings and screen scraping
+  # due to font encodings and unicode screen scraping issues - how to fix this??
   # 
-
--chinese language
-
 
  :: please, thank you, thank you ::
 
@@ -32,7 +28,6 @@ Sūn nǚshì qǐng jìn (ph)  孙女士请进  (he) Ms Sun, please come in
  ############################
 
  :: what people actually say, daily usage ::
-
 
  # thank you
  +:: ways to say thank you ::
@@ -3255,8 +3250,9 @@ nǐ de gōngzuò tài máng le (ph) 你的工作太忙了 (he) you are too busy 
 
 yǒngjǐ (ph) 拥挤 (he) crowded
 
+##################################
 
-:: it ::
+:: IT, information technology ::
 
 log in  (eh) 登录 (hp) dēnglù
 send  (eh) 发送 (hp) fāsòng
@@ -3265,10 +3261,6 @@ text message  (eh) 短信 (hp) duǎnxìn
 email  (eh) 电子邮件 (hp) diànzǐ yóujiàn
 
 you need to log in first (eh) 你要先登录 (hp) nǐ yào xiān dēnglù
-
-
-
-
 
 :: communication, talk ::
 
@@ -3285,9 +3277,10 @@ i don't want to talk about work  (eh) 我不想谈工作 (hp) wǒ bùxiǎng tán
 
 dragon (ph) 龙 (he) lóng 
 
-猫 (hp) māo (pe) cat     // an exception to the context
+猫 (hp) māo (pe) cat
 
- when the snake comes again (eh) 再将蛇时候 (hp) zài jiāng shé shíhòu
+snake (eh) 蛇 (hp) shé
+   "  (e.g.) when the snake comes again (eh) 再 将 蛇 时候 (hp) zài jiāng shé shíhòu
 
  Which animal in China is the most famous?  (eh) 中国的什么动物最有名 (hp) Zhōngguó de shénme dòngwù zuì yǒumíng
 

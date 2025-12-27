@@ -6365,11 +6365,7 @@ func AssembleSatellitesBySTtype(sst PoSST,stindex int,satellite []Orbit,sweep []
 				nt.STindex = arrow.STAindex
 				nt.Dst = start.Dst
 				nt.Text = txt.S
-				if txt.I[LEADSTO] != nil {
-					nt.Ctx = GetContext(txt.I[LEADSTO][0].Ctx)  // node context
-				} else {
-					nt.Ctx = "any"
-				}
+				nt.Ctx = GetContext(start.Ctx)
 				nt.Radius = 1
 				if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
 					continue

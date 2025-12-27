@@ -7,6 +7,11 @@
   # After consideration, try to order the items
   #   pinyin (pe) english (eh) hanzi
 
+  #
+  # NB - some of the chinese characters may be wrong, 
+  # due to font encodings and screen scraping
+  # 
+
 -chinese language
 
 
@@ -87,7 +92,7 @@ nǐ duì gōngzī mǎnyì ma  (ph) 你对工资满意吗  (he)  Are you satisfie
 
 好啊  (ep) hǎo a   (pe) ok
 没错  (hp) méi cuò (pe) Exactly! That's right i.e. not wrong
-行   (hp) xíng   (pe) ok
+行   (hp) xíng   (pe) ok - in response to a suggestion
 可以  (hp) kěyǐ    (pe) can do/sure
 
 
@@ -107,12 +112,12 @@ okay, all right (eh) 好吧 (hp) hǎo ba
 
  :: common expressions, phrases ::
 
-我知道  (hp) wǒ zhīdào     (pe) i know
-怎么了  (hp) zěnmeliǎo     (pe) what's wrong/what's up
-我明白  (hp) wǒ míngbái    (pe) i understand/i see
+我知道  (hp) wǒ %zhīdào     (pe) i know
+怎么了  (hp) zěn me liǎo     (pe) what's wrong/what's up
+我明白  (hp) wǒ %míngbái    (pe) i understand/i see
 等一下  (hp) děng yīxià    (pe) just a moment/wait a sec
-你确定吗  (hp) nǐ quèdìng ma  (pe) are you sure?
-我同意  (hp) wǒ tóngyì      (pe) i agree
+你确定吗  (hp) nǐ %quèdìng ma  (pe) are you sure?
+我同意  (hp) wǒ %tóngyì      (pe) i agree
 好主意  (hp) hǎo zhǔyì      (pe) good idea
 我道歉  (hp) wǒ dàoqiàn     (pe) i apologize
 原谅我  (hp) yuánliàng wǒ   (pe) forgive me
@@ -132,6 +137,21 @@ okay, all right (eh) 好吧 (hp) hǎo ba
 我渴了  (hp) wǒ kěle      (pe) i'm thirsty
 我保证  (hp) wǒ bǎozhèng  (pe) i promise
 我困了  (hp) wǒ kùnle     (pe) i'm sleepy
+
+follow me (eh) 跟我来 (hp) gēn wǒ lái
+allow me  (eh) 让我来 (hp)  ràng wǒ lái
+help me  (eh) 帮我  (hp) bāng wǒ
+help!  (eh) 帮帮我  (hp) bāng bāng wǒ
+no problem  (eh) 没问题  (hp) méi wèntí
+are you sure?  (eh) 你肯定吗 (hp)  nǐ kěndìng ma
+  "   (eh) 你确定吗  (hp) nǐ quèdìng ma
+i get it/i understand  (eh) 我懂了  (hp) wǒ %dǒng le
+me too  (eh) 我也是  (hp) wǒ yěshì
+
+
+
+
+
 
   ####################################
 
@@ -166,6 +186,34 @@ wǒ shì zài yīngguó chūshēng de (ph)  我是在英国出生的 (he) I was 
     " (compare) wǒ chūshēng zài yīngguó  (ph) 我出生在英国 (he) I was born in England
 
 tā bùshì zài yīngguó xué de wùlǐ (ph)  他不是在英国学的物理 (he) He didn't study physics in England. 
+
+ #################################
+
+ :: conjugations, examples ::
+
+i am sleeping (eh) 我在睡觉  (hp) wǒ zài shuìjiào
+i am eating (eh)  我在吃/饭  (hp) wǒ zài chī/fàn
+i am studying (eh)  我在学习  (hp) wǒ zài xuéxí
+i am exercising (eh)  我在锻炼  (hp) wǒ zài duànliàn
+i am dreaming (eh)  我在做梦  (hp) wǒ zài zuòmèng
+
+
+good (eh)  好的  (hp) hǎo de
+better (eh)  更好的  (hp) gèng hǎo de
+best (eh)  最好的  (hp) zuì hǎo de
+
+busy (eh)  忙的  (hp) máng de
+busier (eh)  更忙  (hp) gèng máng
+busiest (eh)  最忙的  (hp) zuì máng de
+
+sweet (eh)  甜的  (hp) tián de
+sweeter (eh)  更甜  (hp) gèng tián
+sweetest (eh)  最甜的  (hp) zuì tián de
+
+bitter (eh)  苦的  (hp) kǔ de
+more bitter (eh)  更苦  (hp) gèng kǔ
+most bitter (eh)  最苦的  (hp) zuì kǔ de
+
 
 
 
@@ -1346,8 +1394,6 @@ relax (eh) 放松 (hp) fàngsōng
 
 rest (ep) xiūxí (ph) 休息
 easy /relaxed (ep) qīngsōng (ph) 轻松
-rest assured/be assured (eh) 放心 (hp) fàngxīn
-please reassure him (eh) 请叫他放心 (hp)qǐng jiào tā fàngxīn
 
 
 
@@ -1642,8 +1688,7 @@ shénme shì (ph) 什么事  (he) what's up?
 
 fāshēngle shè me shì (ph) 发生了社么是 (he)  what happened?
 
- + :: clear, clearly ::
-
+ + :: clear, clearly, sure, certain ::
 
 out loud  (eh) 出来 (hp) chūlái
 say it out loud  (eh) 说出来 (hp) shuō chūlái
@@ -1653,13 +1698,27 @@ clear  (eh) 清除 (hp) qīngchú
 wǒ méiyǒu tīng qīngchǔ  (ph) 我没有听清楚  (he) i didn't hear clearly
 清除 (hp) qīngchú  (pe) clear about/be certain/sure
 
+are you sure?  (eh) 你肯定吗 (hp)  nǐ kěndìng ma
+  "   (eh) 你确定吗  (hp) nǐ quèdìng ma
+
+rest assured/be assured (eh) 放心 (hp) fàngxīn
+please reassure him (eh) 请叫他放心 (hp)qǐng jiào tā fàngxīn
+
 
  :: understand ::
 
+xxx
+
 míngbái  (ph) 明白  (he) understand
-dǒng  (ph) 懂  (he) understand
-理解  (hp) lǐjiě  (pe) understand
-liǎojiě  (ph) 了解  (he) learn about/understand
+dǒng  (ph) 懂  (he) got it/I see/understand/oppfattet
+理解  (hp) lǐjiě  (pe) comprehend understand (note) 解 = jiě  means unpick,solve,decode
+liǎojiě  (ph) 了解  (he) comprehend/learn about/understand (note) $PREV.4
+
+the different ways of saying I understand/I get it/roger that and decoding or unpicking the suggestion with jiě
+    "   (isnotefor) míngbái
+    "   (isnotefor) dǒng 
+    "   (isnotefor) liǎoji
+    "   (isnotefor) lǐjiě 
 
 misunderstand (eh) 误解 (hp) wùjiě 
              "           (eh) 误会 (hp) wùhuì

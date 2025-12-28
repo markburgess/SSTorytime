@@ -144,7 +144,7 @@ are you sure?  (eh) 你肯定吗 (hp)  nǐ kěndìng ma
 i get it/i understand  (eh) 我懂了  (hp) wǒ %dǒng le
 me too  (eh) 我也是  (hp) wǒ yěshì
 
-
+Good fortune (eh) 好财运 (hp) hǎo cáiyùn
 
 fāshēngle shè me shì (ph) 发生了社么是 (he)  what happened?
 
@@ -968,6 +968,12 @@ dìngfáng (ph) 订房 (he) reservation
     "    (e.g.) wǒmen yǒu dìngfáng     (ph) 我们有订房  (he) We have a reservation
     "    (e.g.) wǒ yào qǔxiāo dìngfáng (ph) 我要取消订房 (he) I want to cancel the reservation
 
+yùdìng (ph) 预定 (he) reserve/reservation
+   " (contrast) dìngfáng
+   " (e.g.) wǒmen dé yùdìng liǎng gè fángjiān (ph)  我们得预定两个房间 (he)  We have to book two rooms.
+   " (e.g.) wǒmen shì yīgè xīngqí qián yùdìng de jiǔdiàn  (ph)  我们是一个星期前预订的酒店  (he) We booked the hotel a week ago
+
+
 chīhuò (ph) 吃货 (he) foodie
 
 wǒmen xiǎng zuò zài zhèlǐ (ph) 我们想坐在这里 (he) We would like to sit here
@@ -1053,17 +1059,16 @@ use (eh) 用 (hp) yòng
 guō         (ph) 锅   (he) pot
 bowl        (eh) 碗   (hp) wǎn
 fruit juice (eh) 果汁  (hp) guǒzhī
-juice       (eh) 汁   (hp)  zhī
+juice       (eh) 汁   (hp) zhī
 plate       (eh) 盘子  (hp) pánzi
-bottle      (eh) 瓶子  (hp)  píngzi
+bottle      (eh) 瓶子  (hp) píngzi
 cup/glass   (eh) 杯子  (hp) bēizi
-knife       (eh) 刀   (hp)  dāo
-fork        (eh)  叉  (hp)  chā
+knife       (eh) 刀   (hp) dāo
+fork        (eh)  叉  (hp) chā
 spoon       (eh) 勺子  (hp) sháozǐ
-chopsticks   (eh) 筷子 (hp)  kuàizi
+chopsticks   (eh) 筷子 (hp) kuàizi
     "       (eh) 勺子  (hp) sháozi
-glass/of    (eh)  杯   (hp)  bēi
-
+glass/of    (eh)  杯   (hp) bēi
 
 zài dìtiě wǒmen bù >>zhǔn chīfàn  (ph) 在地铁我们不准吃饭  (he) we are not allowed to eat in the subway
 
@@ -1291,10 +1296,6 @@ on time/punctual  (eh) 准时 (hp) zhǔnshí
 
 :: time concepts ::
 
-on time  (eh) 准时 (hp) zhǔnshí
-
-
-
 seconds (eh)  秒  (hp) miǎo
 minutes (eh)  分钟  (hp) fēnzhōng
 hours  (eh) 小时  (hp) xiǎoshí
@@ -1310,6 +1311,9 @@ wǒ měitiān yǒu bàn gè xiǎoshí de yòng  (ph) 我每天有半个小时的
 wǒ pǎole sānshí fēnzhōng / de bù  (ph) 我跑了三十分钟 /的步  (he) i ran for thirty minutes
 
 +:: have time, having time ::
+
+on time  (eh) 准时 (hp) zhǔnshí
+
 
 free/ledig  (eh) 有空 (hp) yǒu kòng 
 
@@ -1887,8 +1891,9 @@ jiéshù  (ph) 结束 (he) finish a task
 
 tā zhǎole duōjiǔ (ph)  他找了多久  (he) how long was he looking for it?
 
+ +:: almost, kuai ::
 
-kuài   (ph) 快 (he) quick / soon
+kuài   (ph) 快 (he) quick / soon / almost
 
  " (e.g.) nǐ kuài huíláile ma  (ph) 你快回来了吗 (he) Are you coming back soon?
  " (e.g.) nǐ kuài huílái  (ph) 你快回来 (he) Come back soon
@@ -1896,16 +1901,22 @@ kuài   (ph) 快 (he) quick / soon
 
  " (e.g.) jǐnkuài  (ph) 尽快  (he) A.S.A.P. 
  " (e.g.) wǒ kuài mǎihǎole (ph) 我快买好了 (he) I'm almost ready to buy it / I'm about to finish buying it
+ " (e.g.) kuài méiyǒule (ph) 快没有了 (he) almost gone/finished, e.g. out of fuel
+ " (e.g.) kuài méi shíjiānle  (ph) 快没时间了  (he) almost out of time
+ " (e.g.) kuài méi diànle (ph) 快没电了  (he) almost out of power
+ " (e.g.) kuài zhǔnbèi hǎole  (ph)快准备好了 (he)  almost ready
+ " (e.g.) kuài xià yǔle (ph) 快下雨了  (he) it's about to rain
 
-
-
- +:: kuai many forms ::
 
 kuàizi (ph) 筷子 (he) chopsticks
 kuài   (ph) 块 (he) yuan / quid
 kuàilè (ph) 快乐 (he) happy
 
 块 (sounds like) 快 (sl) 筷   // don't confuse these
+
+pleasant/joyous  (eh) 愉快 (hp) yúkuài
+
+cool (eh) 凉快 (hp) liángkuai
 
 
 #########################################################################
@@ -1923,13 +1934,10 @@ travel  (eh) 旅游 (hp) lǚyóu
 
 holiday/break  (eh) 放假 (hp) fàngjià 
 
-
 yīlù píng'ān (ph)  一路平安  (he) Have a safe journey
 
-
 nǐ shì zuótiān wǎnshàng shōushí de yīfú ma  (ph)  你是昨天晚上收拾的衣服吗  (he) Did you pack the clothes last night?
-wǒ hái méiyǒu shōushí hǎo bèibāo (ph)  我还没有收拾好背包  (he) I haven't packed my backpack yet.
-
+wǒ hái méiyǒu shōushí hǎo bèibāo            (ph)  我还没有收拾好背包      (he) I haven't packed my backpack yet.
 
 asian  (eh) 亚洲 (hp) yàzhōu
 map  (eh) 地图 (hp) dìtú
@@ -1937,8 +1945,6 @@ map  (eh) 地图 (hp) dìtú
 luggage (eh)  行李 (hp) xínglǐ
 xínglǐ xiāng  (ph)  行李箱  (he) suitcase
 
-Wǒmen dé yùdìng liǎng gè fángjiān (ph)  我们得预定两个房间 (he)  We have to book two rooms.
-wǒmen shì yīgè xīngqí qián yùdìng de jiǔdiàn  (ph)  我们是一个星期前预订的酒店  (he) We booked the hotel a week ago
 
  ####
 
@@ -2236,7 +2242,7 @@ you have to believe in yourself (eh) 你要相信自己 (hp) nǐ yào xiāngxìn
 warm hearted/enthusiastic (eh) 热情 (hp) rè qíng
 affection (eh) 情 (hp) qíng
 
-hope  (eh) 希望 (hp) xīwàng
+hope  (eh) 希望 (hp) xīwàng (e.g.) xīwàng wǒmen hěn kuài kěyǐ zàijiàn  (ph) 希望我们很快可以再见  (he) hope we can meet again soon
 thank you so much  (eh) 非常感谢 (hp) fēicháng gǎnxiè
 
 pleasant/joyous  (eh) 愉快 (hp) yúkuài
@@ -2433,6 +2439,8 @@ refrigerator (eh) 冰箱 (hp) bīngxiāng
  :: cleaning, domestic ::
 
 clean  (eh) 干净 (hp) gānjìng
+  " (antonym) dirty (eh) 脏 (hp) zāng
+
 to clean up  (eh) 打扫 (hp) dǎsǎo
 house  (eh) 房子 (hp) fángzi
 
@@ -2887,13 +2895,14 @@ yánjiū wùlǐ tèbié yǒuqù (ph) 研究物理特别有趣 (he) researching/s
 
  :: easy, hard, difficult ::
 
-easy/easily  (eh) 容易地 (hp) róngyì
+
 simple  (eh) 简单 (hp) jiǎndān 
+
 difficult (eh)  难  (hp) nán 
 easy  (eh) 容易 (hp) róngyì
+
 improve  (eh) 提高 (hp) tígāo
 convenient  (eh) 方便 (hp) fāngbiàn
-
 
 
  :: studying ::
@@ -3075,6 +3084,15 @@ yuángōng      (ph) 员工  (he) employee
 
 gōng (ph) 公 (!confuse) 共 (hp) gòng (pe) al/together, common, general
 
+congratulations  (eh)  恭喜  (hp) gōngxǐ
+
+gōngxǐ fācái (ph) 恭喜发财 (he) congratulations and be prosperous
+
+rich  (eh) 富 (hp) fù
+get rich  (eh) 发财 (hp) fācái
+may you be prosperous  (eh) 恭喜发财 (hp) gōngxǐ fācái
+
+
 public, authority (eh) 公 (!confuse) 工 (he) work, labour
 公 (sl) 工
 
@@ -3194,9 +3212,6 @@ qǐngwèn guì gōngsī zài nǎlǐ (ph) 请问贵公司在哪里  (he) where is
 gōngsī shénme shíhòu fā jiǎngjīn (ph) 公司什么时候发奖金  (he) when does the company pay bonuses?
 
 
-wǒ xiǎng gēn péngyǒu kāishǐ zuò shēngyì (ph) 我想跟朋友开始做生意  (he) i want to start a business with my friends
-
-wǒ yào gēn nǐ shāngliáng yī jiàn shìqíng (ph) 我要跟你商量一件事情  (he) i want to discuss something with you
 
 wǒ de lǎobǎn shàng gè yuè méiyǒu gěi wǒ gōngzī (ph) 我的老板上个月没有给我工资  (he) my boss didn't pay my salary last month
 
@@ -3322,14 +3337,26 @@ shìqíng (sl) shípíng
 
 invite/ask/please/treat someone (eh) 请 (hp) qǐng
 
+################
+
+:: wanting , xiang ::
+
+
+want need  (he) 要   (hp)  yào (e.g.) wǒmen yào bù yào diǎn xiāngjiāo dàngāo (ph)  我们要不要点香蕉蛋糕  (he) shall we order banana cake?
+need       (he) 需要 (hp)  xūyào
+xiǎng      (ph) 想  (he) would like/want/miss someone
+
+wǒ xiǎng nǐ (ph) 我想你 (he) i miss you
+xiàng wǒ   (ph) 象我  (he) resemble/be like me
+xiàng wǒ   (ph) 像我  (he) like me
+xiàng     (ph)  象   (he) image/likeness
+
+  " (e.g.) wǒ xiǎng gēn péngyǒu kāishǐ zuò shēngyì (ph) 我想跟朋友开始做生意  (he) i want to start a business with my friends
+  $PREV.2 (contrast) wǒ yào gēn nǐ shāngliáng yī jiàn shìqíng (ph) 我要跟你商量一件事情  (he) i want to discuss something with you
 
 
 
-:: doing, using, wanting ::
-
-want need  (he) 要 (hp)  yào
-need  (he) 需要 (hp)  xūyào
-
+:: go, do ::
 
 xīn (ph) 新 (he)new 
 新鲜 (hp)xīnxiān (pe)fresh
@@ -3819,28 +3846,9 @@ thank you for your hard work  (eh) 辛苦你 (hp) xīnkǔ nǐ
 hard  (eh) 辛苦 (hp) xīnkǔ
 
 
-:: greetings ::
 
-congratulations  (eh)  恭喜  (hp) gōngxǐ
 
 low  (eh) 低 (hp) dī 
-
-:: examples,  xiang ::
-
-xiǎng (ph) 想 (he) would like/want/miss someone
-
-wǒ xiǎng nǐ (ph) 我想你 (he) i miss you
-xiàng wǒ  (ph) 象我  (he) resemble/be like me
-xiàng wǒ (ph) 像我 (he) like me
-xiàng   (ph) 象  (he) image/likeness
-
-wǒmen yào bùyào diǎn xiāngjiāo dàngāo (ph)  我们要不要点香蕉蛋糕  (he) shall we order banana cake?
-
-hope  (eh) 希望 (hp) xīwàng
-
-rich  (eh) 富 (hp) fù
-get rich  (eh) 发财 (hp) fācái
-may you be prosperous  (eh) 恭喜发财 (hp) gōngxǐ fācái
 
 
 :: emergency ::
@@ -3916,7 +3924,7 @@ wǒ kěyǐ gēn péngyǒu yī qǐlái ma  (ph) 我可以跟朋友一起来吗  (
 
 tā dǎbàn dé hěn piàoliang  (ph) 她打扮得很漂亮  (he) she is dressed up beautifully
 
-xīwàng wǒmen hěn kuài kěyǐ zàijiàn  (ph) 希望我们很快可以再见  (he) hope we can meet again soon
+
 
 tā yǒu hěnduō péngyǒu  (ph) 他有很多朋友  (he) he has many friends
 tā yǒu duōshǎo péngyǒu  (ph) 他有多少朋友  (he) how many friends does he have

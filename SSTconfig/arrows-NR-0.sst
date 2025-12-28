@@ -2,7 +2,7 @@
 
 - similarity # nearness, proximity
 
- :: mistakes, warnings ::
+ :: mistakes, warnings, meanings ::
  
  looks like                      (ll)
  sounds like        	         (sl)
@@ -11,6 +11,8 @@
  not the same as                 (!same)
  compare to                      (compare)
  stands for                      (sfor)
+ antonym                         (!syn)
+ synonym                         (syn)
 
  is sometimes mistaken for       (mistaken)
 

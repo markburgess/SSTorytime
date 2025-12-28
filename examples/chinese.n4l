@@ -122,6 +122,10 @@ okay, all right (eh) 好吧 (hp) hǎo ba
 
 shénme shì (ph) 什么事  (he) what's up?
 
+Long time no see (ep) hǎo jiŭ bú jiàn (ph) 好久不见
+Take it easy (ep) fàng qīng sông (ph) 放轻松
+
+
 我很好  (hp) wǒ hěn hǎo   (pe) i'm fine
 我饱了  (hp) wǒ bǎole     (pe) i'm full
 我喜欢  (hp) wǒ xǐhuān    (pe) i like [it/something]
@@ -227,7 +231,9 @@ just now  (eh) 刚才 (hp) gāngcái
 
   ####################################
 
-  :: grammar rules ::
+  :: grammar, rules ::
+
+grammar (eh) 语法 (hp) yǔfǎ
 
 adverbs with dé/dei (rule) x does-verb Y, does-verb dé/dei adverb
   "  (e.g.) tā wán fēipán, wán dé hǎobù hǎo  (ph) 他玩飞盘玩得好不好  (he) Is he good at playing Frisbee?
@@ -378,7 +384,8 @@ $PREV.2 (note) adding past "le" can mean not anymore
 #########
 
 我不    (hp) wǒ bù        (pe) I don't
-我不要   (hp) wǒ bùyào     (pe) I don't want [it/something]
+我不要   (hp) wǒ bùyào     (pe) I don't want [it/something] (contrast) I don't want it (ep) wǒ bù xiǎng yào (ph) 我不想要
+
 我不同意  (hp) wǒ bù tóngyì (pe) I don't agree
 我不知道  (hp) wǒ bù zhīdào (pe) I don't know
 我不需要  (hp) wǒ bù xūyào  (pe) I don't need
@@ -394,6 +401,26 @@ $PREV.2 (note) adding past "le" can mean not anymore
 没办法  (he) méi bànfǎ  (pe) no choice/no way
 没门儿  (he) méi mén er  (pe) no way / no thoroughfare
 没心情  (he) méi xīnqíng (pe) Not in the mood
+
+  ################################
+
+
+  :: shi ::
+
+shì (ph) 是 (he) to be / yes
+
+  " (e.g.) wǒ shì (ph) 我是 (he) I am
+  " (e.g.) shì de (ph) 是的 (he) yes
+
+shì  (eh) 事 (hp) thing/anything 
+
+shì (ph) 室 (he) room
+
+  " (e.g.) huì/yì shì  (eh) 会/议室 (hp) meeting room
+
+是 (!confuse) 事 (!confuse) 室
+
+shí (ph) 十 (he) ten
 
 
   ####################################
@@ -433,10 +460,6 @@ according to/depending on/based on  (eh) 根据 (hp) gēnjù
   ####################################
 
    :: ad hoc idioms, phrases ::
-
-
-nǐ zuì hǎo  (ph)  你最好  (he)  You had better ...
-nǐ zuì hǎo bǎ chē tíng zài xuéxiào fùjìn (ph)  你最好把车停在学校附近  (he) You'd better park your car near the school
 
 
 
@@ -624,9 +647,11 @@ he is not only handsome but also smart  (eh) 他不但帅而且聪明 (hp) Tā b
 -::modal, adverbs, example ::
 
 happen/occur  (eh) 发生 (hp) fāshēng
-anything  (eh) 事 (hp) shì
 
-:: hui, keyi, neng , can , able to , might, will, would ::
+
+  ################################################
+
+  :: hui, keyi, neng , can , able to , might, will, would ::
 
 huì (ph) 会 (he) see, will, can do,know how to
 huí (ph) 回 (he) reply/go back to/return to/call back
@@ -639,22 +664,40 @@ kěyǐ (ph) 可以 (he) can , have permission to
 kěnéng (ph) 可能 (he) might/may/possibly
 
 
-+:: bi uses, comparisons , compare, best, biggest, better ::
+################################
+
+ :: better ::
+
 
 perfect (eh) 完美 (hp) wánměi 
 
 gèng (ph)  更 (he) better
    " (e.g.) míngtiān huì gèng hǎo(ph)  明天会更好  (he) tomorrow will be better
 
-jǐjiào  (ph) 比较 (hp) comparatively
-jiào (ph) 较 (he) compare/more
+nǐ zuì hǎo  (ph)  你最好  (he)  You had better ...
+    " (e.g.) nǐ zuì hǎo bǎ chē tíng zài xuéxiào fùjìn (ph)  你最好把车停在学校附近  (he) You'd better park your car near the school
 
-zhèlǐ de cài bǐjiào hào chī (ph)  这里的菜比较好吃 (he) The food here is better
+
+nǐ de yīngyǔ yuè lái yuè hǎo(ph)  你的英语越来越好  (he) your english is getting better and better
+
+感冒需要一段时间才会好 (hp) gǎnmào xūyào yīduàn shíjiān cái huì hǎo (pe) it takes a while for a cold to get better
+
+
+
+
+#################################
+
+:: comparisons , compare, best, biggest, better, bi uses ::
 
 
 @rule_cmp  bǐ ... adj/adv   (rule) is...adj/adv/older/faster/stronger...than 
    " (e.g.) zhè jiàn chènshān bǐ nǐ de qúnzǐ guì (ph) 这件衬衫比你的裙子贵 (he) this shirt is more expensive than your skirt
    " (e.g.) wǒ de bàba bǐ nǐ de dà (ph) 我的爸爸比你的大 (he) My dad is bigger than yours
+
+jiào   (ph) 较 (he) compare/more
+bǐjiào  (ph) 比较 (hp) comparatively
+  " (e.g.) zhèlǐ de cài bǐjiào hào chī (ph)  这里的菜比较好吃 (he) The food here is better
+
 
 @rule_most bǐjiào... adj/adv   (rule) the adj/adv/bigger/faster/stronger one 
    "                (e.g.) bǐjiào lǎo de shì wǒ māmā  (ph) 比较老的是我妈妈 (ph) the older one is my mother
@@ -1566,7 +1609,7 @@ yòubiān nà shì shénme (ph)  右边那是什么 (he) what is that on the rig
 
 +:: amount, little, a lot, much, a few, many ::
 
-dōu (ph) 都 (he) all
+dōu (ph) 都 (he) "all" - goes before verb
   " (e.g.) 我们都喜欢古典音乐 (hp) wǒmen dōu xǐhuān gǔdiǎn yīnyuè (pe) we all like classical music
 
 wǒ yào zuò hěnduō shìqíng  (ph) 我要做很多事情  (he) i have to do a lot of things
@@ -1621,7 +1664,6 @@ search/find (eh) 寻找   (hp) xúnzhǎo
 
 xúnzhǎo (has-cmpt) zhǎo
 
-
 kànjiàn (ph) 看见 (he) see/visit
 jiàn  (ph) 见 (he) meet/see
 
@@ -1630,15 +1672,11 @@ jiàn  (ph) 见 (he) meet/see
 start (eh) 开始  (hp) kāishǐ
 stop  (eh)  停止  (hp) tíngzhǐ
 
-
 leave  (eh) 离开  (hp) líkāi
 arrive  (eh) 到  (hp) dào
 come  (eh) 来  (hp) lái
 
-i am (eh) 我是 (hp) wǒ shì
-
 zuò  (ph) 做  (he) do/make
-
 yào  (ph) 要  (he) want/need to 
 
 +:: health, medical ::
@@ -2034,6 +2072,10 @@ yào chá  (ph) 要查  (he) want to check
 plane  (eh) 飞机 (hp) fēijī
 take off  (eh) 起飞 (hp) qǐfēi
 
+hángbān (ph) 航班 (he) flight
+   "    (e.g.) wǒmen de hángbān qǔxiāole (ph)  我们的航班取消了 (he) our flight was cancelled
+
+
 aiport arrivals (eh) 机场到达 (hp) jīchǎng dàodá
 customs  (eh) 海关 (hp) hǎiguān
 jetlag  (eh) 时差 (hp) shíchā
@@ -2058,7 +2100,11 @@ bump into (eh)  遇到  (hp) yù dào
 
 #########################################################
 
-  :: countries, geography, travel, foreign, languages, han ::
+  :: countries, geography, travel, foreign ::
+
+guówài (ph) 国外 (he) foreign / abroad 
+wàidì rén  (ph) 外地人  (he) outsiders
+wàiguórén  (ph) 外国人  (he) foreigners
 
 country  (eh) 国家 (hp) guójiā
 
@@ -2071,49 +2117,29 @@ india  (he) 印度  (hp) yìndù
 japan  (he) 日本  (hp) rìběn
 australia (eh) 澳大利亚 (hp) àodàlìyǎ 
 
-rìyǔ  (ph) 日语  (he)  japanese as a language
-
-韩国人 (hp) hánguó rén (pe) "Korean(s)"
-韩语 (hp) hányǔ (pe) Korean language
-汉语 (hp) hànyǔ (pe) Chinese language
-
-zhōngwén yǒu jǐ gè shēngdiào (ph)  中文有几个声调  (he) How many tones does Chinese have?
+ :: languages ::
 
 yǔyán (ph)  语言  (he) language
   " (e.g.) wǒ xǐhuān yǔyán hái hěn shàncháng xué wàiyǔ  (ph) 我喜欢语言还很擅长学外语  (he) I like languages ​​and I am good at learning foreign languages
 
-grammar (eh) 语法 (hp) yǔfǎ
-
 $PREV.2 (ex) shàncháng  (ph) 擅长  (he) proficient in/good at
+
 wàiyǔ (ph)  外语  (he) foreign languages
+
+日语  (hp) rìyǔ  (pe)  japanese as a language
+韩语  (hp) hányǔ (pe) Korean language
+韩国人 (hp) hánguó rén (pe) "Korean(s)"
+汉语  (hp) hànyǔ (pe) Chinese language
+zhōngwén yǒu jǐ gè shēngdiào (ph)  中文有几个声调  (he) How many tones does Chinese have?
 
 wǒ bùnéng shuō liúlì zhōngwén (ph) 我不能说流利中文  (he) i can't speak chinese fluently
 
-nǐ de yīngyǔ yuè lái yuè hǎo(ph)  你的英语越来越好  (he) your english is getting better and better
 tā liǎng gè xīngqí hòu huì qù rìběn (ph) 他两个星期后会去日本  (he) he will go to japan in two weeks
 
 tā zài gēn wàiguó rén yuēhuì  (ph) 他在跟外国人约会  (he) he is dating a foreigner
 
 
 ###################################################
-
-  :: phone, signal, mobile, cellphone ::
-
-roaming  (eh) 漫游 (hp) mànyóu
-signal  (eh) 信号 (hp) xìnhào
-translate  (eh) 翻译 (hp) fānyì
-i don't have international roaming (eh)  我没有国际漫游 (hp)  wǒ méiyǒu guójì mànyóu
-
-phonecard  (eh) 电话卡 (hp) diànhuàkǎ
-wǒ shǒujī méi diànle  (ph) 我手机没电了  (he) my phone is out of battery
-wǒ yào chōngzhí (ph) 我要充值 (he) i want to recharge/top up
-
-wǒ yǒu guójì mànyóu  (ph) 我有国际漫游  (he) i have international roaming
-wǒmen yào jǐ diǎn tuì fáng  (ph) 我们要几点退房  (he) what time should we check out?
-zhǔnbèi hǎo le ma (ph) 准备好了吗  (he) are you ready / well prepared?
-
-jīchǎng lí zhèlǐ yuǎn ma (ph) 机场离这里远吗  (he) is the airport far from here?
-
 
  :: relationships ::
 
@@ -2583,6 +2609,10 @@ tíngchēchǎng zài dìxià èr céng (ph)  停车场在地下二层  (he) the 
 
  :: home, floors, upstairs, downstairs ::
 
+Wǒ hái mò shōushí hǎo bèibāo
+我还没收拾好背包
+I haven't finished packing my backpack yet.
+
 Wǒ yào shōushí yīxià jiā  (ph) 我要收拾一下家 (he) I need/am going to tidy up the house
 Wǒ xiǎng shàng lóu 我想上楼  (he) I want to go upstairs
 Wǒ xiǎng shàng lóu dǎsǎo xīn gōngyù (ph) 我想上楼打扫新公寓  (he) I want to go upstairs and clean the new apartment
@@ -2817,11 +2847,19 @@ beginner (eh) 菜鸟 (hp) càiniǎo
 novice / new hand (eh) 新手 (hp) xīnshǒu
 jīngyàn (ph) 经验 (he) experience
 
+#############################################################
 
-:: work | occupation | school , study | tests ::
+ #
+ # SCHOOL, STUDY
+ #
 
+:: school , study | tests ::
 
 学习 (hp)  xuéxí (pe) study
+
+shàngxué (ph) 上学 (he) go to school
+fàngxué  (ph) 放学 (he) get off school
+
 the exam is coming soon (eh) 试快到了 (hp) kǎoshì kuài dàole
 test/exam (eh) 考试 (hp) kǎoshì
 
@@ -2841,14 +2879,9 @@ zìjǐ (e.g.) wǒ xiān jièshào yīxià zìjǐ (ph) 我先介绍一下自己 (
 
 dānxīn (e.g.) wǒ wéi zhōngwén kǎoshì dānxīn (ph) 我为中文考试担心 (he) i'm worried about the chinese exam 
 
-#############################################################
+##############################################
 
- #
- # SCHOOL, STUDY
- #
-
-
-:: childhood, school ::
+:: childhood, school, college, university ::
 
 tóngnián  (ph) 童年  (he) childhood
 elementary school  (eh) 小学 (hp) xiǎoxué
@@ -2858,8 +2891,14 @@ school grade i.e. year  (eh) 年级 (hp) niánjí
 junior high school  (eh) 初中 (hp) chūzhōng
 high school  (eh) 高中 (hp) gāozhōng 
 high school diploma  (eh) 高中文凭 (hp) gāozhōng wénpíng
+university major (eh) 专业 (hp) zhuānyè
 
- bìyè   (ph) 毕业 (he) graduate verb
+lùnwén  (ph) 论文 (he) thesis/dissertation
+
+what is today's assignment  (eh) 今天的作业是什么 (hp) jīntiān de zuòyè shì shénme
+
+
+ bìyè   (ph) 毕业 (he) "graduate (verb)"
   " (e.g.) wǒ qùnián cóng běijīng dàxué bìyè  (ph) 我去年从北京大学毕业  (he) I graduated from Peking University last year
   " (e.g.) tā gānggāng bìyè méiyǒu jīngyàn (ph) 他刚刚毕业没有经验 (he) he just graduated and has no experience.
   " (e.g.) nǐ shì shénme shíhòu bìyè de (ph) 你是什么时候毕业的 (he) When did you graduate?
@@ -2871,27 +2910,47 @@ grades/score  (eh) 成绩 (hp) chéngjī
 learn/study  (eh) 学习 (hp) xuéxí
 study abroad  (eh) 留学 (hp) liúxué
 
-guówài (ph) 国外 (he) foreign / abroad 
-wàidì rén  (ph) 外地人  (he) outsiders
-wàiguórén  (ph) 外国人  (he) foreigners
-
-
 classroom  (eh) 课堂 (hp) kètáng
 jiàoshì    (ph) 教室 (he) classroom
 jiàoshī    (ph) 教师 (he) classroom teacher
 
+class i.e. lesson  (eh) 课 (hp) kè
+class i.e. group of people  (eh) 班 (hp) bān
+
 summer holiday  (eh) 暑假 (hp) shǔjià
 winter holiday  (eh) 寒假 (hp) hánjià
+
+ :: study, subjects, school  ::
+
+geography  (eh) 地理 (hp) dìlǐ
+dì (ph) 地 (he) land
+history  (eh) 历史 (hp) lìshǐ
 
 math  (eh) 数学 (hp) shùxué
 science  (eh) 科学(hp)  kēxué
 physics (eh) 物理 (hp) wùlǐ (e.g.) wùlǐ shíyàn shì (ph)  物理实验室  (he) physics laboratory
 $PREV.3 (useword)  wù (ph) 物 (he) thing 
 
+yánjiū wùlǐ tèbié yǒuqù (ph) 研究物理特别有趣 (he) researching/studying physics is especially interesting
+
+
+ :: studying ::
+
+take a class (eh) 上课 (hp) shàngkè
+we are going to review math today (eh) 我们今天要复习数学 (hp) wǒmen jīntiān yào fùxí shùxué
+
+
+during the lecture you should take notes (eh) 在讲座期间你应该做笔记 (hp) zài jiǎngzuò qíjiān nǐ yīnggāi zuò bǐjì
+
+lecture       (eh) 演讲   (hp) yǎnjiǎng
+tell stories  (eh) 讲故事  (hp) jiǎng gùshì
+jiǎng         (eh) 讲     (hp) speak/speech/lecture
+
+what's your university major (eh) 你大学的专业是什么 (hp)  nǐ dàxué de zhuānyè shì shénme
+i'm worried about the chinese exam (eh) 我对中文考试担心  (hp) wǒ duì zhōngwén kǎoshì dānxīn
+don't talk in class  (eh) 课堂上不要说话  (hp) kètáng shàng bùyào shuōhuà
 wùlǐ zhuānyè (ph)  物理专业  (he) physics major/graduate
 
-
-yánjiū wùlǐ tèbié yǒuqù (ph) 研究物理特别有趣 (he) researching/studying physics is especially interesting
 
  :: easy, hard, difficult ::
 
@@ -2903,24 +2962,6 @@ easy  (eh) 容易 (hp) róngyì
 
 improve  (eh) 提高 (hp) tígāo
 convenient  (eh) 方便 (hp) fāngbiàn
-
-
- :: studying ::
-
-we are going to review math today (eh) 我们今天要复习数学 (hp) wǒmen jīntiān yào fùxí shùxué
-talk (eh) 讲 (hp) jiǎng
-
-while speaking (eh) 在讲的时候 (hp) zài jiǎng de shíhòu
-
-during the lecture you should take notes (eh) 在讲座期间你应该做笔记 (hp) zài jiǎngzuò qíjiān nǐ yīnggāi zuò bǐjì
-
-lecture       (eh) 演讲   (hp) yǎnjiǎng
-tell stories  (eh) 讲故事  (hp) jiǎng gùshì
-jiǎng         (eh) 讲     (hp) speak/speech/lecture
-
-what's your university major (eh) 你大学的专业是什么 (hp)  nǐ dàxué de zhuānyè shì shénme
-i'm worried about the chinese exam (eh) 我对中文考试担心  (hp) wǒ duì zhōngwén kǎoshì dānxīn
-don't talk in class  (eh) 课堂上不要说话  (hp) kètáng shàng bùyào shuōhuà
 
 
 :: work, writing, notes, ::
@@ -2937,7 +2978,6 @@ borrow  (eh) 借 (hp) jiè
 my notebook is missing (eh) 我的笔记本不见了 (hp) wǒ de bǐjìběn bùjiànle
 can i borrow the notebook from you (eh) 我可以向你借笔记本吗 (hp) wǒ kěyǐ xiàng nǐ jiè bǐjìběn ma
 
-
 měi gè xuéshēng xūyào shàng kēxué kè  (ph) 每个学生需要上科学课  (he) every student needs to take a science class
 
 it is made of atoms (eh)  它是由原子组成的  (hp) tā shì yóu yuánzǐ zǔchéng de
@@ -2948,15 +2988,6 @@ there are 4 main rules  (eh) 有4个主要规则 yǒu 4 gè zhǔyào guīzé
 there are 4 rules (eh)  有4条规则 yǒu 4 tiáo guīzé
 
 
-:: subjects, school  ::
-
-geography  (eh) 地理 (hp) dìlǐ
-
-dì (ph) 地 (he) land
-
-history  (eh) 历史 (hp) lìshǐ
-class i.e. lesson  (eh) 课 (hp) kè
-class i.e. group of people  (eh) 班 (hp) bān
 
 
 move domicile (eh) 搬 (hp) bān
@@ -3000,17 +3031,14 @@ encourage me to never give up learning (eh) 鼓励我从不放弃学习 (hp) gǔ
 reminder/remind (eh) 提醒 (hp) tíxǐng
 encourage (eh) 鼓励 (hp) gǔlì
 
- :: university ::
-
-university major (eh) 专业 (hp) zhuānyè
-
-Lùnwén  (ph) 论文 (he) thesis/dissertation
-
-what is today's assignment  (eh) 今天的作业是什么 (hp) jīntiān de zuòyè shì shénme
 
 
+########################################
 
  :: talking, conversation, speech::
+
+talk (eh) 讲 (hp) jiǎng
+while speaking (eh) 在讲的时候 (hp) zài jiǎng de shíhòu
 
 talk  (eh) 讲话  (hp) jiǎng huà
 discuss/talk about  (eh) 谈  (hp) tán
@@ -3069,13 +3097,12 @@ work/effort  (eh) 努力 (hp) nǔlì
 work harder  (eh) 努力一点 (hp)  nǔlì yīdiǎn
 lazy (eh) 懒 (hp) lǎn
 
-放学  (hp) fàngxué  (pe) get off school
-
+ +:: gong ::
  
 gōngzuò (ph) 工作  (he) job/task/work 
     "  (e.g.) nǐ zuò shénme gōngzuò  (ph)  你做什么工作 (he) what do you do for a job
 
- +:: gong ::
+
 
 gōngsī        (ph)  公司  (he) company 
 bàngōngshì    (ph)  办公室  (he) office
@@ -3127,6 +3154,26 @@ wǒ yǒu yīgè xīn de gōngzuò jīhuì (ph) 我有一个新的工作机会 (h
 qǐng zài hétóng qiānmíng (ph) 请在合同签名  (he) please sign the contract
 zhè shì nǐ de qiānmíng ma (ph) 这是你的签名吗  (he) is this your signature
 
+ ####################################
+
+  :: phone, signal, mobile, cellphone ::
+
+roaming  (eh) 漫游 (hp) mànyóu
+signal  (eh) 信号 (hp) xìnhào
+translate  (eh) 翻译 (hp) fānyì
+i don't have international roaming (eh)  我没有国际漫游 (hp)  wǒ méiyǒu guójì mànyóu
+
+phonecard  (eh) 电话卡 (hp) diànhuàkǎ
+wǒ shǒujī méi diànle  (ph) 我手机没电了  (he) my phone is out of battery
+wǒ yào chōngzhí (ph) 我要充值 (he) i want to recharge/top up
+
+wǒ yǒu guójì mànyóu  (ph) 我有国际漫游  (he) i have international roaming
+wǒmen yào jǐ diǎn tuì fáng  (ph) 我们要几点退房  (he) what time should we check out?
+zhǔnbèi hǎo le ma (ph) 准备好了吗  (he) are you ready / well prepared?
+
+jīchǎng lí zhèlǐ yuǎn ma (ph) 机场离这里远吗  (he) is the airport far from here?
+
+ ####################################
 
   :: business, company, workplace, work life, IT, information technology, at the office ::
 
@@ -3354,7 +3401,9 @@ xiàng     (ph)  象   (he) image/likeness
   " (e.g.) wǒ xiǎng gēn péngyǒu kāishǐ zuò shēngyì (ph) 我想跟朋友开始做生意  (he) i want to start a business with my friends
   $PREV.2 (contrast) wǒ yào gēn nǐ shāngliáng yī jiàn shìqíng (ph) 我要跟你商量一件事情  (he) i want to discuss something with you
 
+hǎoxiàng (ph) 好像 (he) seems/looks like
 
+  " (e.g.) wǒ shǒubiǎo hǎoxiàng méi diànle (ph) 我手表好像没电了 (he) My watch seems to be out of battery.
 
 :: go, do ::
 
@@ -3983,9 +4032,6 @@ lěng sǐle (ph) 冷死了  (he) deathly cold
 
 jiùmìng  (ph) 救命  (he) help!
 wǒ shòushāngle (ph) 我受伤了  (he) i am injured.
-
-
-感冒需要一段时间才会好 (hp) gǎnmào xūyào yīduàn shíjiān cái huì hǎo (pe) it takes a while for a cold to get better
 
 
 

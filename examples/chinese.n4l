@@ -1982,7 +1982,7 @@ map  (eh) 地图 (hp) dìtú
 
 luggage (eh)  行李 (hp) xínglǐ
 xínglǐ xiāng  (ph)  行李箱  (he) suitcase
-
+wǒ hái mò shōushí hǎo bèibāo (ph) 我还没收拾好背包 (he) I haven't finished packing my backpack yet.
 
  ####
 
@@ -2549,7 +2549,7 @@ zuìhòu wǎng zuǒ zǒu (ph) 最后往左走 (he) finally, go left
 arrive  (eh) 到  (hp) dào
 leave  (eh) 离开  (hp) líkāi
 
-Wǒmen cóng shūdiàn chūláile  (ph) 我们从书店出来了  (he) We came out of the bookstore.
+wǒmen cóng shūdiàn chūláile  (ph) 我们从书店出来了  (he) We came out of the bookstore.
 
 在 (hp)zài (pe) positional
 
@@ -2567,12 +2567,11 @@ hùwài  (ph) 户外  (he) outdoor
 inside  (eh) 里面 (hp) lǐ miàn
 outside  (eh) 外面 (hp) wàimiàn
 
-+:: up, down::
+:: up, down::
 
 outside of (ep)zài .. wài (ph) 在..外
 inside of(ep) zài .. lǐ  (ph) 在..里
 
-+::examples::
 
 jiǔdiàn wài yǒuyī liàng chūzū chē (ph) 酒店外有一辆出租车 (he) there is a taxi outside the hotel
 shù shàng yǒu liù zhǐ niǎo        (ph) 树上有六只鸟     (he) there are six birds in the tree
@@ -2609,9 +2608,6 @@ tíngchēchǎng zài dìxià èr céng (ph)  停车场在地下二层  (he) the 
 
  :: home, floors, upstairs, downstairs ::
 
-Wǒ hái mò shōushí hǎo bèibāo
-我还没收拾好背包
-I haven't finished packing my backpack yet.
 
 Wǒ yào shōushí yīxià jiā  (ph) 我要收拾一下家 (he) I need/am going to tidy up the house
 Wǒ xiǎng shàng lóu 我想上楼  (he) I want to go upstairs
@@ -2672,13 +2668,17 @@ the south/southern  (eh) 南方 (hp) nánfāng
 eastern  (eh) 东方 (hp) dōngfāng
 western  (eh) 西方 (hp) xīfāng
 
+#########################################
 
-
-+:: driving ::
+:: driving ::
 
 turn left (eh) 左转 (hp) zuǒ zhuǎn
 turn right  (eh) 右转  (hp) yòu zhuǎn
 go straight  (eh) ahead 直走  (hp) zhí zǒu
+
+
+#########################################
+
 
 :: area, neighbourhood, region, environment ::
 
@@ -2697,6 +2697,8 @@ zhège dìfāng yǒumíng (ph) 这个地方有名 (he) this place is famous
 
 around /nearby/surroundings (eh)  周围(hp)  zhōuwéi 
 
+#########################################
+
 :: location, position ::
 
 address  (eh) 地址 (hp) dìzhǐ
@@ -2707,6 +2709,7 @@ lost  (eh) 迷路 (hp) mílù
 
 is she lost?  (eh) 她迷路了吗 (hp) tā mílùle ma
 
+#########################################
 
 :: distance ::
 
@@ -2715,6 +2718,9 @@ near  (eh) 近  (hp) jìn
 
 how far is it to the museum (eh) 到博物馆有多远 (hp) dào bówùguǎn yǒu duō yuǎn
 how far is it from the hotel to the museum  (eh) 从酒店到博物馆有多远  (hp) cóng jiǔdiàn dào bówùguǎn yǒu duō yuǎn
+
+#########################################
+
 
 :: directions, layout, position, configuration , from, toward ::
 

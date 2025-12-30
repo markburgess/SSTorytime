@@ -56,7 +56,8 @@ There are also tools for helping you to get started making notes about a text do
 
 The knowledge database is divided into
 
-* **Chapter**s: each file starting or section with a ` - ` mark is a chapter section.
+* **Chapter**s: each file starting or section with a ` - ` mark is a chapter section. There should only be one
+section per file, at the start of the file.
 * **Context**s: inside each chapter, you can tag subsections with ` :: context, tags, words...` that may be used to limit or enable search criteria.
 * **Nodes** and **Links**: each item is a node, and each connection between items is a link. Links have types that you define for yourself, but they must all belong to one of the four meta-types: `leads to`, `contains`, `expresses property`, or `is near or similar to`.
 

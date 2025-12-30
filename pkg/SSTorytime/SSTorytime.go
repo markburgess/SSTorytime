@@ -8644,31 +8644,17 @@ func CleanText(s string) string {
 	s = m.ReplaceAllString(s,":\n") 
 
 	// Weird English abbrev
-	s = strings.Replace(s,"Mr.","Mr",-1) 
-	s = strings.Replace(s,"Ms.","Ms",-1) 
-	s = strings.Replace(s,"Mrs.","Mrs",-1) 
-	s = strings.Replace(s,"Dr.","Dr",-1)
-	s = strings.Replace(s,"St.","St",-1) 
 	s = strings.Replace(s,"[","",-1) 
 	s = strings.Replace(s,"]","",-1) 
 
-	// Encode sentence space boudnaries and end of sentence markers with a # for later splitting
+	// Encode sentence space boundaries and end of sentence markers with a # for later splitting
 
-	m = regexp.MustCompile("([?!.。]+[ \n])")  // end of sentence punctuation
-	s = m.ReplaceAllString(s,"$0#")
-
-	// ellipsis
+	/* ellipsis
 	m = regexp.MustCompile("([.][.][.])+")  // end of sentence punctuation
 	s = m.ReplaceAllString(s,"---")
 
 	m = regexp.MustCompile("[—]+")  // endash
-	s = m.ReplaceAllString(s,", ")
-
-	m = regexp.MustCompile("[\n][\n]")     // paragraph or highlighted sentence
-	s = m.ReplaceAllString(s,">>\n")
-
-	m = regexp.MustCompile("[\n]+")        // spurious spaces
-	s = m.ReplaceAllString(s," ")
+	s = m.ReplaceAllString(s,", ") */
 
 	return s
 }
@@ -8709,26 +8695,22 @@ func FractionateTextFile(name string) ([][][]string,int) {
 
 //**************************************************************
 
-func SplitIntoParaSentences(text string) [][][]string {
-
-	// Take arbitrary text (preprocessed by clean text) and return coherent
-	// semantic fragments as separate elements
-
-	// If the text contains parenthetic remarks, these appear unexpanded and expanded
+func SplitIntoParaSentences(file string) [][][]string {
 
 	var pbsf [][][]string
 
-	paras := strings.Split(text,">>")
+	// first split by paragraph
 
-	for p := 0; p < len(paras); p++ {
+	paras := strings.Split(file,"\n\n")
 
-		re := regexp.MustCompile("[^#]#")
+	for _,p := range paras {
 
-		sentences := re.Split(paras[p], -1)
-		
+		p = strings.TrimSpace(p)
+		sentences := SplitSentences(p)
+
 		var cleaned [][]string
 		
-		for s := range sentences{
+		for s := range sentences {
 
 			// NB, if parentheses contain multiple sentences, this complains, TBD
 
@@ -8742,11 +8724,48 @@ func SplitIntoParaSentences(text string) [][][]string {
 					codons = append(codons,content)
 				}
 			}
-			cleaned = append(cleaned,codons)
+
+			if len(codons) > 0 {
+				cleaned = append(cleaned,codons)
+			}
 		}
-		pbsf = append(pbsf,cleaned)
+
+		if len(cleaned) > 0 {
+			pbsf = append(pbsf,cleaned)
+		}
 	}
+
 	return pbsf
+}
+
+//**************************************************************
+
+func SplitSentences(para string) []string {
+
+	var sentences []string
+	const small_string = 10
+
+	re := regexp.MustCompile("[?!.。][ \n\t]")
+	para = re.ReplaceAllString(para,"$0#")
+
+	sents := strings.Split(para,"#")
+	
+	var str string
+
+	for i := 0; i < len(sents); i++ {
+		
+		if i < len(sents)-1 && len(sents[i]) < small_string {
+			str += sents[i]
+			continue
+		}
+
+		str += sents[i]
+		str = strings.ReplaceAll(str,"\n"," ")
+		sentences = append(sentences,str)
+		str = ""
+	}
+	
+	return sentences
 }
 
 //**************************************************************

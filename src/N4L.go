@@ -1506,7 +1506,7 @@ func ClassifyTokenRole(token string) {
 		AssessGrammarCompletions(expression,LINE_ITEM_STATE)
 
 	case '-':
-		if token[1:2] == string(':') {
+		if token[len(token)-1:] == string(':') {
 			expression := ExtractContextExpression(token)
 			CheckSequenceMode(expression,'-')
 			LINE_ITEM_STATE = ROLE_CONTEXT_SUBTRACT
@@ -1606,12 +1606,12 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		CheckSection(this_item)
 
 	case ROLE_CONTEXT_ADD:
-		PVerbose("Add to context:",this_item)
+		Box("Add to context:",this_item)
 		ContextEval(this_item,"+")
 		CheckSection(this_item)
 
 	case ROLE_CONTEXT_SUBTRACT:
-		PVerbose("Remove from context:",this_item)
+		Box("Remove from context:",this_item)
 		ContextEval(this_item,"-")
 		CheckSection(this_item)
 

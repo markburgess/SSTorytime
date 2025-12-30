@@ -222,16 +222,20 @@ nth (eh) 第n个 (hp) dì n gè
 
 this is the fifth time/occasion (eh) 这是第五次 (hp) zhè shì dì wǔ cì
 
+  ####################################
 
 :: time | time concepts | early , late , before, after ::
 
 now (eh) 现在 (hp) xiànzài
 zhèng (ph) 正 (he) just
 zhèngzài (ph) 正在  (he) just now, right now
-then/just/at once/suddenly (eh) 就 (hp) Jiù
+then/just/at once/suddenly (eh) 就 (hp) jiù
 tā gǎn gāng jìnle diàntī  (ph) 他敢刚进了电梯  (he) He just got into the elevator
 just now  (eh) 刚才 (hp) gāngcái
 
+tā gāng gēchàng de hěn hǎo (ph)  他刚歌唱的很好  (he) He just sang very well
+
+tā chànggē chàng dé hěn hǎo (ph)  他唱歌唱得很好  (he) He sings very well
 
 
   ####################################
@@ -260,8 +264,8 @@ Wǒ jīntiān méiyǒu qù xuéxiào (ph) 我今天没有去学校 (he) I didn't
 wǒmen de yuángōng bù duō (ph) 我们的员工不多 (he)  we don't have many employees
 nǐ méi huídá zhège wèntí  (ph) 你没回答这个问题  (he) you didn't answer the question
 
-@bu I did not meet with him last weekend (eh)  上周末我没有见到他 (hp) Shàng zhōumò wǒ méiyǒu jiàn dào tā 
-      " (prop) WRONG: Wǒ shàng gè zhōumò bù gēn tā jiànmiàn (ph) 我 上个 周末 不 跟 他 见面 (see) $bu.2
+@bu I did not meet with him last weekend (eh)  上周末我没有见到他 (hp) shàng zhōumò wǒ méiyǒu jiàn dào tā 
+      " (prop) WRONG: wǒ shàng gè zhōumò bù gēn tā jiànmiàn (ph) 我 上个 周末 不 跟 他 见面 (see) $bu.2
 
  :: grammar, use of shi as something like "I'm like"... :: 
 
@@ -306,6 +310,10 @@ i am studying (eh)  我在学习  (hp) wǒ zài xuéxí
 i am exercising (eh)  我在锻炼  (hp) wǒ zài duànliàn
 i am dreaming (eh)  我在做梦  (hp) wǒ zài zuòmèng
 
+I'm exhausted (eh) 我累极了 (hp) wǒ lèi jíle
+
+tired (ep) lèi (ph) 累
+tireder (eh) 更累 (hp) gèng lèi
 
 good (eh)  好的  (hp) hǎo de
 better (eh)  更好的  (hp) gèng hǎo de
@@ -483,9 +491,10 @@ tóng (ph) 同 (he) same
   "  (e.g.) dàxiǎo (ph) 大小 (he)  size
   "  (e.g.) dàjiā  (ph) 大家 (he)  everybody
   "  (e.g.) dàshi  (ph) 大使 (he)  ambassador
-  "  (e.g.) dàshēng (ph) 大声 (he)  loud / big sound
-  "  (e.g.) dàhǎi  (ph)  大海 (he)  sea
-  "  (e.g.) dàlù   (ph)  大陆 (he)  mainland
+  "  (e.g.) dàshēng (ph) 大声 (he) loud / big sound
+  "  (e.g.) dàhǎi  (ph)  大海 (he) sea
+  "  (e.g.) dàlù   (ph)  大陆 (he) mainland
+  "  (e.g.) zì dà  (ph)  自大 (he) arrogant
 
   ####################################
 
@@ -495,10 +504,10 @@ tóng (ph) 同 (he) same
    bìng (ph) 并 (he) and
     hái (ph) 还 (he)  and/yet/still/also
 
- huòzhě (ph) 或者 (he) or, when giving options
+ huòzhě (ph) 或者 (he) or, when offering + options
 
- háishì (ph) 还是 (he) still, yet / or, when asking question
-      " (e.g.) Háishì zuò fēijī kuài (ph) 还是坐飞机快 (he) it's still faster to fly
+ háishì (ph) 还是 (he) still, yet / or, when asking a question
+      " (e.g.) háishì zuò fēijī kuài (ph) 还是坐飞机快 (he) it's still faster to fly
 
 
 I like to find problems and I like to solve them (eh) 我喜欢发现问题 并 喜欢解决问题 (hp)  wǒ xǐhuān fāxiàn wèntí bìng xǐhuān jiějué wèntí (ex) bìng
@@ -1676,9 +1685,6 @@ yòubiān nà shì shénme (ph)  右边那是什么 (he) what is that on the rig
 dōu (ph) 都 (he) the "all" goes before verb
   " (e.g.) 我们都喜欢古典音乐 (hp) wǒmen dōu xǐhuān gǔdiǎn yīnyuè (pe) we all like classical music
 
-wǒ yào zuò hěnduō shìqíng  (ph) 我要做很多事情  (he) i have to do a lot of things
-
-
 jǐ gè wàidì rén  (ph) 几个外地人  (he) a few outsiders
 jǐ  (ph) 几 (he) several / a few
 
@@ -1966,14 +1972,18 @@ de (ph) 的 (has role) genitive/adjective binding particle
 finally  (eh) 终于 (hp) zhōngyú
 about/concerning  (eh) 为 (hp) wéi
 
- :: de and dei ::
+#######################################################
+
+ :: de and dei , have to ::
 
 de       (ph) 的 (he) of / genetive
 dé / dei (ph) 得 (he) have to / adverb particle
 
-tā gāng gēchàng de hěn hǎo (ph)  他刚歌唱的很好  (he) He just sang very well
+ " (e.g.) nǐmen dōu dé zǒu lóutī (ph)  你们都得走楼梯。(he) You all have to take the stairs
 
-tā chànggē chàng dé hěn hǎo (ph)  他唱歌唱得很好  (he) He sings very well
+wǒ dé zǒule (ph) 我得走了 (he) I have to go
+
+   " (contrast) wǒ yào zuò hěnduō shìqíng  (ph) 我要做很多事情  (he) i have to do a lot of things (note) sometimes we say have to when we mean need to
 
 
 ###########################################################
@@ -2217,6 +2227,9 @@ jīhuì (ph)  机会 (he) chance/opportunity
 
 :: feelings , emotions , happy, sad, bore, reactions ::
 
+
+feel (ep) juédé (ph) 觉得
+
 xìngfú (ph) 幸福 (he) happiness
 xǐ (ph) 喜 (he) happiness
 xǐ (ph) 喜喜 (he) double happiness! Luck, esp in love
@@ -2293,10 +2306,6 @@ choose  (eh) 选择 (hp) xuǎnzé
 
 
 
-
-tired (ep) lèi (ph) 累
-
-feel (ep) juédé (ph)觉得
 
  ##################
 
@@ -2470,10 +2479,24 @@ fànguǎn  (ph) 饭馆  (he) restaurant
 cèsuǒ  (ph) 厕所  (he) toilet
   "    (note) this is a more informal or "vulgar" name
 
-医院  (hp) yīyuàn  (pe) hospital
-
 nǐ kěyǐ bǎ fángjiān dǎsǎo gānjìng ma (ph) 你可以把房间打扫干净吗  (he) can you clean the room
 
+#####################################################
+
+ #
+ # HOSPITAL, DOCTOR
+ #
+
+
+医院  (hp) yīyuàn  (pe) hospital
+
+minor surgery (eh) 小手术 (hp) xiǎo shǒushù
+
+
+nǐ de tóu néng dòng ma (ph) 你的头能动吗 (he) Can you move your head?
+
+Your leg is broken (eh) 你的腿断了 (hp) nǐ de tuǐ duànle
+    "              (eh) 你的腿骨折了 (hp) nǐ de tuǐ gǔzhéle
 
 #####################################################
 
@@ -2677,6 +2700,9 @@ tíngchēchǎng zài dìxià èr céng (ph)  停车场在地下二层  (he) the 
  :: home, floors, upstairs, downstairs ::
 
 
+
+
+
 Wǒ yào shōushí yīxià jiā  (ph) 我要收拾一下家 (he) I need/am going to tidy up the house
 Wǒ xiǎng shàng lóu 我想上楼  (he) I want to go upstairs
 Wǒ xiǎng shàng lóu dǎsǎo xīn gōngyù (ph) 我想上楼打扫新公寓  (he) I want to go upstairs and clean the new apartment
@@ -2740,10 +2766,11 @@ western  (eh) 西方 (hp) xīfāng
 
 :: driving ::
 
-turn left (eh) 左转 (hp) zuǒ zhuǎn
-turn right  (eh) 右转  (hp) yòu zhuǎn
-go straight  (eh) ahead 直走  (hp) zhí zǒu
+turn left         (eh) 左转  (hp) zuǒ zhuǎn
+turn right        (eh) 右转  (hp) yòu zhuǎn
+go straight ahead (eh) 直走  (hp) zhí zǒu
 
+seat belt (eh) 安全带 (hp) ānquán dài
 
 #########################################
 

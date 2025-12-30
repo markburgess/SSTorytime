@@ -416,6 +416,8 @@ func ClassifyConfigRole(token string) {
 		return
 	}
 
+	// Chapter definition must be at the top
+
 	if token[0] == '-' && LINE_ITEM_STATE == ROLE_BLANK_LINE {
 		SECTION_STATE = strings.TrimSpace(token[1:])
 		Box("Configuration of",SECTION_STATE)
@@ -1308,7 +1310,7 @@ func SkipWhiteSpace(src []rune, pos int) int {
 	for ; pos < len(src) && IsWhiteSpace(src[pos],src[pos]); pos++ {
 
 		if src[pos] == '\n' {
-			UpdateLastLineCache() 
+			UpdateLastLineCache()
 		} else {
 		
 			if src[pos] == '#' || (src[pos] == '/' && src[pos+1] == '/') {
@@ -1509,10 +1511,18 @@ func ClassifyTokenRole(token string) {
 			CheckSequenceMode(expression,'-')
 			LINE_ITEM_STATE = ROLE_CONTEXT_SUBTRACT
 			AssessGrammarCompletions(expression,LINE_ITEM_STATE)
-		} else {
+		} else if len(SECTION_STATE) == 0{
 			section := strings.TrimSpace(token[1:])
 			LINE_ITEM_STATE = ROLE_SECTION
 			AssessGrammarCompletions(section,LINE_ITEM_STATE)
+		} else {
+			// The line starts with a -, but it's not a new chapter
+			LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
+			StoreAlias(token)
+			AssessGrammarCompletions(token,LINE_ITEM_STATE)
+			
+			LINE_ITEM_STATE = ROLE_EVENT
+			LINE_ITEM_COUNTER++
 		}
 
 		// No quotes here in a string, we need to allow quoting in excerpts.
@@ -2012,6 +2022,7 @@ func UpdateLastLineCache() {
 	LINE_PATH = nil
 
 	LINE_ITEM_STATE = ROLE_BLANK_LINE
+
 }
 
 //**************************************************************

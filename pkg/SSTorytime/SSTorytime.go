@@ -8059,6 +8059,23 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 		}
 	}
 
+	var rnames []string
+	var wildcards bool
+
+	// If there are wildcards AND other matches, these are redundant so remove any/%%
+
+	for _,term := range param.Name {
+		if term == "%%" || term == "any" {
+			wildcards = true
+		} else {
+			rnames = append(rnames,term)
+		}
+	}
+
+	if wildcards && len(rnames) > 0 {
+		param.Name = rnames
+	}
+
 	return param
 }
 

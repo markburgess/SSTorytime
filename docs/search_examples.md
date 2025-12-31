@@ -146,7 +146,8 @@ Postgres' `ts_vector()` functionalityis very powerful, but it relies on a dictio
 Three synonyms are provided for convenience:
 
 <pre>
-\dna \chapter NDA
+\dna \chapter NDA                   # Show all terms discovered
+\terms data patent \chapter nda     # show terms matching the list
 \terms \chapter Darwin
 \concepts \chapter moby
 </pre>

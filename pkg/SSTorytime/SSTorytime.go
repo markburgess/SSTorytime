@@ -8224,6 +8224,76 @@ func SomethingLike(s string,keywords []string) string {
 
 //******************************************************************
 
+func CheckHelpQuery(name string) string {
+
+	if name == "\\help" {
+		name = "\\notes \\chapter \"help and search\" \\limit 40"
+	}
+	
+	return name
+}
+
+//******************************************************************
+
+func CheckNPtrQuery(name,nclass,ncptr string) string {
+
+	if name == "" && len(nclass) > 0 && len(ncptr) > 0 {
+		// direct click on an item
+		var a, b int
+		fmt.Sscanf(nclass, "%d", &a)
+		fmt.Sscanf(ncptr, "%d", &b)
+		nstr := fmt.Sprintf("(%d,%d)", a, b)
+		name = name + nstr
+	}
+
+	return name
+}
+
+//******************************************************************
+
+func CheckRemindQuery(name string) string {
+
+	if len(name) == 0 || name == "\\remind" {
+		ambient, key, _ := GetTimeContext()
+		name = "any \\chapter reminders \\context any, " + key + " " + ambient + " \\limit 20"
+	}
+
+	return name
+}
+
+//******************************************************************
+
+func CheckConceptQuery(name string) string {
+
+	if strings.Contains(name,"\\dna ") {
+		repl := "any \\arrow " + INV_CONT_FRAG_IN_S + " \\limit 20 "
+		name = strings.Replace(name, "\\dna ",repl,-1)
+		return name
+	}
+
+	if strings.Contains(name,"\\concept ") {
+		repl := "any \\arrow " + INV_CONT_FRAG_IN_S + " \\limit 20 "
+		name = strings.Replace(name, "\\concept ",repl,-1)
+		return name
+	}
+
+	if strings.Contains(name,"\\concepts ") {
+		repl := "any \\arrow " + INV_CONT_FRAG_IN_S + " \\limit 20 "
+		name = strings.Replace(name, "\\concepts ",repl,-1)
+		return name
+	}
+
+	if strings.Contains(name,"\\terms ") {
+		repl := "any \\arrow " + INV_CONT_FRAG_IN_S + " \\limit 20 "
+		name = strings.Replace(name, "\\terms ",repl,-1)
+		return name
+	}
+
+	return name
+}
+
+//******************************************************************
+
 func IsCommand(s string,list []string) bool {
 
 	const min_sense = 5

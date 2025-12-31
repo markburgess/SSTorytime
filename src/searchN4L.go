@@ -85,15 +85,9 @@ func main() {
 		}
 	}
 
-	if len(search_string) == 0 || search_string == "\\remind" {
-		ambient,key,_ := SST.GetTimeContext()
-		search_string = "any \\chapter reminders \\context " + key + " " + ambient
-	}
-	
-	if search_string == "\\help" {
-		search_string = "\\notes \\chapter \"help and search\" \\limit 40"
-	}
-
+	search_string = SST.CheckRemindQuery(search_string)
+	search_string = SST.CheckHelpQuery(search_string)
+	search_string = SST.CheckConceptQuery(search_string)
 
 	search = SST.DecodeSearchField(search_string)
 	

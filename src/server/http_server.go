@@ -196,23 +196,10 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if name == "" && len(nclass) > 0 && len(ncptr) > 0 {
-			// direct click on an item
-			var a, b int
-			fmt.Sscanf(nclass, "%d", &a)
-			fmt.Sscanf(ncptr, "%d", &b)
-			nstr := fmt.Sprintf("(%d,%d)", a, b)
-			name = name + nstr
-		}
-
-		if len(name) == 0 || name == "\\remind" {
-			ambient, key, _ := SST.GetTimeContext()
-			name = "any \\chapter reminders \\context any, " + key + " " + ambient + " \\limit 20"
-		}
-
-		if name == "\\help" {
-			name = "\\notes \\chapter \"help and search\" \\limit 40"
-		}
+		name = SST.CheckNPtrQuery(name,nclass,ncptr)
+		name = SST.CheckRemindQuery(name)
+		name = SST.CheckHelpQuery(name)
+		name = SST.CheckConceptQuery(name)
 
 		fmt.Println("\nReceived command:", name)
 

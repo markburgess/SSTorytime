@@ -7,10 +7,15 @@
  :: this agreement, property rights, any person ::
 
 @sen0   CONSULTANCY CONTRACT
+
               " (extract-fr) part 0 of NDA about: this agreement, property rights, any person
 
 @sen1   This Consultancy Contract, [“Agreement”], is made on 11 of January 2022 [“Effective date”], by and between THE OFFER COMPANY, a norwegian company, organization number, 123456, with registered address OFFER ADDRESS [the “Company”], and THE ACCEPTING COMPANY AS, a norwegian company, organization number, 920957773, with its registered address ACCEPT ADDRESS, [the “Consultant”]
               " (extract-fr) part 0 of NDA about: this agreement, property rights, any person
+
+ #
+ # SERVICES, add you notes ...
+ #
 
 @sen2   1. SERVICES
               " (extract-fr) part 0 of NDA about: this agreement, property rights, any person
@@ -48,6 +53,10 @@
 @sen13   A formal employment relation in terms of social security is not intended.
               " (extract-fr) part 0 of NDA about: this agreement, property rights, any person
 
+ #
+ # PAYMENT
+ #
+
 @sen14   2. PAYMENT
               " (extract-fr) part 0 of NDA about: this agreement, property rights, any person
 
@@ -71,6 +80,10 @@
 
 @sen21   2.5. Upon prior approval of the Company, Consultant may receive compensation of reasonable business expenses related to provision of Services to the Company including office space or traveling expenses.
               " (extract-fr) part 0 of NDA about: this agreement, property rights, any person
+
+ #
+ # TERM AND TERMINATION
+ #
 
 @sen22   3. TERM AND TERMINATION
               " (extract-fr) part 0 of NDA about: this agreement, property rights, any person
@@ -99,6 +112,10 @@
 @sen30   3.4. Should this Agreement be terminated, Consultant shall return to the Company any and all equipment, [including software accounts], and confidential information made available to it, if applicable, by the Company in order to provide the Services according to the Company's instructions.
               " (extract-fr) part 0 of NDA about: this agreement, property rights, any person
 
+ #
+ # COMPANY SYSTEMS
+ #
+
 @sen31   4. USE OF COMPANY’S SYSTEMS
               " (extract-fr) part 0 of NDA about: this agreement, property rights, any person
 
@@ -126,6 +143,10 @@
 @sen39   and to group companies as part of the administration of personnel / contractors etc.
               " (extract-fr) part 0 of NDA about: this agreement, property rights, any person
 
+ #
+ # PROFESSIONAL SECRECY
+ #
+
 @sen40   5. PROFESSIONAL SECRECY
               " (extract-fr) part 0 of NDA about: this agreement, property rights, any person
 
@@ -148,6 +169,11 @@
 
 @sen46   5.4. The Consultant acknowledges that any breach of confidentiality at any time may lead to liability and may constitute grounds for termination of this Agreement and/or render the Consultant liable to legal action.
               " (extract-fr) part 1 of NDA about: processing terms, this agreement, personal data
+
+
+ #
+ # IP
+ #
 
 @sen47   6. INTELLECTUAL PROPERTY
               " (extract-fr) part 1 of NDA about: processing terms, this agreement, personal data
@@ -172,6 +198,10 @@
 
 @sen54   6.4. The Consultant shall not and shall not authorize any third party any claim or action in court of any jurisdiction whatsoever that Company’s use of Deliverables under this Agreement infringing Consultants intellectual property rights, [including copyright, trademark and patent rights]
               " (extract-fr) part 1 of NDA about: processing terms, this agreement, personal data
+
+ #
+ # LIABILITY
+ #
 
 @sen55   7. LIABILITY
               " (extract-fr) part 1 of NDA about: processing terms, this agreement, personal data
@@ -212,6 +242,11 @@
 @sen67   Any claim for discontinuation or liquidated damages shall not affect the Company’s right to claim additional compensation for losses in excess of the liquidated damages.
               " (extract-fr) part 1 of NDA about: processing terms, this agreement, personal data
 
+
+ #
+ # PERSONAL DATA
+ #
+
 @sen68   9. PERSONAL DATA
               " (extract-fr) part 1 of NDA about: processing terms, this agreement, personal data
 
@@ -223,6 +258,10 @@
 
 @sen71   9.2. The exact terms of personal data processing are determined in the Annex C - Personal data processing terms.
               " (extract-fr) part 1 of NDA about: processing terms, this agreement, personal data
+
+ #
+ # INDEMNIFICATION
+ #
 
 @sen72   10. INDEMNITY
               " (extract-fr) part 1 of NDA about: processing terms, this agreement, personal data
@@ -269,8 +308,14 @@
 @sen86   11.8. The Parties also agreed to use the electronic signature upon the signing of the Agreement, of the amendments to the Agreement as well as upon the signing of the primary accounting documents, which are concluded upon the Agreement execution.
               " (extract-fr) part 1 of NDA about: processing terms, this agreement, personal data
 
+ #
+ # APPENDICES
+ #
+
 @sen87   12. SIGNATURES OF THE PARTIES
               " (extract-fr) part 1 of NDA about: processing terms, this agreement, personal data
+
+  #### ANNEX
 
 @sen88   Annex A
               " (extract-fr) part 1 of NDA about: processing terms, this agreement, personal data
@@ -307,6 +352,9 @@
 @sen98   ○ provide consulting on scaling and securing the platform architecture.
               " (extract-fr) part 2 of NDA about: processing terms, personal data, protection regulation, data regulation, organizational measures, data breach, data subject
 
+
+
+
 @sen99   b. Project support:
               " (extract-fr) part 2 of NDA about: processing terms, personal data, protection regulation, data regulation, organizational measures, data breach, data subject
 
@@ -318,6 +366,8 @@
 
 @sen102   ○ liaise with COMPANY project partners and clients to understand customer needs.
               " (extract-fr) part 2 of NDA about: processing terms, personal data, protection regulation, data regulation, organizational measures, data breach, data subject
+
+
 
 @sen103   c. Network:
               " (extract-fr) part 2 of NDA about: processing terms, personal data, protection regulation, data regulation, organizational measures, data breach, data subject
@@ -337,6 +387,9 @@
 @sen108   5. The Consultant declares that it has read the Beneficiary and Affiliate’s Contractors Policy made available to it by the Company, [“Contractors Policy”], and fully agree to the execution of this Agreement to be bound by the terms and conditions of the Contractors Policy, provided that any provisions of the Contractors Policy that contradict with provisions of this Agreement shall not be effective and applicable.
               " (extract-fr) part 2 of NDA about: processing terms, personal data, protection regulation, data regulation, organizational measures, data breach, data subject
 
+
+  #### ANNEX
+
 @sen109   Annex B
               " (extract-fr) part 2 of NDA about: processing terms, personal data, protection regulation, data regulation, organizational measures, data breach, data subject
 
@@ -354,6 +407,10 @@
 
 @sen114   4. Payments shall be made within 10 days of the received invoice.
               " (extract-fr) part 2 of NDA about: processing terms, personal data, protection regulation, data regulation, organizational measures, data breach, data subject
+
+
+  #### ANNEX
+
 
 @sen115   Annex C
               " (extract-fr) part 2 of NDA about: processing terms, personal data, protection regulation, data regulation, organizational measures, data breach, data subject

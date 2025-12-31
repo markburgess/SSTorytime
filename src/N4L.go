@@ -1511,7 +1511,7 @@ func ClassifyTokenRole(token string) {
 			CheckSequenceMode(expression,'-')
 			LINE_ITEM_STATE = ROLE_CONTEXT_SUBTRACT
 			AssessGrammarCompletions(expression,LINE_ITEM_STATE)
-		} else if len(SECTION_STATE) == 0{
+		} else if len(SECTION_STATE) == 0 {
 			section := strings.TrimSpace(token[1:])
 			LINE_ITEM_STATE = ROLE_SECTION
 			AssessGrammarCompletions(section,LINE_ITEM_STATE)

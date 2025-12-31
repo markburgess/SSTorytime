@@ -134,6 +134,19 @@ Postgres' `ts_vector()` functionalityis very powerful, but it relies on a dictio
 
 ## Look for an arrow
 
+<pre>
 \arrow succeed
 \arrow 1
 \arrow 232
+</pre>
+
+
+## Look for concepts or terms extracted from text with text2N4L
+
+Three synonyms are provided for convenience:
+
+<pre>
+\dna \chapter NDA
+\terms \chapter Darwin
+\concepts \chapter moby
+</pre>

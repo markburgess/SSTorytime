@@ -8,7 +8,8 @@
 
   #
   # NB - some of the chinese characters may be wrong, 
-  # due to font encodings and unicode screen scraping issues - how to fix this??
+  # due to font encodings and unicode screen scraping issues 
+  # and Google translate bug?? - how to fix this??
   # 
 
 ".........SENTENCE ORDER IN CHINESE.......
@@ -2245,7 +2246,7 @@ jīhuì (ph)  机会 (he) chance/opportunity
 
 ###########################################################
 
-:: feelings , emotions , happy, sad, bore, reactions ::
+:: feelings , emotions , happy, sad, bore, reactions, fear, safe, flat ::
 
 
 feel (ep) juédé (ph) 觉得
@@ -2255,9 +2256,23 @@ xǐ (ph) 喜 (he) happiness
 xǐ (ph) 喜喜 (he) double happiness! Luck, esp in love
 
 
-wǒmen jīntiān dū tǐng dǎoméi de  (ph) 我们今天都挺倒霉的  (he) we're all unlucky today.
+píng (ph) 平 (he) flat, even
 
-wǒ wèishéme zhème dǎoméi (ph)  我为什么这么倒霉  (he) Why am I so unlucky?
+píng'ān (ph) 平安 (he) safety, safe and sound
+   "  (useword) píng
+
+hépíng (ph) 和平 (he) peace
+
+ānquán (ph) 安全 (he) safe, safety
+    " (useword) ān (ph) 安 (he) safety, security, peace 
+
+píng tǎng (ph) 平躺 (he) lay flat
+
+scary  (eh) 可怕 (hp) kěpà 
+fear  (eh) 害怕 (hp) hàipà
+angry  (eh) 生气 (hp) shēngqì 
+strange  (eh) 奇怪 (hp) qíguài
+
 
 happy/excited  (ep) gāoxìng (ph) 高兴
 happy/contented  (ep) kāixīn  (ph)开心
@@ -2314,10 +2329,6 @@ yōumò de rén dōu hěn shòu huānyíng (ph)  幽默的人都很受欢迎  (h
 nǐ wán er de bù kāixīn (ph) 你玩儿的不开心 (he) you're not having fun
 
 so humorous  (eh) 好幽默 (hp) hǎo yōumò
-scary  (eh) 可怕 (hp) kěpà 
-fear  (eh) 害怕 (hp) hàipà
-angry  (eh) 生气 (hp) shēngqì 
-strange  (eh) 奇怪 (hp) qíguài
 
 
 choose  (eh) 选择 (hp) xuǎnzé
@@ -3232,9 +3243,16 @@ yuángōng      (ph) 员工  (he) employee
 
 gōng (ph) 公 (!confuse) 共 (hp) gòng (pe) al/together, common, general
 
+ :: luck, fortune ::
+
+wǒmen jīntiān dū tǐng dǎoméi de  (ph) 我们今天都挺倒霉的  (he) we're all unlucky today.
+wǒ wèishéme zhème dǎoméi (ph)  我为什么这么倒霉  (he) Why am I so unlucky?
+
 congratulations  (eh)  恭喜  (hp) gōngxǐ
 
 gōngxǐ fācái (ph) 恭喜发财 (he) congratulations and be prosperous
+
+   " (useword) gōng (ph) 恭 (he) reverent
 
 rich  (eh) 富 (hp) fù
 get rich  (eh) 发财 (hp) fācái

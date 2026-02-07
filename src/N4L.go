@@ -1597,7 +1597,8 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
 		last_iptr := LINE_ITEM_REFS[LINE_ITEM_COUNTER-2]
 		this_iptr := HandleNode(this_item)
-		IdempAddLink(last_item,last_iptr,last_reln,this_item,this_iptr)
+		const annotation = false
+		IdempAddLink(last_item,last_iptr,last_reln,this_item,this_iptr,annotation)
 		CheckSection(this_item)
 
 	case ROLE_CONTEXT:
@@ -1678,7 +1679,7 @@ func StoreAlias(name string) {
 // Memory representation
 //**************************************************************
 
-func IdempAddLink(from string, frptr SST.NodePtr, link SST.Link,to string, toptr SST.NodePtr) {
+func IdempAddLink(from string, frptr SST.NodePtr, link SST.Link,to string, toptr SST.NodePtr, is_annotation bool) {
 
 	// Add a link index cache pointer directly to a from node
 
@@ -1696,7 +1697,10 @@ func IdempAddLink(from string, frptr SST.NodePtr, link SST.Link,to string, toptr
         // Build PageMap
 
 	link.Dst = toptr
-	LINE_PATH = append(LINE_PATH,link)
+
+	if !is_annotation {
+		LINE_PATH = append(LINE_PATH,link)
+	}
 
 	if from == "" || to == "" {
 		ParseError(ERR_MISSING_ITEM_SOMEWHERE + " (adding link)")
@@ -2247,7 +2251,8 @@ func AddBackAnnotations(cleantext string,cleanptr SST.NodePtr,annotated string) 
 					}
 
 					this_iptr,_ := IdempAddNode(this_item,SEQ_UNKNOWN)
-					IdempAddLink(reminder,cleanptr,link,this_item,this_iptr)
+					const is_annotation = true
+					IdempAddLink(reminder,cleanptr,link,this_item,this_iptr,is_annotation)
 					r += skip-1
 					continue
 				}

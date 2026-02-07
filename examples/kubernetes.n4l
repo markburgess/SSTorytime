@@ -6,8 +6,8 @@
 
 Kubernetes (short for) "K8s"
      "     (repr) a %container %orchestration system
-     "     (founded-by) %Google
-     "     (maintained-by) %CNCF
+     "     (founded-by) Google
+     "     (maintained-by) CNCF
      "     (enables) %declarative %automation of containerized workloads
 
 pod (repr) the smallest deployable computing unit in Kubernetes

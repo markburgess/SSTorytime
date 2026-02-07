@@ -5098,7 +5098,7 @@ func AssignPageCoordinates(maplines []PageMap) map[NodePtr]Coords {
 
 		leader.X = 0
 		leader.Y = 0
-		leader.Z = z_start + float64(tz) * zinc
+		leader.Z = z_start + float64(tz) * zinc // [-1,1]
 
 		directory[axis[tz]] = leader
 
@@ -5109,11 +5109,11 @@ func AssignPageCoordinates(maplines []PageMap) map[NodePtr]Coords {
 		for i,sat := range(satellites[axis[tz]]) {
 
 			pos := float64(i)
-			radius := 0.3
+			radius := 0.5 + (0.2*leader.Z) // heuristic scaling to fit extrema
 			var satc Coords
 			nptr := sat
-			satc.X = pos * radius * math.Cos(2.0 * pos * math.Pi/satrange)
-			satc.Y = pos * radius * math.Sin(2.0 * pos * math.Pi/satrange)
+			satc.X = radius * math.Cos(2.0 * pos * math.Pi/satrange)
+			satc.Y = radius * math.Sin(2.0 * pos * math.Pi/satrange)
 			satc.Z = leader.Z
 
 			directory[nptr] = satc

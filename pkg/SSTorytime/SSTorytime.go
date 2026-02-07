@@ -5019,7 +5019,7 @@ func AssignConeCoordinates(cone [][]Link,nth,swimlanes int) map[NodePtr]Coords {
 
 // **************************************************************************
 
-func AssignStoryCoordinates(axis []Link,nth,swimlanes int,limit int) map[NodePtr]Coords {
+func AssignStoryCoordinates(axis []Link,nth,swimlanes int,limit int, already map[NodePtr]bool) map[NodePtr]Coords {
 
 	var unique = make([][]NodePtr,0)
 
@@ -5036,7 +5036,6 @@ func AssignStoryCoordinates(axis []Link,nth,swimlanes int,limit int) map[NodePtr
 	}
 
 	XChannels := make([]float64,maxlen_tz)        // node widths along the path
-	already := make(map[NodePtr]bool)
 
 	for tz := 0; tz < maxlen_tz; tz++ {
 
@@ -6252,6 +6251,8 @@ func GetSequenceContainers(sst PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, s
 	arrname := ""
 	count := 0
 
+	var already = make(map[NodePtr]bool)
+
 	for nth := range openings {
 
 		var story Story
@@ -6262,7 +6263,7 @@ func GetSequenceContainers(sst PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, s
 
 		axis := GetLongestAxialPath(sst,openings[nth],arrowptrs[0],limit)
 
-		directory := AssignStoryCoordinates(axis,nth,len(openings),limit)
+		directory := AssignStoryCoordinates(axis,nth,len(openings),limit,already)
 
 		for lnk := 0; lnk < len(axis); lnk++ {
 			

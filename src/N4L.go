@@ -343,6 +343,7 @@ func NewFile(filename string) {
 	LINE_RELN_COUNTER = 0
 	LINE_ALIAS = ""
 	LAST_IN_SEQUENCE = ""
+	LINE_PATH = nil
 	SEQUENCE_MODE = false
 	FWD_ARROW = ""
 	BWD_ARROW = ""
@@ -1417,6 +1418,7 @@ func GetToken(src []rune, pos int) (string,int) {
 	var token string
 
 	if pos >= len(src) {	    // end of file
+		UpdateLastLineCache()
 		return "", pos
 	}
 

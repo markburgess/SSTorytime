@@ -2534,14 +2534,13 @@ will you come to our party  (eh) 你会来参加我们的聚会吗  (hp) nǐ hu�
 
 ###########################################################
 
-:: friends | relatives | family ::
-
+:: family, kin, relatives, relations ::
 
 wǒmen Duàn jiā (ph) 我们段家 (he) our Duan family
 
  " (!confuse) wǒmen quánjiā (ph) 我们全家 (he) our whole family
 
-quánjiā  (ph) 全家  (he) whole family
+$PREV.2 (ex) quánjiā  (ph) 全家  (he) whole family
 
 
 朋友  (ep) péngyǒu  (ph) friend
@@ -2549,12 +2548,37 @@ quánjiā  (ph) 全家  (he) whole family
 girlfriend (eh) 女朋友  (hp) nǚ péngyǒu
 qián nǚyǒu  (ph) 前女友  (he) ex-girldfriend
 boyfriend (eh) 男朋友  (hp) nán péngyǒu
+
 older sister (eh) 姐姐  (hp) jiějiě
 younger sister (eh) 美美  (hp) měiměi
 older brother  (ep) gēgē  (ph) 哥哥
 younger brother  (eh) 弟弟  (hp) dìdì
 son  (eh) 儿子  (hp) érzi
 daughter  (eh) 女儿  (hp) nǚ'ér
+
+parents    (eh) 父母 (hp) fùmǔ
+relatives  (eh) 亲戚 (hp) qīnqī
+siblings   (eh) 兄弟姐妹 (hp) xiōngdì jiěmèi
+
+nǎinai    (eh) 奶奶  (hp) grandma
+yéyé      (eh) 爷爷 (hp) grandfather
+aunt      (eh) 阿姨 (hp) āyí
+uncle     (eh) 叔叔 (hp) shūshu
+mum       (eh) 妈妈 (hp) māmā
+dad       (eh) 爸爸  (hp) bàba
+
+gūgū shì wǒ bàba de mèimei  (ph) 姑姑是我爸爸的妹妹  (he) My aunt is my father's sister
+
+  +:: partner ::
+
+romantic partner (eh) 伴侣 (hp) bànlǚ
+work partner (eh) 伙伴 (hp) huǒbàn 
+
+  -:: partner ::
+
+nǚshìmen, xiānshēngmen (ph) 女士们，先生们 (he) ladies and gentlemen
+
+她下个兴趣误会见男朋友  (hp) tā xià gè xìngqù wùhuì jiàn nán péngyǒu  (pe) she will see her boyfriend next week 
 
 otaku (eh) 宅男 (hp) zháinán
 
@@ -2565,7 +2589,6 @@ kid (eh) 孩子  (hp) háizi
 lǎopó  (ph) 老婆  (he) wife
 lǎogōng  (ph) 老公 (he) husband
 
-她下个兴趣误会见男朋友  (hp) tā xià gè xìngqù wùhuì jiàn nán péngyǒu  (pe) she will see her boyfriend next week 
 
 ###########################################################
 
@@ -3712,21 +3735,6 @@ yellow  (eh) 黄色 (hp) huáng sè
 orange  (eh) 橙子 (hp) chéngzi
 purple  (eh) 紫色 (hp) zǐ sè
 pink    (eh) 粉色 (hp) fěnsè
-
-:: family, kin, relatives, relations ::
-
-parents    (eh) 父母 (hp) fùmǔ
-relatives  (eh) 亲戚 (hp) qīnqī
-siblings   (eh) 兄弟姐妹 (hp) xiōngdì jiěmèi
-
-nǎinai    (eh) 奶奶  (hp) grandma
-yéyé      (eh) 爷爷 (hp) grandfather
-aunt      (eh) 阿姨 (hp) āyí
-uncle     (eh) 叔叔 (hp) shūshu
-mum       (eh) 妈妈 (hp) māmā
-dad       (eh) 爸爸  (hp) bàba
-
-Gūgū shì wǒ bàba de mèimei  (ph) 姑姑是我爸爸的妹妹  (he) My aunt is my father's sister
 
 
 :: open , close ::

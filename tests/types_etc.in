@@ -1,0 +1,27 @@
+
+-test type inference
+
+# T    EXPR    C
+mark (has id) mark's ID
+
+# C             -EXPR      T
+mark's health (describes) mark
+
+# T            EXPR     C
+mark's house (has id) mark's ID
+
+
+
+#   E           L       T
+mark dies  (follows) mark is born
+
+#   E           C       T
+mark dies  (contains) mark
+
+#   E           C        T
+mark is born (contains) mark
+
+
+
+
+ # end

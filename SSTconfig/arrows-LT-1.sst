@@ -18,6 +18,7 @@
   + from which we derive (derive)    - derives from         (derive-fr)
   + leads ahead to       (fwd1)      - leads back to        (bwd1)
   + succeeds             (succ1)     - is succeeded by      (succ-by)
+  + is followed by       (is-follw)  - follows              (foll)
   + precedes             (prec)      - is preceded by       (prec-by)
   + succeeded by         (succ2)     - preceded by          (pre-by)
   + comes before         (bfr)       - comes after          (after)
@@ -98,7 +99,6 @@
      + provisions (prov)               - is provisioned by   (prov-by)
 
      + implements (implem)        - was implemented by (implorg)   
-     + describes  (describe)      - is described by    (descr-by)   
 
   :: advisory relations ::
 

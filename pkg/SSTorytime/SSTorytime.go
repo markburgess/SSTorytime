@@ -124,6 +124,15 @@ type PoSST struct {
 
 //******************************************************************
 
+type Etc struct {
+
+	E bool  // event
+	T bool  // thing
+	C bool  // concept
+}
+
+//******************************************************************
+
 type Node struct {
 
 	L         int     // length of text string
@@ -132,6 +141,7 @@ type Node struct {
 	Seq       bool    // true if this node begins an intended sequence, otherwise ambiguous
 	Chap      string  // section/chapter name in which this was added
 	NPtr      NodePtr // Pointer to self index
+	Psi       Etc     // induced node type
 
 	I [ST_TOP][]Link  // link incidence list, by STindex - these are the "vectors" +/-
   	                  // NOTE: carefully how STindex offsets represent negative SSTtypes
@@ -140,7 +150,7 @@ type Node struct {
 //**************************************************************
 
 type Link struct {  // A link is a type of arrow, with context
-                    // and maybe with a weightfor package math
+                    // and maybe with a weight for package math
 	Arr ArrowPtr         // type of arrow, presorted
 	Wgt float32          // numerical weight of this link
 	Ctx ContextPtr       // context for this pathway
@@ -1294,6 +1304,108 @@ func LinearFindText(in []Node,event Node,ignore_caps bool) (ClassedNodePtr,bool)
 	}
 
 	return -1,false
+}
+
+//**************************************************************
+// Attempt to determine the promised node type
+//**************************************************************
+
+func CompleteETCTypes(sst PoSST,node Node) string {
+
+	message := ""
+
+	for st := 0; st < ST_TOP; st++ {
+
+		if len(node.I[st]) > 0 {
+			node.Psi,message = CollapsePsi(node,st)
+		}
+	}
+
+	return message
+}
+
+//**************************************************************
+
+func CollapsePsi(node Node,stindex int) (Etc, string) {
+
+	// Follow the rules of SST Gamma(3,4) inference
+	// convergent search to fixed point, ultimately event
+
+	etc := node.Psi
+
+	sttype := STIndexToSTType(stindex)
+
+	message := ""
+
+	arrow := ARROW_DIRECTORY[node.I[stindex][0].Arr].Long
+
+	switch sttype {
+		
+	case NEAR:
+		fmt.Println("NEAR...")
+
+	case -LEADSTO,LEADSTO:
+		
+		// skip bogus empty links
+		for l := 0; l < len(node.I[stindex]); l++ {
+
+			arrow = ARROW_DIRECTORY[node.I[stindex][l].Arr].Long
+
+			if arrow == "empty" || arrow == "debug" {
+				continue
+			} else {
+				break
+			}
+			
+		}
+
+		if arrow == "empty" || arrow == "debug" {
+			return etc, message
+		} else {
+			etc.E = true
+			etc.T = false
+			etc.C = false
+		}
+
+	case CONTAINS:
+		etc.T = true
+		etc.T = false     // concept can't contain
+
+	case -CONTAINS:
+		etc.T = true
+
+	case EXPRESS:
+		if !etc.E {
+			etc.C = true
+			etc.T = true
+		}
+
+	case -EXPRESS:
+		etc.T = true
+		etc.C = false
+	}
+	
+	message = "Node " + "\"" + node.S + "\"  (seems to be of type)  " + ShowPsi(etc)
+	
+	return etc,message
+}
+
+//**************************************************************
+
+func ShowPsi(etc Etc) string {
+
+	result := ""
+
+	if etc.E {
+		result += "event,"
+	}
+	if etc.T {
+		result += "thing,"
+	}
+	if etc.C {
+		result += "concept,"
+	}
+	return result
 }
 
 //**************************************************************

@@ -41,6 +41,8 @@
  + has source          (source)      - the source for               (source-of)
 
  + discusses           (disc)        - is discussed in              (is-disc)
+ + describes           (describe)    - is described by    (descr-by)   
+
  + described as        (descr)       - is used as a description of  (isdescr)
  + has age character   (age)         - is the age characteristic of (isageof)
  + mentions study      (ment)        - a kind of study mentioned in (isment)

@@ -738,38 +738,48 @@ func CompleteInferences(sst SST.PoSST) {
 	Box("Completing node inferences and cliques.....")
 
 	for class := SST.N1GRAM; class <= SST.GT1024; class++ {
+
 		switch class {
+
 		case SST.N1GRAM:
 			for _,node := range SST.NODE_DIRECTORY.N1directory {
-				CompleteCloseness(sst,node)
-				CompleteSequences(sst,node)
+				CompleteNode(sst,node)
 			}
 		case SST.N2GRAM:
 			for _,node := range SST.NODE_DIRECTORY.N2directory {
-				CompleteCloseness(sst,node)
-				CompleteSequences(sst,node)
+				CompleteNode(sst,node)
 			}
 		case SST.N3GRAM:
 			for _,node := range SST.NODE_DIRECTORY.N3directory {
-				CompleteCloseness(sst,node)
-				CompleteSequences(sst,node)
+				CompleteNode(sst,node)
 			}
 		case SST.LT128:
 			for _,node := range SST.NODE_DIRECTORY.LT128 {
-				CompleteCloseness(sst,node)
-				CompleteSequences(sst,node)
+				CompleteNode(sst,node)
 			}
 		case SST.LT1024:
 			for _,node := range SST.NODE_DIRECTORY.LT1024 {
-				CompleteCloseness(sst,node)
-				CompleteSequences(sst,node)
+				CompleteNode(sst,node)
 			}
 		case SST.GT1024:
 			for _,node := range SST.NODE_DIRECTORY.GT1024 {
-				CompleteCloseness(sst,node)
-				CompleteSequences(sst,node)
+				CompleteNode(sst,node)
 			}
 		}
+	}
+}
+
+//**************************************************************
+
+func CompleteNode(sst SST.PoSST,node SST.Node) {
+
+	CompleteCloseness(sst,node)
+	CompleteSequences(sst,node)
+
+	mesg := SST.CompleteETCTypes(sst,node)
+
+	if len(mesg) > 1 {
+		Verbose(mesg)
 	}
 }
 

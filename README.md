@@ -7,9 +7,6 @@
 
 -->
 
-> [!TIP]
-> Due to other commitments, this project will resume in February 2026.
-
 > [!NOTE]
 > The status of this project is a stable current version, and development is paused while background work is being done.
 > * Join the [SSTorytime LinkedIn Group](https://www.linkedin.com/groups/15875004/) for questions and discussions.

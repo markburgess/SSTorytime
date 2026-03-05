@@ -1342,7 +1342,7 @@ func CollapsePsi(node Node,stindex int) (Etc, string) {
 	switch sttype {
 		
 	case NEAR:
-		fmt.Println("NEAR...")
+		//fmt.Println("NEAR...")
 
 	case -LEADSTO,LEADSTO:
 		

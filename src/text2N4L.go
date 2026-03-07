@@ -112,6 +112,12 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 	fmt.Fprintf(fp," - Samples from %s\n",filename)
 
+	fmt.Fprintf(fp,"\n # TABLE OF CONTENTS ...")
+	fmt.Fprintf(fp,"\n # themes and topics ")
+	fmt.Fprintf(fp,"\n # final fraction ")
+	fmt.Fprintf(fp,"\n # selected samples ")
+	fmt.Fprintf(fp,"\n # concepts by part/region \n")
+
 	fmt.Fprintf(fp,"\n# (begin) ************\n")
 
 	filealias := strings.Split(filename,".")[0]
@@ -137,7 +143,7 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 			}
 		}
 
-		fmt.Fprintf(fp,"\n@sen%d   %s\n",selection[i].Order,Sanitize(selection[i].Fragment))
+		fmt.Fprintf(fp,"\n@sen%d   %s\n\n",selection[i].Order,Sanitize(selection[i].Fragment))
 
 		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.INV_CONT_FOUND_IN_S,part)
 
@@ -159,6 +165,8 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	WriteSampleSelections(fp,selection,L)
 
 	// add the parts' fragments
+
+	fmt.Fprintf(fp,"\n #\n # Concepts by part / region \n #\n")
 
 	for key := range collected_fragments {
 

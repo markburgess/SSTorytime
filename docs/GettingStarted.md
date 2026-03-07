@@ -12,7 +12,7 @@ First compile the software. From the project root, run:
 
 <pre>
 $ make
-<pre>
+</pre>
 Next, setup the PostgreSQL database:
 <pre>
 $ make db

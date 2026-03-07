@@ -120,10 +120,12 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	var partcheck = make(map[string]bool)
 	var parts []string
 	var lastpart string
-	
+	var already = make(map[string]bool)
+
 	for i := range selection {
 
 		context := SpliceSet(ambi_by_part[selection[i].Partition])
+
 		part := PartName(selection[i].Partition,filealias,context)
 
 		// Add context from n = 2,3 fractions
@@ -139,7 +141,7 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.INV_CONT_FOUND_IN_S,part)
 
-		AddIntentionalContext(collected_fragments,part,anom_by_part[selection[i].Partition])
+		AddIntentionalContext(collected_fragments,part,anom_by_part[selection[i].Partition],already)
 
 		if !partcheck[part] {
 			parts = append(parts,part)
@@ -153,15 +155,8 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	// some stats
 	
 	fmt.Fprintf(fp,"\n# Final fraction %.2f of requested %.2f\n",float64(len(selection)*100)/float64(L),percentage)
-	
-	fmt.Fprintf(fp,"\n# Selected %d samples of %d: ",len(selection),L)
-	
-	for i := range selection {
-		fmt.Fprintf(fp,"%d ",selection[i].Order)
-		}
-	
-	fmt.Fprintf(fp,"\n#\n")
 
+	WriteSampleSelections(fp,selection,L)
 
 	// add the parts' fragments
 
@@ -171,7 +166,6 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 		for _,s := range collected_fragments[key] {
 			fmt.Fprintf(fp,"              \" (%s) %s\n",SST.CONT_FRAG_S,s)
 		}
-
 	}
 
 	// document the parts
@@ -181,7 +175,9 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	fmt.Fprintf(fp,"\n :: parts, sections ::\n")
 
 	for p := range parts {
+
 		fmt.Fprintf(fp,"\n %s\n",parts[p])
+
 		for w := range ambi_by_part[p] {
 			fmt.Fprintf(fp,"  #AMBI %s\n",ambi_by_part[p][w])
 		}
@@ -191,7 +187,8 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 		}
 	}
 
-	// whole document summary
+
+	/* whole document summary
 
 	for w := range all_ambi {
 		fmt.Fprintf(fp," # %s\n",all_ambi[w])
@@ -199,7 +196,8 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	
 	for w := range all_anom {
 		fmt.Fprintf(fp,"  # %s\n",all_anom[w])
-	}
+	} */
+
 
 	fmt.Println("Wrote file",outputfile)
 	fmt.Printf("Final fraction %.2f of requested %.2f sampled\n",float64(len(selection)*100)/float64(L),percentage)
@@ -208,14 +206,29 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 //*******************************************************************
 
+func WriteSampleSelections(fp *os.File, selection []SST.TextRank, L int) {
+
+	fmt.Fprintf(fp,"\n# Selected %d samples of %d: ",len(selection),L)
+	
+	for i := range selection {
+		fmt.Fprintf(fp,"%d ",selection[i].Order)
+		}
+	
+	fmt.Fprintf(fp,"\n#\n")
+}
+
+//*******************************************************************
+
 func PartName(p int,file string,context string) string {
+
+	basename := fmt.Sprintf("part %d of %s",p,file)
 
 	// include ambient context in the section name
 
 	if len(context) > 0 {
-		return fmt.Sprintf("part %d of %s about: %s",p,file,context)
+		return fmt.Sprintf("%s about: %s",basename,context)
 	} else {
-		return fmt.Sprintf("part %d of %s",p,file)
+		return basename
 	}
 }
 
@@ -228,10 +241,14 @@ func SpliceSet(ctx []string) string {
 
 //*******************************************************************
 
-func AddIntentionalContext(collected map[string][]string,key string,ctx []string) {
-	
+func AddIntentionalContext(collected map[string][]string,key string,ctx []string,already map[string]bool) {
+
 	for w := 0; w < len(ctx); w++ {
-		collected[key] = append(collected[key],ctx[w])
+
+		if !already[ctx[w]] {
+			collected[key] = append(collected[key],ctx[w])
+			already[ctx[w]] = true
+		}
 	}
 }
 

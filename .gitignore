@@ -2,6 +2,7 @@
 *_test_log
 *.pdf
 *.la
+*.kate-swp
 *.lo
 *.out
 *.cmp

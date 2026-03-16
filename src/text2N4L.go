@@ -114,7 +114,8 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 	fmt.Fprintf(fp,"\n # TABLE OF CONTENTS ...")
 	fmt.Fprintf(fp,"\n # themes and topics ")
-	fmt.Fprintf(fp,"\n # final fraction ")
+	fmt.Fprintf(fp,"\n # selected samples ")
+	fmt.Fprintf(fp,"\n # final fraction %.2f of requested %.2f\n",float64(len(selection)*100)/float64(L),percentage)
 	fmt.Fprintf(fp,"\n # selected samples ")
 	fmt.Fprintf(fp,"\n # concepts by part/region \n")
 

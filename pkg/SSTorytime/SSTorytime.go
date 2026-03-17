@@ -9337,7 +9337,7 @@ func AssessTextCoherentCoactivation(L int,ngram_loc [N_GRAM_MAX]map[string][]int
 func AssessTextFastSlow(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]map[string]int,[N_GRAM_MAX][]map[string]int,int) {
 
 	// Use a running evaluation of context intervals to separate ngrams that are varying quickly (intentional)
-	// from those changing slowly (context). For each region, what if different from the last in fast and what
+	// from those changing slowly (context). For each region, what is different from the last is fast and what
 	// remains the same as last is slow. This is remarkably effective and quick to calculate.
 
 	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
@@ -9401,6 +9401,7 @@ func CoherenceSet(ngram_loc [N_GRAM_MAX]map[string][]int, L,coherence_length int
 	for n := 1; n < N_GRAM_MAX; n++ {
 		
 		C[n] = make([]map[string]int,partitions)
+
 		for p := 0; p < partitions; p++ {
 			C[n][p] = make(map[string]int)
 		}
@@ -9456,7 +9457,7 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]string,[
 
 			key = CleanNgram(key)
 
-			if ExcludedByBindings(CleanNgram(rrbuffer[n][0]),CleanNgram(rrbuffer[n][n-1])) {
+			if ExcludedByBindings(CleanNgram(rrbuffer[n][0]),key,CleanNgram(rrbuffer[n][n-1])) {
 				continue
 			}
 
@@ -9466,7 +9467,7 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]string,[
 
 	frag = CleanNgram(frag)
 	
-	if N_GRAM_MIN <= 1 && !ExcludedByBindings(frag,frag) {
+	if N_GRAM_MIN <= 1 && !ExcludedByBindings(frag,frag,frag) {
 		change_set[1] = append(change_set[1],frag)
 	}
 
@@ -9631,21 +9632,32 @@ func ExtractIntentionalTokens(L int,selected []TextRank,Nmin,Nmax int) ([][]stri
 // Heuristics for Text Processing
 //**************************************************************
 
-func ExcludedByBindings(firstword,lastword string) bool {
+func ExcludedByBindings(firstword,whole,lastword string) bool {
 
-	// A standalone fragment can't start/end with these words, because they
+	// An empirical standalone fragment can't start/end with these words, because they
 	// Promise to bind to something else...
 	// Rather than looking for semantics, look at spacetime promises only - words that bind strongly
 	// to a prior or posterior word.
 
-	// Promise bindings in English. This domain knowledge saves us a lot of training analysis
+	// Promise bindings in English only. This domain knowledge saves us a lot of training analysis
+	// So how to replace this with something generic?
 	
-	var forbidden_ending = []string{"but", "and", "the", "or", "a", "an", "its", "it's", "their", "your", "my", "of", "as", "are", "is", "was", "has", "be", "with", "using", "that", "who", "to" ,"no", "because","at","but","yes","no","yeah","yay", "in", "which", "what","as","he","she","they","all","I","they","from","for","then"}
-	
-	var forbidden_starter = []string{"and","or","of","the","it","because","in","that","these","those","is","are","was","were","but","yes","no","yeah","yay","also","me","them","him","but"}
+	var forbidden_ending = []string{"but", "and", "the", "or", "a", "an", "its", "it's", "their", "your", "my", "our", "of", "as", "are", "is", "was", "has", "be", "been", "with", "using", "that", "who", "to" ,"no", "not", "because", "at", "but", "yes", "no", "yeah", "yay", "in", "which", "what", "as", "he", "him", "she", "her","they", "all", "I", "my", "they", "from", "for", "then", "any", "however", "its", "it's", "get", "don't", "this", "one", "shall"}
+
+	var forbidden_starter = []string{"its", "it's", "and", "or", "of", "the", "it", "because", "in", "that", "these", "those", "is", "are", "was", "were", "but", "yes", "no", "yeah", "yay", "also", "me", "them", "him", "his", "her", "but", "been", "however", "get", "do", "don't", "soon", "own", "all", "their", "suppose", "for", "said", "shall", "will"}
 
 	if (len(firstword) <= 2) || len(lastword) <= 2 {
 		return true
+	}
+
+        // Adverbs don't end
+
+        if strings.HasSuffix(lastword,"ly") {
+                return true
+        }
+
+        if strings.Contains(whole,"--") {
+	        return true
 	}
 
 	for s := range forbidden_ending {

@@ -84,7 +84,7 @@ func RipFile2File(filename string,percentage float64){
 	// significant context info from teh actual samples
 
 	const minN = 1 // >= N_GRAM_MIN
-	const maxN = 3 // <= N_GRAM_MAX
+	const maxN = 4 // <= N_GRAM_MAX
 
 	f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
 
@@ -178,6 +178,8 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	}
 
 	// document the parts
+
+	fmt.Fprintf(fp,"\n #\n # SUMMARY OF CONTEXT AND SIGNIFICANT FRAGMENTS\n #\n")
 
 	fmt.Fprintf(fp,"\n :: themes and topics you might want to annotate/replace ::\n")
 

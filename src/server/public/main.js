@@ -352,7 +352,7 @@ switch (obj.Response)
          }
       break;
    case "ConePaths":
-      title = "Local cone paths";
+      title = "Forward cone paths from " + obj.Intent;
       break;
    case "PathSolve":
       title = "Path solutions";

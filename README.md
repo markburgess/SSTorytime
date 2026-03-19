@@ -230,4 +230,10 @@ The tool-set consistent of several components, starting with:
 * [SSTorytime.py](src/SSTorytime.py) - Includable Python interface for SSTorytime, basic functions (TBD)
 
 
+## See also spinoff projects
+
+* Simon Frost's [Julia SST project](https://juliaknowledge.github.io/SemanticSpacetime.jl/dev/)
+
+
+
 

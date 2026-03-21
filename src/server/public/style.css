@@ -180,6 +180,10 @@ h3 {
     margin-top: 0.5ch;
   }
 
+  & i {
+    font-size: var(--font-size-fluid-0);
+  }
+
   & > div {
     text-indent: 3ch;
     margin-block: 1ch;
@@ -264,20 +268,23 @@ h3 {
    margin: 2px;
 }
 
+#chapstyle {
+  font-size: var(--font-size-fluid-0);
+}
 
 #orbital-full-text {
   font-family: var(--font-serif);
-  font-size: var(--font-size-fluid-1);
+  font-size: var(--font-size-fluid-1);  // either too big or too small
 }
 
 details {
 background-color: #eeeeee;
-//margin-left: 200px; 
+//margin-left: 200px;
 }
 
 details summary {
 background-color: pink;
-margin-left: 200px; 
+margin-left: 80px;
 }
 
 

@@ -181,6 +181,11 @@ h3 {
     margin-top: 0.5ch;
   }
 
+
+  & i {
+    font-size: var(--font-size-fluid-0);
+  }
+
   & > div {
     text-indent: 3ch;
     margin-block: 1ch;
@@ -278,9 +283,9 @@ background-color: navy;
 }
 
 details summary { 
-background-color: mediumblue;
-color: lightskyblue;
-margin-left: 200px; 
+background-color: #6495ED; // mediumblue;
+color: azure; // lightskyblue;
+margin-left: 80px;
 }
 
 img {

@@ -352,7 +352,7 @@ switch (obj.Response)
          }
       break;
    case "ConePaths":
-      title = "Forward cone paths from " + obj.Intent;
+      title = "Forward cone paths";
       break;
    case "PathSolve":
       title = "Path solutions";
@@ -931,11 +931,11 @@ box.id = "radius-" + radius;
 let spacer = "║";
 let prefix = "╠═▹  ";
 
-for (let indent = 0; indent < radius; indent++)
+/*for (let indent = 0; indent < radius; indent++)
    {
    prefix = "           " + prefix;
    spacer = "           " + spacer;
-   }
+   }*/
 
 if (radius == 2)
    {
@@ -1434,55 +1434,18 @@ if (counter == 0)
 
  // ** BEGIN 1: Here we print the full text for column_1of3 either as pre or p
 
-if (text.includes("\n") && !IsMath(event.Text))
-   {
-   let from_link = document.createElement("a");
-   from_link.onclick = function ()
-      {
-      sendlinkData(event.NPtr.Class, event.NPtr.CPtr);
-      };
-
-   let from_text = document.createElement("pre");
-   from_text.nameClass = "text";
-   from_text.textContent = text;
-   from_link.nameClass = "text";
-   from_link.appendChild(from_text);
-
-   child.appendChild(from_link);
-   } 
-else
-   {
-   let from_link = document.createElement("span");
-   from_link.onclick = function ()
-      {
-      sendlinkData(event.NPtr.Class, event.NPtr.CPtr);
-      };
-
-   let from_text = document.createElement(anchortag);
-   from_link.nameClass = "text";
-   from_link.appendChild(from_text);
-   child.appendChild(from_link);
-
-   // Insert a card overview title summary (blue)
-   from_text.textContent = event.Text.slice(0, 70) + "...";
-
-   let small_tot_text = document.createElement("div");
-   small_tot_text.textContent = text;
-   small_tot_text.id = "orbital-full-text";
-   child.appendChild(small_tot_text);
-   }
-
 if (counter == 0)
    {
    let setting = document.createElement("span");
    setting.id = "nptr-chapter-context-helpline";
 
    let text1 = document.createElement("i");
-   text1.textContent = "with NPtr " + nptrtxt + ", in chapter ";
+   text1.textContent = "NPtr " + nptrtxt + ", in chapter ";
    setting.appendChild(text1);
 
    let chplink = document.createElement("a");
    chplink.textContent = Quote(event.Chap);
+   chplink.id = "chapstyle";
    chplink.onclick = function ()
       {
       sendLinkSearch('\\notes \\chapter ' + Quote(event.Chap));
@@ -1492,6 +1455,7 @@ if (counter == 0)
    let text2 = document.createElement("i");
    text2.textContent = ", context ";
    setting.appendChild(text2);
+   setting.id = "chapstyle";
 
    let ctxlink = document.createElement("a");
    ctxlink.textContent = '"' + event.Context + '"   ';
@@ -1506,6 +1470,49 @@ if (counter == 0)
    child.appendChild(setting);
    ProgressCheckBox(setting,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
    }
+
+   // Main text
+
+   if (text.includes("\n") && !IsMath(event.Text))
+   {
+     let from_link = document.createElement("a");
+     from_link.onclick = function ()
+     {
+       sendlinkData(event.NPtr.Class, event.NPtr.CPtr);
+     };
+
+     // BLUE FULL TEXT (pre)
+     let from_text = document.createElement("pre");
+     from_text.nameClass = "text";
+     from_text.textContent = text;
+     from_link.nameClass = "text";
+     from_link.appendChild(from_text);
+
+     child.appendChild(from_link);
+   }
+   else
+   {
+     let from_link = document.createElement("span");
+     from_link.onclick = function ()
+     {
+       sendlinkData(event.NPtr.Class, event.NPtr.CPtr);
+     };
+
+          // Insert a card overview title summary (blue)
+
+     let from_text = document.createElement(anchortag);
+     from_link.nameClass = "text";
+     from_text.textContent = event.Text.slice(0, 70) + "...";
+     from_link.appendChild(from_text);
+     child.appendChild(from_link);
+
+     // BLUE FULL TEXT HERE (normal)
+     let small_tot_text = document.createElement("div");
+     small_tot_text.textContent = text;
+     small_tot_text.id = "orbital-full-text";
+     child.appendChild(small_tot_text);
+   }
+
 
 // See what ST-vector pathways we are part of and add notes
 CheckSingleCone(child,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1,event.Orbits[Im1],event.Orbits[Il1]);

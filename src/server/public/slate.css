@@ -181,6 +181,11 @@ h3 {
     margin-top: 0.5ch;
   }
 
+
+  & i {
+    font-size: var(--font-size-fluid-0);
+  }
+
   & > div {
     text-indent: 3ch;
     margin-block: 1ch;
@@ -281,7 +286,7 @@ background-color: darkslategray;
 details summary { 
 background-color: lightslategray;
 color: orange;
-margin-left: 200px; 
+margin-left: 80px;
 }
 
 #main-content-panel { 

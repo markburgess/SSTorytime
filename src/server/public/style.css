@@ -138,9 +138,10 @@ a {
   }
 }
 
+
 h3 {
   margin-block: 2ch;
-  color: var(--indigo-12);
+  color: var(--stone-12);
   font-size: var(--font-size-fluid-1);
   min-width: fit-content;
 }
@@ -149,7 +150,7 @@ h3 {
   border-radius: var(--radius-3);
   padding: 1rem 0.5rem;
   margin-bottom: 0.5rem;
-    color: var(--indigo-12);
+    color: var(--stone-10);   // THIS IS THE FULL TEXT COLOUR
   width: 95svw;
   border: 1px var(--stone-4) solid;
   display: flex;
@@ -161,21 +162,21 @@ h3 {
 
   & pre {
     font-size: var(--font-size-fluid-0);
-    color: var(--indigo-12);
+    color: var(--stone-12);
     display: inline-flex;
     text-wrap: wrap balance;
   }
 
   & h3 {
     font-size: var(--font-size-fluid-0);
-    color: var(--blue-6);
+    color: var(--blue-10);
     min-width: fit-content;
     margin-top: 0.5ch;
   }
 
   & h4 {
     font-size: var(--font-size-fluid-1);
-    color: var(--blue-6);
+    color: var(--blue-10);
     min-width: fit-content;
     margin-top: 0.5ch;
   }
@@ -195,7 +196,7 @@ h3 {
 
   & span {
     padding-inline: 1ch;
-    color: var(--green-9);
+    color: var(--gray-9);
     width: fit-content;
     flex-basis: 100%;
     text-wrap: wrap balance;
@@ -213,7 +214,7 @@ h3 {
   & > span:first-child {
     margin-bottom: 1ch;
     flex-basis: 100%;
-    color: var(--indigo-10);
+    color: var(--gray-11);
     pointer-events: auto;
     align-items: baseline;
     white-space: pre;
@@ -283,7 +284,7 @@ background-color: #eeeeee;
 }
 
 details summary {
-background-color: pink;
+background-color: var(--sand-1);
 margin-left: 80px;
 }
 
@@ -296,7 +297,7 @@ img {
 }
 
 #main-content-panel { 
-  color: var(--indigo-12);
+  color: var(--stone-12);
 }
 
 #nptr-chapter-context-hepline {
@@ -331,7 +332,7 @@ img {
 
 
 .NCM-N {
-  color: var(--green-9);  // --> math colour
+  color: var(--gray-9);  // --> math colour
 }
 
 #cntxt {

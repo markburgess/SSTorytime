@@ -233,6 +233,7 @@ The tool-set consistent of several components, starting with:
 ## See also spinoff projects
 
 * Simon Frost's [Julia SST project](https://juliaknowledge.github.io/SemanticSpacetime.jl/dev/)
+* Simon Frost's [From Causal SQL to Semantic Spacetime via CQL](https://github.com/JuliaKnowledge/CQL.jl/blob/main/vignettes/19_causal_spacetime/19_causal_spacetime.md)
 
 
 

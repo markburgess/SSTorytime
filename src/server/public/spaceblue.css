@@ -254,6 +254,13 @@ h3 {
   }
 }
 
+
+.checkbox {
+  padding: 2px;
+  margin-left: 4px;
+  margin-right: 2px;
+}
+
 #current_time_context {
   color: var(--yellow-8);
 }

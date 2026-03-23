@@ -146,6 +146,11 @@ h3 {
   min-width: fit-content;
 }
 
+.notes-view {
+  width: 95svw;
+  text-wrap: wrap balance;
+}
+
 .card-view {
   border-radius: var(--radius-3);
   padding: 1rem 0.5rem;
@@ -252,6 +257,13 @@ h3 {
     color: var(--stone-10);
     font-weight: 500;
   }
+}
+
+
+.checkbox {
+  padding: 2px;
+  margin-left: 4px;
+  margin-right: 2px;
 }
 
 #current_time_context {

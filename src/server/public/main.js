@@ -1316,7 +1316,7 @@ for (let line = 0; line < array.length; line++)
             lastline = line;
 
             let line_no = document.createElement("span");
-	    line_no.id = "line-num";
+	        line_no.id = "line-num";
             line_no.textContent = "At line " + array[line][i].Line;
             parent.appendChild(line_no);
 
@@ -1325,7 +1325,7 @@ for (let line = 0; line < array.length; line++)
             if (chtxt.length > 4 && chtxt != lastchtxt)
                {
                let sec = document.createElement("i");
-	       sec.id = "line-num";
+	           sec.id = "line-num";
                sec.textContent = '  From: "' + chtxt + '"';
                parent.appendChild(sec);
                }
@@ -1333,7 +1333,7 @@ for (let line = 0; line < array.length; line++)
             lastchtxt = chtxt;
 
             child = document.createElement("div");
-            child.className = "card-view";
+            child.className = "notes-view";
             parent.appendChild(child);
             subline = document.createElement("div");
             child.append(subline);

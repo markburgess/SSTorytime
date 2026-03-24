@@ -738,6 +738,7 @@ section.appendChild(panel);
 
 let title = document.createElement("h3");
 title.textContent = "Progress tracker";
+title.id = "chapter_notes_heading";
 panel.appendChild(title);
 
 CANVAS = CreateCanvas();

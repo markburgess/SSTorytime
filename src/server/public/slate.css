@@ -282,7 +282,7 @@ h3 {
 
 #statcount {
   text-wrap: nowrap;
-  color: navy;
+  color: var(--gray-2);
   margin-left: 100px;
   padding: 5px;
 }

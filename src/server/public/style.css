@@ -273,7 +273,7 @@ h3 {
 }
 
 #line-num {
-   color: var(--stone-6);
+   color: var(--stone-7);
 }
 
 #ditto {
@@ -282,7 +282,7 @@ h3 {
 
 #statcount {
   text-wrap: nowrap;
-  color: navy;
+  color: var(--blue-8);
   margin-left: 100px;
   padding: 5px;
 }

@@ -274,20 +274,12 @@ switch (skintheme)
    case "night":
       theme.setAttribute('href', '/dark.css')
       CANVAS_LABEL_COLOUR = "white";
-      LEADSTO_COLOUR = "red";
-      CONTAINS_COLOUR = "lightblue";
-      EXPRESSES_COLOUR = "orange";
-      NEAR_COLOUR = "darkgray";
       break;
    case "slate":
    case "gray":
    case "grey":
       theme.setAttribute('href', '/slate.css');
       CANVAS_LABEL_COLOUR = "white";
-      LEADSTO_COLOUR = "crimson";
-      CONTAINS_COLOUR = "lightblue";
-      EXPRESSES_COLOUR = "orange";
-      NEAR_COLOUR = "lightgray";
       break;
    case "space":
    case "astronomy":
@@ -296,30 +288,23 @@ switch (skintheme)
    case "blue":
       theme.setAttribute('href', '/spaceblue.css');
       CANVAS_LABEL_COLOUR = "white";
-      LEADSTO_COLOUR = "orange";
-      CONTAINS_COLOUR = "lightblue";
-      EXPRESSES_COLOUR = "crimson";
-      NEAR_COLOUR = "lightgray";
       break;
    case "red":
    case "alert":
    case "redalert":   
       theme.setAttribute('href', '/red.css');
       CANVAS_LABEL_COLOUR = "lightyellow";
-      LEADSTO_COLOUR = "gold";
-      CONTAINS_COLOUR = "lightblue";
-      EXPRESSES_COLOUR = "orange";
-      NEAR_COLOUR = "lightgray";
       break;
    default:
       theme.setAttribute('href', '/style.css');
       CANVAS_LABEL_COLOUR = "black";
-      LEADSTO_COLOUR = "darkred";
-      CONTAINS_COLOUR = "lightblue";
-      EXPRESSES_COLOUR = "orange";
-      NEAR_COLOUR = "darkgray";
       break;
    }
+
+   LEADSTO_COLOUR = "#C62828";  //"darkred";
+   CONTAINS_COLOUR = "#2E6F95"; // "lightblue";
+   EXPRESSES_COLOUR = "#C9A227" //"orange";
+   NEAR_COLOUR = "#4C8C4A"; //"darkgray";
 }
 
 /***********************************************************/
@@ -1137,7 +1122,8 @@ for (let path = 0; path < array.length; path++)
 
             let text = document.createElement("span");
             text.textContent = str;
-	    text.id = "orbital-full-text";
+            text.id = "orbital-full-text";
+
             if (str.length < 20)
                {
                text.style.fontSize = "150%";

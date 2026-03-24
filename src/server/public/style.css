@@ -7,6 +7,7 @@ body {
 }
 
 page {
+  background-color: var(--sand-0);
   min-height: 100svh;
   max-width: 100svw;
   overflow: hidden;
@@ -155,7 +156,7 @@ h3 {
   border-radius: var(--radius-3);
   padding: 1rem 0.5rem;
   margin-bottom: 0.5rem;
-    color: var(--stone-10);   // THIS IS THE FULL TEXT COLOUR
+  color: var(--stone-10);
   width: 95svw;
   border: 1px var(--stone-4) solid;
   display: flex;
@@ -167,7 +168,7 @@ h3 {
 
   & pre {
     font-size: var(--font-size-fluid-0);
-    color: var(--stone-12);
+    color: var(--stone-10);
     display: inline-flex;
     text-wrap: wrap balance;
   }
@@ -205,7 +206,6 @@ h3 {
     width: fit-content;
     flex-basis: 100%;
     text-wrap: wrap balance;
-//    overflow: clip;
     font-size: var(--font-size-fluid-1);
     font-weight: var(--font-weight-4);
   }
@@ -231,6 +231,7 @@ h3 {
     }
   }
 }
+
 .error-message {
   background-color: rgba(255, 0, 0, 0.585);
   backdrop-filter: blur(9px);
@@ -253,6 +254,7 @@ h3 {
     opacity: 0;
     transform: scale(0);
   }
+
   & p {
     color: var(--stone-10);
     font-weight: 500;
@@ -270,6 +272,14 @@ h3 {
   color: var(--yellow-8);
 }
 
+#line-num {
+   color: var(--stone-6);
+}
+
+#ditto {
+  color: var(--stone-10);
+}
+
 #statcount {
   text-wrap: nowrap;
   color: navy;
@@ -285,6 +295,10 @@ h3 {
   font-size: var(--font-size-fluid-0);
 }
 
+#chapter_notes_heading {
+ color: var(--blue-10);
+}
+
 #orbital-full-text {
   font-family: var(--font-serif);
   font-size: var(--font-size-fluid-1);  // either too big or too small
@@ -297,6 +311,7 @@ background-color: #eeeeee;
 
 details summary {
 background-color: var(--sand-1);
+color: DETAIL_FORE_COLOUR;
 margin-left: 80px;
 }
 
@@ -451,9 +466,6 @@ img {
   color: red;
 }
 
-/*mjx-container, mjx-mo,mjx-mfrac,mjx-mtext,mjx-mi,mjx-mn {
-  line-height: 130%;
-}*/
 
 .hipnosis {
   position: absolute;

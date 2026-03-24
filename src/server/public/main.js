@@ -2462,14 +2462,14 @@ Node(x, y, z, 6 * mob, "yellow", "brown");
 
 function Thing(x, y, z)
 {
-Node(x, y, z, 4 * mob, "darkgreen", "goldenrod");
+Node(x, y, z, 4 * mob, "#334455", "#54A5F6");
 }
 
 // *************************************************
 
 function Concept(x, y, z)
 {
-Node(x, y, z, 4 * mob, "darkblue", "greenyellow");
+Node(x, y, z, 4 * mob, "darkblue", "#FFD540");
 }
 
 // *************************************************

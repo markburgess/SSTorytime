@@ -218,7 +218,7 @@ méiyǒu, wǒ tài lèile (ph)  没有, 我太累了 (he) No, I'm too tired.
 
 nà, wǒmen yīqǐ zuò ba (ph)  那, 我们一起做吧 (he) Then, let's cook together!
 
-bùyào la (ph)  不要啦 Nooooo
+bùyào la                (ph)  不要啦      (he) Nooooo
 wǒ zhēn de bùxiǎng dòng (ph)  我真的不想动 (he) I really don't want to move
 
 hǎo ba, nà wǒmen diǎn shíwù ba (ph)  好吧, 那我们点食物吧 (he) Okay, then let's order something.
@@ -674,16 +674,16 @@ zǒu ba (ph) 走吧 (he) Let's go
 
   :: proverbs ::
 
-fēngshuǐ lúnliú zhǎngduò (ph) 风水轮流掌舵  (he) Fengshui take turns at the wheel/helm
-fēng shuǐ lún liú zhuàn (ph)  风水轮流转 Trad. 風水輪流轉 (he) Fengshui take turns to change
-fēng shuǐ lún liú (ph)  风水轮流 (he) Fengshui/wind and water take turns [on the wheel of fate]
+fēngshuǐ lún liú zhǎngduò (ph) 风水轮流掌舵  (he) fengshui take turns at the wheel/helm
+fēngshuǐ lún liú zhuàn (ph)  风水轮流转 Trad. 風水輪流轉 (he) fengshui take turns to change
+fēngshuǐ lún liú (ph)  风水轮流 (he) fengshui/wind and water take turns [on the wheel of fate]
 lúnliú (ph) 轮流 (he) take turns
 
   ####################################
 
 :: trivia, daily, ordinary, special, common phrases ::
 
-however, whatever, anywhere, as you like, frontier edge  (eh) 随边 (hp) Suí biān  
+however, whatever, anywhere, as you like, frontier edge  (eh) 随边 (hp) suíbiān  
 
 that's great  (eh) 好极了 (hp) hǎo jí le
 
@@ -4379,13 +4379,12 @@ kuàilè (ph) 快乐 (he) happy
   zou  (sl) zuo (ll) zou
   zou (sl) zao (ll) zuo
 
+
 zǒu (sl) zòu
-zǒu 走 (he) walk
-zǒu 走 (pe) walk
+zǒu (ph) 走 (he) walk
+zǒu (ph) 走 (pe) walk
   "      (has-cmpt) zǒu
   "     (has-cmpt) 走
-
-#########
 
 zòu 奏 (he) play perform music on an instrument
 zòu 奏 (pe) play perform music on an instrument
@@ -4410,7 +4409,10 @@ zǎo 早 (has-cmpt) 早
   "  (he) morning/early
   "  (pe) morning/early
 
+###########
 
+zuò (ph) 做 (he) do/make
+ "  (ph) 坐 (he) sit
 
 ##########
 
@@ -4426,14 +4428,12 @@ zǎo 早 (has-cmpt) 早
 
 #################
 
-  zuò fàn (sl) zǎofàn
+  zuò fàn / make food (sl) zǎofàn / earlyfood
 
-// this should scale ok, as we know strings of length > 3 are generally unique 
-
-huì (sl) huí (sl) huǐ 
+  huì (sl) huí (sl) huǐ 
   会 (sl) 回 (sl) 悔
 
- dǔchē (sl)  dǎchē       // traffic, get a cab
+ dǔchē / traffic jam (sl)  dǎchē / take a cab 
  堵车 (sounds like) 打车
 
 

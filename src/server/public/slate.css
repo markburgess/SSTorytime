@@ -152,6 +152,10 @@ h3 {
   text-wrap: wrap balance;
 }
 
+#notes_secondary_colour {
+  color:  var(--gray-5);
+}
+
 .card-view {
   border-radius: var(--radius-3);
   padding: 1rem 0.5rem;

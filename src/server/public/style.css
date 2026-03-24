@@ -152,11 +152,15 @@ h3 {
   text-wrap: wrap balance;
 }
 
+#notes_secondary_colour {
+  color:  var(--blue-11);
+}
+
 .card-view {
   border-radius: var(--radius-3);
   padding: 1rem 0.5rem;
   margin-bottom: 0.5rem;
-  color: var(--stone-10);
+  color: var(--teal-12);
   width: 95svw;
   border: 1px var(--stone-4) solid;
   display: flex;
@@ -168,7 +172,7 @@ h3 {
 
   & pre {
     font-size: var(--font-size-fluid-0);
-    color: var(--stone-10);
+    color: var(--teal-12);
     display: inline-flex;
     text-wrap: wrap balance;
   }
@@ -277,7 +281,7 @@ h3 {
 }
 
 #ditto {
-  color: var(--stone-10);
+  color: var(--teal-12);
 }
 
 #statcount {

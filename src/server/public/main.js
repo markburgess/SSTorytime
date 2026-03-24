@@ -1358,6 +1358,10 @@ for (let line = 0; line < array.length; line++)
                };
             let pre = document.createElement("pre");
             pre.textContent = str;
+            if (i > 0)
+               {
+               pre.id = "notes_secondary_colour";
+                }
             text_link.appendChild(pre);
             subline.appendChild(text_link);
             } 
@@ -1371,6 +1375,10 @@ for (let line = 0; line < array.length; line++)
 
             let text = document.createElement("span");
             text.textContent = str;
+            if (i > 0)
+               {
+               text.id = "notes_secondary_colour";
+               }
             text_link.appendChild(text);
             subline.appendChild(text_link);
             }

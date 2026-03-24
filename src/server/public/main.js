@@ -274,20 +274,12 @@ switch (skintheme)
    case "night":
       theme.setAttribute('href', '/dark.css')
       CANVAS_LABEL_COLOUR = "white";
-      LEADSTO_COLOUR = "red";
-      CONTAINS_COLOUR = "lightblue";
-      EXPRESSES_COLOUR = "orange";
-      NEAR_COLOUR = "darkgray";
       break;
    case "slate":
    case "gray":
    case "grey":
       theme.setAttribute('href', '/slate.css');
       CANVAS_LABEL_COLOUR = "white";
-      LEADSTO_COLOUR = "crimson";
-      CONTAINS_COLOUR = "lightblue";
-      EXPRESSES_COLOUR = "orange";
-      NEAR_COLOUR = "lightgray";
       break;
    case "space":
    case "astronomy":
@@ -296,30 +288,23 @@ switch (skintheme)
    case "blue":
       theme.setAttribute('href', '/spaceblue.css');
       CANVAS_LABEL_COLOUR = "white";
-      LEADSTO_COLOUR = "orange";
-      CONTAINS_COLOUR = "lightblue";
-      EXPRESSES_COLOUR = "crimson";
-      NEAR_COLOUR = "lightgray";
       break;
    case "red":
    case "alert":
    case "redalert":   
       theme.setAttribute('href', '/red.css');
       CANVAS_LABEL_COLOUR = "lightyellow";
-      LEADSTO_COLOUR = "gold";
-      CONTAINS_COLOUR = "lightblue";
-      EXPRESSES_COLOUR = "orange";
-      NEAR_COLOUR = "lightgray";
       break;
    default:
       theme.setAttribute('href', '/style.css');
       CANVAS_LABEL_COLOUR = "black";
-      LEADSTO_COLOUR = "darkred";
-      CONTAINS_COLOUR = "lightblue";
-      EXPRESSES_COLOUR = "orange";
-      NEAR_COLOUR = "darkgray";
       break;
    }
+
+   LEADSTO_COLOUR = "#C62828";  //"darkred";
+   CONTAINS_COLOUR = "#2E6F95"; // "lightblue";
+   EXPRESSES_COLOUR = "#C9A227" //"orange";
+   NEAR_COLOUR = "#4C8C4A"; //"darkgray";
 }
 
 /***********************************************************/
@@ -738,6 +723,7 @@ section.appendChild(panel);
 
 let title = document.createElement("h3");
 title.textContent = "Progress tracker";
+title.id = "chapter_notes_heading";
 panel.appendChild(title);
 
 CANVAS = CreateCanvas();
@@ -1136,7 +1122,8 @@ for (let path = 0; path < array.length; path++)
 
             let text = document.createElement("span");
             text.textContent = str;
-	    text.id = "orbital-full-text";
+            text.id = "orbital-full-text";
+
             if (str.length < 20)
                {
                text.style.fontSize = "150%";
@@ -1357,6 +1344,10 @@ for (let line = 0; line < array.length; line++)
                };
             let pre = document.createElement("pre");
             pre.textContent = str;
+            if (i > 0)
+               {
+               pre.id = "notes_secondary_colour";
+                }
             text_link.appendChild(pre);
             subline.appendChild(text_link);
             } 
@@ -1370,6 +1361,10 @@ for (let line = 0; line < array.length; line++)
 
             let text = document.createElement("span");
             text.textContent = str;
+            if (i > 0)
+               {
+               text.id = "notes_secondary_colour";
+               }
             text_link.appendChild(text);
             subline.appendChild(text_link);
             }
@@ -2467,14 +2462,14 @@ Node(x, y, z, 6 * mob, "yellow", "brown");
 
 function Thing(x, y, z)
 {
-Node(x, y, z, 4 * mob, "darkgreen", "goldenrod");
+Node(x, y, z, 4 * mob, "#334455", "#54A5F6");
 }
 
 // *************************************************
 
 function Concept(x, y, z)
 {
-Node(x, y, z, 4 * mob, "darkblue", "greenyellow");
+Node(x, y, z, 4 * mob, "darkblue", "#FFD540");
 }
 
 // *************************************************

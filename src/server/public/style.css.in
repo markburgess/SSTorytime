@@ -7,7 +7,7 @@ body {
 }
 
 page {
-  background-color: var(--brown-0);
+  background-color: PAGE_BACKGROUND_COLOUR;
   min-height: 100svh;
   max-width: 100svw;
   overflow: hidden;
@@ -110,7 +110,7 @@ a {
   transition-property: transform, translate, scale, rotate;
   animation: fade-in 1s var(--ease-5);
   text-decoration: italic;
-  color: var(--blue-8);
+  color: LINK_ITEM_BACKGROUND_COLOUR;
   padding-inline: 0;
   cursor: pointer;
   font-weight: var(--font-weight-6);
@@ -124,7 +124,7 @@ a {
     inset-inline-start: 0;
     inset-block-end: -1ch;
     transform: scale(0);
-    background-color: var(--blue-8);
+    background-color: LINK_ITEM_BACKGROUND_COLOUR;
     transition: all ease-in-out 250ms;
   }
 
@@ -153,16 +153,16 @@ h3 {
 }
 
 #notes_secondary_colour {
-  color:  var(--blue-11);
+  color:  LINK_SECONDARY_COLOUR;
 }
 
 .card-view {
   border-radius: var(--radius-3);
   padding: 1rem 0.5rem;
   margin-bottom: 0.5rem;
-  color: var(--teal-12);
+  color: FULL_TEXT_COLOUR;
   width: 95svw;
-  border: 1px var(--stone-4) solid;
+  border: 1px CARD_BORDER_COLOUR solid;
   display: flex;
   flex-direction: column;
   gap: 1ch;
@@ -172,21 +172,21 @@ h3 {
 
   & pre {
     font-size: var(--font-size-fluid-0);
-    color: var(--teal-12);
+    color: FULL_TEXT_COLOUR;
     display: inline-flex;
     text-wrap: wrap balance;
   }
 
   & h3 {
     font-size: var(--font-size-fluid-0);
-    color: var(--blue-10);
+    color: TITLE_SUMMARY_COLOUR;
     min-width: fit-content;
     margin-top: 0.5ch;
   }
 
   & h4 {
     font-size: var(--font-size-fluid-1);
-    color: var(--blue-10);
+    color: TITLE_SUMMARY_COLOUR;
     min-width: fit-content;
     margin-top: 0.5ch;
   }
@@ -206,7 +206,7 @@ h3 {
 
   & span {
     padding-inline: 1ch;
-    color: var(--gray-9);
+    color: TEXT_CONTENT_COLOUR;
     width: fit-content;
     flex-basis: 100%;
     text-wrap: wrap balance;
@@ -215,7 +215,7 @@ h3 {
   }
 
   & td {
-    background-color: var(--stone-2); /* Default/unknown state */
+    background-color: TABLE_BACKGROUND_COLOUR; /* Default/unknown state */
     padding: 3ch;
     margin-left: 2ch;
   }
@@ -223,13 +223,13 @@ h3 {
   & > span:first-child {
     margin-bottom: 1ch;
     flex-basis: 100%;
-    color: var(--gray-11);
+    color: SPAN_COLOUR;
     pointer-events: auto;
     align-items: baseline;
     white-space: pre;
 
     & :hover {
-      color: var(--indigo-8);
+      color: HOVER_COLOUR;
       text-shadow: 1px 2px 5px rgba(52, 58, 64, 0.3),
         -2px -1px 3px rgba(56, 217, 169, 0.2);
     }
@@ -260,7 +260,7 @@ h3 {
   }
 
   & p {
-    color: var(--stone-10);
+    color: ERROR_COLOUR;
     font-weight: 500;
   }
 }
@@ -273,20 +273,20 @@ h3 {
 }
 
 #current_time_context {
-  color: var(--yellow-8);
+  color: CURRENT_TIME_COLOUR;
 }
 
 #line-num {
-   color: var(--stone-7);
+   color: LINE_NUM_COLOUR;
 }
 
 #ditto {
-  color: var(--teal-12);
+  color: FULL_TEXT_COLOUR;
 }
 
 #statcount {
   text-wrap: nowrap;
-  color: var(--blue-8);
+  color: LINK_ITEM_BACKGROUND_COLOUR;
   margin-left: 100px;
   padding: 5px;
 }
@@ -300,7 +300,7 @@ h3 {
 }
 
 #chapter_notes_heading {
- color: var(--blue-10);
+ color: TITLE_SUMMARY_COLOUR;
 }
 
 #orbital-full-text {
@@ -309,12 +309,12 @@ h3 {
 }
 
 details {
-background-color: #eeeeee;
+background-color: DETAIL_BACKGROUND_COLOUR;
 //margin-left: 200px;
 }
 
 details summary {
-background-color: var(--sand-1);
+background-color: DETAIL_SUMARY_BACKGROUND_COLOUR;
 color: DETAIL_FORE_COLOUR;
 margin-left: 80px;
 }
@@ -328,7 +328,7 @@ img {
 }
 
 #main-content-panel { 
-  color: var(--stone-12);
+  color: MAIN_CONTENT_PANEL_COLOUR;
 }
 
 #nptr-chapter-context-hepline {
@@ -363,7 +363,7 @@ img {
 
 
 .NCM-N {
-  color: var(--gray-9);  // --> math colour
+  color: MATH_COLOUR;  // --> math colour
 }
 
 #cntxt {
@@ -375,7 +375,7 @@ img {
   /* -express */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: #C9A227;
+  color: SST_ARROW_0_COLOUR;
   font-size: var(--font-size-fluid-0);
 }
 
@@ -383,7 +383,7 @@ img {
   /* -contain */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: #2E6F95;
+  color: SST_ARROW_1_COLOUR;
   font-size: var(--font-size-fluid-0);
 }
 
@@ -391,7 +391,7 @@ img {
   /* -leadsto */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: #C62828;
+  color: SST_ARROW_2_COLOUR;
   font-size: var(--font-size-fluid-0);
 }
 
@@ -399,7 +399,7 @@ img {
   /* near */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: #4C8C4A;
+  color: SST_ARROW_3_COLOUR;
   font-size: var(--font-size-fluid-0);
 }
 
@@ -407,7 +407,7 @@ img {
   /* +leadsto */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: #C62828;
+  color: SST_ARROW_4_COLOUR;
   font-size: var(--font-size-fluid-0);
 }
 
@@ -415,7 +415,7 @@ img {
   /* +contain */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: #2E6F95;
+  color: SST_ARROW_5_COLOUR;
   font-size: var(--font-size-fluid-0);
 }
 
@@ -423,13 +423,13 @@ img {
   /* +express */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: #C9A227;
+  color: SST_ARROW_6_COLOUR;
   font-size: var(--font-size-fluid-0);
 }
 
 #toc-elem {
   padding-inline: 1ch;
-  color: purple;
+  color: TOC_COLOUR;
   font-size: 150%;
   line-height: 150%;
 }
@@ -446,7 +446,7 @@ img {
 
 #toc-single {
   padding-inline: 1ch;
-  color: var(--orange-10);
+  color: TOC_SINGLE_COLOUR;
   font-size: 150%;
   line-height: 120%;
 }
@@ -579,7 +579,7 @@ img {
   width: 1rem;
   height: 1rem;
   border-radius: 50%;
-  background-color: var(--gray-5); /* Default/unknown state */
+  background-color: STATUS_INDICATOR_COLOUR; /* Default/unknown state */
   transition: background-color 0.5s ease;
 }
 
@@ -592,11 +592,11 @@ img {
 
 /* State Colors */
 .status-ok {
-  background-color: var(--green-5);
+  background-color: STATUS_OK_COLOUR;
 }
 
 .status-error {
-  background-color: var(--red-6);
+  background-color: STATUS_NOT_OK_COLOUR;
 }
 
 footer {

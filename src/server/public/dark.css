@@ -49,7 +49,7 @@ header {
     text-wrap: wrap;
     text-align: end;
     padding-block: 1ch;
-//    overflow-x: clip;
+    overflow-x: clip;
     font-size: clamp(0.3rem, 0.5rem + 1svw, 1.2rem);
     font-weight: var(--font-weight-4);
     color: rgba(24, 50, 77, 0.6);
@@ -110,7 +110,7 @@ a {
   transition-property: transform, translate, scale, rotate;
   animation: fade-in 1s var(--ease-5);
   text-decoration: italic;
-  color: var(--gray-2);         // context labels
+  color: var(--gray-2);
   padding-inline: 0;
   cursor: pointer;
   font-weight: var(--font-weight-6);
@@ -124,7 +124,7 @@ a {
     inset-inline-start: 0;
     inset-block-end: -1ch;
     transform: scale(0);
-    background-color: var(--gray-2);  // context labels
+    background-color: var(--gray-2);
     transition: all ease-in-out 250ms;
   }
 
@@ -139,20 +139,30 @@ a {
   }
 }
 
+
 h3 {
   margin-block: 2ch;
-  color: var(--choco-2);
+  color: var(--stone-12);
   font-size: var(--font-size-fluid-1);
   min-width: fit-content;
+}
+
+.notes-view {
+  width: 95svw;
+  text-wrap: wrap balance;
+}
+
+#notes_secondary_colour {
+  color:  var(--gray-5);
 }
 
 .card-view {
   border-radius: var(--radius-3);
   padding: 1rem 0.5rem;
   margin-bottom: 0.5rem;
-    color: var(--choco-0);
+  color: var(--choco-0);
   width: 95svw;
-  border: 1px var(--stone-4) solid;
+  border: 1px var(--green-0) solid;
   display: flex;
   flex-direction: column;
   gap: 1ch;
@@ -162,21 +172,21 @@ h3 {
 
   & pre {
     font-size: var(--font-size-fluid-0);
-    color: var(--green-0);      // fulltext with monospace
+    color: var(--choco-0);
     display: inline-flex;
     text-wrap: wrap balance;
   }
 
   & h3 {
     font-size: var(--font-size-fluid-0);
-    color: var(--choco-2);      // card titles
+    color: var(--choco-2);
     min-width: fit-content;
     margin-top: 0.5ch;
   }
 
   & h4 {
     font-size: var(--font-size-fluid-1);
-    color: var(--choco-2);      // card titles
+    color: var(--choco-2);
     min-width: fit-content;
     margin-top: 0.5ch;
   }
@@ -196,7 +206,7 @@ h3 {
 
   & span {
     padding-inline: 1ch;
-    color: var(--green-2);  // Main subject fulltext
+    color: TEXT_CONTENT_COLOUR;
     width: fit-content;
     flex-basis: 100%;
     text-wrap: wrap balance;
@@ -225,6 +235,7 @@ h3 {
     }
   }
 }
+
 .error-message {
   background-color: rgba(255, 0, 0, 0.585);
   backdrop-filter: blur(9px);
@@ -247,6 +258,7 @@ h3 {
     opacity: 0;
     transform: scale(0);
   }
+
   & p {
     color: var(--stone-10);
     font-weight: 500;
@@ -260,18 +272,21 @@ h3 {
   margin-right: 2px;
 }
 
-
 #current_time_context {
   color: var(--yellow-8);
 }
 
 #line-num {
-  color: var(--yellow-4);
+   color: var(--yellow-4);
+}
+
+#ditto {
+  color: var(--choco-0);
 }
 
 #statcount {
   text-wrap: nowrap;
-  color: var(--cyan-3));
+  color: var(--gray-2);
   margin-left: 100px;
   padding: 5px;
 }
@@ -280,36 +295,40 @@ h3 {
    margin: 2px;
 }
 
+#chapstyle {
+  font-size: var(--font-size-fluid-0);
+}
+
+#chapter_notes_heading {
+ color: var(--choco-2);
+}
+
 #orbital-full-text {
   font-family: var(--font-serif);
-  font-size: var(--font-size-fluid-1);
+  font-size: var(--font-size-fluid-1);  // either too big or too small
 }
 
-
-details { 
+details {
 background-color: slategray;
-//margin-left: 200px; 
+//margin-left: 200px;
 }
 
-details summary { 
+details summary {
 background-color: darkslategray;
 color: tomato;
 margin-left: 80px;
 }
 
-#chapstyle {
-font-size: var(--font-size-fluid-0);
-}
-
-#main-content-panel { 
-  color: var(--choco-2);
-}
 
 img {
   max-width: 50%;
   display: inline-block;
   margin: auto;
   padding: 5px;
+}
+
+#main-content-panel { 
+  color: var(--choco-2);
 }
 
 #nptr-chapter-context-hepline {
@@ -342,8 +361,9 @@ img {
   padding: 0px;
 }
 
+
 .NCM-N {
-  color: lightblue;  // --> math colour
+  color: orange;  // --> math colour
 }
 
 #cntxt {
@@ -355,7 +375,7 @@ img {
   /* -express */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: var(--purple-4);
+  color: #C9A227;
   font-size: var(--font-size-fluid-0);
 }
 
@@ -363,7 +383,7 @@ img {
   /* -contain */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: var(--indigo-2);
+  color: #2E6F95;
   font-size: var(--font-size-fluid-0);
 }
 
@@ -371,7 +391,7 @@ img {
   /* -leadsto */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: var(--red-5);
+  color: #C62828;
   font-size: var(--font-size-fluid-0);
 }
 
@@ -379,7 +399,7 @@ img {
   /* near */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: var(--gray-3));
+  color: #4C8C4A;
   font-size: var(--font-size-fluid-0);
 }
 
@@ -387,7 +407,7 @@ img {
   /* +leadsto */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: var(--red-5);
+  color: #C62828;
   font-size: var(--font-size-fluid-0);
 }
 
@@ -395,7 +415,7 @@ img {
   /* +contain */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: var(--indigo-2);
+  color: #2E6F95;
   font-size: var(--font-size-fluid-0);
 }
 
@@ -403,13 +423,13 @@ img {
   /* +express */
   margin-top: 0px;
   margin-bottom: 0px;
-  color: var(--purple-4);
+  color: #C9A227;
   font-size: var(--font-size-fluid-0);
 }
 
 #toc-elem {
   padding-inline: 1ch;
-  color:  var(--pink-4);
+  color: var(--pink-4);
   font-size: 150%;
   line-height: 150%;
 }
@@ -438,18 +458,16 @@ img {
 }
 
 /* ********************* */
+
 #context_history {
   display: none;
 }
 
-mjx-container[display] {
+*)mjx-container[display] {
   text-align: start !important;
   text-indent: 2ch;
   overflow: visible;
-}
-
-mjx-container, mjx-mo,mjx-mfrac,mjx-mtext,mjx-mi,mjx-mn {
-    background: rgba(90,90,90,0.5);
+  color: red;
 }
 
 
@@ -464,6 +482,7 @@ mjx-container, mjx-mo,mjx-mfrac,mjx-mtext,mjx-mi,mjx-mn {
   background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+//  overflow: clip;
   z-index: 45;
 
   transition: transform 1s var(--ease-spring-2) 1s, opacity 1s ease 1s;
@@ -540,7 +559,7 @@ mjx-container, mjx-mo,mjx-mfrac,mjx-mtext,mjx-mi,mjx-mn {
   word-wrap: normal;
   white-space: nowrap;
   direction: ltr;
-  color: var(--gray-10);
+  color: var(--blue-10);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   -moz-osx-font-smoothing: grayscale;

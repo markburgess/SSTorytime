@@ -116,7 +116,7 @@ underpin everything that happens.
 
 Getting data into story form isn't as easy as it sounds, so we start
 by introducing a simple language "N4L" to make data entry as painless
-as possible.  Then we add tools for browsing, visializing, analysing
+as possible.  Then we add tools for browsing, visualizing, analysing
 the resulting graph, solving for paths, and divining storylines
 through the data. The aim is to support human learning, and to assist
 human perception--though the results may be used together with "AI" in the future.

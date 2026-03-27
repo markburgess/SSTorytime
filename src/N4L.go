@@ -2221,6 +2221,7 @@ func StripAnnotations(fulltext string) string {
 
 		if !protected {
 			skip,symb := EmbeddedSymbol(preserve_unicode,r)
+
 			if skip > 0 {
 				r += skip-1
 				if unicode.IsSpace(preserve_unicode[r]) {

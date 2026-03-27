@@ -15,6 +15,7 @@
 
  + to be decided     (tbd)          - to be figured out    (tbf)
  + has example       (e.g.)         - is an example of     (ex)
+ + in other words    (i.e.)         - is a clarification of (clarify)
  + has warning       (warning)      - is a warning about   (warn-abt)
  + has no example    (noex)         - is not an example of (not-ex)
  + has abbreviation  (abbrev)       - is short for         (short for)
@@ -54,7 +55,7 @@
  + is about topic/them (about)       - is the topic/theme of            (theme-of)
  + is wrong about      (wrongabt)    - is not accurately represented by (narb)
  + expresses property  (expr)        - is/are expressed by              (expr-by)
-
+ + can express         (canex)       - is expressible by                (isexpr)
 
  :: scientific and technical annotations ::
 
@@ -111,6 +112,7 @@
  + has an preference or affinity for (affinity)  - is a preference of     (preference)
 
  + works by method (works-by)       - is the modus operandi for (mo)
+ + implemented by  (how)            - is the implementation of  (impl)
 
  + likes             (lk)           - is liked by          (lk-by)
 

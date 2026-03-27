@@ -1,5 +1,5 @@
 
-- knowledge, background
+- knowledge and background
 
  These notes are all about how to use N4L and knowledge graphs in general (case of) How to?
 
@@ -19,9 +19,9 @@
  path solving
 
 
- orbits (defined) the collection of >nodes linked to a given node to >radius R
+ orbits (def) the collection of >nodes linked to a given node to >radius R
 
- paths  (defined) a collection of sequences of >nodes satisfying given criteria between start and end nodes
+ paths  (def) a collection of sequences of >nodes satisfying given criteria between start and end nodes
 
  There are two main types of data for a graph database
       "    (contains)  a relationship >map of explanations between >things and >concepts with examples
@@ -92,17 +92,17 @@
  Semantic spacetime (consists of) >"three kinds of node" and >"four kinds of link"
 
 
- three kinds of node (part of) quasi ontology for >"semantic spacetime"
+ three kinds of node (mkpt) quasi ontology for >"semantic spacetime"
 
-       "             (contains) >nodes that are >"events" (belong to) processes (e.g.) scene descriptions
-       "             (contains) >nodes that are >"concepts" or descriptive >"attributes" (belong to) virtual space
-       "             (contain ) >nodes that are "material agents" (belong to) physical space
+       "             (contains) >nodes that are >"events" 
+       "             (contains) >nodes that are >"concepts" or descriptive >"attributes"
+       "             (contain ) >nodes that are "material agents"
  
   material agents   (e.g.) >people and >things (i.e.) things that manifestly exist, not just >concepts or >ideas
 
-  material agent axiom (defined) there exists a class of >nodes that are >"material nodes" that manifest sources of >"causal change" and there exists a class of >"immaterial nodes" as >concepts that cannot exists without being bound to a material agent.
+  material agent axiom (def) there exists a class of >nodes that are >"material nodes" that manifest sources of >"causal change" and there exists a class of >"immaterial nodes" as >concepts that cannot exists without being bound to a material agent.
 
-  four kinds of link (part of) quasi ontology for >"semantic spacetime"
+  four kinds of link (mkpt) quasi ontology for >"semantic spacetime"
 
         "       (contains) >arrow >class >"leads to"
         "       (contains) >arrow >class >"contains"
@@ -110,24 +110,23 @@
         "       (contains) >arrow >class >"similar to" or >"near" 
 
 
-  the >"inverse path tracing problem" (affected by) the >"division by zero" inverse issue (note) if we have an absorbing state that's N:1 it is not uniquely invertible, but can be defined by algebra
+  the >"inverse path tracing problem" (connected) the >"division by zero" inverse issue (note) if we have an absorbing state that's N:1 it is not uniquely invertible, but can be defined by algebra
 
 
   +:: rules ::
 
-  an immaterial agent or concept (can't be similar to) a material agent, person or thing
-               "                 (can lead to) another >concept (e.g.) relativity leads to Einstein's equations
+  an immaterial agent or concept (!same) a material agent, person or thing
 
                "                 (has role) something like an adjective or adverb word or phrase
-               "                 (cannot contain) a material agent, thing or person
+               "                 (!contain) a material agent, thing or person
                "                 (can express)           "
 
 
  
-  a material agent, thing or person (can't be similar to) $(PREV.1)
+  a material agent, thing or person (!same) $PREV.1
         "                           (e.g.) a state of being, a state of not having, a colour ... 
         "  
-        "                           (cannot contain) an immaterial agent or concept
+        "                           (!contain) an immaterial agent or concept
         "                           (can express)         "
 
 
@@ -173,8 +172,8 @@
 
  Context makes sense of facts, and tells us when they apply.
 
- Context (result of) sensory experience
-  "      (result of) group behaviour
+ Context (derive-fr) sensory experience
+  "      (derive-fr) group behaviour
 
  There are two kinds of context
 

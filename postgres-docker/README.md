@@ -2,7 +2,7 @@
 
 Running the postgreSQL database server dependency to SSTorytime in a docker container
 makes is easy once the docker daemon and the docker-compose cli is
-installed. The docker-compose cli is installed automaticallt when instolling
+installed. The docker-compose cli is installed automatically when installing
 docker desktop.
 
 For installation instructions, see https://docs.docker.com/desktop/

@@ -29,9 +29,9 @@ cluster.yaml (url) "https://github.com/JarleB/oxide-openshift/blob/main/cluster.
 
 Jarle's Openshift configuration 
 
-   " (note) 'Once there exist %RHCOS images that reads the %"user_data" provided by the 0xide metadata service (NoCloud) creating tailored images with kernel params for fetching ignition configs will not be necessary anymore.'
+   " (note) 'Once there exist ***RHCOS images that reads the ***"user_data" provided by the 0xide metadata service (NoCloud) creating tailored images with kernel params for fetching ignition configs will not be necessary anymore.'
 
-   " (note) The setup has been tested with %"Openshift enterprise 4.20", however it should work equally well with %OKD, as long as the install config is adjusted accordingly.
+   " (note) The setup has been tested with ***"Openshift enterprise 4.20", however it should work equally well with ***OKD, as long as the install config is adjusted accordingly.
 
    " (warning) NB: This setup is not intended for production use!
 
@@ -69,15 +69,15 @@ set ignition_network_kcmdline=' ignition.config.url=https://your-bucket-address/
 
  " (note) In file grub2/05_ignition.cfg
 
-Unmount the RHCOS disk's boot partition, stop the loadbalancer instance and create a snapshot of the RHCOS disk, then create a dedicateed RHCOS image from that snapshot. This is the image-id you will use later to create the bootstrap node instance in %"cluster.yaml"
+Unmount the RHCOS disk's boot partition, stop the loadbalancer instance and create a snapshot of the RHCOS disk, then create a dedicateed RHCOS image from that snapshot. This is the image-id you will use later to create the bootstrap node instance in ***"cluster.yaml"
 
-Repeat the above process to create RHCOS image for control plane nodes and worker nodes respectively, so that they boot and fetch ignition configs from the master.ign and worker.ign files in your s3 bucket. This will be the image ids you confgure for control plane and worker nodes in the %"cluster.yaml" file later
+Repeat the above process to create RHCOS image for control plane nodes and worker nodes respectively, so that they boot and fetch ignition configs from the master.ign and worker.ign files in your s3 bucket. This will be the image ids you confgure for control plane and worker nodes in the ***"cluster.yaml" file later
 
 Create VPC firewall rules to allow traffic to tcp ports 6443, 22623, 80 and 443 within the VPC . (note) Note this can be made more granular and also included in the Terraform config
 
 Fetch the id of your default vpc and subnet.
 
-Fill in the vpc_id, project_id and normalized_cluster_name in the %"cluster.yaml" file, and adjust the values to your liking. The defaults should be sufficient for a POC cluster of Openshift.
+Fill in the vpc_id, project_id and normalized_cluster_name in the ***"cluster.yaml" file, and adjust the values to your liking. The defaults should be sufficient for a POC cluster of Openshift.
 
 Run the installer_prep.bash script to generate manifests, ignition configs and upload them to your s3 bucket.
 

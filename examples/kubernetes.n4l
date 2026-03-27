@@ -5,38 +5,38 @@
 :: core concepts ::
 
 Kubernetes (short for) "K8s"
-     "     (repr) a %container %orchestration system
+     "     (repr) a ***container ***orchestration system
      "     (founded-by) Google
      "     (maintained-by) CNCF
-     "     (enables) %declarative %automation of containerized workloads
+     "     (enables) ***declarative ***automation of containerized workloads
 
 pod (repr) the smallest deployable computing unit in Kubernetes
   "   (named after) "pod of whales" or "pea pod"
-  "   (contains) one or more %containers
-  "   (runsin) a shared %execution context
-  "   (managed-by) %controllers
+  "   (contains) one or more ***containers
+  "   (runsin) a shared ***execution context
+  "   (managed-by) ***controllers
 
-container (managed-by) %containerd
-kubectl (use-for) interact with %Kubernetes via CLI
+container (managed-by) ***containerd
+kubectl (use-for) interact with ***Kubernetes via CLI
 
-operator (implements) a %controller pattern
+operator (implements) a ***controller pattern
    "       (manages) complex applications and their components
-   "       (uses) %CRDs
+   "       (uses) ***CRDs
 
 :: pods ::
 
 "One-container-per-pod" (ex) usage pattern  // make this an example
 
-A %pod (consists) multiple co-located containers that are tightly coupled
-This pattern (use-for) %sidecars, %init containers, and %debugging
+A ***pod (consists) multiple co-located containers that are tightly coupled
+This pattern (use-for) ***sidecars, ***init containers, and ***debugging
 
-A %pod (behaves) persists until deleted
-   "   (!same) a %process
-   "   (ex) an %environment for running containers
+A ***pod (behaves) persists until deleted
+   "   (!same) a ***process
+   "   (ex) an ***environment for running containers
 
-Restarting a %container (!same) the same as restarting a %pod
+Restarting a ***container (!same) the same as restarting a ***pod
 
-%init containers (runs) during pod startup
+***init containers (runs) during pod startup
         "        (runbefore) main application containers
         "        (use-for) setup tasks like config init or dependency checks
 
@@ -46,21 +46,21 @@ ephemeral containers (use-for) debugging a running pod
          "            (not-pt-of) pod restart policy
 
 sidecar container (runs-with) main application container
-         "         (shares) the %pod’s network and storage context
-         "         (use-for) %logging, %proxying, %service mesh, and other supportive tasks
+         "         (shares) the ***pod’s network and storage context
+         "         (use-for) ***logging, ***proxying, ***service mesh, and other supportive tasks
          "         (enables) separation of concerns
          "         (termwith) the main container
 
 :: api and extension ::
 
 API server (repr) hub of the cluster API
-     "      (https connection with) %nodes
-     "      (auth-by) %"client certs" or %"service account tokens"
+     "      (https connection with) ***nodes
+     "      (auth-by) ***"client certs" or ***"service account tokens"
 
 'Kubernetes uses a >"hub-and-spoke API pattern". All API usage terminates at the API server.'
 
-service account (injects) %bearer token and %root certificate into pods
-kube-proxy      (redirects) service IPs to %API server HTTPS endpoints
+service account (injects) ***bearer token and ***root certificate into pods
+kube-proxy      (redirects) service IPs to ***API server HTTPS endpoints
 
 CRD   (short for)  Custom Resource Definition
   "   (implements) a way to extend the API
@@ -74,59 +74,59 @@ CRD scope  (uses)   namespaces
 
 :: control loops and reasoning ::
 
-controller (implements) a %control loop
-     "     (behaves) compares %"desired state" and %"actual state"
+controller (implements) a ***control loop
+     "     (behaves) compares ***"desired state" and ***"actual state"
      "     (implements) reconciliation
 
-reconciliation (means) Observing the %"actual state" and compares to the %"desired state". It infers the steps needed to achieve promised state. (note) This is a kind of %abductive reasoning.
+reconciliation (means) Observing the ***"actual state" and compares to the ***"desired state". It infers the steps needed to achieve promised state. (note) This is a kind of ***abductive reasoning.
 
-Kubernetes (implements) %autonomous agents making and keeping promises and demonstrates distributed %cooperation without central control
+Kubernetes (implements) ***autonomous agents making and keeping promises and demonstrates distributed ***cooperation without central control
 
-%pod, %PVC, %controller (expr) %promises that define system state
+***pod, ***PVC, ***controller (expr) ***promises that define system state
 
 :: storage ::
 
-Persistent Volume (abbrev) %PV
+Persistent Volume (abbrev) ***PV
        "           (repr) a piece of storage in the cluster
-       "           (prov-by) an administrator or a %Storage Class
+       "           (prov-by) an administrator or a ***Storage Class
        "           (behaves) managed as a cluster resource
-       "           (bind-to) %PVC
+       "           (bind-to) ***PVC
        "           (promises) capacity and access modes
 
-Persistent Volume Claim (abbrev) %PVC
+Persistent Volume Claim (abbrev) ***PVC
         "                (repr) a request for storage by a user
         "                (det) size and access requirements
-        "                (bind-to) %PV
-        "                (used-by) a %pod to mount storage
+        "                (bind-to) ***PV
+        "                (used-by) a ***pod to mount storage
         "                (repr) consumer's promise
 
-%Storage Class (det) parameters for dynamic volume provisioning
-        "            (used-by) %PVC to request volumes on demand
-        "            (repr) abstraction over storage backend e.g. %EBS, %NFS, %CSI
+***Storage Class (det) parameters for dynamic volume provisioning
+        "            (used-by) ***PVC to request volumes on demand
+        "            (repr) abstraction over storage backend e.g. ***EBS, ***NFS, ***CSI
 
-PVC   (enables) storage decoupling from the lifecycle of %pods
+PVC   (enables) storage decoupling from the lifecycle of ***pods
   "   (behaves) pods to be rescheduled without data loss
 
-PV (indep) lifecycle of individual %pods
+PV (indep) lifecycle of individual ***pods
 
-"Volumes in Kubernetes can be %ephemeral or %persistent. Ephemeral volumes exist only during the pod’s lifetime, while persistent volumes survive pod restarts or rescheduling."
+"Volumes in Kubernetes can be ***ephemeral or ***persistent. Ephemeral volumes exist only during the pod’s lifetime, while persistent volumes survive pod restarts or rescheduling."
 
 :: system architecture ::
 
-cluster (consists of) %"control plane" and %worker nodes
+cluster (consists of) ***"control plane" and ***worker nodes
 
-control plane (includes) %API server, %scheduler, %controller-manager, %etcd
+control plane (includes) ***API server, ***scheduler, ***controller-manager, ***etcd
 
-node (runs) %kubelet and %container runtime
+node (runs) ***kubelet and ***container runtime
 
-kubelet (authenticates) with %"client certificate"
-A %"root certificate" should be installed on each %node
+kubelet (authenticates) with ***"client certificate"
+A ***"root certificate" should be installed on each ***node
 
 kubelet TLS bootstrapping (use-for) automated certificate provisioning
 
 :: networking and security ::
 
-pod (connects to) %API server using injected credentials
+pod (connects to) ***API server using injected credentials
 
 kubectl (runs) 'commands like:
   "kubectl get pods -n kube-system"
@@ -134,16 +134,16 @@ kubectl (runs) 'commands like:
 
 :: resource management ::
 
-Linux control groups (constr) %resources allocated to processes
+Linux control groups (constr) ***resources allocated to processes
   "  (has version) cgroup v1
   "  (has version) v2 (note) this is the new generation
 
-%Kubernetes (uses) cgroups for container resource isolation
+ ***Kubernetes (uses) cgroups for container resource isolation
 
 :: automation pipelines ::
 
-%CI/CD (short for) Continuous Integration / Continuous Deployment
-   "   (repr) An approach to %testing, %security scanning, and %deployment
+***CI/CD (short for) Continuous Integration / Continuous Deployment
+   "   (repr) An approach to ***testing, ***security scanning, and ***deployment
 
  #
  # Some specific procedures
@@ -153,7 +153,7 @@ Linux control groups (constr) %resources allocated to processes
 
  To create a pod
     A user applies pod.yaml
-    The API server stores the pod spec in %etcd
+    The API server stores the pod spec in ***etcd
     The scheduler binds the pod to a node
     The kubelet starts containers on the node
 
@@ -174,7 +174,7 @@ Linux control groups (constr) %resources allocated to processes
 
   :: glossary and meta ::
 
-  # %weak coupling > %strong coupling
+  # weak coupling > strong coupling
 
  "bare metal"
  "self-hosted"

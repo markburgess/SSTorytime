@@ -19,9 +19,9 @@
  Promise Theory  (about)  How autonomous entities called agents can declare their intended behaviour.
          "       (note)   Promise Theory has nothing a priori to do with "promises" in programming languages like Javascript, though programming promise functionality is compatible with the Promise Theory definition..
 
- CFEngine promises  (def)  Declarations of %"intended outcome" or %"desired state".
+ CFEngine promises  (def)  Declarations of ***"intended outcome" or ***"desired state".
 
-         "      (note) Some might call promises %"rules", but they are only self-imposed rules on the agents.
+         "      (note) Some might call promises ***"rules", but they are only self-imposed rules on the agents.
          "      (note)  The agents can only promise its own intent to maintain state. If the operating sytem blocks an agent, or some other process interferes then even though it can keep its own promise to try and repair a deviant state, it can't promise that the system will end up according to specification.
 
    A promise type (def) the kind of promise, usually a type of system resource. 

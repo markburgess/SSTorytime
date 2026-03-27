@@ -184,7 +184,7 @@
  :: symbolism, meaning ::
 
  + has case              (case)       - is a case of (case of)
- + refers to             (ref)        - may be referred to as (refas)
+ + refers to             (ref)        - may be referred to in (refas)
  + has employment status (emplstatus) - employment status of (emplstatof)
 
  + has the structure of  (hasstruct)  - structure found in (structex)
@@ -234,7 +234,7 @@
  + total number of tracks (tracks)     - is the track count for (tracks-on)
  + was remastered on      (remastered) - a remaster was issued for (remast-of)
  + was performed          (performance)- was the event of performance (date-perf)
- + music release date     (mreleased)   - is the release date for (mrelease-of)
+ + music release          (released)   - is the release date for (release-of)
 
  + released an album (album)        - is an album release by (album by) 
  + released a single (single)       - is a single release by (single by)

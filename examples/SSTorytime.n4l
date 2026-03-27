@@ -33,7 +33,7 @@
 
   The hard problem of knowledge is context.
 
-  %SSTorytime takes a %"Promise Theory" approach.
+  ***SSTorytime takes a ***"Promise Theory" approach.
 
   Context has two roles in knowledge: promise theoretically it has a '+' donor role when categorizing information through notes. It also has a "-" acceptance or filtering role when searching. Both of these are represented by the ":: ... ::" lines in N4L. 
 
@@ -45,12 +45,12 @@
 
   While engaged in a search process, the knowledge agent remembers the intended parts of searches as current scenario context. You will see some of this history pop up at the top of the search result to give you further hints based on past behaviour.
 
-Sometimes you might see chapters that you didn't select showing up in searches. This is probably a result of certain words and phrases belonging to more than one chapter, and thus bridging chapters that you didn't intend. This possibility for bridging is intentional, as it allows %"lateral thinking", which is an important source of discovery.
+Sometimes you might see chapters that you didn't select showing up in searches. This is probably a result of certain words and phrases belonging to more than one chapter, and thus bridging chapters that you didn't intend. This possibility for bridging is intentional, as it allows ***"lateral thinking", which is an important source of discovery.
 
  What role should times play? Precise times are irrelevant because they never repeat. Coarse grains of time like "Monday morning" do repeat and may be relevant in finding intended information. But how do we record the time? Is it the time at which information
 was written, uploaded, or when something actually happened? The technology can't guess this for you, because it needs to be intentional. The ambient time isn't necessarily relevant.
 
- SSTorytime shows you the ambient time in a coarse grained form after every search, so that you can copy and paste this into context tags if you want to be able to use it later. If you make a search without any search terms, you will see any items that are labelled in a matching time. So, if you have specific %"to-do"/%todo / to do lists for specific times, these will pop up by themselves.
+ SSTorytime shows you the ambient time in a coarse grained form after every search, so that you can copy and paste this into context tags if you want to be able to use it later. If you make a search without any search terms, you will see any items that are labelled in a matching time. So, if you have specific ***"to-do"/***todo / to do lists for specific times, these will pop up by themselves.
 
  -:: _sequence_ ::
 
@@ -70,7 +70,7 @@ was written, uploaded, or when something actually happened? The technology can't
 
    :: theory, reasoning, algorithms :: 
 
-  Ranking of n-grams is based on two parts: the %intentionality or amount of %work needed to write them, and the frequency of use
+  Ranking of n-grams is based on two parts: the ***intentionality or amount of ***work needed to write them, and the frequency of use
 
   work (used for) measuring intent
 

@@ -7,34 +7,34 @@
 
  reasoning
 
- %reasoning goes back to 350 BC %Greece and %Aristotle. 
+ ***reasoning goes back to 350 BC ***Greece and ***Aristotle. 
 
- Aristotle (discusses) %syllogism 
+ Aristotle (discusses) ***syllogism 
 
  syllogism (e.g.) All men are mortal, Socrates is a man, therefore, Socrates is mortal.
      "     (ex)  deduction
 
- People associate %reasoning with %logic, thanks to %Hilbert and other mathematicians who formalized reasoning.
+ People associate ***reasoning with ***logic, thanks to ***Hilbert and other mathematicians who formalized reasoning.
 
  :: types, kinds, thinking ::
 
- deduction (prop) %"established facts"/trusted facts imply %deterministic %consequences
+ deduction (prop) ***"established facts"/trusted facts imply ***deterministic ***consequences
        "   (prop) one is calculating what is necessarily true from the assumed truth of the preconditions
        "   (prop) a yes or no answer
 
  flaw in deduction: absence of evidence is not evidence of absence (e.g.) all swans are white
 
- induction (prop) %"established facts" tend to imply %generalizations, %rules and %laws
+ induction (prop) ***"established facts" tend to imply ***generalizations, ***rules and ***laws
     "      (prop) one is calculating what may be broadly true from the preconditions
     "      (prop) a statistical or belief probabilistic answer
 
- abduction (prop) %"established facts" tend to suggest %explanations
+ abduction (prop) ***"established facts" tend to suggest ***explanations
      "     (prop) one is calculating what might broadly explain
      "     (prop) a statistical or belief probabilistic answer
 
- some have argued that abduction is the process behind %"Artificial Neural Networks"
+ some have argued that abduction is the process behind ***"Artificial Neural Networks"
 
- some have argued that %"Artificial Intelligence" is incapable of %abduction
+ some have argued that ***"Artificial Intelligence" is incapable of ***abduction
 
  ################ 
 
@@ -42,27 +42,27 @@
 
  SST (short for) Semantic Spacetime (derive-fr) Promise Theory
 
- a %graph (repr) a %process
+ a ***graph (repr) a ***process
 
  events (repr-by) nodes (repr) states of the knowledge system
     "   (consists of) place and moment in a proper time sequence
  associations (repr-by) arrows
 
-@path contiguous paths through a sequence of %events
+@path contiguous paths through a sequence of ***events
 
  arrows (prop) labelled directed link with semantics
-    "   (prop) belongs to one of four meta types: %leadsto, %contains, %expresses %property, is %similar or %near to
+    "   (prop) belongs to one of four meta types: ***leadsto, ***contains, ***expresses ***property, is ***similar or ***near to
 
  Stories are connected directed graphs
 
  A story/stories (repr) any kind of reasoning: deduction, induction, abduction
          "       (repr-by) $path.1
 
- %deduction (repr-by) first order %logic of %Hilbert (uses) theorems as facts / tautologies
+ ***deduction (repr-by) first order ***logic of ***Hilbert (uses) theorems as facts / tautologies
 
- %induction (repr-by) %expressing %SST %properties (e.g.) grouping of examples into a named class
+ ***induction (repr-by) ***expressing ***SST ***properties (e.g.) grouping of examples into a named class
 
- %abduction (repr-by) $path.1
+ ***abduction (repr-by) $path.1
      "      (consists of) any number of possible connecting paths, one to be selected
 
  What unknown property? (enables) paths that join up into stories (enables) reasoning

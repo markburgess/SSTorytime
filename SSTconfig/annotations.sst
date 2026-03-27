@@ -8,8 +8,9 @@
  // also avoid +,*,$ and mathematical/coding symbols if you need them in text
  // Note, you MUST have defined these arrows already under the arrow types 
 
+ // don't start with >?
 
-  % (ref)
+ *** (ref)
   = (involves)
  ** (is a special case of)
 

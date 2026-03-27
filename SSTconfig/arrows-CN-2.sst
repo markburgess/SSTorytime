@@ -3,7 +3,6 @@
 - contains
 
   :: identity orientation::
-
  + consists of        (consists)  - makes up part of    (mkpt)
  + uses word          (useword)   - is a word used in   (word-in)
  + uses material      (material)  - is a material for   (mat-for)
@@ -64,8 +63,9 @@
   + in which it happened that (event)    - happened while       (while)
   + was attended by           (guest)    - attended event       (attend)
 
-
-
-
-
+ :: music collection ::
  
+ + genre contains (ghas)  - belongs to category/genre (genre) 
+ + contains track (track) - is a track belonging to (track in)
+ + collection contains (collected in) - is part of the collection (in collection)
+

@@ -14,7 +14,7 @@
  :: music collection ::
 
  + total number of tracks (tracks)     - is the track count for (tracks-on)
- + release date           (released)   - is the release date for (release-of)
+ + release date           (mreleased)  - is the release date for (release-of)
  + was remastered on      (remastered) - a remaster was issued for (remast-of)
  + was performed          (performance)- was the event of performance (date-perf)
 
@@ -24,10 +24,10 @@
  + music written by (music by)      - wrote the music for (wrote music)
  + words/text written by (words by) - wrote the words/text for (words for)
 
- + published the release (published) - was published by (publisher)
+ + published the release (mpublished) - was published by (mpublisher)
 
  + performance by ensemble type  (ensemble)     - has performed (e-perforamce)
- + has playing time              (duration)     - is the playing time of (length-of)
+ + has playing time              (playtime)     - is the playing time of (playtime-of)
  + has lyrics                    (lyrics)       - are the lyrics for (lyrics-for)
  + has instrumental description  (instrumental) - describes an instrumental (descr-instr)
  + has narrator                  (narrator)     - is the narrator for (narrator-for)
@@ -43,7 +43,7 @@
  + was produced by  (producer)      - produced the recording (produced)
  + was engineered by (engineer)     - was the engineer for (engineer-for)
  + was composed by  (composer)      - composed the work (composed)
- + was conducted by (conductor)    - conducted the performance (conducted)
+ + was conducted by (mconductor)    - conducted the performance (mconducted)
  + was performed by (performed by) - performed (performed)
  + features orchestra (orchestra) - orchestra features in (orch-for)
 

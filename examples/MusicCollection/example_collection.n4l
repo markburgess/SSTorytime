@@ -6,9 +6,9 @@
 @al_1 2112 (album by) Rush
         "  (tracks) 6
         "  (img) "/Resources/Rush/2112\ Delux\ Edition/folder.jpg"
-        "  (released) March 1976
+        "  (mreleased) March 1976
         "  (remastered) 2012
-        "  (publisher) Mercury Records
+        "  (mpublisher) Mercury Records
         "  (genre) Progressive Rock  // Separate to make direct connection
         "  (genre) Concept Album
         "  (ensemble) electric rock band
@@ -20,22 +20,22 @@
  +:: _sequence_ ::
 
  1. 2112                   (track in) 2112
-      "                    (duration) 20:33
+      "                    (playtime) 20:33
 
  2. A Passage To Bangkok   (track in) 2112
-      "                    (duration) 3:35
+      "                    (playtime) 3:35
 
  3. The Twilight Zone      (track in) 2112
-      "                    (duration) 3:20
+      "                    (playtime) 3:20
 
  4. Lessons                (track in) 2112
-      "                    (duration) 3:53
+      "                    (playtime) 3:53
 
  5. Tears                  (track in) 2112
-      "                    (duration) 3:34
+      "                    (playtime) 3:34
 
  6. Something For Northing (track in) 2112
-      "                    (duration) 3:59
+      "                    (playtime) 3:59
 
  -:: _sequence_ ::
 
@@ -44,9 +44,9 @@
 @al_2 Farewell To Kings (album by) Rush
         "  (tracks) 6
         "  (img)  "/Resources/Rush/A\ Farewell\ to\ Kings/Folder.jpg"
-        "  (released) August 29 1977
+        "  (mreleased) August 29 1977
         "  (remastered) 2017
-        "  (publisher) Mercury Records
+        "  (mpublisher) Mercury Records
         "  (genre) Progressive Rock  // Separate to make direct connection
         "  (genre) Concept Album
         "  (ensemble) electric rock band
@@ -59,27 +59,27 @@
  +:: _sequence_ ::
 
  1. A Farewell To Kings    (track in) $al_2.1
-      "                    (duration) 5:53
+      "                    (playtime) 5:53
  2. Xanadu                 (track in) $al_2.1
-      "                    (duration) 11:07
+      "                    (playtime) 11:07
  3. CloserTo The Heart     (track in) $al_2.1
-      "                    (duration) 2:55
+      "                    (playtime) 2:55
  4. Cinderella Man         (track in) $al_2.1
-      "                    (duration) 4:22
+      "                    (playtime) 4:22
  5. Madrigal               (track in) $al_2.1
-      "                    (duration) 2:36
+      "                    (playtime) 2:36
  6. Cygnus X-1             (track in) $al_2.1
-      "                    (duration) 10:22
+      "                    (playtime) 10:22
  -:: _sequence_ ::
 
 
 
 @al_3 Hemispheres (album by) Rush
         "  (tracks) 4
-        "  (released) October 24 1978
+        "  (mreleased) October 24 1978
         "  (img) "/Resources/Rush/Hemispheres/folder.jpg"
         "  (remastered) 2015
-        "  (publisher) Mercury Records
+        "  (mpublisher) Mercury Records
         "  (genre) Progressive Rock  // Separate to make direct connection
         "  (genre) Concept Album
         "  (ensemble) electric rock band
@@ -91,14 +91,14 @@
  +:: _sequence_ ::
 
  "1. Cygnus X-1 (Book II: Hemispheres)"  (track in) $al_3.1
-      "                    (duration) 18:08
+      "                    (playtime) 18:08
       "                    (continues) 6. Cygnus X-1
 
  2. Circumstances          (track in) $al_3.1
-      "                    (duration) 3:44
+      "                    (playtime) 3:44
 
 3, The Trees               (track in) $al_3.1
-      "                    (duration) 4:44
+      "                    (playtime) 4:44
       "                    (lyrics) "There is unrest in the forest
 Trouble with the trees
 For the maples want more sunlight
@@ -125,7 +125,7 @@ And the trees are all kept equal
 By hatchet, axe, and saw"
 
 "4. La Villa Strangiato (An Exercise in Self-Indulgence)"  (track in) $al_3.1
-      "                    (duration) 9:35
+      "                    (playtime) 9:35
       "                    (instrumental) Guitar, bass, synth, bass pedals, drums
 
  -:: _sequence_ ::
@@ -145,15 +145,15 @@ By hatchet, axe, and saw"
   # designed for pop music, so expect to do a lot of editing
 
 @al_99  The World of Borodin
-             " (released) 1995
+             " (mreleased) 1995
              " (note) This seems to be ripped from a Russian digital release
-             " (publisher) Decca
+             " (mpublisher) Decca
 
     9. Symphony No. 2 in B Minor: Ii. Scherzo - Prestissimo - Allegretto  (track in) $al_99.1
             " (composer) Александр Порфирьевич Бородин i.e. Alexander Porfiryevich %Borodin
             " (composer) "Alexander Borodin"
             " (performed by) London Symphony Orchestra
-            " (conductor) Jean Martinon
+            " (mconductor) Jean Martinon
             " (performance) March 7, 1958 at Kingsway Hall, London
  
 
@@ -172,34 +172,34 @@ By hatchet, axe, and saw"
      "    (solo instrument) Soprano
      "    (solo instrument) Baritone
      "    (composer) 'Ralph Vaughan Williams'
-     "    (conductor) 'Andrew Manze'
+     "    (mconductor) 'Andrew Manze'
 
   +:: _sequence_ ::
 
 
  1. 'A Sea Symphony [Symphony No. 1]: I. A Song for All Seas, All Ships.'  (track in)  Vaughan Williams: Lark Ascending, A Sea Symphony [Symphony No1]
-     "     (duration)  17:42
+     "     (playtime)  17:42
      "    (soloist) 'Sarah Fox'
      "    (soloist) 'Mark Stone'
 
  2. 'A Sea Symphony [Symphony No. 1]: II. On The Beach At Night, Alone'  (track in)  Vaughan Williams: Lark Ascending, A Sea Symphony [Symphony No1]
-     "     (duration)  10:14
+     "     (playtime)  10:14
      "    (soloist) 'Sarah Fox'
      "    (soloist) 'Mark Stone'
 
  3. 'A Sea Symphony [Symphony No. 1]: III. Scherzo - The Waves'  (track in)  Vaughan Williams: Lark Ascending, A Sea Symphony [Symphony No1]
-     "     (duration)  7:34
+     "     (playtime)  7:34
      "    (soloist) 'Sarah Fox'
      "    (soloist) 'Mark Stone'
 
  4. 'A Sea Symphony [Symphony No. 1]: IV. The Explorers'  (track in)  Vaughan Williams: Lark Ascending, A Sea Symphony [Symphony No1]
-     "     (duration)  27:25
+     "     (playtime)  27:25
      "    (soloist) 'Sarah Fox'
      "    (soloist) 'Mark Stone'
 
 
  5. 'The Lark Ascending'  (track in)  Vaughan Williams: Lark Ascending, A Sea Symphony [Symphony No1]
-     "     (duration)  14:32
+     "     (playtime)  14:32
 
     "    (soloist) 'James Ehnes'
 
@@ -214,36 +214,36 @@ By hatchet, axe, and saw"
     "    (sample rate) '96.0 KHz/24 bits'
     "    (orchestra) 'Royal Liverpool Philharmonic'
     "    (genre) 'Symphonic Music'
-    "    (conductor) 'Andrew Manze'
+    "    (mconductor) 'Andrew Manze'
     "    (composer) 'Ralph Vaughan Williams'
 
   +:: _sequence_ ::
 
 
  1. 'Symphony No. 5 in D Major: I. Preludio'  (track in)  Vaughan Williams Symphony No.5 / Symphony No.6
-     "     (duration)  11:00
+     "     (playtime)  11:00
 
  2. 'Symphony No. 5 in D Major: II. Scherzo - Presto misterioso'  (track in)  Vaughan Williams Symphony No.5 / Symphony No.6
-     "     (duration)  4:53
+     "     (playtime)  4:53
 
  3. 'Symphony No. 5 in D Major: III. Romanza - Lento'  (track in)  Vaughan Williams Symphony No.5 / Symphony No.6
-     "     (duration)  11:58
+     "     (playtime)  11:58
 
  4. 'Symphony No. 5 in D Major: IV. Passacaglia - Moderato'  (track in)  Vaughan Williams Symphony No.5 / Symphony No.6
-     "     (duration)  9:41
+     "     (playtime)  9:41
 
  5. 'Symphony No. 6 in E Minor: I. Allegro'  (track in)  Vaughan Williams Symphony No.5 / Symphony No.6
-     "     (duration)  7:09
+     "     (playtime)  7:09
 
  6. 'Symphony No. 6 in E Minor: II. Moderato'  (track in)  Vaughan Williams Symphony No.5 / Symphony No.6
-     "     (duration)  9:29
+     "     (playtime)  9:29
 
  7. 'Symphony No. 6 in E Minor: III. Scherzo - Allegro vivace'  (track in)  Vaughan Williams Symphony No.5 / Symphony No.6
-     "     (duration)  5:54
+     "     (playtime)  5:54
 
 
  8. 'Symphony No. 6 in E Minor: IV. Epilogue - Moderato'  (track in)  Vaughan Williams Symphony No.5 / Symphony No.6
-     "     (duration)  10:03
+     "     (playtime)  10:03
 
   -:: _sequence_ ::
 
@@ -255,7 +255,7 @@ By hatchet, axe, and saw"
      "    (release date)  2019
     "    (sample rate) '96.0 KHz/24 bits'
     "    (composer) 'Ralph Vaughan Williams,'
-    "    (conductor) 'Andrew Manze,'
+    "    (mconductor) 'Andrew Manze,'
     "    (orchestra) 'Royal Liverpool Philharmonic'
     "    (engineer) 'Philip Rowlands,'
     "    (genre) 'Classique'
@@ -266,40 +266,40 @@ By hatchet, axe, and saw"
 
 
  1. 'Symphony No. 7 "Sinfonia Antartica": I. Prelude - Andante maestoso'  (track in)  Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Sinfonia Antartica, Symphony No. 9
-     "     (duration)  11:06
+     "     (playtime)  11:06
 
     "    (narrator) 'Timothy West,'
 
  2. 'Symphony No. 7 "Sinfonia Antartica": II. Scherzo moderato'  (track in)  Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Sinfonia Antartica, Symphony No. 9
-     "     (duration)  5:24
+     "     (playtime)  5:24
     "    (narrator) 'Timothy West,'
 
  3. 'Symphony No. 7 "Sinfonia Antartica": III. Landscape - Lento'  (track in)  Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Sinfonia Antartica, Symphony No. 9
-     "     (duration)  10:57
+     "     (playtime)  10:57
 
     "    (narrator) 'Timothy West,'
 
  4. 'Symphony No. 7 "Sinfonia Antartica": IV. Intermezzo - Andante sostenuto'  (track in)  Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Sinfonia Antartica, Symphony No. 9
-     "     (duration)  6:20
+     "     (playtime)  6:20
     "    (narrator) 'Timothy West,'
 
 
  5. 'Symphony No. 7 "Sinfonia Antartica": V. Epilogue - Alla marcia, moderato [non troppo allegro]'  (track in)  Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Sinfonia Antartica, Symphony No. 9
-     "     (duration)  9:01
+     "     (playtime)  9:01
     "    (narrator) 'Timothy West,'
 
 
  6. 'Symphony No. 9 in E Minor: I. Moderato maestoso'  (track in)  Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Sinfonia Antartica, Symphony No. 9
-     "     (duration)  10:55
+     "     (playtime)  10:55
 
  7. 'Symphony No. 9 in E Minor: II. Andante sostenuto'  (track in)  Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Sinfonia Antartica, Symphony No. 9
-     "     (duration)  8:52
+     "     (playtime)  8:52
 
  8. 'Symphony No. 9 in E Minor: III. Scherzo - Allegro pesante'  (track in)  Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Sinfonia Antartica, Symphony No. 9
-     "     (duration)  5:49
+     "     (playtime)  5:49
 
  9. 'Symphony No. 9 in E Minor: IV. Andante tranquillo'  (track in)  Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Sinfonia Antartica, Symphony No. 9
-     "     (duration)  15:05
+     "     (playtime)  15:05
 
   -:: _sequence_ ::
 
@@ -311,7 +311,7 @@ By hatchet, axe, and saw"
      "    (release date)  2016
     "    (sample rate) '96.0 KHz/24 bits'
     "    (composer) 'Ralph Vaughan Williams,'
-    "    (conductor) 'Andrew Manze,'
+    "    (mconductor) 'Andrew Manze,'
     "    (orchestra) 'The Royal Liverpool Philharmonic'
     "    (genre) 'Classique'
 
@@ -319,32 +319,32 @@ By hatchet, axe, and saw"
 
 
  1. 'Symphony No. 2 in G "A London Symphony":I. Lento - Allegro resoluto'  (track in)  Andrew Manze & The Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Symphony No.2 'A London Symphony' & Symphony No.8
-     "     (duration)  14:29
+     "     (playtime)  14:29
 
 
  2. 'Symphony No. 2 in G "A London Symphony":II. Lento'  (track in)  Andrew Manze & The Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Symphony No.2 'A London Symphony' & Symphony No.8
-     "     (duration)  10:59
+     "     (playtime)  10:59
 
  3. 'Symphony No. 2 in G "A London Symphony":III. Scherzo [Nocturne]'  (track in)  Andrew Manze & The Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Symphony No.2 'A London Symphony' & Symphony No.8
-     "     (duration)  7:55
+     "     (playtime)  7:55
 
  4. 'Symphony No. 2 in G "A London Symphony":IV. Finale - Andante con moto - Maestoso alla marcia - Lento - Epilogue'  (track in)  Andrew Manze & The Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Symphony No.2 'A London Symphony' & Symphony No.8
-     "     (duration)  13:19
+     "     (playtime)  13:19
 
 
  5. 'Symphony No. 8 in D minor:I. Fantasia [Variazioni senza Tema]'  (track in)  Andrew Manze & The Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Symphony No.2 'A London Symphony' & Symphony No.8
-     "     (duration)  10:47
+     "     (playtime)  10:47
 
 
  6. 'Symphony No. 8 in D minor:II. Scherzo alla marcia [per stromenti a fiato] - Allegro alla marcia'  (track in)  Andrew Manze & The Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Symphony No.2 'A London Symphony' & Symphony No.8
-     "     (duration)  3:50
+     "     (playtime)  3:50
 
  7. 'Symphony No. 8 in D minor:III. Cavatina [per stromenti ad arco] - Lento espressivo'  (track in)  Andrew Manze & The Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Symphony No.2 'A London Symphony' & Symphony No.8
-     "     (duration)  9:03
+     "     (playtime)  9:03
 
 
  8. 'Symphony No. 8 in D minor:IV. Toccata - Moderato maestoso'  (track in)  Andrew Manze & The Royal Liverpool Philharmonic Orchestra : Vaughan Williams: Symphony No.2 'A London Symphony' & Symphony No.8
-     "     (duration)  5:06
+     "     (playtime)  5:06
 
   -:: _sequence_ ::
 
@@ -358,67 +358,67 @@ By hatchet, axe, and saw"
     "    (orchestra) 'Royal Liverpool Philharmonic'
     "    (genre) 'Classical'
     "    (composer) 'Ralph Vaughan Williams'
-    "    (conductor) 'Andrew Manze'
+    "    (mconductor) 'Andrew Manze'
 
   +:: _sequence_ ::
 
 
  1. 'Job "A Masque for Dancing", Scene I: Introduction - Pastoral Dance - Satan's Appeal to God - Saraband of the Sons of God'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  10:33
+     "     (playtime)  10:33
 
  2. 'Job "A Masque for Dancing", Scene II: Satans Dance of Triumph'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  3:19
+     "     (playtime)  3:19
 
  3. 'Job "A Masque for Dancing", Scene III: Minuet of the Sons of Job and their Wives - Minuet of the Sons and Daughters of Job'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  4:38
+     "     (playtime)  4:38
 
  4. 'Job "A Masque for Dancing", Scene IV: Job's Dream - Dance of Plague, Pestilence, Famine and Battle'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  4:15
+     "     (playtime)  4:15
 
  5. 'Job "A Masque for Dancing", Scene V: Dance of the Three Messengers'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  5:26
+     "     (playtime)  5:26
 
  6. 'Job "A Masque for Dancing", Scene VI: Dance of Job's Comforters - Job's Curse - A Vision of Satan'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  5:31
+     "     (playtime)  5:31
 
  7. 'Job "A Masque for Dancing", Scene VII: Elihu's Dance of Beauty and Youth - Pavane of the Heavenly Host'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  6:18
+     "     (playtime)  6:18
 
  8. 'Job "A Masque for Dancing", Scene VIII'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  5:02
+     "     (playtime)  5:02
 
  9. 'Job "A Masque for Dancing", Scene IX: Epilogue'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  3:09
+     "     (playtime)  3:09
 
  10. 'Old King Cole, A Ballet for Orchestra: I. Introduction: Allegro moderato'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  1:31
+     "     (playtime)  1:31
 
  11. 'Old King Cole, A Ballet for Orchestra: II. Royal Fanfare, King Enters'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  1:30
+     "     (playtime)  1:30
 
  12. 'Old King Cole, A Ballet for Orchestra: III. Pipe Dance'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  2:58
+     "     (playtime)  2:58
 
  13. 'Old King Cole, A Ballet for Orchestra: IV. Bowl Dance'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  1:31
+     "     (playtime)  1:31
 
  14. 'Old King Cole, A Ballet for Orchestra: V. 1st Fiddler Enters Dancing'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  1:35
+     "     (playtime)  1:35
 
  15. 'Old King Cole, A Ballet for Orchestra: VI. King is Bored and Goes to Sleep'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  2:45
+     "     (playtime)  2:45
 
  16. 'Old King Cole, A Ballet for Orchestra: VII. Entry of the 3rd Fiddler, Followed by Grotesque and Little Boys'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  0:50
+     "     (playtime)  0:50
 
  17. 'Old King Cole, A Ballet for Orchestra: VIII. King Comes Down from His Throne'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  5:53
+     "     (playtime)  5:53
 
  18. 'Old King Cole, A Ballet for Orchestra: IX. Fiddler Slowly Moves Across Stage'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set 
-     "     (duration)  1:48
+     "     (playtime)  1:48
 
  19. 'The Running Set [Founded on Traditional Dance Tunes]'  (track in)  Vaughan Williams: Job "A Masque for Dancing", Old King Cole - An Orchestral Ballet, The Running Set
-     "     (duration)  6:31
+     "     (playtime)  6:31
 
   -:: _sequence_ ::
 

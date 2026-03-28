@@ -21,6 +21,7 @@ import (
 	"syscall"
 	"time"
 	"flag"
+	"errors"
 
 	SST "SSTorytime"
 )
@@ -81,7 +82,7 @@ func Start(resources string) {
 
 	PSST = SST.Open(true)
 
-	// 1. Create the filesystem view rooted inside the "public" directory.
+	// 1. Create shared filesystem view rooted inside the "public" directory.
 
 	publicFS, err := fs.Sub(content, "public")
 
@@ -89,59 +90,76 @@ func Start(resources string) {
 		log.Fatal("failed to create sub-filesystem:", err)
 	}
 
+
 	// 2. Create a router (ServeMux) and register various handlers.
 
+	fileserver1 := http.FileServer(http.FS(publicFS))
+	fileserver2 := http.FileServer(http.Dir(resources))
+	
 	mux := http.NewServeMux()
 
-	// Files requested directly as /file are embedded public support
-	fileserver := http.FileServer(http.FS(publicFS))
-	mux.Handle("/", fileserver)
-
-	// Files requested directly as /Resources/ are embedded public support
+	mux.Handle("/", fileserver1)
+	mux.Handle("/Resources/", http.StripPrefix("/Resources/", fileserver2))
+	mux.HandleFunc("/searchN4L", SearchN4LHandler)
 
 	fmt.Println("\n***********************************************\n")
 	fmt.Println(" *  File serving resources, set to: ",resources)
 	fmt.Println("\n *  Use -resources=/a/b/c to configure")
 	fmt.Println("\n***********************************************\n")
 
-	fileServer := http.FileServer(http.Dir(resources))
-	mux.Handle("/Resources/", http.StripPrefix("/Resources/", fileServer))
 
-	// Handle web requests from Javascript main.js
-	mux.HandleFunc("/searchN4L", SearchN4LHandler)
+	// 3. Create server instances for graceful shutdown.
 
-	// 3. Create an http.Server instance for graceful shutdown.
+	http_srv := &http.Server{
+		Addr: ":8080",
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		shost := strings.Split(r.Host,":")[0]
+		fmt.Println("Redirecting http","https://"+shost+":8443"+r.URL.String())
+			http.Redirect(w, r, "https://"+shost+":8443"+r.URL.String(), http.StatusMovedPermanently)
+		}),
+	}
 
-	srv := &http.Server{Addr: "0.0.0.0:8080", Handler: EnableCORS(mux), }
+//&http.Server{Addr: ":8080", Handler: mux}
+	https_srv := &http.Server{Addr: ":8443", Handler: mux}
 
-	// 4. Run the server in a goroutine so it doesn't block.
 
-	go func() {
-		log.Println("Server starting on http://localhost:8080")
 
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("could not start server: %s\n", err)
-		}
-	}()
-
-	// 5. Wait for an interrupt signal.
-
+	// Graceful Shutdown Channel
+	
+	done := make(chan struct{})	
 	quit := make(chan os.Signal, 1)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
 
-	log.Println("Server is shutting down...")
+	// Start servers
 
-	// 6. Perform a graceful shutdown with a timeout.
+	go func() {
+		<-quit
+		log.Println("Shutting down servers...")
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		
+		http_srv.Shutdown(ctx)
+		https_srv.Shutdown(ctx)
+		close(done)
+	}()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	go func() {
+		if err := http_srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("HTTP Listen: %v", err)
+		}
+	}()
+	
+	go func() {
+		if err := https_srv.ListenAndServeTLS("server/cert.pem", "server/key.pem"); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("HTTPS Listen: %v", err)
+		}
+	}()
 
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatalf("Server shutdown failed: %s\n", err)
-	}
-
+	log.Println("Servers running on :8080 and :8443")
+	<-done
+	
+	log.Println("Servers stopped gracefully")
 	log.Println("Server exited properly")
 }
 

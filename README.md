@@ -8,7 +8,7 @@
 -->
 
 > [!NOTE]
-> The status of this project is a stable current version, and development is paused while background work is being done.
+> The server now wants to run HTTPS on port 8443. You should start it under src to find the default TLS certificates.
 > * Join the [SSTorytime LinkedIn Group](https://www.linkedin.com/groups/15875004/) for questions and discussions.
 > * [Quick installation options](docs/GettingStarted.md) now with provisional scripts to simplify the setup
 > * [TO-DO List](docs/ToDo.md) and [HOW **YOU** CAN CONTRIBUTE!](docs/howtocontribute.md)

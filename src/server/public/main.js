@@ -1,7 +1,6 @@
 // *********************************************************************
 //
 // This file is the web page generator and json interface to SSTorytime
-// Maintained by both Mark and Alex
 //
 // *********************************************************************
 
@@ -917,12 +916,11 @@ box.id = "radius-" + radius;
 let spacer = "║";
 let prefix = "╠═▹  ";
 
-/*for (let indent = 0; indent < radius; indent++)
+if (stindex < ST_ZERO)
    {
-   prefix = "           " + prefix;
-   spacer = "           " + spacer;
-   }*/
-
+   prefix = "◃╣";
+   }
+    
 if (radius == 2)
    {
    prefix = "                          " + prefix;

@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# Make a certificate
+
+    if [ -f "cert.pem" ]; then
+        echo The certificate files exist
+        exit 0
+    fi
+
+  openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
+
+	

@@ -12,6 +12,9 @@
 stamp-h1
 plot
 
+key.pem
+cert.pem
+
 *edit_me.n4l
 dotest*
 /test-driver

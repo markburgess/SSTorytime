@@ -18,6 +18,7 @@ searchN4L: searchN4L.go ../pkg/SSTorytime/SSTorytime.go
 
 http_server: ./server/http_server.go ../pkg/SSTorytime/SSTorytime.go server/public/main.js ../pkg/SSTorytime/SSTorytime.go server/public/style.css.in ./server/css_template.go
 	(cd server; go run css_template.go)
+	(cd server; ./make_certificate)
 	go build -o $@ ./server/http_server.go
 
 notes: notes.go ../pkg/SSTorytime/SSTorytime.go

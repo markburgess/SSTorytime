@@ -453,6 +453,7 @@ type Orbit struct {  // union, JSON transformer
 	STindex int
 	Dst     NodePtr
 	Ctx     string
+//	Wgt     float32   THIS IS WHERE WEIGHTS GO
 	Text    string
 	XYZ     Coords  // coords
 	OOO     Coords  // origin

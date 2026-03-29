@@ -943,7 +943,7 @@ let arrow_link = document.createElement("a");
 
 if (wgt != 1)
    {
-       arrow_link.textContent = " ( " + arrow + "," + wgt + " )  ";
+   arrow_link.textContent = " ( " + arrow + "," + wgt + " )  ";
    }
 else
    {
@@ -1060,6 +1060,8 @@ for (let path = 0; path < array.length; path++)
       continue;
       }
 
+   let weight = 0;
+
    // The WebPath protocol alternates node-arrow...
 
    for (let i = 0; i < array[path].length; i++)
@@ -1081,7 +1083,11 @@ for (let path = 0; path < array.length; path++)
          {
          lastarrow = PrintPathArrow(i,path,array,newpath,lastarrow);
          }
+
+      weight += array[path][i].Wgt;
       }
+
+   PrintPathLength(newpath,weight)
    }
 
 return parent;
@@ -1207,6 +1213,16 @@ newpath.appendChild(arrow_link);
 return lastarrow;
 }
     
+/***********************************************************/
+
+function PrintPathLength(parent,weight)
+{
+let text = document.createElement("span");
+text.textContent = "[ path length = " + weight + " ]";
+text.style.fontFamily = "Verdana";
+parent.appendChild(text);
+}
+
 /***********************************************************/
 
 function DrawPath(lastarrow, thisx, thisy, thisz, lastx, lasty, lastz)

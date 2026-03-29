@@ -1241,7 +1241,7 @@ if (lastx != UNINITIALIZED || lasty != UNINITIALIZED || lastz != UNINITIALIZED)
          LeadsTo(thisx, thisy, thisz, lastx, lasty, lastz);
          break;
       case 0:
-         LeadsTo(thisx, thisy, thisz, lastx, lasty, lastz);
+         Near(thisx, thisy, thisz, lastx, lasty, lastz);
          break;
       case 1:
          LeadsTo(lastx, lasty, lastz, thisx, thisy, thisz);

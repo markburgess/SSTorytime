@@ -1082,9 +1082,8 @@ for (let path = 0; path < array.length; path++)
       else
          {
          lastarrow = PrintPathArrow(i,path,array,newpath,lastarrow);
+         weight += array[path][i].Wgt;
          }
-
-      weight += array[path][i].Wgt;
       }
 
    PrintPathLength(newpath,weight)

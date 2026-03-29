@@ -1048,10 +1048,6 @@ for (let path = 0; path < array.length; path++)
       continue;
       }
 
-   let thisx;
-   let thisy;
-   let thisz;
-
    // The WebPath protocol alternates node-arrow...
 
    for (let i = 0; i < array[path].length; i++)
@@ -1063,103 +1059,15 @@ for (let path = 0; path < array.length; path++)
          parent.appendChild(newpath);
          }
 
+      // even/odd elements nodes/arrows
+
       if (i % 2 == 0)
          {
-         // node
-         let str = array[path][i].Name;
-         let ncptr = array[path][i].NPtr.CPtr;
-         let nclass = array[path][i].NPtr.NClass;
-         let xyz = array[path][i].XYZ;
-
-         thisx = xyz.X;
-         thisy = xyz.Y;
-         thisz = xyz.Z;
-
-         DrawPath(lastarrow, thisx, thisy, thisz, lastx, lasty, lastz);
-
-         if (i < array[path].length - 1)
-            {
-            lastx = thisx;
-            lasty = thisy;
-            lastz = thisz;
-            } 
-         else
-            {
-            lastx = UNINITIALIZED;;
-            lasty = UNINITIALIZED;;
-            lastz = UNINITIALIZED;;
-            }
-
-         Event(thisx, thisy, thisz);
-         Label(thisx, thisy, thisz, str.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
-
-         if (array[path][i].NPtr != null)
-            {
-            ncptr = array[path][i].NPtr.CPtr;
-            nclass = array[path][i].NPtr.Class;
-            }
-
-         if (str.includes("\n") && !IsMath(str))
-            {
-            let text_link = document.createElement("a");
-            text_link.onclick = function ()
-               {
-               sendlinkData(nclass, ncptr);
-               };
-
-            let pre = document.createElement("pre");
-            pre.textContent = str;
-            text_link.appendChild(pre);
-
-            newpath.appendChild(text_link);
-            } 
-         else
-            {
-            let text_link = document.createElement("a");
-            text_link.onclick = function ()
-               {
-               sendlinkData(nclass, ncptr);
-               };
-
-            let text = document.createElement("span");
-            text.textContent = str;
-            text.id = "orbital-full-text";
-
-            if (str.length < 20)
-               {
-               text.style.fontSize = "150%";
-               }
-
-            text_link.appendChild(text);
-            newpath.appendChild(text_link);
-            }
-         } // arrow
+         [lastx,lasty,lastz] = PrintPathNode(i,path,array,newpath,lastarrow,lastx,lasty,lastz);
+         }
       else
          {
-         const then = 2; // reserved vectors
-         const prev = 3;
-
-         let arrow = array[path][i].Name;
-         let arrptr = array[path][i].Arr;
-         let stindex = array[path][i].STindex;
-
-         lastarrow = stindex - ST_ZERO;
-
-         if (arrptr == then || arrptr == prev)
-            {
-            // represent a privileged sequence for proper time
-            let newline = document.createElement("p");
-            newpath.appendChild(newline);
-            }
-
-         let arrow_link = document.createElement("a");
-         arrow_link.textContent = `( ${arrow} )  `;
-         arrow_link.id = `arrow-` + stindex;
-         arrow_link.class = "tooltip";
-         arrow_link.title = STINDICES[stindex];
-         arrow_link.style.fontFamily = "Verdana";
-         arrow_link.onclick = function () { sendLinkSearch('\\arrow "' + arrow + '"');};
-         newpath.appendChild(arrow_link);
+         lastarrow = PrintPathArrow(i,path,array,newpath,lastarrow);
          }
       }
    }
@@ -1167,6 +1075,117 @@ for (let path = 0; path < array.length; path++)
 return parent;
 }
 
+/***********************************************************/
+
+function PrintPathNode(i,path,array,newpath,lastarrow,lastx,lasty,lastz)
+{
+let thisx;
+let thisy;
+let thisz;
+let str = array[path][i].Name;
+let ncptr = array[path][i].NPtr.CPtr;
+let nclass = array[path][i].NPtr.NClass;
+let xyz = array[path][i].XYZ;
+
+thisx = xyz.X;
+thisy = xyz.Y;
+thisz = xyz.Z;
+
+DrawPath(lastarrow, thisx, thisy, thisz, lastx, lasty, lastz);
+
+if (i < array[path].length - 1)
+   {
+   lastx = thisx;
+   lasty = thisy;
+   lastz = thisz;
+   } 
+else
+   {
+   lastx = UNINITIALIZED;;
+   lasty = UNINITIALIZED;;
+   lastz = UNINITIALIZED;;
+   }
+
+Event(thisx, thisy, thisz);
+Label(thisx, thisy, thisz, str.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
+
+if (array[path][i].NPtr != null)
+   {
+   ncptr = array[path][i].NPtr.CPtr;
+   nclass = array[path][i].NPtr.Class;
+   }
+
+if (str.includes("\n") && !IsMath(str))
+   {
+   let text_link = document.createElement("a");
+   text_link.onclick = function ()
+      {
+      sendlinkData(nclass, ncptr);
+      };
+
+   let pre = document.createElement("pre");
+   pre.textContent = str;
+   text_link.appendChild(pre);
+
+   newpath.appendChild(text_link);
+   } 
+else
+   {
+   let text_link = document.createElement("a");
+   text_link.onclick = function ()
+      {
+      sendlinkData(nclass, ncptr);
+      };
+
+   let text = document.createElement("span");
+   text.textContent = str;
+   text.id = "orbital-full-text";
+
+   if (str.length < 20)
+      {
+      text.style.fontSize = "150%";
+      }
+
+   text_link.appendChild(text);
+   newpath.appendChild(text_link);
+   }
+    
+return [lastx,lasty,lastz]	
+}
+
+/***********************************************************/
+    
+function PrintPathArrow(i,path,array,newpath,lastarrow)
+{     
+const then = 2; // reserved vectors
+const prev = 3;
+
+let arrow = array[path][i].Name;
+let arrptr = array[path][i].Arr;
+let stindex = array[path][i].STindex;
+
+lastarrow = stindex - ST_ZERO;
+
+if (arrptr == then || arrptr == prev)
+   {
+   // represent a privileged sequence for proper time
+   let newline = document.createElement("p");
+   newpath.appendChild(newline);
+   }
+
+let arrow_link = document.createElement("a");
+arrow_link.textContent = `( ${arrow} )  `;
+arrow_link.id = `arrow-` + stindex;
+arrow_link.class = "tooltip";
+arrow_link.title = STINDICES[stindex];
+arrow_link.style.fontFamily = "Verdana";
+arrow_link.onclick = function () { sendLinkSearch('\\arrow "' + arrow + '"');};
+
+newpath.appendChild(arrow_link);
+
+return lastarrow;
+}
+    
 /***********************************************************/
 
 function DrawPath(lastarrow, thisx, thisy, thisz, lastx, lasty, lastz)

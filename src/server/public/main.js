@@ -908,7 +908,7 @@ for (let arrow of obj.Content)
 //  Presentation helpers
 /***********************************************************/
 
-function PrintLink(parent,radius,stindex,arrow,str,nclass,ncptr,chap,ctx)
+function PrintLink(parent,radius,stindex,arrow,str,nclass,ncptr,chap,ctx,wgt)
 {
 if (arrow == null)
    {
@@ -940,7 +940,16 @@ hier_pre.textContent = prefix;
 box.appendChild(hier_pre);
 
 let arrow_link = document.createElement("a");
-arrow_link.textContent = " ( " + arrow + " )  ";
+
+if (wgt != 1)
+   {
+       arrow_link.textContent = " ( " + arrow + "," + wgt + " )  ";
+   }
+else
+   {
+   arrow_link.textContent = " ( " + arrow + " )  ";
+   }
+
 arrow_link.id = "arrow-" + stindex;
 arrow_link.title = STINDICES[stindex];
 arrow_link.class = "tooltip";
@@ -1696,7 +1705,7 @@ if (event.Orbits[sttype] != null)
 	 switch (sat.Radius)
 	    {
 	    case 1:
-	       PrintLink(inner,sat.Radius,sat.STindex,sat.Arrow,sat.Text,sat.Dst.Class,sat.Dst.CPtr,event.Chap,sat.Ctx);
+		PrintLink(inner,sat.Radius,sat.STindex,sat.Arrow,sat.Text,sat.Dst.Class,sat.Dst.CPtr,event.Chap,sat.Ctx,sat.Wgt);
 	       panel.appendChild(inner);
 	       outer = inner; // reset
 	       break;
@@ -1708,7 +1717,7 @@ if (event.Orbits[sttype] != null)
 		 outer = CollapseDetails(inner,previous.Text);
 		 }
 
-	       PrintLink(outer,sat.Radius,sat.STindex,sat.Arrow,sat.Text,sat.Dst.Class,sat.Dst.CPtr,event.Chap,sat.Ctx);
+		PrintLink(outer,sat.Radius,sat.STindex,sat.Arrow,sat.Text,sat.Dst.Class,sat.Dst.CPtr,event.Chap,sat.Ctx,sat.Wgt);
 	       break;
 	    }
 

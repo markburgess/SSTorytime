@@ -407,6 +407,7 @@ type WebPath struct {
 	Chp     string
 	Ctx     string
 	XYZ     Coords
+	Wgt     float32
 }
 
 //******************************************************************
@@ -453,7 +454,7 @@ type Orbit struct {  // union, JSON transformer
 	STindex int
 	Dst     NodePtr
 	Ctx     string
-//	Wgt     float32   THIS IS WHERE WEIGHTS GO
+	Wgt     float32
 	Text    string
 	XYZ     Coords  // coords
 	OOO     Coords  // origin
@@ -6478,6 +6479,7 @@ func AssembleSatellitesBySTtype(sst PoSST,stindex int,satellite []Orbit,sweep []
 				nt.Arrow = arrow.Long
 				nt.STindex = arrow.STAindex
 				nt.Dst = start.Dst
+				nt.Wgt = start.Wgt
 				nt.Text = txt.S
 				nt.Ctx = GetContext(start.Ctx)
 				nt.Radius = 1
@@ -6503,6 +6505,7 @@ func AssembleSatellitesBySTtype(sst PoSST,stindex int,satellite []Orbit,sweep []
 					nt.Arrow = arrow.Long
 					nt.STindex = arrow.STAindex
 					nt.Dst = next.Dst
+					nt.Wgt = next.Wgt
 					nt.Ctx = GetContext(next.Ctx)
 					nt.Text = subtxt.S
 					nt.Radius = depth
@@ -7228,6 +7231,7 @@ func LinkWebPaths(sst PoSST,cone [][]Link,nth int,chapter string,context []strin
 				ws.NPtr = cone[p][0].Dst
 				ws.Chp = nextnode.Chap
 				ws.XYZ = directory[cone[p][0].Dst]
+				ws.Wgt = cone[p][0].Wgt
 				path = append(path,ws)
 				start_shown = true
 			}
@@ -7240,6 +7244,7 @@ func LinkWebPaths(sst PoSST,cone [][]Link,nth int,chapter string,context []strin
 				wl.Arr = cone[p][l].Arr
 				wl.STindex = arr.STAindex
 				wl.XYZ = directory[cone[p][l].Dst]
+				wl.Wgt = cone[p][l].Wgt
 				path = append(path,wl)
 			}
 

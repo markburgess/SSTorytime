@@ -475,10 +475,13 @@ for (let head_nptr of obj.Content)
 
    // Add the centrality box at bottom of page (still ugly)
 
-   let item2 = document.createElement("h4");
-   item2.textContent = "Symmetry analysis:";
-   card.appendChild(item2);
-
+   if (head_nptr.BTWC != null)
+      {
+      let item2 = document.createElement("h4");
+      item2.textContent = "Symmetry analysis:";
+      card.appendChild(item2);
+      }
+       
    let tab = document.createElement("table");
    let row = document.createElement("tr");
    let col1 = document.createElement("td");
@@ -486,7 +489,7 @@ for (let head_nptr of obj.Content)
    let hd1 = document.createElement("strong");
    hd1.textContent = "Betweenness Centrality Rank";
    col1.appendChild(hd1);
-
+       
    let lst1 = document.createElement("ol");
 
    // For paths solve <a|b>
@@ -1159,7 +1162,7 @@ function PrintPathArrow(i,path,array,newpath,lastarrow)
 {     
 const then = 2; // reserved vectors
 const prev = 3;
-
+let weight = array[path][i].Wgt;
 let arrow = array[path][i].Name;
 let arrptr = array[path][i].Arr;
 let stindex = array[path][i].STindex;
@@ -1174,7 +1177,16 @@ if (arrptr == then || arrptr == prev)
    }
 
 let arrow_link = document.createElement("a");
-arrow_link.textContent = `( ${arrow} )  `;
+
+if (weight != 1)
+   {
+   arrow_link.textContent = `( ${arrow}, ${weight} )  `;
+   }
+else
+   {
+   arrow_link.textContent = `( ${arrow} )  `;
+   }
+
 arrow_link.id = `arrow-` + stindex;
 arrow_link.class = "tooltip";
 arrow_link.title = STINDICES[stindex];

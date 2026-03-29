@@ -57,19 +57,21 @@ document.addEventListener("DOMContentLoaded", function (event)
 
   /* THE CLOSING OG THIS FUNCTION IS AT THE END OF THE ENTIRE FILE */
 
-	var mob = 1;
-	if (window.innerWidth < 450)
-	{
-		mob = 0.4;
-	}
-	if (window.innerWidth < 1300)
-	{
-		mob = 0.6;
-	}
-	const INTEGER_SCALING = true;
+var mob = 1;
+if (window.innerWidth < 450)
+   {
+   mob = 0.4;
+   }
+
+if (window.innerWidth < 1300)
+   {
+   mob = 0.6;
+   }
 
 
-	/* THIS IS THE START OF WHOLE_JAVASCRIPT_HANDLER WRAPPED IN THIS FUNCTION */
+const INTEGER_SCALING = true;
+
+/* NB! THIS IS THE START OF WHOLE_JAVASCRIPT_HANDLER WRAPPED IN THIS FUNCTION */
 
 function saveSearchToHistory(query)
 {
@@ -119,6 +121,7 @@ var EXPRESSES_COLOUR = "orange";
 var NEAR_COLOUR = "darkgray";
 
 // Adjust coordinates
+
 let WIDTH = CANVAS.offsetWidth;
 let HEIGHT = CANVAS.offsetHeight;
 let THEME = "style.css";
@@ -146,7 +149,7 @@ const In0 = 3;
 const Il1 = 4;
 const Ic2 = 5;
 const Ie3 = 6;
-// const ST_TOP = 7;
+
 const ST_ZERO = 3;
 
 const STINDICES = [

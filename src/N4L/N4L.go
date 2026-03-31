@@ -18,7 +18,7 @@ import (
 	"sort"
 	"strconv"
 
-        SST "SSTorytime"
+	SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
 )
 
 //**************************************************************
@@ -103,7 +103,7 @@ type Closure struct {
 
 //**************************************************************
 
-var ( 
+var (
 	LINE_NUM int = 1
 	LINE_ITEM_CACHE = make(map[string][]string)  // contains current and labelled line elements
 	LINE_ITEM_REFS []SST.NodePtr                     // contains current line integer references
@@ -127,9 +127,9 @@ var (
 
 	SEQUENCE_MODE bool = false
 	SEQUENCE_START bool = false
-	SEQUENCE_RELN string = "then" 
+	SEQUENCE_RELN string = "then"
 	SEQUENCE_RELN_INV string = "from"
-	SEQUENCE_RELN_LONG string = "then followed by" 
+	SEQUENCE_RELN_LONG string = "then followed by"
 	SEQUENCE_RELN_INV_LONG string = "follows on from"
 
 	LAST_IN_SEQUENCE string = ""
@@ -285,23 +285,23 @@ func Upload(sst SST.PoSST) {
 
 	dbchapters := SST.GetDBChaptersMatchingName(sst,"")
 	memchapters := GetMemChapters()
-	
+
 	conflict := false
-	
+
 	for m := range memchapters {
 		for d := range dbchapters {
 			if memchapters[m] == dbchapters[d] {
-				
+
 				fmt.Println(" Database already contains a chapter: ",dbchapters[d])
 				conflict = true
 			}
 		}
 	}
-	
+
 	if conflict && !FORCE_UPLOAD {
-		
+
 		fmt.Println("\nUploading to a pre-existing chapter might corrupt the data. You can remove it first with removeN4L or force using -force. It's recommended to rebuilt everything unless replacing the last added chapter(s) for reminders.")
-		
+
 	} else {
 		fmt.Println("\n\nUploading nodes..")
 		SST.GraphToDB(sst,true)
@@ -436,7 +436,7 @@ func ClassifyConfigRole(token string) {
 			FWD_ARROW = strings.TrimSpace(token[1:])
 			LINE_ITEM_STATE = HAVE_PLUS
 			Diag("fwd arrow in",SECTION_STATE, token)
-			
+
 		case '-':
 			BWD_ARROW = strings.TrimSpace(token[1:])
 			LINE_ITEM_STATE = HAVE_MINUS
@@ -509,7 +509,7 @@ func ClassifyConfigRole(token string) {
 
 			ANNOTATION[LAST_IN_SEQUENCE] = FWD_ARROW
 			LINE_ITEM_STATE = ROLE_BLANK_LINE
-			
+
 		default:
 
 			for r := range token {
@@ -549,7 +549,7 @@ func ClassifyConfigRole(token string) {
 
 		case '=':
 			LINE_ITEM_STATE = ROLE_RESULT
-			
+
 		default:
 			ParseError(ERR_ILLEGAL_CONFIGURATION+" "+SECTION_STATE)
 			os.Exit(-1)
@@ -620,12 +620,12 @@ func GetLinkArrowByName(token string) SST.Link {
 	// First check if this is an alias/short name
 
 	ptr, ok := SST.ARROW_SHORT_DIR[name]
-	
+
 	// If not, then check longname
-	
+
 	if !ok {
 		ptr, ok = SST.ARROW_LONG_DIR[name]
-		
+
 		if !ok {
 			ParseError(SST.ERR_NO_SUCH_ARROW+"("+name+")")
 			os.Exit(-1)
@@ -642,7 +642,7 @@ func GetLinkArrowByName(token string) SST.Link {
 //**************************************************************
 
 func LookupAlias(alias string, counter int) string {
-	
+
 	value,ok := LINE_ITEM_CACHE[alias]
 
 	if !ok || counter > len(value) {
@@ -667,7 +667,7 @@ func ResolveAliasedItem(token string) string {
 
 	var contig string
 	fmt.Sscanf(token,"%s",&contig)
-	
+
 	if len(contig) == 1 {
 		return token
 	}
@@ -909,7 +909,7 @@ func SummarizeGraph() {
 			}
 		}
 	}
-		
+
 	fmt.Println("-------------------------------------")
 	fmt.Println("Incidence summary of raw declarations")
 	fmt.Println("-------------------------------------")
@@ -978,20 +978,20 @@ func PrintMatrix(name string, dim int, key []SST.NodePtr, matrix [][]float32) {
 	Verbose(s)
 
 	for row := 0; row < dim; row++ {
-		
+
 		s = fmt.Sprintf("%20.15s ..\r\t\t\t(",SST.GetNodeTxtFromPtr(key[row]))
-		
+
 		for col := 0; col < dim; col++ {
-			
+
 			const screenwidth = 12
-			
+
 			if col > screenwidth {
 				s += fmt.Sprint("\t...")
 				break
 			} else {
 				s += fmt.Sprintf("  %4.1f",matrix[row][col])
 			}
-			
+
 		}
 		s += fmt.Sprint(")")
 		Verbose(s)
@@ -1240,12 +1240,12 @@ func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr,node_list
 	const inverse_flip_arrow = SST.ST_ZERO
 
         // Only sum over outgoing (+) links
-	
+
 	for sttype := SST.ST_ZERO; sttype < len(node.I); sttype++ {
-		
+
 		for lnk := range node.I[sttype] {
 			arrowptr := node.I[sttype][lnk].Arr
-			
+
 			if len(searcharrows) == 0 {
 				match := node.I[sttype][lnk]
 				row_nodes[match.Dst] = true
@@ -1269,13 +1269,13 @@ func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr,node_list
 						} else {
 							ret_weights[rc] += match.Wgt
 						}
-						
+
 					}
 				}
 			}
 		}
 	}
-	
+
 	if len(row_nodes) > 0 {
 		row_nodes[node.NPtr] = true // Add the parent if it has children
 	}
@@ -1283,9 +1283,9 @@ func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr,node_list
 	for nptr := range node_list {
 		row_nodes[node_list[nptr]] = true
 	}
-	
+
 	// Merge idempotently
-	
+
 	for nptr := range row_nodes {
 		ret_nodes = append(ret_nodes,nptr)
 	}
@@ -1323,13 +1323,13 @@ func SkipWhiteSpace(src []rune, pos int) int {
 		if src[pos] == '\n' {
 			UpdateLastLineCache()
 		} else {
-		
+
 			if src[pos] == '#' || (src[pos] == '/' && src[pos+1] == '/') {
-				
+
 				for ; pos < len(src) && src[pos] != '\n'; pos++ {
 				}
 
-				UpdateLastLineCache() 
+				UpdateLastLineCache()
 			}
 		}
 	}
@@ -1348,7 +1348,7 @@ func AddMandatory() {
 	arr := SST.InsertArrowDirectory("leadsto","empty","debug","+")
 	inv := SST.InsertArrowDirectory("leadsto","void","unbug","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
-	
+
 	// reserved for text2N4L
 
 	arr = SST.InsertArrowDirectory("contains",SST.CONT_FINDS_S,SST.CONT_FINDS_L,"+")
@@ -1372,11 +1372,11 @@ func AddMandatory() {
 	arr = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN_LONG,"+")
 	inv = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN_INV,SEQUENCE_RELN_INV_LONG,"-")
 	SST.InsertInverseArrowDirectory(arr,inv)
-	
+
 	arr = SST.InsertArrowDirectory("properties","url","has URL","+")
 	inv = SST.InsertArrowDirectory("properties","isurl","is a URL for","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
-	
+
 	arr = SST.InsertArrowDirectory("properties","img","has image","+")
 	inv = SST.InsertArrowDirectory("properties","isimg","is an image for","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
@@ -1406,13 +1406,13 @@ func ReadConfig() []string {
 		for p := range search_paths {
 
 			info, err := os.Stat(search_paths[p]);
-			
+
 			if err == nil && info.IsDir() {
 				for f := 0; f < len(files); f++ {
 					configs = append(configs,search_paths[p]+"/"+files[f])
 				}
 				return configs
-			} 
+			}
 		}
 	}
 
@@ -1434,7 +1434,7 @@ func GetToken(src []rune, pos int) (string,int) {
 
 	switch (src[pos]) {
 
-	case '+':  // could be +:: 
+	case '+':  // could be +::
 
 		switch (src[pos+1]) {
 
@@ -1532,7 +1532,7 @@ func ClassifyTokenRole(token string) {
 			LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
 			StoreAlias(token)
 			AssessGrammarCompletions(token,LINE_ITEM_STATE)
-			
+
 			LINE_ITEM_STATE = ROLE_EVENT
 			LINE_ITEM_COUNTER++
 		}
@@ -1651,7 +1651,7 @@ func CheckLineAlias(token string) {
 
 	var contig string
 	fmt.Sscanf(token,"%s",&contig)
-	
+
 	if token[0] == '@' && len(contig) == 1 {
 		ParseError(ERR_BAD_LABEL_OR_REF+token)
 		os.Exit(-1)
@@ -1739,7 +1739,7 @@ func HandleNode(annotated string) SST.NodePtr {
 	PVerbose("Event/item/node: \"",clean_version,"\" in chapter",SECTION_STATE)
 
 	LINE_ITEM_REFS = append(LINE_ITEM_REFS,clean_ptr)
-	
+
 	if len(clean_version) != len(annotated) {
 		AddBackAnnotations(clean_version,clean_ptr,annotated)
 	}
@@ -1781,7 +1781,7 @@ func IdempAddNode(s string,intended_sequence bool) (SST.NodePtr,string) {
 
 func IdempAddContextToNode(nptr SST.NodePtr) {
 
-	// add a nullpotent link containing root node for 
+	// add a nullpotent link containing root node for
 	// context membership, in case it's a singleton
 
 	var nowhere SST.NodePtr
@@ -1832,7 +1832,7 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 
 		cpy = append(cpy,src[pos])
 
-		// if there's an embedded " quote, treat quoted section as a single character 
+		// if there's an embedded " quote, treat quoted section as a single character
 
 		if pos+1 < len(src) && src[pos] == '"' {
 			for p := pos+1; p < len(src); p++ {
@@ -1900,7 +1900,7 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 	} else {
 		// a ::: cluster is special, we don't care how many
 
-		if stop != ':' && !IsQuote(stop) { 
+		if stop != ':' && !IsQuote(stop) {
 			return !LastSpecialChar(src,pos,stop)
 		} else {
 			var groups int = 0
@@ -1919,7 +1919,7 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 			if groups > 1 {
 				collect = !LastSpecialChar(src,pos,stop)
 			}
-		} 
+		}
 	}
 
 	return collect
@@ -2020,14 +2020,14 @@ func UpdateLastLineCache() {
 	// If this line was not blank, overwrite previous settings and reset
 
 	if LINE_ITEM_STATE != ROLE_BLANK_LINE {
-		
+
 		if LINE_ITEM_CACHE["THIS"] != nil {
 			LINE_ITEM_CACHE["PREV"] = LINE_ITEM_CACHE["THIS"]
 		}
 		if LINE_RELN_CACHE["THIS"] != nil {
 			LINE_RELN_CACHE["PREV"] = LINE_RELN_CACHE["THIS"]
 		}
-	} 
+	}
 
 	LINE_ITEM_CACHE["THIS"] = nil
 	LINE_RELN_CACHE["THIS"] = nil
@@ -2145,7 +2145,7 @@ func ExtractContextExpression(token string) string {
 			break
 		}
 	}
-	
+
 	return expression
 }
 
@@ -2180,7 +2180,7 @@ func LinkUpStorySequence(this string) {
 	if SEQUENCE_MODE && this != LAST_IN_SEQUENCE {
 
 		if LINE_ITEM_COUNTER == 1 && LAST_IN_SEQUENCE != "" {
-			
+
 			PVerbose("* ... Sequence addition: ",LAST_IN_SEQUENCE,"-(",SEQUENCE_RELN,")->",this,"\n")
 
 			var last_iptr SST.NodePtr
@@ -2200,7 +2200,7 @@ func LinkUpStorySequence(this string) {
 			SST.AppendLinkToNode(this_iptr,invlink,last_iptr)
 
 		}
-		
+
 		LAST_IN_SEQUENCE = this
 	}
 }
@@ -2353,9 +2353,9 @@ func ExtractWord(fulltext string,offset int) string {
 
 		word = append(word,runetext[r])
 	}
-	
+
 	sword := strings.Trim(strings.TrimSpace(string(word)),pair_quote)
-	
+
 	if len(sword) <= WORD_MISTAKE_LEN {
 		ParseError(ERR_SHORT_WORD+"\""+sword+"\"")
 	}
@@ -2411,7 +2411,7 @@ func GetNodePointedTo(node SST.Node,sequence []SST.ArrowPtr) (SST.NodePtr,bool) 
 		found := false
 		arrow := SST.ARROW_DIRECTORY[s_arr]
 		stindex := arrow.STAindex
-		
+
 		for _,lnk := range node.I[stindex] {
 			if lnk.Arr == s_arr {
 				found = true
@@ -2451,8 +2451,8 @@ func ContextEval(s,op string) {
 	// +,-,= on CONTEXT_STATE
 
 	switch op {
-		
-	case "=": 
+
+	case "=":
 		ResetContextState()
 		ModContext(or_parts,"+")
 	default:
@@ -2465,12 +2465,12 @@ func ContextEval(s,op string) {
 func CleanExpression(s string) string {
 
 	s = TrimParen(s)
-	r1 := regexp.MustCompile("[|,]+") 
-	s = r1.ReplaceAllString(s,"|") 
-	r2 := regexp.MustCompile("[&]+") 
-	s = r2.ReplaceAllString(s,".") 
-	r3 := regexp.MustCompile("[.]+") 
-	s = r3.ReplaceAllString(s,".") 
+	r1 := regexp.MustCompile("[|,]+")
+	s = r1.ReplaceAllString(s,"|")
+	r2 := regexp.MustCompile("[&]+")
+	s = r2.ReplaceAllString(s,".")
+	r3 := regexp.MustCompile("[.]+")
+	s = r3.ReplaceAllString(s,".")
 
 	return s
 }
@@ -2507,7 +2507,7 @@ func SplitWithParensIntact(expr string,split_ch rune) []string {
 	}
 
 	return set
-} 
+}
 
 // ***********************************************************************
 
@@ -2561,14 +2561,14 @@ func TrimParen(s string) string {
 		if level == 0 && c < len(s)-1 {
 			trim = false
 		}
-		
+
 		if s[c] == ')' {
 			level--
 
 			if level == 0 && c == len(s)-1 {
-				
+
 				var token string
-				
+
 				if trim {
 					token = s[1:len(s)-1]
 				} else {
@@ -2578,7 +2578,7 @@ func TrimParen(s string) string {
 			}
 		}
 	}
-	
+
 	return s
 }
 
@@ -2600,8 +2600,8 @@ func ModContext(list []string,op string) {
 
 		case "-": // to remove, we also need to look at children
 			for cand := range CONTEXT_STATE {
-				and_parts := SplitWithParensIntact(cand,'.') 
-		
+				and_parts := SplitWithParensIntact(cand,'.')
+
 				for part := range and_parts {
 
 					if strings.Contains(and_parts[part],frag) {
@@ -2724,60 +2724,60 @@ func ParseError(message string) {
 
 //**************************************************************
 
-func ReadUTF8FileBuffered(filename string) []rune { 
+func ReadUTF8FileBuffered(filename string) []rune {
 
 	// Open a stream to the file instead of reading it all at once.
 
-	file, err := os.Open(filename) 
+	file, err := os.Open(filename)
 
-	if err != nil { 
-		ParseError(ERR_NO_SUCH_FILE_FOUND + filename) 
-		os.Exit(-1) 
-	} 
+	if err != nil {
+		ParseError(ERR_NO_SUCH_FILE_FOUND + filename)
+		os.Exit(-1)
+	}
 
-	defer file.Close() 
+	defer file.Close()
 
 	// Create a new scanner to read from the file stream.
 
-	scanner := bufio.NewScanner(file) 
+	scanner := bufio.NewScanner(file)
 
 	// Configure the scanner to split the input by Unicode runes, not lines.
 
-	scanner.Split(bufio.ScanRunes) 
+	scanner.Split(bufio.ScanRunes)
 
-	var unicode []rune 
+	var unicode []rune
 
-	// The scanner reads one rune at a time until the end of the file. 
+	// The scanner reads one rune at a time until the end of the file.
 
-	for scanner.Scan() { 
+	for scanner.Scan() {
 
 		// Get the text for the current rune
 
-		runeText := scanner.Text() 
+		runeText := scanner.Text()
 
 		// Decode the string (which contains one rune) to a rune value
 
-		r, _ := utf8.DecodeRuneInString(runeText) 
+		r, _ := utf8.DecodeRuneInString(runeText)
 
-		unicode = append(unicode, r) 
-	} 
+		unicode = append(unicode, r)
+	}
 
-	// Check for any errors that occurred during scanning. 
+	// Check for any errors that occurred during scanning.
 
-	if err := scanner.Err(); err != nil { 
+	if err := scanner.Err(); err != nil {
 
-		fmt.Printf("Error reading file %s: %v\n", filename, err) 
-		os.Exit(-1) 
+		fmt.Printf("Error reading file %s: %v\n", filename, err)
+		os.Exit(-1)
 
-	} 
+	}
 
-	return unicode 
+	return unicode
 }
 
 //**************************************************************
 
 func Usage() {
-	
+
 	fmt.Printf("usage: N4L [-v] [-u] [-s] [file].dat\n")
 	flag.PrintDefaults()
 	os.Exit(2)
@@ -2788,7 +2788,7 @@ func Usage() {
 func Verbose(a ...interface{}) {
 
 	line := fmt.Sprintln(a...)
-	
+
 	if DIAGNOSTIC {
 		AppendStringToFile(TEST_DIAG_FILE,line)
 	}
@@ -2869,4 +2869,3 @@ func AppendStringToFile(name string, s string) {
 
 	f.Close()
 }
-

@@ -8,7 +8,8 @@ package main
 
 import (
 	"fmt"
-        SST "SSTorytime"
+
+	SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
 )
 
 //******************************************************************
@@ -74,7 +75,7 @@ func LookupStory(sst SST.PoSST) {
 		for p := range paths {
 
 			if len(paths[p]) > 1 {
-			
+
 				fmt.Println("    Path",p," len",len(paths[p]))
 
 				for l := 0; l < len(paths[p]); l++ {
@@ -89,9 +90,3 @@ func LookupStory(sst SST.PoSST) {
 	}
 
 }
-
-
-
-
-
-

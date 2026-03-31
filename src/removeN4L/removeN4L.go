@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"flag"
 
-        SST "SSTorytime"
+	SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
 )
 
 var path [8][]string
@@ -73,7 +73,7 @@ func Init() []string {
 //**************************************************************
 
 func Usage() {
-	
+
 	fmt.Printf("\n\nusage: removeN4L \"chapter name\"\n")
 	flag.PrintDefaults()
 	os.Exit(2)
@@ -83,11 +83,11 @@ func Usage() {
 
 func DeleteChapter(sst SST.PoSST,chapter string) {
 
-	escaped := SST.SQLEscape(chapter) 
+	escaped := SST.SQLEscape(chapter)
 	qstr := fmt.Sprintf("select DeleteChapter('%s')",escaped)
 
 	row,err := sst.DB.Query(qstr)
-	
+
 	if err != nil {
 		fmt.Println("Error running deletechapter function:",qstr,err)
 	} else {
@@ -97,12 +97,3 @@ func DeleteChapter(sst SST.PoSST,chapter string) {
 	row.Close()
 
 }
-
-
-
-
-
-
-
-
-

@@ -5,6 +5,7 @@
 //
 //******************************************************************
 
+//go:build css_tool
 package main
 
 import (
@@ -232,32 +233,3 @@ func GenerateFile(title string,theme map[string]map[string]string) {
 		fmt.Fprintln(fp,line)
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

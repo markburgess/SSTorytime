@@ -13,14 +13,14 @@ import (
 	"flag"
 	"strings"
 
-        SST "SSTorytime"
+	SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
 )
 
 //******************************************************************
 
 var VERBOSE bool = false
 
-var TESTS = []string{ 
+var TESTS = []string{
 	"range rover out of its depth",
 	"\"range rover\" \"out of its depth\"",
 	"from rover range 4",
@@ -28,31 +28,31 @@ var TESTS = []string{
 	"head context neuro,brain,etc",
 	"leg in chapter bodyparts",
 	"foot in bodyparts2",
-	"visual for prince",	
-	"visual of integral",	
-	"notes on restaurants in chinese",	
+	"visual for prince",
+	"visual of integral",
+	"notes on restaurants in chinese",
 	"notes about brains",
 	"notes music writing",
-	"page 2 of notes on brains", 
-	"notes page 3 brain", 
+	"page 2 of notes on brains",
+	"notes page 3 brain",
 	"(1,1), (1,3), (4,4) (3,3) other stuff",
-	"integrate in math",	
+	"integrate in math",
 	"arrows pe,ep, eh",
 	"arrows 1,-1",
 	"forward cone for (bjorvika) range 5",
 	"backward sideways cone for (bjorvika)",
-	"sequences about fox",	
-	"stories about (bjorvika)",	
-	"context \"not only\"", 
-	"\"come in\"",	
-	"containing / matching \"blub blub\"", 
-	"chinese kinds of meat", 
-	"images prince", 
+	"sequences about fox",
+	"stories about (bjorvika)",
+	"context \"not only\"",
+	"\"come in\"",
+	"containing / matching \"blub blub\"",
+	"chinese kinds of meat",
+	"images prince",
 	"summary chapter interference",
 	"showme greetings in norwegian",
 	"paths from arrows pe,ep, eh",
 	"paths from start to target limit 5",
-	"paths to target3",	
+	"paths to target3",
 	"a2 to b5 distance 10",
 	"to a5",
 	"from start",
@@ -90,7 +90,7 @@ func main() {
 	search_string = SST.CheckConceptQuery(search_string)
 
 	search = SST.DecodeSearchField(search_string)
-	
+
 	Search(sst,search,search_string)
 	SST.Close(sst)
 	return
@@ -99,7 +99,7 @@ func main() {
 //**************************************************************
 
 func Usage() {
-	
+
 	fmt.Printf("usage: ByYourCommand <search request>\n\n")
 	fmt.Println("searchN4L <mytopic> chapter <mychapter>\n\n")
 	fmt.Println("searchN4L range rover out of its depth")
@@ -107,23 +107,23 @@ func Usage() {
 	fmt.Println("searchN4L from rover range 4")
 	fmt.Println("searchN4L head used as \"version control\"")
 	fmt.Println("searchN4L head context neuro)brain)etc")
-	fmt.Println("searchN4L notes on restaurants in chinese")	
+	fmt.Println("searchN4L notes on restaurants in chinese")
 	fmt.Println("searchN4L notes about brains")
 	fmt.Println("searchN4L notes music writing")
-	fmt.Println("searchN4L page 2 of notes on brains") 
-	fmt.Println("searchN4L notes page 3 brain") 
+	fmt.Println("searchN4L page 2 of notes on brains")
+	fmt.Println("searchN4L notes page 3 brain")
 	fmt.Println("searchN4L (1,1) (1,3) (4,4) (3,3) other stuff")
 	fmt.Println("searchN4L arrows pe)ep) eh")
 	fmt.Println("searchN4L arrows 1)-1")
 	fmt.Println("searchN4L forward cone for (bjorvika) range 5")
-	fmt.Println("searchN4L sequences about fox")	
-	fmt.Println("searchN4L context \"not only\"") 
-	fmt.Println("searchN4L \"come on down\"")	
-	fmt.Println("searchN4L chinese kinds of meat") 
+	fmt.Println("searchN4L sequences about fox")
+	fmt.Println("searchN4L context \"not only\"")
+	fmt.Println("searchN4L \"come on down\"")
+	fmt.Println("searchN4L chinese kinds of meat")
 	fmt.Println("searchN4L summary chapter interference")
 	fmt.Println("searchN4L paths from arrows pe)ep) eh")
 	fmt.Println("searchN4L paths from start to target2 limit 5")
-	fmt.Println("searchN4L paths to target3")	
+	fmt.Println("searchN4L paths to target3")
 	fmt.Println("searchN4L a2 to b5 distance 10")
 	fmt.Println("searchN4L to a5")
 	fmt.Println("searchN4L from start")
@@ -247,7 +247,7 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 	if (name || from || to) && !pagenr && !sequence {
 
 		// from or to or name
-		
+
 		if nodeptrs != nil {
 			fmt.Println("------------------------------------------------------------------")
 			CausalCones(sst,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,maxlimit)
@@ -267,7 +267,7 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 			return
 		}
 	}
-	
+
 	// if we have page number then we are looking for notes by pagemap
 
 	if (name || chapter || context) && pagenr {
@@ -294,7 +294,7 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 		}
 	}
 
-	// Look for axial trails following a particular arrow, like _sequence_ 
+	// Look for axial trails following a particular arrow, like _sequence_
 
 	if sequence {
 		ShowStories(sst,nodeptrs,arrowptrs,sttype,maxlimit)
@@ -339,7 +339,7 @@ func SL(list []string) string {
 //******************************************************************
 
 func FindOrbits(sst SST.PoSST, nptrs []SST.NodePtr, limit int) {
-	
+
 	var count int
 
 	if VERBOSE {
@@ -387,7 +387,7 @@ func CausalCones(sst SST.PoSST,nptrs []SST.NodePtr, chap string, context []strin
 
 			if sttype[st] != 0 {
 				bcone,_ := SST.GetFwdPathsAsLinks(sst,nptrs[n],-sttype[st],limit, maxlimit)
-				
+
 				if bcone != nil {
 					fmt.Printf("%d. ",total)
 					total += ShowCone(sst,bcone,chap,context,limit)
@@ -420,7 +420,7 @@ func PathSolve(sst SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,con
 	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
 
 	if len(solutions) > 0 {
-		
+
 		for s := 0; s < len(solutions); s++ {
 			prefix := fmt.Sprintf(" - story path: ")
 			PrintConstrainedLinkPath(sst,solutions,s,prefix,chapter,context,arrowptrs,sttype)
@@ -486,7 +486,7 @@ func ShowMatchingChapter(sst SST.PoSST,chap string,context []string,limit int) {
 //******************************************************************
 
 func ShowContextFractions(dim int,clist []string,adj [][]int) {
-	
+
 	for c := 0; c < len(adj); c++ {
 
 		fmt.Printf("\n     %d.",c)
@@ -555,7 +555,7 @@ func ShowChapterContexts(sst SST.PoSST,chap string,context []string,limit int) {
 		fmt.Println()
 	}
 	fmt.Println("\n")
-	
+
 }
 
 //******************************************************************
@@ -567,7 +567,7 @@ func ShowStories(sst SST.PoSST,nodeptrs []SST.NodePtr,arrowptrs []SST.ArrowPtr,s
 	if arrowptrs == nil {
 		arrowptrs,sttypes = SST.ArrowPtrFromArrowsNames(sst,[]string{"!then!"})
 	}
-	
+
 	stories := SST.GetSequenceContainers(sst,nodeptrs,arrowptrs,sttypes,limit)
 
 	for s := range stories {
@@ -578,7 +578,7 @@ func ShowStories(sst SST.PoSST,nodeptrs []SST.NodePtr,arrowptrs []SST.ArrowPtr,s
 			fmt.Printf("The following story/sequence \"%s\"\n\n",stories[s].Chapter)
 			for ev := range stories[s].Axis {
 				fmt.Printf("\n%3d. %s\n",ev,stories[s].Axis[ev].Text)
-				
+
 				SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,SST.EXPRESS,1)
 				SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,-SST.EXPRESS,1)
 				SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,-SST.CONTAINS,1)
@@ -692,7 +692,7 @@ func ShowNotes(sst SST.PoSST,notes []SST.PageMap) {
 	for n := 0; n < len(notes); n++ {
 
 		txtctx := SST.CONTEXT_DIRECTORY[notes[n].Context].Context
-		
+
 		if last != notes[n].Chapter || lastc != txtctx {
 
 			fmt.Println("\n---------------------------------------------")
@@ -705,9 +705,9 @@ func ShowNotes(sst SST.PoSST,notes []SST.PageMap) {
 		}
 
 		for lnk := 0; lnk < len(notes[n].Path); lnk++ {
-			
+
 			text := SST.GetDBNodeByNodePtr(sst,notes[n].Path[lnk].Dst)
-			
+
 			if lnk == 0 {
 				fmt.Printf("\n [line %d]: ",notes[n].Line)
 				fmt.Print(text.S," ")

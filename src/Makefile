@@ -1,50 +1,45 @@
 #
 
-OBJ=text2N4L N4L searchN4L removeN4L http_server pathsolve notes graph_report API_EXAMPLE_1 API_EXAMPLE_2 API_EXAMPLE_3 API_EXAMPLE_4
+OBJ=bin/text2N4L bin/N4L bin/searchN4L bin/removeN4L bin/http_server bin/pathsolve bin/notes bin/graph_report bin/API_EXAMPLE_1 bin/API_EXAMPLE_2 bin/API_EXAMPLE_3 bin/API_EXAMPLE_4
 
 all: $(OBJ)
 
-removeN4L: removeN4L.go  ../pkg/SSTorytime/SSTorytime.go
-	go build -o $@ $@.go
+bin/removeN4L:
+	cd removeN4L ; make
 
-text2N4L: text2N4L.go  ../pkg/SSTorytime/SSTorytime.go
-	go build -o $@ $@.go
+bin/text2N4L:
+	cd text2N4L ; make
 
-N4L: N4L.go ../pkg/SSTorytime/SSTorytime.go
-	go build -o $@ $@.go
+bin/N4L:
+	cd N4L ; make
 
-searchN4L: searchN4L.go ../pkg/SSTorytime/SSTorytime.go
-	go build -o $@ $@.go
+bin/searchN4L:
+	cd searchN4L ; make
 
-http_server: ./server/http_server.go ../pkg/SSTorytime/SSTorytime.go server/public/main.js ../pkg/SSTorytime/SSTorytime.go server/public/style.css.in ./server/css_template.go
-	(cd server; go run css_template.go)
-	(cd server; ./make_certificate)
-	go build -o $@ ./server/http_server.go
+bin/http_server:
+	cd server ; make
 
-notes: notes.go ../pkg/SSTorytime/SSTorytime.go
-	go build -o $@ $@.go
+bin/notes:
+	cd notes ; make
 
-pathsolve: pathsolve.go ../pkg/SSTorytime/SSTorytime.go
-	go build -o $@ $@.go
+bin/pathsolve:
+	cd pathsolve ; make
 
-graph_report: graph_report.go ../pkg/SSTorytime/SSTorytime.go
-	go build -o $@ $@.go
+bin/graph_report:
+	cd graph_report ; make
 
-API_EXAMPLE_1: API_EXAMPLE_1.go ../pkg/SSTorytime/SSTorytime.go
-	go build -o $@ $@.go
+bin/API_EXAMPLE_1:
+	cd API_EXAMPLE_1 ; make
 
-API_EXAMPLE_2: API_EXAMPLE_2.go ../pkg/SSTorytime/SSTorytime.go
-	go build -o $@ $@.go
+bin/API_EXAMPLE_2:
+	cd API_EXAMPLE_2 ; make
 
-API_EXAMPLE_3: API_EXAMPLE_3.go ../pkg/SSTorytime/SSTorytime.go
-	go build -o $@ $@.go
+bin/API_EXAMPLE_3:
+	cd API_EXAMPLE_3 ; make
 
-API_EXAMPLE_4: API_EXAMPLE_4.go ../pkg/SSTorytime/SSTorytime.go
-	go build -o $@ $@.go
+bin/API_EXAMPLE_4:
+	cd API_EXAMPLE_4 ; make
 
 clean:
 	rm -f $(OBJ)
 	rm -f *~ \#* demo_pocs/*~ demo_pocs/\#~
-
-% : %.go
-	go build $<

@@ -11,7 +11,8 @@ package main
 
 import (
 	"fmt"
-        SST "SSTorytime"
+
+	SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
 )
 
 //******************************************************************
@@ -45,7 +46,7 @@ func main() {
 
 		left_paths,Lnum = SST.GetEntireConePathsAsLinks(sst,"any",leftptrs[0],ldepth,branching_limit)
 		right_paths,Rnum = SST.GetEntireConePathsAsLinks(sst,"any",rightptrs[0],rdepth,branching_limit)
-		
+
 		solutions,loop_corrections := SST.WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
 		if len(solutions) > 0 {
@@ -79,9 +80,3 @@ func main() {
 		}
 	}
 }
-
-
-
-
-
-

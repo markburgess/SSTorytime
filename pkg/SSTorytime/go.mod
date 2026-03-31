@@ -1,4 +1,4 @@
-module SSTorytime
+module github/markburgess/SSTorytime
 
 go 1.24.2
 

@@ -25,476 +25,14 @@ import (
 
 )
 
+
+
+
 //**************************************************************
 //
-// Part 1: N4L language and Graph Representation
+// session.go
 //
 //**************************************************************
-
-//**************************************************************
-// Errors
-//**************************************************************
-
-const (
-	CREDENTIALS_FILE = ".SSTorytime" // user's home directory
-
-	ERR_ST_OUT_OF_BOUNDS = "Link STtype is out of bounds (must be -3 to +3)"
-	ERR_ILLEGAL_LINK_CLASS = "ILLEGAL LINK CLASS"
-	ERR_NO_SUCH_ARROW = "No such arrow has been declared in the configuration: "
-	ERR_MEMORY_DB_ARROW_MISMATCH = "Arrows in database are not in synch (shouldn't happen)"
-	ERR_MEMORY_DB_CONTEXT_MISMATCH = "Contexts in database are not in synch (shouldn't happen)"
-	WARN_DIFFERENT_CAPITALS = "WARNING: Another capitalization exists"
-
-	SCREENWIDTH = 120
-	RIGHTMARGIN = 5
-	LEFTMARGIN = 5
-
-	NEAR = 0
-	LEADSTO = 1   // +/-
-	CONTAINS = 2  // +/-
-	EXPRESS = 3   // +/-
-
-	// Letting a cone search get too large is unresponsive
-	CAUSAL_CONE_MAXLIMIT = 100
-
-	// And shifted indices for array indicesin Go
-
-	ST_ZERO = EXPRESS
-	ST_TOP = ST_ZERO + EXPRESS + 1
-
-	// For the SQL table, as 2d arrays not good
-
-	I_MEXPR = "Im3"
-	I_MCONT = "Im2"
-	I_MLEAD = "Im1"
-	I_NEAR  = "In0"
-	I_PLEAD = "Il1"
-	I_PCONT = "Ic2"
-	I_PEXPR = "Ie3"
-
-	// For separating text types
-
-	N1GRAM = 1
-	N2GRAM = 2
-	N3GRAM = 3
-	LT128 = 4
-	LT1024 = 5
-	GT1024 = 6
-
-	// mandatory relations used in text processing, but we should never follow these links
-        // when presenting results
-
-	EXPR_INTENT_L = "has contextual theme"
-	EXPR_INTENT_S = "has_theme"
-        INV_EXPR_INTENT_L = "is a context theme in"
-	INV_EXPR_INTENT_S ="theme_of"
-
-	EXPR_AMBIENT_L = "has contextual highlight"
-	EXPR_AMBIENT_S = "has_highlight"
-        INV_EXPR_AMBIENT_L = "is contextual highlight of"
-	INV_EXPR_AMBIENT_S = "highlight_of"
-
-	CONT_FINDS_L = "contains extract/quote"
-	CONT_FINDS_S = "has-extract"
-	INV_CONT_FOUND_IN_L = "extract/quote from"
-	INV_CONT_FOUND_IN_S = "extract-fr"
-
-	// This is a "contained-by something that expresses" shortcut => NEAR
-
-	CONT_FRAG_L = "contains intented characteristic"      // intentional characteristic
-	CONT_FRAG_S = "has-frag"
-	INV_CONT_FRAG_IN_L = "characteristic of"   // explains intentional context
-	INV_CONT_FRAG_IN_S = "charct-in"
-
-)
-
-var BASE_DB_CHANNEL_STATE[7] ClassedNodePtr
-
-var CLASS_CHANNEL_DESCRIPTION = []string{"","single word ngram","two word ngram","three word ngram",
-	"string less than 128 chars","string less than 1024 chars","string greater than 1024 chars"}
-
-//**************************************************************
-// Data structures
-//**************************************************************
-
-type PoSST struct {
-
-   DB *sql.DB
-}
-
-//******************************************************************
-
-type Etc struct {
-
-	E bool  // event
-	T bool  // thing
-	C bool  // concept
-}
-
-//******************************************************************
-
-type Node struct {
-
-	L         int     // length of text string
-	S         string  // text string itself
-
-	Seq       bool    // true if this node begins an intended sequence, otherwise ambiguous
-	Chap      string  // section/chapter name in which this was added
-	NPtr      NodePtr // Pointer to self index
-	Psi       Etc     // induced node type
-
-	I [ST_TOP][]Link  // link incidence list, by STindex - these are the "vectors" +/-
-  	                  // NOTE: carefully how STindex offsets represent negative SSTtypes
-}
-
-//**************************************************************
-
-type Link struct {  // A link is a type of arrow, with context
-                    // and maybe with a weight for package math
-	Arr ArrowPtr         // type of arrow, presorted
-	Wgt float32          // numerical weight of this link
-	Ctx ContextPtr       // context for this pathway
-	Dst NodePtr          // adjacent event/item/node
-}
-
-//**************************************************************
-
-type NodePtr struct {
-
-	Class int            // Text size-class, used mainly in memory
-	CPtr  ClassedNodePtr // index of within name class lane
-}
-
-//**************************************************************
-
-type ClassedNodePtr int  // Internal pointer type of size-classified text
-
-//**************************************************************
-
-type ArrowDirectory struct {
-
-	STAindex  int
-	Long    string
-	Short   string
-	Ptr     ArrowPtr
-}
-
-//**************************************************************
-
-type ArrowPtr int // ArrowDirectory index
-
-//**************************************************************
-
-type ContextDirectory struct {
-
-	Context string
-	Ptr     ContextPtr
-}
-
-//**************************************************************
-
-type ContextPtr int // ContextDirectory index
-
-//**************************************************************
-
-type PageMap struct {  // Thereis additional intent in the layout
-
-	Chapter string
-	Alias   string
-	Context ContextPtr
-	Line    int
-	Path    []Link
-}
-
-//**************************************************************
-
-type Appointment struct {
-
-        // An appointed from node points to a collection of to nodes 
-        // by the same arrow
-
-	Arr ArrowPtr
-	STType int
-	Chap string
-	Ctx []string
-	NTo NodePtr
-	NFrom []NodePtr
-}
-
-//**************************************************************
-
-type NodeDirectory struct {
-
-	// Power law n-gram frequencies
-
-	N1grams map[string]ClassedNodePtr
-	N1directory []Node
-	N1_top ClassedNodePtr
-
-	N2grams map[string]ClassedNodePtr
-	N2directory []Node
-	N2_top ClassedNodePtr
-
-	N3grams map[string]ClassedNodePtr
-	N3directory []Node
-	N3_top ClassedNodePtr
-
-	// Use linear search on these exp fewer long strings
-
-	LT128 []Node
-	LT128_top ClassedNodePtr
-	LT1024 []Node
-	LT1024_top ClassedNodePtr
-	GT1024 []Node
-	GT1024_top ClassedNodePtr
-}
-
-//**************************************************************
-
-var NODE_CACHE = make(map[NodePtr]NodePtr)
-
-//**************************************************************
-// POSTGRES DATA TYPES
-//**************************************************************
-
-const NODEPTR_TYPE = "CREATE TYPE NodePtr AS  " +
-	"(                    " +
-	"Chan     int,        " +
-	"CPtr     int         " +
-	")"
-
-const LINK_TYPE = "CREATE TYPE Link AS  " +
-	"(                    " +
-	"Arr      int,        " +
-	"Wgt      real,       " +
-	"Ctx      int,        " +
-	"Dst      NodePtr     " +
-	")"
-
-const NODE_TABLE = "CREATE UNLOGGED TABLE IF NOT EXISTS Node " +
-	"( " +
-	"NPtr      NodePtr,        \n" +
-	"L         int,            \n" +
-	"S         text,           \n" +
-	"Search    TSVECTOR GENERATED ALWAYS AS (to_tsvector('english',S)) STORED,\n" +
-	"UnSearch  TSVECTOR GENERATED ALWAYS AS (to_tsvector('english',sst_unaccent(S))) STORED,\n" +
-	"Chap      text,           \n" +
-	"Seq       boolean,        \n" +
-	I_MEXPR+"  Link[],         \n" + // Im3
-	I_MCONT+"  Link[],         \n" + // Im2
-	I_MLEAD+"  Link[],         \n" + // Im1
-	I_NEAR +"  Link[],         \n" + // In0
-	I_PLEAD+"  Link[],         \n" + // Il1
-	I_PCONT+"  Link[],         \n" + // Ic2
-	I_PEXPR+"  Link[]          \n" + // Ie3
-	")"
-
-const PAGEMAP_TABLE = "CREATE UNLOGGED TABLE IF NOT EXISTS PageMap " +
-	"( " +
-	"Chap     Text,  " +
-	"Alias    Text,  " +
-	"Ctx      int,   " +
-	"Line     Int,   " +
-	"Path     Link[] " +
-	")"
-
-const ARROW_DIRECTORY_TABLE = "CREATE UNLOGGED TABLE IF NOT EXISTS ArrowDirectory " +
-	"(    " +
-	"STAindex int,           " +
-	"Long text,              " +
-	"Short text,             " +
-	"ArrPtr int primary key  " +
-	")"
-
-const ARROW_INVERSES_TABLE = "CREATE UNLOGGED TABLE IF NOT EXISTS ArrowInverses " +
-	"(    " +
-	"Plus int,  " +
-	"Minus int,  " +
-	"Primary Key(Plus,Minus)" +
-	")"
-
-const LASTSEEN_TABLE = "CREATE TABLE IF NOT EXISTS LastSeen " +
-	"(    " +
-	"Section text," +
-	"NPtr    NodePtr," +
-	"First   timestamp,"+
-	"Last    timestamp," +
-	"Delta   real," +
-	"Freq    int" +
-	")"
-
-const CONTEXT_DIRECTORY_TABLE = "CREATE TABLE IF NOT EXISTS ContextDirectory " +
-	"(    " +
-	"Context text,            " +
-	"CtxPtr  int primary key  " +
-	")"
-
-const APPOINTMENT_TYPE = "CREATE TYPE Appointment AS  " +
-	"(                    " +
-	"Arr    int," +
-	"STType int," +
-	"Chap   text," +
-	"Ctx    int," +
-	"NTo    NodePtr," +
-	"NFrom  NodePtr[]" +
-	")"
-
-//**************************************************************
-// Lookup tables
-//**************************************************************
-
-var ( 
-	// Arrow multi-name factorization
-
-	ARROW_DIRECTORY []ArrowDirectory
-	ARROW_SHORT_DIR = make(map[string]ArrowPtr) // Look up short name int referene
-	ARROW_LONG_DIR = make(map[string]ArrowPtr)  // Look up long name int referene
-	ARROW_DIRECTORY_TOP ArrowPtr = 0
-	INVERSE_ARROWS = make(map[ArrowPtr]ArrowPtr)
-
-	IGNORE_ARROWS []ArrowPtr
-
-	// Context array factorization
-
-	CONTEXT_DIRECTORY []ContextDirectory
-	CONTEXT_DIR = make(map[string]ContextPtr)   // Look up long name int referene
-	CONTEXT_TOP ContextPtr
-
-	PAGE_MAP []PageMap
-
-	NODE_DIRECTORY NodeDirectory  // Internal histo-representations
-	NO_NODE_PTR NodePtr // see Init()
-	NONODE NodePtr
-
-	// Uploading
-
-	WIPE_DB bool = false
-        SILLINESS_COUNTER int
-        SILLINESS_POS int
-        SILLINESS_SLOGAN int
-	SILLINESS bool
-)
-
-//**************************************************************
-// WEB INTEFACE REPRESENTATIONS FOR JSON RENDERING
-//**************************************************************
-
-type PageView struct {
-	Title   string
-	Context string
-	Notes   [][]WebPath
-}
-
-//**************************************************************
-
-type Coords struct {
-	X   float64
-	Y   float64
-	Z   float64
-	R   float64
-	Lat float64
-	Lon float64
-}
-
-//**************************************************************
-
-type WebPath struct {
-	NPtr    NodePtr
-	Arr     ArrowPtr
-	STindex int
-	Line    int     // used for pagemap
-	Name    string
-	Chp     string
-	Ctx     string
-	XYZ     Coords
-	Wgt     float32
-}
-
-//******************************************************************
-
-type Story struct {
-
-	// The title of a story is a property of the sequence
-        // not a container for it. It belongs to the sequence context.
-
-	Chapter   string  // chapter it belongs to
-	Axis      []NodeEvent
-}
-
-//******************************************************************
-
-type NodeEvent struct {
-
-	Text    string
-	L       int
-	Chap    string
-	Context string
-        NPtr    NodePtr
-	XYZ     Coords
-	Orbits  [ST_TOP][]Orbit
-}
-
-//******************************************************************
-
-type WebConePaths struct {
-
-	RootNode   NodePtr
-	Title      string
-	BTWC       []string
-	Paths      [][]WebPath
-	SuperNodes []string
-}
-
-//******************************************************************
-
-type Orbit struct {  // union, JSON transformer
-
-	Radius  int
-	Arrow   string
-	STindex int
-	Dst     NodePtr
-	Ctx     string
-	Wgt     float32
-	Text    string
-	XYZ     Coords  // coords
-	OOO     Coords  // origin
-}
-
-//******************************************************************
-
-type Loc struct {
-
-	Text string
-	Reln []int
-	XYZ  Coords
-}
-
-//******************************************************************
-
-type ChCtx struct {
-	Chapter  string
-	XYZ      Coords
-	Context  []Loc
-	Single   []Loc
-	Common   []Loc
-}
-
-//******************************************************************
-
-type LastSeen struct {
-	Section string
-	First   int64    // timestamp of first access
-	Last    int64    // timestamp of last access
-        Pdelta  float64  // previous average of access intervals
-	Ndelta  float64  // current last access interval
-	Freq    int      // count of total accesses
-	NPtr    NodePtr
-	XYZ     Coords
-}
-
-//******************************************************************
-// Open Library Context
-//******************************************************************
 
 func Open(load_arrows bool) PoSST {
 
@@ -634,12 +172,12 @@ func GetLine(s []byte,i int) (string,int) {
 }
 
 // **************************************************************************
-//  When opening a connection, restore config
-// **************************************************************************
 
 func MemoryInit() {
 
-	if NODE_DIRECTORY.N1grams == nil {
+//  When opening a connection, restore config and allocate maps
+
+        if NODE_DIRECTORY.N1grams == nil {
 		NODE_DIRECTORY.N1grams = make(map[string]ClassedNodePtr)
 	}
 
@@ -780,204 +318,28 @@ func Configure(sst PoSST,load_arrows bool) {
 	// Find ignorable arrows
 }
 
+
 // **************************************************************************
 
 func Close(sst PoSST) {
 	sst.DB.Close()
 }
 
-// **************************************************************************
-//  Context registratation and directory management
-// **************************************************************************
 
-func GetContext(contextptr ContextPtr) string {
 
-	exists := int(contextptr) < len(CONTEXT_DIRECTORY)
+//
+// session.go
+//
 
-	if exists {
-		return CONTEXT_DIRECTORY[contextptr].Context
-	}
 
-	return "unknown context"
-}
 
-// ****************************************************************************
 
-func RegisterContext(parse_state map[string]bool,context []string) ContextPtr {
 
-	ctxstr := NormalizeContextString(parse_state,context)
 
-	if len(ctxstr) == 0 {
-		return 0
-	}
-
-	ctxptr,exists := CONTEXT_DIR[ctxstr] 
-
-	if !exists {
-		var cd ContextDirectory
-		cd.Context = ctxstr
-		cd.Ptr = CONTEXT_TOP
-		CONTEXT_DIRECTORY = append(CONTEXT_DIRECTORY,cd)
-		CONTEXT_DIR[ctxstr] = CONTEXT_TOP
-		ctxptr = CONTEXT_TOP
-		CONTEXT_TOP++
-	}
-
-	return ctxptr
-}
-
-// **************************************************************************
-
-func TryContext(sst PoSST,context []string) ContextPtr {
-
-	ctxstr := CompileContextString(context)
-	str,ctxptr := GetDBContextByName(sst,ctxstr)
-
-	if ctxptr == -1 || str != ctxstr {
-		ctxptr = UploadContextToDB(sst,ctxstr,-1)
-		RegisterContext(nil,context)
-	}
-
-	return ctxptr
-}
-
-// **************************************************************************
-
-func CompileContextString(context []string) string {
-
-	// Ensure idempotence
-
-	var merge = make(map[string]int)
-
-	for c := range context {
-		merge[context[c]]++
-	}
-
-	return List2String(Map2List(merge))	
-}
-
-// **************************************************************************
-
-func NormalizeContextString(contextmap map[string]bool,ctx []string) string {
-
-	// Mitigate combinatoric explosion
-
-	var merge = make(map[string]bool)
-	var clist []string
-
-	// Merge sources into single map
-	
-	if contextmap != nil {
-		for c := range contextmap {
-			merge[c] = true
-		}
-	}
-
-	for c := range ctx {
-		merge[ctx[c]] = true
-	}
-
-	for c := range merge {
-		s := strings.Split(c,",")
-		for i := range s {
-			s[i] = strings.TrimSpace(s[i])
-			if s[i] != "_sequence_" {
-				clist = append(clist,s[i])
-			}
-		}
-	}
-
-	return List2String(clist)
-}
-
-// **************************************************************************
-
-func GetNodeContext(sst PoSST,node Node) []string {
-
-	str := GetNodeContextString(sst,node)
-
-	if str != "" {
-		return strings.Split(str,",")
-	}
-
-	return nil
-}
-
-// **************************************************************************
-
-func GetNodeContextString(sst PoSST,node Node) string {
-
-	// This reads the ghost link planted for the purpose of attaching
-	// a context to floating nodes
-
-	empty := GetDBArrowByName(sst,"empty")
-
-	for _,lnk := range node.I[ST_ZERO+LEADSTO] {
-
-		if lnk.Arr == empty {
-			return GetContext(lnk.Ctx)
-		}
-	}
-
-	return ""
-}
-
-// **************************************************************************
-//  Node registration and memory management
-// **************************************************************************
-
-func GetNodeTxtFromPtr(frptr NodePtr) string {
-
-	class := frptr.Class
-	index := frptr.CPtr
-
-	var node Node
-
-	switch class {
-	case N1GRAM:
-		node = NODE_DIRECTORY.N1directory[index]
-	case N2GRAM:
-		node = NODE_DIRECTORY.N2directory[index]
-	case N3GRAM:
-		node = NODE_DIRECTORY.N3directory[index]
-	case LT128:
-		node = NODE_DIRECTORY.LT128[index]
-	case LT1024:
-		node = NODE_DIRECTORY.LT1024[index]
-	case GT1024:
-		node = NODE_DIRECTORY.GT1024[index]
-	}
-
-	return node.S
-}
-
-// **************************************************************************
-
-func GetMemoryNodeFromPtr(frptr NodePtr) Node {
-
-	class := frptr.Class
-	index := frptr.CPtr
-
-	var node Node
-
-	switch class {
-	case N1GRAM:
-		node = NODE_DIRECTORY.N1directory[index]
-	case N2GRAM:
-		node = NODE_DIRECTORY.N2directory[index]
-	case N3GRAM:
-		node = NODE_DIRECTORY.N3directory[index]
-	case LT128:
-		node = NODE_DIRECTORY.LT128[index]
-	case LT1024:
-		node = NODE_DIRECTORY.LT1024[index]
-	case GT1024:
-		node = NODE_DIRECTORY.GT1024[index]
-	}
-
-	return node
-}
-
+//**************************************************************
+//
+// N4L_parsing.go
+//
 //**************************************************************
 
 func AppendTextToDirectory(event Node,ErrFunc func(string)) NodePtr {
@@ -1181,7 +543,57 @@ func UpdateSeqStatus(class int,cptr ClassedNodePtr,seq bool) Node {
 }
 
 //**************************************************************
-// Link registration and management
+
+func InsertArrowDirectory(stname,alias,name,pm string) ArrowPtr {
+
+	// Insert an arrow into the forward/backward indices
+
+	var newarrow ArrowDirectory
+
+	// Check is already exists - harmless
+
+	prev_alias,a_exists := ARROW_SHORT_DIR[alias]
+	prev_name,n_exists := ARROW_LONG_DIR[name]
+
+	if a_exists && n_exists {
+		if prev_alias == prev_name {
+			return prev_alias
+		}
+	}
+
+	for a := range ARROW_DIRECTORY {
+		if ARROW_DIRECTORY[a].Long == name || ARROW_DIRECTORY[a].Short == alias {
+			return ArrowPtr(-1)
+		}
+	}
+
+	newarrow.STAindex = GetSTIndexByName(stname,pm)
+	newarrow.Long = name
+	newarrow.Short = alias
+	newarrow.Ptr = ARROW_DIRECTORY_TOP
+
+	ARROW_DIRECTORY = append(ARROW_DIRECTORY,newarrow)
+	ARROW_SHORT_DIR[alias] = ARROW_DIRECTORY_TOP
+	ARROW_LONG_DIR[name] = ARROW_DIRECTORY_TOP
+	ARROW_DIRECTORY_TOP++
+
+	return ARROW_DIRECTORY_TOP-1
+}
+
+//**************************************************************
+
+func InsertInverseArrowDirectory(fwd,bwd ArrowPtr) {
+
+	if fwd == ArrowPtr(-1) || bwd == ArrowPtr(-1) {
+		return
+	}
+
+	// Lookup inverse by long name, only need this in search presentation
+
+	INVERSE_ARROWS[fwd] = bwd
+	INVERSE_ARROWS[bwd] = fwd
+}
+
 //**************************************************************
 
 func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
@@ -1308,8 +720,543 @@ func LinearFindText(in []Node,event Node,ignore_caps bool) (ClassedNodePtr,bool)
 	return -1,false
 }
 
+
+//
+// end N4L_parsing.go
+//
+
+
+
+
+
 //**************************************************************
-// Attempt to determine the promised node type
+//
+//  API.go
+//
+//**************************************************************
+
+// Automatic NPtr numbering
+
+func Vertex(sst PoSST,name,chap string) Node {
+
+	var n Node
+
+	n.S = name
+	n.Chap = chap
+
+	return IdempDBAddNode(sst,n)
+}
+
+// **************************************************************************
+
+func Edge(sst PoSST,from Node,arrow string,to Node,context []string,weight float32) (ArrowPtr,int) {
+
+	arrowptr,sttype := GetDBArrowsWithArrowName(sst,arrow)
+
+	var link Link
+
+	link.Arr = arrowptr
+	link.Dst = to.NPtr
+	link.Wgt = weight
+	link.Ctx = TryContext(sst,context)
+
+	IdempDBAddLink(sst,from,link,to)
+
+	return arrowptr,sttype
+}
+
+// **************************************************************************
+
+func HubJoin(sst PoSST,name,chap string,nptrs []NodePtr,arrow string,context []string,weight []float32) Node {
+
+	// Create a container node joining several other nodes in a list, like a hyperlink
+
+	if nptrs == nil {
+		fmt.Println("Call to HubJoin with a null list of pointers")
+		os.Exit(-1)
+	}
+
+	if weight == nil {
+		for n := 0; n < len(nptrs); n++ {
+			weight = append(weight,1.0)
+		}
+	}
+
+	if len(nptrs) != len(weight) {
+		fmt.Println("Call to HubJoin with inconsistent node/weight pointer arrays: dimensions ",len(nptrs),"vs",len(weight))
+		os.Exit(-1)
+	}
+
+	var chaps = make(map[string]int)
+
+	if name == "" {
+		name = "hub_"+arrow+"_"
+		for n := range nptrs {
+			name += fmt.Sprintf("(%d,%d)",nptrs[n].Class,nptrs[n].CPtr)
+			node := GetDBNodeByNodePtr(sst,nptrs[n])
+			chaps[node.Chap]++
+		}
+	}
+
+	var to Node
+
+	to.S = name
+
+	if chap != "" {
+		to.Chap = chap
+	} else 	if chap == "" && len(chaps) == 1 {
+		for ch := range chaps {
+			to.Chap = ch
+		}
+	}
+
+	container := IdempDBAddNode(sst,to)
+
+	arrowptr,_ := GetDBArrowsWithArrowName(sst,arrow)
+
+	for nptr := range nptrs {
+
+		var link Link
+		link.Arr = arrowptr
+		link.Dst = container.NPtr
+		link.Wgt = weight[nptr]
+		link.Ctx = TryContext(sst,context)
+		from := GetDBNodeByNodePtr(sst,nptrs[nptr])
+		IdempDBAddLink(sst,from,link,container)
+	}
+
+	return GetDBNodeByNodePtr(sst,container.NPtr)
+}
+
+
+
+
+
+//
+//  API.go
+//
+
+
+
+
+
+
+//**************************************************************
+//
+// types_structures.go
+//
+//**************************************************************
+
+type PoSST struct {
+
+   DB *sql.DB
+}
+
+//******************************************************************
+
+type Etc struct {
+
+	E bool  // event
+	T bool  // thing
+	C bool  // concept
+}
+
+//******************************************************************
+
+type Node struct {
+
+	L         int     // length of text string
+	S         string  // text string itself
+
+	Seq       bool    // true if this node begins an intended sequence, otherwise ambiguous
+	Chap      string  // section/chapter name in which this was added
+	NPtr      NodePtr // Pointer to self index
+	Psi       Etc     // induced node type (experimental)
+
+	I [ST_TOP][]Link  // link incidence list, by STindex - these are the "vectors" +/-
+  	                  // NOTE: carefully how STindex offsets represent negative SSTtypes
+}
+
+//**************************************************************
+
+type Link struct {  // A link is a type of arrow, with context
+                    // and maybe with a weight for package math
+	Arr ArrowPtr         // type of arrow, presorted
+	Wgt float32          // numerical weight of this link
+	Ctx ContextPtr       // context for this pathway
+	Dst NodePtr          // adjacent event/item/node
+}
+
+//**************************************************************
+
+type NodePtr struct {
+
+	Class int            // Text size-class, used mainly in memory
+	CPtr  ClassedNodePtr // index of within name class lane
+}
+
+//**************************************************************
+
+type ClassedNodePtr int  // Internal pointer type of size-classified text
+
+//**************************************************************
+
+type ArrowDirectory struct {
+
+	STAindex  int
+	Long    string
+	Short   string
+	Ptr     ArrowPtr
+}
+
+//**************************************************************
+
+type ArrowPtr int // ArrowDirectory index
+
+//**************************************************************
+
+type ContextDirectory struct {
+
+	Context string
+	Ptr     ContextPtr
+}
+
+//**************************************************************
+
+type ContextPtr int // ContextDirectory index
+
+//**************************************************************
+
+type PageMap struct {  // Thereis additional intent in the layout
+
+	Chapter string
+	Alias   string
+	Context ContextPtr
+	Line    int
+	Path    []Link
+}
+
+//**************************************************************
+
+type Appointment struct {
+
+        // An appointed from node points to a collection of to nodes 
+        // by the same arrow
+
+	Arr ArrowPtr
+	STType int
+	Chap string
+	Ctx []string
+	NTo NodePtr
+	NFrom []NodePtr
+}
+
+//**************************************************************
+
+type NodeDirectory struct {
+
+	// Power law n-gram frequencies
+
+	N1grams map[string]ClassedNodePtr
+	N1directory []Node
+	N1_top ClassedNodePtr
+
+	N2grams map[string]ClassedNodePtr
+	N2directory []Node
+	N2_top ClassedNodePtr
+
+	N3grams map[string]ClassedNodePtr
+	N3directory []Node
+	N3_top ClassedNodePtr
+
+	// Use linear search on these exp fewer long strings
+
+	LT128 []Node
+	LT128_top ClassedNodePtr
+	LT1024 []Node
+	LT1024_top ClassedNodePtr
+	GT1024 []Node
+	GT1024_top ClassedNodePtr
+}
+
+
+//**************************************************************
+
+type PageView struct {
+	Title   string
+	Context string
+	Notes   [][]WebPath
+}
+
+//**************************************************************
+
+type Coords struct {
+	X   float64
+	Y   float64
+	Z   float64
+	R   float64
+	Lat float64
+	Lon float64
+}
+
+//**************************************************************
+
+type WebPath struct {
+	NPtr    NodePtr
+	Arr     ArrowPtr
+	STindex int
+	Line    int     // used for pagemap
+	Name    string
+	Chp     string
+	Ctx     string
+	XYZ     Coords
+	Wgt     float32
+}
+
+//******************************************************************
+
+type Story struct {
+
+	// The title of a story is a property of the sequence
+        // not a container for it. It belongs to the sequence context.
+
+	Chapter   string  // chapter it belongs to
+	Axis      []NodeEvent
+}
+
+//******************************************************************
+
+type NodeEvent struct {
+
+	Text    string
+	L       int
+	Chap    string
+	Context string
+        NPtr    NodePtr
+	XYZ     Coords
+	Orbits  [ST_TOP][]Orbit
+}
+
+//******************************************************************
+
+type WebConePaths struct {
+
+	RootNode   NodePtr
+	Title      string
+	BTWC       []string
+	Paths      [][]WebPath
+	SuperNodes []string
+}
+
+//******************************************************************
+
+type Orbit struct {  // union, JSON transformer
+
+	Radius  int
+	Arrow   string
+	STindex int
+	Dst     NodePtr
+	Ctx     string
+	Wgt     float32
+	Text    string
+	XYZ     Coords  // coords
+	OOO     Coords  // origin
+}
+
+//******************************************************************
+
+type Loc struct {
+
+	Text string
+	Reln []int
+	XYZ  Coords
+}
+
+//******************************************************************
+
+type ChCtx struct {
+	Chapter  string
+	XYZ      Coords
+	Context  []Loc
+	Single   []Loc
+	Common   []Loc
+}
+
+//******************************************************************
+
+type LastSeen struct {
+	Section string
+	First   int64    // timestamp of first access
+	Last    int64    // timestamp of last access
+        Pdelta  float64  // previous average of access intervals
+	Ndelta  float64  // current last access interval
+	Freq    int      // count of total accesses
+	NPtr    NodePtr
+	XYZ     Coords
+}
+
+//**************************************************************
+
+type History struct {
+
+	Freq  float64  // just use float becasue we'll want to calculate
+	Last  int64    // calc gradient and purge
+	Delta int64
+	Time  string
+}
+
+
+
+//
+// types_structures.go
+//
+
+
+
+
+//**************************************************************
+//
+// globals.go
+//
+//**************************************************************
+
+const (
+	CREDENTIALS_FILE = ".SSTorytime" // user's home directory
+
+	ERR_ST_OUT_OF_BOUNDS = "Link STtype is out of bounds (must be -3 to +3)"
+	ERR_ILLEGAL_LINK_CLASS = "ILLEGAL LINK CLASS"
+	ERR_NO_SUCH_ARROW = "No such arrow has been declared in the configuration: "
+	ERR_MEMORY_DB_ARROW_MISMATCH = "Arrows in database are not in synch (shouldn't happen)"
+	ERR_MEMORY_DB_CONTEXT_MISMATCH = "Contexts in database are not in synch (shouldn't happen)"
+	WARN_DIFFERENT_CAPITALS = "WARNING: Another capitalization exists"
+
+	SCREENWIDTH = 120
+	RIGHTMARGIN = 5
+	LEFTMARGIN = 5
+
+	NEAR = 0
+	LEADSTO = 1   // +/-
+	CONTAINS = 2  // +/-
+	EXPRESS = 3   // +/-
+
+	// Letting a cone search get too large is unresponsive
+	CAUSAL_CONE_MAXLIMIT = 100
+
+	// And shifted indices for array indicesin Go
+
+	ST_ZERO = EXPRESS
+	ST_TOP = ST_ZERO + EXPRESS + 1
+
+	// For the SQL table, as 2d arrays not good
+
+	I_MEXPR = "Im3"
+	I_MCONT = "Im2"
+	I_MLEAD = "Im1"
+	I_NEAR  = "In0"
+	I_PLEAD = "Il1"
+	I_PCONT = "Ic2"
+	I_PEXPR = "Ie3"
+
+	// For separating text types
+
+	N1GRAM = 1
+	N2GRAM = 2
+	N3GRAM = 3
+	LT128 = 4
+	LT1024 = 5
+	GT1024 = 6
+
+	// mandatory relations used in text processing, but we should never follow these links
+        // when presenting results
+
+	EXPR_INTENT_L = "has contextual theme"
+	EXPR_INTENT_S = "has_theme"
+        INV_EXPR_INTENT_L = "is a context theme in"
+	INV_EXPR_INTENT_S ="theme_of"
+
+	EXPR_AMBIENT_L = "has contextual highlight"
+	EXPR_AMBIENT_S = "has_highlight"
+        INV_EXPR_AMBIENT_L = "is contextual highlight of"
+	INV_EXPR_AMBIENT_S = "highlight_of"
+
+	CONT_FINDS_L = "contains extract/quote"
+	CONT_FINDS_S = "has-extract"
+	INV_CONT_FOUND_IN_L = "extract/quote from"
+	INV_CONT_FOUND_IN_S = "extract-fr"
+
+	// This is a "contained-by something that expresses" shortcut => NEAR
+
+	CONT_FRAG_L = "contains intented characteristic"      // intentional characteristic
+	CONT_FRAG_S = "has-frag"
+	INV_CONT_FRAG_IN_L = "characteristic of"   // explains intentional context
+	INV_CONT_FRAG_IN_S = "charct-in"
+
+	NON_ASCII_LQUOTE = '“'
+	NON_ASCII_RQUOTE = '”'
+
+        FORGOTTEN = 10800
+        TEXT_SIZE_LIMIT = 30
+
+)
+
+
+// **************************************************************************
+
+var ( 
+
+        NODE_CACHE = make(map[NodePtr]NodePtr)
+        BASE_DB_CHANNEL_STATE[7] ClassedNodePtr
+
+	ARROW_DIRECTORY []ArrowDirectory
+	ARROW_SHORT_DIR = make(map[string]ArrowPtr) // Look up short name int referene
+	ARROW_LONG_DIR = make(map[string]ArrowPtr)  // Look up long name int referene
+	ARROW_DIRECTORY_TOP ArrowPtr = 0
+	INVERSE_ARROWS = make(map[ArrowPtr]ArrowPtr)
+
+	IGNORE_ARROWS []ArrowPtr
+
+	// Context array factorization
+
+	CONTEXT_DIRECTORY []ContextDirectory
+	CONTEXT_DIR = make(map[string]ContextPtr)   // Look up long name int referene
+	CONTEXT_TOP ContextPtr
+
+	PAGE_MAP []PageMap
+
+	NODE_DIRECTORY NodeDirectory  // Internal histo-representations
+	NO_NODE_PTR NodePtr // see Init()
+	NONODE NodePtr
+
+	// Uploading
+
+	WIPE_DB bool = false
+        SILLINESS_COUNTER int
+        SILLINESS_POS int
+        SILLINESS_SLOGAN int
+	SILLINESS bool
+
+
+        // Text analysis
+
+        STM_INT_FRAG = make(map[string]History) // for intentional (exceptional) fragments
+        STM_AMB_FRAG = make(map[string]History) // for ambient (repeated) fragments
+        STM_INV_GROUP = make(map[string]History) // look for invariants
+
+)
+
+
+//
+// end globals.go
+//
+
+
+
+
+
+//**************************************************************
+//
+// expt_etc_analysis.c
+//
 //**************************************************************
 
 func CompleteETCTypes(sst PoSST,node Node) string {
@@ -1392,144 +1339,24 @@ func CollapsePsi(node Node,stindex int) (Etc, string) {
 	return etc,message
 }
 
-//**************************************************************
 
-func ShowPsi(etc Etc) string {
+//
+// expt_etc_analysis.c
+//
 
-	result := ""
 
-	if etc.E {
-		result += "event,"
-	}
-	if etc.T {
-		result += "thing,"
-	}
-	if etc.C {
-		result += "concept,"
-	}
-	return result
-}
+
+
+
+
+
+
+
 
 //**************************************************************
-// STtype naming and conversion
-//**************************************************************
-
-func GetSTIndexByName(stname,pm string) int {
-
-	var encoding  int
-	var sign int
-
-	switch pm {
-	case "+":
-		sign = 1
-	case "-":
-		sign = -1
-	}
-
-	switch stname {
-
-	case "leadsto":
-		encoding = ST_ZERO + LEADSTO * sign
-	case "contains":
-		encoding = ST_ZERO + CONTAINS * sign
-	case "properties":
-		encoding = ST_ZERO + EXPRESS * sign
-	case "similarity":
-		encoding = ST_ZERO + NEAR
-	}
-
-	return encoding
-
-}
-
-//**************************************************************
-
-func PrintSTAIndex(stindex int) string {
-
-	sttype := stindex - ST_ZERO
-	var ty string
-
-	switch sttype {
-	case -EXPRESS:
-		ty = "-(expressed by)"
-	case -CONTAINS:
-		ty = "-(part of)"
-	case -LEADSTO:
-		ty = "-(arriving from)"
-	case NEAR:
-		ty = "(close to)"
-	case LEADSTO:
-		ty = "+(leading to)"
-	case CONTAINS:
-		ty = "+(containing)"
-	case EXPRESS:
-		ty = "+(expressing)"
-	default:
-		ty = "unknown relation!"
-	}
-
-	const green = "\x1b[36m"
-	const endgreen = "\x1b[0m"
-
-	return green + ty + endgreen
-}
-
-//**************************************************************
-// Arrow registration and management
-//**************************************************************
-
-func InsertArrowDirectory(stname,alias,name,pm string) ArrowPtr {
-
-	// Insert an arrow into the forward/backward indices
-
-	var newarrow ArrowDirectory
-
-	// Check is already exists - harmless
-
-	prev_alias,a_exists := ARROW_SHORT_DIR[alias]
-	prev_name,n_exists := ARROW_LONG_DIR[name]
-
-	if a_exists && n_exists {
-		if prev_alias == prev_name {
-			return prev_alias
-		}
-	}
-
-	for a := range ARROW_DIRECTORY {
-		if ARROW_DIRECTORY[a].Long == name || ARROW_DIRECTORY[a].Short == alias {
-			return ArrowPtr(-1)
-		}
-	}
-
-	newarrow.STAindex = GetSTIndexByName(stname,pm)
-	newarrow.Long = name
-	newarrow.Short = alias
-	newarrow.Ptr = ARROW_DIRECTORY_TOP
-
-	ARROW_DIRECTORY = append(ARROW_DIRECTORY,newarrow)
-	ARROW_SHORT_DIR[alias] = ARROW_DIRECTORY_TOP
-	ARROW_LONG_DIR[name] = ARROW_DIRECTORY_TOP
-	ARROW_DIRECTORY_TOP++
-
-	return ARROW_DIRECTORY_TOP-1
-}
-
-//**************************************************************
-
-func InsertInverseArrowDirectory(fwd,bwd ArrowPtr) {
-
-	if fwd == ArrowPtr(-1) || bwd == ArrowPtr(-1) {
-		return
-	}
-
-	// Lookup inverse by long name, only need this in search presentation
-
-	INVERSE_ARROWS[fwd] = bwd
-	INVERSE_ARROWS[bwd] = fwd
-}
-
-//**************************************************************
-// Upload managed N4L graph / Write to database
+//
+// db_upload.go
+//
 //**************************************************************
 
 func GraphToDB(sst PoSST,wait_counter bool) {
@@ -1636,230 +1463,6 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 	sst.DB.QueryRow("ALTER TABLE PageMap SET LOGGED")
 
 	fmt.Println("Finally done!")
-}
-
-// **************************************************************************
-// Store - High level API, for automatic NPtr numbering
-// **************************************************************************
-
-func Vertex(sst PoSST,name,chap string) Node {
-
-	var n Node
-
-	n.S = name
-	n.Chap = chap
-
-	return IdempDBAddNode(sst,n)
-}
-
-// **************************************************************************
-
-func Edge(sst PoSST,from Node,arrow string,to Node,context []string,weight float32) (ArrowPtr,int) {
-
-	arrowptr,sttype := GetDBArrowsWithArrowName(sst,arrow)
-
-	var link Link
-
-	link.Arr = arrowptr
-	link.Dst = to.NPtr
-	link.Wgt = weight
-	link.Ctx = TryContext(sst,context)
-
-	IdempDBAddLink(sst,from,link,to)
-
-	return arrowptr,sttype
-}
-
-// **************************************************************************
-
-func HubJoin(sst PoSST,name,chap string,nptrs []NodePtr,arrow string,context []string,weight []float32) Node {
-
-	// Create a container node joining several other nodes in a list, like a hyperlink
-
-	if nptrs == nil {
-		fmt.Println("Call to HubJoin with a null list of pointers")
-		os.Exit(-1)
-	}
-
-	if weight == nil {
-		for n := 0; n < len(nptrs); n++ {
-			weight = append(weight,1.0)
-		}
-	}
-
-	if len(nptrs) != len(weight) {
-		fmt.Println("Call to HubJoin with inconsistent node/weight pointer arrays: dimensions ",len(nptrs),"vs",len(weight))
-		os.Exit(-1)
-	}
-
-	var chaps = make(map[string]int)
-
-	if name == "" {
-		name = "hub_"+arrow+"_"
-		for n := range nptrs {
-			name += fmt.Sprintf("(%d,%d)",nptrs[n].Class,nptrs[n].CPtr)
-			node := GetDBNodeByNodePtr(sst,nptrs[n])
-			chaps[node.Chap]++
-		}
-	}
-
-	var to Node
-
-	to.S = name
-
-	if chap != "" {
-		to.Chap = chap
-	} else 	if chap == "" && len(chaps) == 1 {
-		for ch := range chaps {
-			to.Chap = ch
-		}
-	}
-
-	container := IdempDBAddNode(sst,to)
-
-	arrowptr,_ := GetDBArrowsWithArrowName(sst,arrow)
-
-	for nptr := range nptrs {
-
-		var link Link
-		link.Arr = arrowptr
-		link.Dst = container.NPtr
-		link.Wgt = weight[nptr]
-		link.Ctx = TryContext(sst,context)
-		from := GetDBNodeByNodePtr(sst,nptrs[nptr])
-		IdempDBAddLink(sst,from,link,container)
-	}
-
-	return GetDBNodeByNodePtr(sst,container.NPtr)
-}
-
-// **************************************************************************
-// Lower level functions, for self-managed NPtr values
-// **************************************************************************
-
-func FormDBNode(sst PoSST, n Node) string {
-
-	// Add node version setting explicit CPtr value, note different function call
-	// We use this function when we ARE managing/counting CPtr values ourselves
-
-	var qstr,seqstr string
-
-        n.L,n.NPtr.Class = StorageClass(n.S)
-	
-	cptr := n.NPtr.CPtr
-
-	es := SQLEscape(n.S)
-	ec := SQLEscape(n.Chap)
-
-	if n.Seq {
-		seqstr = "true"
-	} else {
-		seqstr = "false"
-	}
-
-	qstr = fmt.Sprintf("SELECT InsertNode(%d,%d,%d,'%s','%s',%s);\n",n.L,n.NPtr.Class,cptr,es,ec,seqstr)
-	return qstr
-}
-
-
-// **************************************************************************
-
-func CreateDBNode(sst PoSST, n Node) Node {
-
-	// Add node version setting explicit CPtr value, note different function call
-	// We use this function when we ARE managing/counting CPtr values ourselves
-
-	var qstr string
-
-        n.L,n.NPtr.Class = StorageClass(n.S)
-	
-	cptr := n.NPtr.CPtr
-
-	es := SQLEscape(n.S)
-	ec := SQLEscape(n.Chap)
-
-	qstr = fmt.Sprintf("SELECT IdempInsertNode(%d,%d,%d,'%s','%s')",n.L,n.NPtr.Class,cptr,es,ec)
-
-	row,err := sst.DB.Query(qstr)
-	
-	if err != nil {
-		s := fmt.Sprint("Failed to insert",err)
-		
-		if strings.Contains(s,"duplicate key") {
-		} else {
-			fmt.Println(s,"FAILED \n",qstr,err)
-		}
-		return n
-	}
-
-	var whole string
-	var cl,ch int
-
-	if row != nil {
-		for row.Next() {		
-			err = row.Scan(&whole)
-			fmt.Sscanf(whole,"(%d,%d)",&cl,&ch)
-		}
-		
-		n.NPtr.Class = cl
-		n.NPtr.CPtr = ClassedNodePtr(ch)
-		
-		row.Close()
-	}
-
-	return n
-}
-
-// **************************************************************************
-//  Low level append/insert for auto-managed NPtr values
-// **************************************************************************
-
-func IdempDBAddNode(sst PoSST,n Node) Node {
-
-	// We use this function when we aren't counting CPtr values
-	// This functon may be deprecated in future
-
-	var qstr string
-
-	// No need to trust the values, ignore/overwrite CPtr
-
-        n.L,n.NPtr.Class = StorageClass(n.S)
-
-	es := SQLEscape(n.S)
-	ec := SQLEscape(n.Chap)
-
-	// Wrap BEGIN/END a single transaction
-
-	qstr = fmt.Sprintf("SELECT IdempAppendNode(%d,%d,'%s','%s')",n.L,n.NPtr.Class,es,ec)
-
-	row,err := sst.DB.Query(qstr)
-	
-	if err != nil {
-		s := fmt.Sprint("Failed to add node",err)
-		
-		if strings.Contains(s,"duplicate key") {
-		} else {
-			fmt.Println(s,"FAILED \n",qstr,err)
-		}
-		return n
-	}
-
-	var whole string
-	var cl,ch int
-
-	if row != nil {
-		for row.Next() {		
-			err = row.Scan(&whole)
-			fmt.Sscanf(whole,"(%d,%d)",&cl,&ch)
-		}
-		
-		n.NPtr.Class = cl
-		n.NPtr.CPtr = ClassedNodePtr(ch)
-		
-		row.Close()
-	}
-
-	return n
 }
 
 // **************************************************************************
@@ -2014,7 +1617,97 @@ func UploadPageMapEvent(sst PoSST, line PageMap) {
 	row.Close()
 }
 
+
+//
+// db_upload.go
+//
+
+
+
+
 //**************************************************************
+//
+// db_insertion.go
+//
+//**************************************************************
+
+func FormDBNode(sst PoSST, n Node) string {
+
+	// Add node version setting explicit CPtr value, note different function call
+	// We use this function when we ARE managing/counting CPtr values ourselves
+
+	var qstr,seqstr string
+
+        n.L,n.NPtr.Class = StorageClass(n.S)
+	
+	cptr := n.NPtr.CPtr
+
+	es := SQLEscape(n.S)
+	ec := SQLEscape(n.Chap)
+
+	if n.Seq {
+		seqstr = "true"
+	} else {
+		seqstr = "false"
+	}
+
+	qstr = fmt.Sprintf("SELECT InsertNode(%d,%d,%d,'%s','%s',%s);\n",n.L,n.NPtr.Class,cptr,es,ec,seqstr)
+	return qstr
+}
+
+
+
+// **************************************************************************
+
+func IdempDBAddNode(sst PoSST,n Node) Node {
+
+	// We use this function when we aren't counting CPtr values
+	// This functon may be deprecated in future
+
+	var qstr string
+
+	// No need to trust the values, ignore/overwrite CPtr
+
+        n.L,n.NPtr.Class = StorageClass(n.S)
+
+	es := SQLEscape(n.S)
+	ec := SQLEscape(n.Chap)
+
+	// Wrap BEGIN/END a single transaction
+
+	qstr = fmt.Sprintf("SELECT IdempAppendNode(%d,%d,'%s','%s')",n.L,n.NPtr.Class,es,ec)
+
+	row,err := sst.DB.Query(qstr)
+	
+	if err != nil {
+		s := fmt.Sprint("Failed to add node",err)
+		
+		if strings.Contains(s,"duplicate key") {
+		} else {
+			fmt.Println(s,"FAILED \n",qstr,err)
+		}
+		return n
+	}
+
+	var whole string
+	var cl,ch int
+
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&whole)
+			fmt.Sscanf(whole,"(%d,%d)",&cl,&ch)
+		}
+		
+		n.NPtr.Class = cl
+		n.NPtr.CPtr = ClassedNodePtr(ch)
+		
+		row.Close()
+	}
+
+	return n
+}
+
+// **************************************************************************
 
 func IdempDBAddLink(sst PoSST,from Node,link Link,to Node) {
 
@@ -2128,8 +1821,105 @@ func AppendDBLinkArrayToNode(sst PoSST, nptr NodePtr, array string, sttype int) 
 	return qstr
 }
 
-// **************************************************************************
-// Postgres interface
+
+//
+// db_insertion.go
+//
+
+
+
+
+
+
+// **************************************************************
+//
+// postgres_types_functions.go
+//
+// **************************************************************
+
+const NODEPTR_TYPE = "CREATE TYPE NodePtr AS  " +
+	"(                    " +
+	"Chan     int,        " +
+	"CPtr     int         " +
+	")"
+
+const LINK_TYPE = "CREATE TYPE Link AS  " +
+	"(                    " +
+	"Arr      int,        " +
+	"Wgt      real,       " +
+	"Ctx      int,        " +
+	"Dst      NodePtr     " +
+	")"
+
+const NODE_TABLE = "CREATE UNLOGGED TABLE IF NOT EXISTS Node " +
+	"( " +
+	"NPtr      NodePtr,        \n" +
+	"L         int,            \n" +
+	"S         text,           \n" +
+	"Search    TSVECTOR GENERATED ALWAYS AS (to_tsvector('english',S)) STORED,\n" +
+	"UnSearch  TSVECTOR GENERATED ALWAYS AS (to_tsvector('english',sst_unaccent(S))) STORED,\n" +
+	"Chap      text,           \n" +
+	"Seq       boolean,        \n" +
+	I_MEXPR+"  Link[],         \n" + // Im3
+	I_MCONT+"  Link[],         \n" + // Im2
+	I_MLEAD+"  Link[],         \n" + // Im1
+	I_NEAR +"  Link[],         \n" + // In0
+	I_PLEAD+"  Link[],         \n" + // Il1
+	I_PCONT+"  Link[],         \n" + // Ic2
+	I_PEXPR+"  Link[]          \n" + // Ie3
+	")"
+
+const PAGEMAP_TABLE = "CREATE UNLOGGED TABLE IF NOT EXISTS PageMap " +
+	"( " +
+	"Chap     Text,  " +
+	"Alias    Text,  " +
+	"Ctx      int,   " +
+	"Line     Int,   " +
+	"Path     Link[] " +
+	")"
+
+const ARROW_DIRECTORY_TABLE = "CREATE UNLOGGED TABLE IF NOT EXISTS ArrowDirectory " +
+	"(    " +
+	"STAindex int,           " +
+	"Long text,              " +
+	"Short text,             " +
+	"ArrPtr int primary key  " +
+	")"
+
+const ARROW_INVERSES_TABLE = "CREATE UNLOGGED TABLE IF NOT EXISTS ArrowInverses " +
+	"(    " +
+	"Plus int,  " +
+	"Minus int,  " +
+	"Primary Key(Plus,Minus)" +
+	")"
+
+const LASTSEEN_TABLE = "CREATE TABLE IF NOT EXISTS LastSeen " +
+	"(    " +
+	"Section text," +
+	"NPtr    NodePtr," +
+	"First   timestamp,"+
+	"Last    timestamp," +
+	"Delta   real," +
+	"Freq    int" +
+	")"
+
+const CONTEXT_DIRECTORY_TABLE = "CREATE TABLE IF NOT EXISTS ContextDirectory " +
+	"(    " +
+	"Context text,            " +
+	"CtxPtr  int primary key  " +
+	")"
+
+const APPOINTMENT_TYPE = "CREATE TYPE Appointment AS  " +
+	"(                    " +
+	"Arr    int," +
+	"STType int," +
+	"Chap   text," +
+	"Ctx    int," +
+	"NTo    NodePtr," +
+	"NFrom  NodePtr[]" +
+	")"
+
+
 // **************************************************************************
 
 func CreateType(sst PoSST, defn string) bool {
@@ -2176,9 +1966,12 @@ func DefineStoredFunctions(sst PoSST) {
 
 	// NB! these functions are in "plpgsql" language, NOT SQL. They look similar but they are DIFFERENT!
 	
-	// Insert a node structure, also an anchor for and containing link arrays
+	// This is not a pretty function, but in order to interface go-types to pg-types, we need to evaluate it 
+	// like this...
+	
 	
 	cols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
+
 
 	qstr := fmt.Sprintf("CREATE OR REPLACE FUNCTION IdempInsertNode(iLi INT, iszchani INT, icptri INT, iSi TEXT, ichapi TEXT)\n" +
 		"RETURNS TABLE (    \n" +
@@ -3793,9 +3586,70 @@ func DefineStoredFunctions(sst PoSST) {
 
 }
 
+
+
+
+
+//
+// postgres_types_functions.go
+//
+
+
+
+
+
+
+
+
 // **************************************************************************
-// Query / Retrieve structural parts
+//
+// postgres_retrieval.go
+//
 // **************************************************************************
+
+func SolveNodePtrs(sst PoSST,nodenames []string,search SearchParameters,arr []ArrowPtr,limit int) []NodePtr {
+
+	chap := search.Chapter
+	cntx := search.Context
+	seq := search.Sequence
+
+	// This is a UI/UX wrapper for the underlying lookup, avoiding
+	// duplicate results and ordering according to interest
+
+	nodeptrs,rest := ParseLiteralNodePtrs(nodenames)
+
+	var idempotence = make(map[NodePtr]bool)
+	var result []NodePtr
+
+	// If we give a precise reference, then that was obviously intended
+
+	for n := range nodeptrs {
+		idempotence[nodeptrs[n]] = true
+	}
+
+	for r := 0; r < len(rest); r++ {
+
+		// Takes care of general context matching
+
+		nptrs := GetDBNodePtrMatchingNCCS(sst,rest[r],chap,cntx,arr,seq,limit)
+
+		for n := 0; n < len(nptrs); n++ {
+			idempotence[nptrs[n]] = true
+		}
+	}
+
+	// Currently disordered, sort by additional scoring by running context ..
+
+	for uniqnptr := range idempotence {
+		result = append(result,uniqnptr)
+	}
+
+	sort.Slice(result, ScoreContext)
+
+	return result
+}
+
+//******************************************************************
 
 func GetDBNodePtrMatchingName(sst PoSST,name,chap string) []NodePtr {
 
@@ -4260,7 +4114,72 @@ func SelectStoriesByArrow(sst PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, st
 }
 
 // **************************************************************************
-// Retrieve Arrow type data
+
+func GetSequenceContainers(sst PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []Story {
+
+	// Story search
+
+	var stories []Story
+
+	openings := SelectStoriesByArrow(sst,nodeptrs,arrowptrs,sttypes,limit)
+
+	arrname := ""
+	count := 0
+
+	var already = make(map[NodePtr]bool)
+
+	for nth := range openings {
+
+		var story Story
+
+		node := GetDBNodeByNodePtr(sst,openings[nth])
+
+		story.Chapter = node.Chap
+
+		axis := GetLongestAxialPath(sst,openings[nth],arrowptrs[0],limit)
+
+		directory := AssignStoryCoordinates(axis,nth,len(openings),limit,already)
+
+		for lnk := 0; lnk < len(axis); lnk++ {
+			
+			// Now add the orbit at this node, not including the axis
+
+			var ne NodeEvent
+
+			nd := GetDBNodeByNodePtr(sst,axis[lnk].Dst)
+
+			ne.Text = nd.S
+			ne.L = nd.L
+			ne.Chap = nd.Chap
+			ne.Context = GetContext(axis[lnk].Ctx)
+			ne.NPtr = axis[lnk].Dst
+			ne.XYZ = directory[ne.NPtr]
+			ne.Orbits = GetNodeOrbit(sst,axis[lnk].Dst,arrname,limit)
+			ne.Orbits = SetOrbitCoords(ne.XYZ,ne.Orbits)
+
+			if lnk > limit {
+				break
+			}
+
+			story.Axis = append(story.Axis,ne)
+		}
+
+		if story.Axis != nil {
+			stories = append(stories,story)
+			count ++
+		}
+
+		count++
+
+		if count > limit {
+			return stories
+		}
+		
+	}
+
+	return stories
+}
+
 // **************************************************************************
 
 func GetDBArrowsWithArrowName(sst PoSST,s string) (ArrowPtr,int) {
@@ -4395,8 +4314,6 @@ func GetDBArrowBySTType(sst PoSST,sttype int) []ArrowDirectory {
 }
 
 //******************************************************************
-// Parsing and handling of search strings
-//******************************************************************
 
 func ArrowPtrFromArrowsNames(sst PoSST,arrows []string) ([]ArrowPtr,[]int) {
 
@@ -4439,48 +4356,172 @@ func ArrowPtrFromArrowsNames(sst PoSST,arrows []string) ([]ArrowPtr,[]int) {
 	return arr,stt
 }
 
-//******************************************************************
+// **************************************************************************
 
-func SolveNodePtrs(sst PoSST,nodenames []string,search SearchParameters,arr []ArrowPtr,limit int) []NodePtr {
+func GetAppointedNodesByArrow(sst PoSST,arrow ArrowPtr,cn []string,chap string,size int) map[ArrowPtr][]Appointment {
 
-	chap := search.Chapter
-	cntx := search.Context
-	seq := search.Sequence
+	// return a map of all the nodes in chap,context that are pointed to by the same type of arrow
+        // grouped by arrow
 
-	// This is a UI/UX wrapper for the underlying lookup, avoiding
-	// duplicate results and ordering according to interest
+	reverse_arrow := INVERSE_ARROWS[arrow]
+	arr := GetDBArrowByPtr(sst,reverse_arrow)
+	sttype := STIndexToSTType(arr.STAindex)
 
-	nodeptrs,rest := ParseLiteralNodePtrs(nodenames)
+	_,cn_stripped := IsBracketedSearchList(cn)
+	context := FormatSQLStringArray(cn_stripped)
 
-	var idempotence = make(map[NodePtr]bool)
-	var result []NodePtr
+	var chap_col,chap_stripped string
+	var remove_chap_accents bool
 
-	// If we give a precise reference, then that was obviously intended
-
-	for n := range nodeptrs {
-		idempotence[nodeptrs[n]] = true
-	}
-
-	for r := 0; r < len(rest); r++ {
-
-		// Takes care of general context matching
-
-		nptrs := GetDBNodePtrMatchingNCCS(sst,rest[r],chap,cntx,arr,seq,limit)
-
-		for n := 0; n < len(nptrs); n++ {
-			idempotence[nptrs[n]] = true
+	if chap != "any" && chap != "" {	
+		remove_chap_accents,chap_stripped = IsBracketedSearchTerm(chap)
+		
+		if remove_chap_accents {
+			chap_col = "%"+chap_stripped+"%"
+		} else {
+			chap_col = "%"+chap+"%"
 		}
 	}
 
-	// Currently disordered, sort by additional scoring by running context ..
+	qstr := fmt.Sprintf("SELECT unnest(GetAppointments(%d,%d,%d,'%s',%s,%v))",int(reverse_arrow),sttype,size,chap_col,context,remove_chap_accents)
 
-	for uniqnptr := range idempotence {
-		result = append(result,uniqnptr)
+	row, err := sst.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetAppointedNodesByArrow Failed",err,qstr)
 	}
 
-	sort.Slice(result, ScoreContext)
+	var whole string
 
-	return result
+	var retval = make(map[ArrowPtr][]Appointment)
+	
+	if row != nil {
+		for row.Next() {
+			err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
+
+			next := ParseAppointedNodeCluster(whole)
+			retval[next.Arr] = append(retval[next.Arr],next)
+		}
+	
+		row.Close()
+	}
+
+	return retval
+}
+
+// **************************************************************************
+
+func GetAppointedNodesBySTType(sst PoSST,sttype int,cn []string,chap string,size int) map[ArrowPtr][]Appointment {
+
+	// return a map of all the nodes in chap,context that are pointed to by the same type of arrow
+        // grouped by arrow
+
+	_,cn_stripped := IsBracketedSearchList(cn)
+	context := FormatSQLStringArray(cn_stripped)
+
+	var chap_col,chap_stripped string
+	var remove_chap_accents bool
+
+	if chap != "any" && chap != "" {	
+		remove_chap_accents,chap_stripped = IsBracketedSearchTerm(chap)
+		
+		if remove_chap_accents {
+			chap_col = "%"+chap_stripped+"%"
+		} else {
+			chap_col = "%"+chap+"%"
+		}
+	}
+
+	qstr := fmt.Sprintf("SELECT unnest(GetAppointments(%d,%d,%d,'%s',%s,%v))",-1,sttype,size,chap_col,context,remove_chap_accents)
+
+	row, err := sst.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetAppointedNodesByArrow Failed",err,qstr)
+	}
+
+	var whole string
+
+	var retval = make(map[ArrowPtr][]Appointment)
+	
+	if row != nil {
+		for row.Next() {
+			err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
+
+			next := ParseAppointedNodeCluster(whole)
+			retval[next.Arr] = append(retval[next.Arr],next)
+		}	
+		row.Close()
+	}
+
+	return retval
+}
+
+// **************************************************************************
+
+func ParseAppointedNodeCluster(whole string) Appointment {
+
+    //  (13,-1,maze,{},"(1,3122)","{""(1,3121)"",""(1,3138)""}")
+
+	var next Appointment
+      	var l []string
+
+    	whole = strings.Trim(whole,"(")
+    	whole = strings.Trim(whole,")")
+
+	uni_array := []rune(whole)
+
+	var items []string
+	var item []rune
+	var protected = false
+
+	for u := range uni_array {
+
+		if uni_array[u] == '"' {
+			protected = !protected
+			continue
+		}
+
+		if !protected && uni_array[u] == ',' {
+			items = append(items,string(item))
+			item = nil
+			continue
+		}
+
+		item = append(item,uni_array[u])
+	}
+
+	if item != nil {
+		items = append(items,string(item))
+	}
+
+	for i := range items {
+
+	    s := strings.TrimSpace(items[i])
+
+	    l = append(l,s)
+	    }
+
+	var arrp ArrowPtr
+	fmt.Sscanf(l[0],"%d",&arrp)
+	fmt.Sscanf(l[1],"%d",&next.STType)
+
+	// invert arrow
+	next.Arr = INVERSE_ARROWS[ArrowPtr(arrp)]
+	next.STType = -next.STType
+
+	next.Chap = l[2]
+	next.Ctx = ParseSQLArrayString(l[3])
+
+	fmt.Sscanf(l[4],"(%d,%d)",&next.NTo.Class,&next.NTo.CPtr)
+
+	// Postgres is inconsistent in adding \" to arrays (hack)
+
+	l[5] = strings.Replace(l[5],"(","\"(",-1)
+	l[5] = strings.Replace(l[5],")",")\"",-1)
+	next.NFrom = ParseSQLNPtrArray(l[5])
+
+	return next
 }
 
 //******************************************************************
@@ -4492,64 +4533,6 @@ func ScoreContext(i,j int) bool {
 	return true
 }
 
-//******************************************************************
-
-func ParseLiteralNodePtrs(names []string) ([]NodePtr,[]string) {
-
-	var current []rune
-	var rest []string
-	var nodeptrs []NodePtr
-
-	// Note that, when we get here (a,b) is already splut into (a and b)
-
-	for n := range names {
-
-		line := []rune(names[n])
-		
-		for i := 0; i < len(line); i++ {
-			
-			if line[i] == '(' {
-
-				rs := strings.TrimSpace(string(current))
-
-				if len(rs) > 0 {
-					rest = append(rest,string(current))
-					current = nil
-				}
-				continue
-			}
-			
-			if line[i] == ')' {
-				np := string(current)
-				var nptr NodePtr
-				var a,b int = -1,-1
-				fmt.Sscanf(np,"%d,%d",&a,&b)
-				if a >= 0 && b >= 0 {
-					nptr.Class = a
-					nptr.CPtr = ClassedNodePtr(b)
-					nodeptrs = append(nodeptrs,nptr)
-					current = nil
-				} else {
-					rest = append(rest,"("+np+")")
-					current = nil
-				}
-				continue
-			}
-			current = append(current,line[i])
-		}
-		rs := strings.TrimSpace(string(current))
-
-		if len(rs) > 0 {
-			rest = append(rest,rs)
-		}
-		current = nil
-	}
-
-	return nodeptrs,rest
-}
-
-// **************************************************************************
-// Page format, preserving N4L intent
 // **************************************************************************
 
 func GetDBPageMap(sst PoSST,chap string,cn []string,page int) []PageMap {
@@ -4604,8 +4587,6 @@ func GetDBPageMap(sst PoSST,chap string,cn []string,page int) []PageMap {
 	return pagemap
 }
 
-// **************************************************************************
-// Bulk DB Retrieval
 // **************************************************************************
 
 func GetFwdConeAsNodes(sst PoSST, start NodePtr, sttype,depth int,limit int) []NodePtr {
@@ -4812,11 +4793,82 @@ func GetConstraintConePathsAsLinks(sst PoSST,start []NodePtr,depth int,chapter s
 	return retval,len(retval)
 }
 
+
+
+//
+// postgres_retrieval.go
+//
+
+
+
+
+
+
+
+
 // **************************************************************************
-// Bulk retrieval helper functions
+//
+// cache.go
+//
 // **************************************************************************
 
 var MUTEX sync.Mutex
+
+// **************************************************************************
+//  Node registration and memory management
+// **************************************************************************
+
+func GetNodeTxtFromPtr(frptr NodePtr) string {
+
+	class := frptr.Class
+	index := frptr.CPtr
+
+	var node Node
+
+	switch class {
+	case N1GRAM:
+		node = NODE_DIRECTORY.N1directory[index]
+	case N2GRAM:
+		node = NODE_DIRECTORY.N2directory[index]
+	case N3GRAM:
+		node = NODE_DIRECTORY.N3directory[index]
+	case LT128:
+		node = NODE_DIRECTORY.LT128[index]
+	case LT1024:
+		node = NODE_DIRECTORY.LT1024[index]
+	case GT1024:
+		node = NODE_DIRECTORY.GT1024[index]
+	}
+
+	return node.S
+}
+
+// **************************************************************************
+
+func GetMemoryNodeFromPtr(frptr NodePtr) Node {
+
+	class := frptr.Class
+	index := frptr.CPtr
+
+	var node Node
+
+	switch class {
+	case N1GRAM:
+		node = NODE_DIRECTORY.N1directory[index]
+	case N2GRAM:
+		node = NODE_DIRECTORY.N2directory[index]
+	case N3GRAM:
+		node = NODE_DIRECTORY.N3directory[index]
+	case LT128:
+		node = NODE_DIRECTORY.LT128[index]
+	case LT1024:
+		node = NODE_DIRECTORY.LT1024[index]
+	case GT1024:
+		node = NODE_DIRECTORY.GT1024[index]
+	}
+
+	return node
+}
 
 // **************************************************************************
 
@@ -5009,8 +5061,22 @@ func SynchronizeNPtrs(sst PoSST) {
 
 }
 
+
+
+//
+// cache.go
+//
+
+
+
+
+
+
+
 // **************************************************************************
-// Graphical view, axial geometry
+//
+// viewport_coordinates.go
+//
 // **************************************************************************
 
 const R0 = 0.4    // radii should not overlap
@@ -5381,8 +5447,25 @@ func MakeCoordinateDirectory(XChannels []float64, unique [][]NodePtr,maxzlen,nth
 	return directory
 }
 
+
+//
+// viewport_coordinates.go
+//
+
+
+
+
+
+
+
+
+
+
+
 // **************************************************************************
-// Path integral matrix and coarse graining
+//
+// path_wave_search.go 
+//
 // **************************************************************************
 
 func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,context []string,arrowptrs []ArrowPtr,sttypes []int,mindepth,maxdepth int) [][]Link {
@@ -5847,9 +5930,24 @@ func InNodeSet(list []NodePtr,node NodePtr) bool {
 	return false
 }
 
+
+
+//
+// path_wave_search.go 
+//
+
+
+
+
+
+
+
+
+
+
 // **************************************************************************
 //
-// Part 2: Adjacency matrix representation and graph vector support
+// matrices.go
 //
 // **************************************************************************
 
@@ -6348,833 +6446,18 @@ func NextLinkArrow(sst PoSST,path []Link,arrows []ArrowPtr) string {
 	return rstring
 }
 
+
+//
+// matrices.go
+//
+
+
+
+
 // **************************************************************************
 //
-// Part 3: Model data retrieval, and data marshalling, with JSON etc
+// json_marshalling.go
 //
-// **************************************************************************
-
-func GetSequenceContainers(sst PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []Story {
-
-	// Story search
-
-	var stories []Story
-
-	openings := SelectStoriesByArrow(sst,nodeptrs,arrowptrs,sttypes,limit)
-
-	arrname := ""
-	count := 0
-
-	var already = make(map[NodePtr]bool)
-
-	for nth := range openings {
-
-		var story Story
-
-		node := GetDBNodeByNodePtr(sst,openings[nth])
-
-		story.Chapter = node.Chap
-
-		axis := GetLongestAxialPath(sst,openings[nth],arrowptrs[0],limit)
-
-		directory := AssignStoryCoordinates(axis,nth,len(openings),limit,already)
-
-		for lnk := 0; lnk < len(axis); lnk++ {
-			
-			// Now add the orbit at this node, not including the axis
-
-			var ne NodeEvent
-
-			nd := GetDBNodeByNodePtr(sst,axis[lnk].Dst)
-
-			ne.Text = nd.S
-			ne.L = nd.L
-			ne.Chap = nd.Chap
-			ne.Context = GetContext(axis[lnk].Ctx)
-			ne.NPtr = axis[lnk].Dst
-			ne.XYZ = directory[ne.NPtr]
-			ne.Orbits = GetNodeOrbit(sst,axis[lnk].Dst,arrname,limit)
-			ne.Orbits = SetOrbitCoords(ne.XYZ,ne.Orbits)
-
-			if lnk > limit {
-				break
-			}
-
-			story.Axis = append(story.Axis,ne)
-		}
-
-		if story.Axis != nil {
-			stories = append(stories,story)
-			count ++
-		}
-
-		count++
-
-		if count > limit {
-			return stories
-		}
-		
-	}
-
-	return stories
-}
-
-// **************************************************************************
-
-func GetNodeOrbit(sst PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TOP][]Orbit {
-
-	// radius = 0 is the starting node
-
-	const probe_radius = 3
-
-	// Find the orbiting linked nodes of NPtr, start with properties of node
-
-	sweep,_ := GetEntireConePathsAsLinks(sst,"any",nptr,probe_radius,limit)
-
-	var satellites [ST_TOP][]Orbit
-	var thread_wg sync.WaitGroup
-
-	for stindex := 0; stindex < ST_TOP; stindex++ {
-
-		// Go routines remain a mystery
-		thread_wg.Add(1)
-		
-		go func(idx int) {
-			defer thread_wg.Done()  // threading
-			
-			satellites[idx] = AssembleSatellitesBySTtype(sst,idx,satellites[idx],sweep,exclude_vector,probe_radius,limit)
-			
-		} (stindex)
-	}
-	
-	thread_wg.Wait()
-
-	return satellites
-}
-
-// **************************************************************************
-
-func AssembleSatellitesBySTtype(sst PoSST,stindex int,satellite []Orbit,sweep [][]Link,exclude_vector string,probe_radius int,limit int) []Orbit {
-
-	var already = make(map[string]bool)
-
-	// Sweep different radial paths [angle][depth]
-
-	for angle := 0; angle < len(sweep); angle++ {
-		
-		// len(sweep[angle]) is the length of the probe path at angle
-		
-		if sweep[angle] != nil && len(sweep[angle]) > 1 {
-			
-			const nearest_satellite = 1
-			start := sweep[angle][nearest_satellite]
-			
-			arrow := GetDBArrowByPtr(sst,start.Arr)
-			
-			if arrow.STAindex == stindex {
-
-				txt := GetDBNodeByNodePtr(sst,start.Dst)
-
-				var nt Orbit				
-				nt.Arrow = arrow.Long
-				nt.STindex = arrow.STAindex
-				nt.Dst = start.Dst
-				nt.Wgt = start.Wgt
-				nt.Text = txt.S
-				nt.Ctx = GetContext(start.Ctx)
-				nt.Radius = 1
-				if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
-					continue
-				}
-
-				satellite = IdempAddSatellite(satellite,nt,already)
-				
-				// are there more satellites at this angle?
-				
-				for depth := 2; depth < probe_radius && depth < len(sweep[angle]); depth++ {
-					
-					arprev := STIndexToSTType(arrow.STAindex)
-					next := sweep[angle][depth]
-					arrow = GetDBArrowByPtr(sst,next.Arr)
-					subtxt := GetDBNodeByNodePtr(sst,next.Dst)
-					
-					if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
-						break
-					}
-					
-					nt.Arrow = arrow.Long
-					nt.STindex = arrow.STAindex
-					nt.Dst = next.Dst
-					nt.Wgt = next.Wgt
-					nt.Ctx = GetContext(next.Ctx)
-					nt.Text = subtxt.S
-					nt.Radius = depth
-					
-					arthis := STIndexToSTType(arrow.STAindex)
-					// No backtracking
-					if arthis != -arprev {	
-						satellite = IdempAddSatellite(satellite,nt,already)
-						arprev = arthis
-					}
-				}
-			}
-		}
-	}
-
-	return satellite
-}
-
-// **************************************************************************
-
-func IdempAddSatellite(list []Orbit, item Orbit,already map[string]bool) []Orbit {
-
-	// crude check but effective, since the list is fairly short unless the graph is sick
-
-	key := fmt.Sprintf("%v,%s",item.Dst,item.Arrow)
-
-	if already[key] {
-		return list
-	} else {
-		already[key] = true
-		return append(list,item)
-	}
-}
-
-// **************************************************************************
-
-func GetLongestAxialPath(sst PoSST,nptr NodePtr,arrowptr ArrowPtr,limit int) []Link {
-
-	// Used in story search along extended STtype paths
-
-	var max int = 1
-
-	sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
-
-	paths,dim := GetFwdPathsAsLinks(sst,nptr,sttype,limit,limit)
-
-	for pth := 0; pth < dim; pth++ {
-
-		var depth int
-		paths[pth],depth = TruncatePathsByArrow(paths[pth],arrowptr)
-
-		if len(paths[pth]) == 1 {
-			paths[pth] = nil
-		}
-
-		if depth > max {
-			max = pth
-		}
-	}
-
-	return paths[max]
-}
-
-// **************************************************************************
-
-func TruncatePathsByArrow(path []Link,arrow ArrowPtr) ([]Link,int) {
-
-	for hop := 1; hop < len(path); hop++ {
-
-		if path[hop].Arr != arrow {
-			return path[:hop],hop
-		}
-	}
-
-	return path,len(path)
-}
-
-//******************************************************************
-
-func ContextIntentAnalysis(spectrum map[string]int,clusters []string) ([]string,[]string) {
-
-	var intentional []string
-	const intent_limit = 3  // policy from research
-
-	for f := range spectrum {
-		if spectrum[f] < intent_limit {
-			intentional = append(intentional,f)
-			delete(spectrum,f)
-		}
-	}
-
-	for cl := range clusters {
-		for deletions := range intentional {
-			clusters[cl] = strings.Replace(clusters[cl],intentional[deletions]+", ","",-1)
-			clusters[cl] = strings.Replace(clusters[cl],intentional[deletions],"",-1)
-		}
-	}
-
-	spectrum = make(map[string]int)
-
-	for cl := range clusters {
-		if strings.TrimSpace(clusters[cl]) != "" {
-			pruned := strings.Trim(clusters[cl],", ")
-			spectrum[pruned]++
-		}
-	}
-
-	// Now we have a small set of largely separated major strings.
-	// One more round of diffs for a final separation
-
-	var ambient = make(map[string]int)
-
-	context := Map2List(spectrum)
-
-	for ci := 0; ci < len(context); ci++ {
-		for cj := ci+1; cj < len(context); cj++ {
-
-			s,i := DiffClusters(context[ci],context[cj])
-
-			if len(s) > 0 && len(i) > 0 && len(i) <= len(context[ci])+len(context[ci]) {
-				ambient[strings.TrimSpace(s)]++
-				ambient[strings.TrimSpace(i)]++
-			}
-		}
-	}
-	
-	return intentional,Map2List(ambient)
-}
-
-// *********************************************************************
-// Access stats, LTM progress tracking
-// *********************************************************************
-
-func UpdateLastSawSection(sst PoSST,name string) {
-
-	s := fmt.Sprintf("select LastSawSection('%s')",name)
-	sst.DB.QueryRow(s)
-}
-
-// *********************************************************************
-
-func UpdateLastSawNPtr(sst PoSST,class,cptr int,name string) {
-
-	s := fmt.Sprintf("select LastSawNPtr('(%d,%d)','%s')",class,cptr,name)
-	sst.DB.QueryRow(s)
-}
-
-//******************************************************************
-
-func GetLastSawSection(sst PoSST) []LastSeen {
-
-	qstr := fmt.Sprintf("SELECT section,nptr,EXTRACT(EPOCH FROM first),EXTRACT(EPOCH FROM last),freq,delta as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen ORDER BY section")
-
-	row,err := sst.DB.Query(qstr)
-
-	if err != nil {
-		fmt.Println("GetLastSawSection failed\n",qstr,err)
-		return nil
-	}
-
-	var ret []LastSeen
-
-	if row != nil {
-		for row.Next() {		
-			var ls LastSeen
-			var nptrstr string // last because if empty fails
-			var first,last float64
-			err = row.Scan(&ls.Section,&nptrstr,&first,&last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
-			ls.Last = int64(last)
-			ls.First = int64(first)
-			fmt.Sscanf(nptrstr,"(%d,%d)",&ls.NPtr.Class,&ls.NPtr.CPtr)
-			ret = append(ret,ls)
-		}
-
-		for c := 0; c < len(ret); c++ {
-			ret[c].XYZ = AssignChapterCoordinates(c,len(ret))
-		}
-
-		row.Close()
-	}
-
-	return ret
-}
-
-//******************************************************************
-
-func GetLastSawNPtr(sst PoSST, nptr NodePtr) LastSeen {
-
-	var ls LastSeen
-
-	qstr := fmt.Sprintf("SELECT section,EXTRACT(EPOCH FROM first),EXTRACT(EPOCH FROM last),freq,delta as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen WHERE NPTR='(%d,%d)'::NodePtr",nptr.Class,nptr.CPtr)
-
-	row,err := sst.DB.Query(qstr)
-
-	if err != nil {
-		fmt.Println("GetLastSawNPtr failed\n",qstr,err)
-		return ls
-	}
-
-	if row != nil {
-		for row.Next() {
-			var first,last float64
-			err = row.Scan(&ls.Section,&first,&last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
-			ls.Last = int64(last)
-			ls.First = int64(first)
-		}
-
-		ls.NPtr = nptr
-
-		row.Close()
-	}
-
-	return ls
-}
-
-// *********************************************************************
-
-func GetNewlySeenNPtrs(sst PoSST,search SearchParameters) map[NodePtr]bool {
-
-	var qstr string
-	var nptrs = make (map[NodePtr]bool)
-
-	switch search.Horizon {
-
-	case RECENT:
-		qstr = fmt.Sprintf("SELECT NPtr FROM LastSeen WHERE last > NOW() - INTERVAL '%d hour'",search.Horizon)
-	case NEVER:
-		qstr = "SELECT NPtr FROM LastSeen"
-	default:
-		return nptrs
-	}
-
-	row,err := sst.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("Failed to get LastSeen",err)
-	}
-
-	var whole string
-	var nptr NodePtr
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&whole)
-			fmt.Sscanf(whole,"(%d,%d)",&nptr.Class,&nptr.CPtr)
-			nptrs[nptr] = true
-		}
-		
-		row.Close()
-	}
-
-	return nptrs
-}
-
-// *********************************************************************
-// Dynamic context / sensory input evaluation STM tracking
-// *********************************************************************
-
-type History struct {
-
-	Freq  float64  // just use float becasue we'll want to calculate
-	Last  int64    // calc gradient and purge
-	Delta int64
-	Time  string
-}
-
-// *********************************************************************
-
-var STM_INT_FRAG = make(map[string]History) // for intentional (exceptional) fragments
-var STM_AMB_FRAG = make(map[string]History) // for ambient (repeated) fragments
-var STM_INV_GROUP = make(map[string]History) // look for invariants
-
-const FORGOTTEN = 10800
-const TEXT_SIZE_LIMIT = 30
-
-// *********************************************************************
-
-func UpdateSTMContext(sst PoSST,ambient,key string,now int64,params SearchParameters) string {
-
-	var context []string
-
-	if params.Sequence || params.From != nil || params.To != nil {
-		// path / cone are intended
-		context = append(context,params.Name...)
-		context = append(context,params.From...)
-		context = append(context,params.To...)
-		return AddContext(sst,ambient,key,now,context)
-	} else {
-		// ongoing / adhoc are ambient
-		context = append(context,params.Name...)
-
-		for _,ct := range params.Context {
-			if ct != "" {
-				context = append(context,ct)
-			}
-		}
-
-		if params.Chapter != "" {
-			context = append(context,"Chapter:"+params.Chapter)
-		}
-
-		return AddContext(sst,ambient,key,now,context)
-	}
-
-	return ""
-}
-
-// *********************************************************************
-
-func AddContext(sst PoSST,ambient,key string,now int64,tokens []string) string {
-
-	for t := range tokens {
-
-		token := tokens[t]
-
-		if len(token) == 0 || token == "%%" {
-			continue
-		}
-
-		// Check for direct NPtr click, watch out for long text
-
-		if token[0] == '(' {
-			var nptr NodePtr
-			fmt.Sscanf(token,"(%d,%d)",&nptr.Class,&nptr.CPtr)
-
-			if nptr.Class > 0 {
-				node := GetDBNodeByNodePtr(sst,nptr)
-				if node.L < TEXT_SIZE_LIMIT {
-					token = node.S
-				} else {
-					token = node.S[0:TEXT_SIZE_LIMIT] + "..."
-				}
-			} else {
-				continue
-			}
-		}
-		CommitContextToken(token,now,ambient)
-	}
-
-	var format = make(map[string]int)
-
-	for fr := range STM_AMB_FRAG {
-
-		if STM_AMB_FRAG[fr].Delta > FORGOTTEN {
-			delete(STM_AMB_FRAG,fr)
-			continue
-		} 
-
-		format[fr]++
-	}
-
-	for fr := range STM_INT_FRAG {
-
-		if STM_INT_FRAG[fr].Delta > FORGOTTEN {
-			delete(STM_INT_FRAG,fr)
-			continue
-		} 
-
-		format[fr]++
-	}
-
-	full_context := List2String(Map2List(format))
-
-	return full_context
-}
-
-// *********************************************************************
-
-func CommitContextToken(token string,now int64,key string) {
-	
-	var last,obs History
-	
-	// Check if already known ambient
-	last,already := STM_AMB_FRAG[token]
-	
-	// if not, then check if already seen
-	if !already {
-		last,already = STM_INT_FRAG[token]
-	}
-	
-	if !already {
-		last.Last = now
-	}
-	
-	obs.Freq = last.Freq + 1
-	obs.Last = now
-	obs.Time = key
-	obs.Delta = now - last.Last
-	
-	if obs.Freq > 1 {
-		pr,okey := DoNowt(time.Unix(last.Last,0))
-		fmt.Printf("    - last saw \"%s\" at %s (%s)\n",token,pr,okey)
-	}
-	
-	if already {
-		delete(STM_INT_FRAG,token)
-		STM_AMB_FRAG[token] = obs
-	} else {
-		STM_INT_FRAG[token] = obs
-	}
-}
-
-// *********************************************************************
-
-func ContextInterferometry(now_sst string) {
-
- // deleted
-
-}
-
-// *********************************************************************
-
-func ShowContext(amb,intent,key string) {
-
-	fmt.Println()
-	fmt.Println("  .......................................................")
-	fmt.Printf("    Recurrent now: %s\n",key)
-	fmt.Printf("    Intentional  : %s\n",intent)
-	fmt.Printf("    Ambient      : %s\n",amb)
-	fmt.Println("  .......................................................")
-
-}
-
-// **************************************************************************
-
-func IntersectContextParts(context_clusters []string) (int,[]string,[][]int)  {
-
-	// return a weighted upper triangular matrix of overlaps between frags,
-	// and an idempotent list of fragments
-
-	var idemp = make(map[string]int)
-	var cluster_list []string
-
-	for s := range context_clusters {
-		idemp[context_clusters[s]]++
-	}
-
-	for each_unique_cluster := range idemp {
-		cluster_list = append(cluster_list,each_unique_cluster)
-	}
-
-	sort.Strings(cluster_list)
-
-	var adj [][]int
-
-	for ci := 0; ci < len(cluster_list); ci++ {
-
-		var row []int
-
-		for cj := ci+1; cj < len(cluster_list); cj++ {			
-			s,_ := DiffClusters(cluster_list[ci],cluster_list[cj])
-			row = append(row,len(s))
-		}
-
-		adj = append(adj,row)
-	}
-
-	return len(cluster_list),cluster_list,adj
-}
-
-// **************************************************************************
-// These functions are about text fractionation of the context strings
-// which is similar to text2N4L scanning but applied to lists of phrases
-// on a much smaller scale. Still looking for "mass spectrum" of fragments ..
-// **************************************************************************
-
-func DiffClusters(l1,l2 string) (string,string) {
-
-	// The fragments arrive as comma separated strings that are
-        // already composed or ordered n-grams
-
-	spectrum1 := strings.Split(l1,", ")
-	spectrum2 := strings.Split(l2,", ")
-
-	// Get orderless idempotent directory of all 1-grams
-
-	m1 := List2Map(spectrum1)
-	m2 := List2Map(spectrum2)
-
-	// split the lists into words into directories for common and individual ngrams
-
-	return OverlapMatrix(m1,m2)
-}
-
-// **************************************************************************
-
-func OverlapMatrix(m1,m2 map[string]int) (string,string) {
-
-	var common = make(map[string]int)
-	var separate = make(map[string]int)
-
-	// sieve shared / individual parts
-
-	for ng := range m1 {
-		if m2[ng] > 0 {
-			common[ng]++
-		} else {
-			separate[ng]++
-		}
-	}
-
-	for ng := range m2 {
-		if m1[ng] > 0 {
-			delete(separate,ng)
-			common[ng]++
-		} else {
-			_,exists := common[ng]
-			if  !exists {
-				separate[ng]++
-			}
-		}
-	}
-
-	return List2String(Map2List(common)),List2String(Map2List(separate))
-}
-
-// **************************************************************************
-
-func GetContextTokenFrequencies(fraglist []string) map[string]int {
-
-	var spectrum = make(map[string]int)
-
-	for l := range fraglist {
-		fragments := strings.Split(fraglist[l],", ")
-		partial := List2Map(fragments)
-
-		// Merge all strands
-
-		for f := range partial {
-			spectrum[f] += partial[f]
-		}
-	}
-
-	return spectrum
-}
-
-// **************************************************************************
-// Presentation on command line
-// **************************************************************************
-
-func PrintNodeOrbit(sst PoSST, nptr NodePtr,limit int) {
-
-	node := GetDBNodeByNodePtr(sst,nptr)		
-	fmt.Print("\"")
-	ShowText(node.S,SCREENWIDTH)
-	fmt.Print("\"")
-	fmt.Println("\tin chapter:",node.Chap)
-	fmt.Println()
-
-	satellites := GetNodeOrbit(sst,nptr,"",limit)
-
-	PrintLinkOrbit(satellites,EXPRESS,0)
-	PrintLinkOrbit(satellites,-EXPRESS,0)
-	PrintLinkOrbit(satellites,-CONTAINS,0)
-	PrintLinkOrbit(satellites,LEADSTO,0)
-	PrintLinkOrbit(satellites,-LEADSTO,0)
-	PrintLinkOrbit(satellites,NEAR,0)
-
-	fmt.Println()
-}
-
-// **************************************************************************
-
-func PrintLinkOrbit(satellites [ST_TOP][]Orbit,sttype int,indent_level int) {
-
-	t := STTypeToSTIndex(sttype)
-
-	for n := range satellites[t] {		
-
-		r := satellites[t][n].Radius + indent_level
-
-		if satellites[t][n].Ctx != "" {
-			txt := fmt.Sprintf(" -    (%s) - %s  \t.. in the context of %s\n",satellites[t][n].Arrow,satellites[t][n].Text,satellites[t][n].Ctx)
-			text := Indent(LEFTMARGIN * r) + txt
-			ShowText(text,SCREENWIDTH)
-		} else {
-			txt := fmt.Sprintf(" -    (%s) - %s\n",satellites[t][n].Arrow,satellites[t][n].Text)
-			text := Indent(LEFTMARGIN * r) + txt
-			ShowText(text,SCREENWIDTH)
-		}
-
-	}
-
-}
-
-// **************************************************************************
-
-func PrintLinkPath(sst PoSST, cone [][]Link, p int, prefix string,chapter string,context []string) {
-
-	PrintSomeLinkPath(sst,cone, p,prefix,chapter,context,10000)
-}
-
-// **************************************************************************
-
-func PrintSomeLinkPath(sst PoSST, cone [][]Link, p int, prefix string,chapter string,context []string,limit int) {
-
-	count := 0
-
-	if len(cone[p]) > 1 {
-
-		path_start := GetDBNodeByNodePtr(sst,cone[p][0].Dst)		
-		
-		start_shown := false
-
-		var format int
-		var stpath []string
-		
-		for l := 1; l < len(cone[p]); l++ {
-
-			if !MatchContexts(context,cone[p][l].Ctx) {
-				return
-			}
-
-			NewLine(format)
-
-			count++
-
-			if count > limit {
-				return
-			}
-
-			if !start_shown {
-
-				if len(cone) > 1 {
-					fmt.Printf("%s (%d) %s",prefix,p+1,path_start.S)
-				} else {
-					fmt.Printf("%s %s",prefix,path_start.S)
-				}
-				start_shown = true
-			}
-
-			nextnode := GetDBNodeByNodePtr(sst,cone[p][l].Dst)
-
-			if !SimilarString(nextnode.Chap,chapter) {
-				break
-			}
-
-			arr := GetDBArrowByPtr(sst,cone[p][l].Arr)
-
-			if arr.Short == "then" {
-				fmt.Print("\n   >>> ")
-				format = 0
-			}
-
-			if arr.Short == "prior" {
-				fmt.Print("\n   <<< ")
-			}
-
-			stpath = append(stpath,STTypeName(STIndexToSTType(arr.STAindex)))
-	
-			if l < len(cone[p]) {
-				fmt.Print("  -(",arr.Long,")->  ")
-			}
-			
-			fmt.Print(nextnode.S)
-			format += 2
-		}
-
-		fmt.Print("\n     -  [ Link STTypes:")
-
-		for s := range stpath {
-			fmt.Print(" -(",stpath[s],")-> ")
-		}
-		fmt.Println(". ]\n")
-	}
-}
-
-// **************************************************************************
-// Rendering, Marshalling, Presentation in JSON
 // **************************************************************************
 
 func JSONNodeEvent(sst PoSST, nptr NodePtr,xyz Coords,orbits [ST_TOP][]Orbit) NodeEvent {
@@ -7426,178 +6709,628 @@ func JSONPage(sst PoSST, maplines []PageMap) string {
 	return jstr
 }
 
+
 // **************************************************************************
-// Retrieve cluster Analysis
-// **************************************************************************
 
-func GetAppointedNodesByArrow(sst PoSST,arrow ArrowPtr,cn []string,chap string,size int) map[ArrowPtr][]Appointment {
+func GetNodeOrbit(sst PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TOP][]Orbit {
 
-	// return a map of all the nodes in chap,context that are pointed to by the same type of arrow
-        // grouped by arrow
+	// radius = 0 is the starting node
 
-	reverse_arrow := INVERSE_ARROWS[arrow]
-	arr := GetDBArrowByPtr(sst,reverse_arrow)
-	sttype := STIndexToSTType(arr.STAindex)
+	const probe_radius = 3
 
-	_,cn_stripped := IsBracketedSearchList(cn)
-	context := FormatSQLStringArray(cn_stripped)
+	// Find the orbiting linked nodes of NPtr, start with properties of node
 
-	var chap_col,chap_stripped string
-	var remove_chap_accents bool
+	sweep,_ := GetEntireConePathsAsLinks(sst,"any",nptr,probe_radius,limit)
 
-	if chap != "any" && chap != "" {	
-		remove_chap_accents,chap_stripped = IsBracketedSearchTerm(chap)
+	var satellites [ST_TOP][]Orbit
+	var thread_wg sync.WaitGroup
+
+	for stindex := 0; stindex < ST_TOP; stindex++ {
+
+		// Go routines remain a mystery
+		thread_wg.Add(1)
 		
-		if remove_chap_accents {
-			chap_col = "%"+chap_stripped+"%"
-		} else {
-			chap_col = "%"+chap+"%"
+		go func(idx int) {
+			defer thread_wg.Done()  // threading
+			
+			satellites[idx] = AssembleSatellitesBySTtype(sst,idx,satellites[idx],sweep,exclude_vector,probe_radius,limit)
+			
+		} (stindex)
+	}
+	
+	thread_wg.Wait()
+
+	return satellites
+}
+
+// **************************************************************************
+
+func AssembleSatellitesBySTtype(sst PoSST,stindex int,satellite []Orbit,sweep [][]Link,exclude_vector string,probe_radius int,limit int) []Orbit {
+
+	var already = make(map[string]bool)
+
+	// Sweep different radial paths [angle][depth]
+
+	for angle := 0; angle < len(sweep); angle++ {
+		
+		// len(sweep[angle]) is the length of the probe path at angle
+		
+		if sweep[angle] != nil && len(sweep[angle]) > 1 {
+			
+			const nearest_satellite = 1
+			start := sweep[angle][nearest_satellite]
+			
+			arrow := GetDBArrowByPtr(sst,start.Arr)
+			
+			if arrow.STAindex == stindex {
+
+				txt := GetDBNodeByNodePtr(sst,start.Dst)
+
+				var nt Orbit				
+				nt.Arrow = arrow.Long
+				nt.STindex = arrow.STAindex
+				nt.Dst = start.Dst
+				nt.Wgt = start.Wgt
+				nt.Text = txt.S
+				nt.Ctx = GetContext(start.Ctx)
+				nt.Radius = 1
+				if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
+					continue
+				}
+
+				satellite = IdempAddSatellite(satellite,nt,already)
+				
+				// are there more satellites at this angle?
+				
+				for depth := 2; depth < probe_radius && depth < len(sweep[angle]); depth++ {
+					
+					arprev := STIndexToSTType(arrow.STAindex)
+					next := sweep[angle][depth]
+					arrow = GetDBArrowByPtr(sst,next.Arr)
+					subtxt := GetDBNodeByNodePtr(sst,next.Dst)
+					
+					if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
+						break
+					}
+					
+					nt.Arrow = arrow.Long
+					nt.STindex = arrow.STAindex
+					nt.Dst = next.Dst
+					nt.Wgt = next.Wgt
+					nt.Ctx = GetContext(next.Ctx)
+					nt.Text = subtxt.S
+					nt.Radius = depth
+					
+					arthis := STIndexToSTType(arrow.STAindex)
+					// No backtracking
+					if arthis != -arprev {	
+						satellite = IdempAddSatellite(satellite,nt,already)
+						arprev = arthis
+					}
+				}
+			}
 		}
 	}
 
-	qstr := fmt.Sprintf("SELECT unnest(GetAppointments(%d,%d,%d,'%s',%s,%v))",int(reverse_arrow),sttype,size,chap_col,context,remove_chap_accents)
+	return satellite
+}
 
-	row, err := sst.DB.Query(qstr)
+// **************************************************************************
+
+func IdempAddSatellite(list []Orbit, item Orbit,already map[string]bool) []Orbit {
+
+	// crude check but effective, since the list is fairly short unless the graph is sick
+
+	key := fmt.Sprintf("%v,%s",item.Dst,item.Arrow)
+
+	if already[key] {
+		return list
+	} else {
+		already[key] = true
+		return append(list,item)
+	}
+}
+
+// **************************************************************************
+
+func GetLongestAxialPath(sst PoSST,nptr NodePtr,arrowptr ArrowPtr,limit int) []Link {
+
+	// Used in story search along extended STtype paths
+
+	var max int = 1
+
+	sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
+
+	paths,dim := GetFwdPathsAsLinks(sst,nptr,sttype,limit,limit)
+
+	for pth := 0; pth < dim; pth++ {
+
+		var depth int
+		paths[pth],depth = TruncatePathsByArrow(paths[pth],arrowptr)
+
+		if len(paths[pth]) == 1 {
+			paths[pth] = nil
+		}
+
+		if depth > max {
+			max = pth
+		}
+	}
+
+	return paths[max]
+}
+
+// **************************************************************************
+
+func TruncatePathsByArrow(path []Link,arrow ArrowPtr) ([]Link,int) {
+
+	for hop := 1; hop < len(path); hop++ {
+
+		if path[hop].Arr != arrow {
+			return path[:hop],hop
+		}
+	}
+
+	return path,len(path)
+}
+
+
+//******************************************************************
+
+func ContextIntentAnalysis(spectrum map[string]int,clusters []string) ([]string,[]string) {
+
+        // Used in table of contents
+
+	var intentional []string
+	const intent_limit = 3  // policy from research
+
+	for f := range spectrum {
+		if spectrum[f] < intent_limit {
+			intentional = append(intentional,f)
+			delete(spectrum,f)
+		}
+	}
+
+	for cl := range clusters {
+		for deletions := range intentional {
+			clusters[cl] = strings.Replace(clusters[cl],intentional[deletions]+", ","",-1)
+			clusters[cl] = strings.Replace(clusters[cl],intentional[deletions],"",-1)
+		}
+	}
+
+	spectrum = make(map[string]int)
+
+	for cl := range clusters {
+		if strings.TrimSpace(clusters[cl]) != "" {
+			pruned := strings.Trim(clusters[cl],", ")
+			spectrum[pruned]++
+		}
+	}
+
+	// Now we have a small set of largely separated major strings.
+	// One more round of diffs for a final separation
+
+	var ambient = make(map[string]int)
+
+	context := Map2List(spectrum)
+
+	for ci := 0; ci < len(context); ci++ {
+		for cj := ci+1; cj < len(context); cj++ {
+
+			s,i := DiffClusters(context[ci],context[cj])
+
+			if len(s) > 0 && len(i) > 0 && len(i) <= len(context[ci])+len(context[ci]) {
+				ambient[strings.TrimSpace(s)]++
+				ambient[strings.TrimSpace(i)]++
+			}
+		}
+	}
 	
+	return intentional,Map2List(ambient)
+}
+
+
+
+
+
+//
+// json_marshalling.go
+//
+
+
+
+
+// *********************************************************************
+//
+// lastseen.go
+//
+// *********************************************************************
+
+func UpdateLastSawSection(sst PoSST,name string) {
+
+	s := fmt.Sprintf("select LastSawSection('%s')",name)
+	sst.DB.QueryRow(s)
+}
+
+// *********************************************************************
+
+func UpdateLastSawNPtr(sst PoSST,class,cptr int,name string) {
+
+	s := fmt.Sprintf("select LastSawNPtr('(%d,%d)','%s')",class,cptr,name)
+	sst.DB.QueryRow(s)
+}
+
+//******************************************************************
+
+func GetLastSawSection(sst PoSST) []LastSeen {
+
+	qstr := fmt.Sprintf("SELECT section,nptr,EXTRACT(EPOCH FROM first),EXTRACT(EPOCH FROM last),freq,delta as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen ORDER BY section")
+
+	row,err := sst.DB.Query(qstr)
+
 	if err != nil {
-		fmt.Println("QUERY GetAppointedNodesByArrow Failed",err,qstr)
+		fmt.Println("GetLastSawSection failed\n",qstr,err)
+		return nil
 	}
 
-	var whole string
+	var ret []LastSeen
 
-	var retval = make(map[ArrowPtr][]Appointment)
-	
 	if row != nil {
-		for row.Next() {
-			err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
-
-			next := ParseAppointedNodeCluster(whole)
-			retval[next.Arr] = append(retval[next.Arr],next)
+		for row.Next() {		
+			var ls LastSeen
+			var nptrstr string // last because if empty fails
+			var first,last float64
+			err = row.Scan(&ls.Section,&nptrstr,&first,&last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
+			ls.Last = int64(last)
+			ls.First = int64(first)
+			fmt.Sscanf(nptrstr,"(%d,%d)",&ls.NPtr.Class,&ls.NPtr.CPtr)
+			ret = append(ret,ls)
 		}
-	
+
+		for c := 0; c < len(ret); c++ {
+			ret[c].XYZ = AssignChapterCoordinates(c,len(ret))
+		}
+
 		row.Close()
 	}
 
-	return retval
+	return ret
 }
 
-// **************************************************************************
+//******************************************************************
 
-func GetAppointedNodesBySTType(sst PoSST,sttype int,cn []string,chap string,size int) map[ArrowPtr][]Appointment {
+func GetLastSawNPtr(sst PoSST, nptr NodePtr) LastSeen {
 
-	// return a map of all the nodes in chap,context that are pointed to by the same type of arrow
-        // grouped by arrow
+	var ls LastSeen
 
-	_,cn_stripped := IsBracketedSearchList(cn)
-	context := FormatSQLStringArray(cn_stripped)
+	qstr := fmt.Sprintf("SELECT section,EXTRACT(EPOCH FROM first),EXTRACT(EPOCH FROM last),freq,delta as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen WHERE NPTR='(%d,%d)'::NodePtr",nptr.Class,nptr.CPtr)
 
-	var chap_col,chap_stripped string
-	var remove_chap_accents bool
+	row,err := sst.DB.Query(qstr)
 
-	if chap != "any" && chap != "" {	
-		remove_chap_accents,chap_stripped = IsBracketedSearchTerm(chap)
-		
-		if remove_chap_accents {
-			chap_col = "%"+chap_stripped+"%"
-		} else {
-			chap_col = "%"+chap+"%"
-		}
-	}
-
-	qstr := fmt.Sprintf("SELECT unnest(GetAppointments(%d,%d,%d,'%s',%s,%v))",-1,sttype,size,chap_col,context,remove_chap_accents)
-
-	row, err := sst.DB.Query(qstr)
-	
 	if err != nil {
-		fmt.Println("QUERY GetAppointedNodesByArrow Failed",err,qstr)
+		fmt.Println("GetLastSawNPtr failed\n",qstr,err)
+		return ls
 	}
 
-	var whole string
-
-	var retval = make(map[ArrowPtr][]Appointment)
-	
 	if row != nil {
 		for row.Next() {
-			err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
+			var first,last float64
+			err = row.Scan(&ls.Section,&first,&last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
+			ls.Last = int64(last)
+			ls.First = int64(first)
+		}
 
-			next := ParseAppointedNodeCluster(whole)
-			retval[next.Arr] = append(retval[next.Arr],next)
-		}	
+		ls.NPtr = nptr
+
 		row.Close()
 	}
 
-	return retval
+	return ls
+}
+
+// *********************************************************************
+
+func GetNewlySeenNPtrs(sst PoSST,search SearchParameters) map[NodePtr]bool {
+
+	var qstr string
+	var nptrs = make (map[NodePtr]bool)
+
+	switch search.Horizon {
+
+	case RECENT:
+		qstr = fmt.Sprintf("SELECT NPtr FROM LastSeen WHERE last > NOW() - INTERVAL '%d hour'",search.Horizon)
+	case NEVER:
+		qstr = "SELECT NPtr FROM LastSeen"
+	default:
+		return nptrs
+	}
+
+	row,err := sst.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Failed to get LastSeen",err)
+	}
+
+	var whole string
+	var nptr NodePtr
+
+	if row != nil {
+		for row.Next() {
+			err = row.Scan(&whole)
+			fmt.Sscanf(whole,"(%d,%d)",&nptr.Class,&nptr.CPtr)
+			nptrs[nptr] = true
+		}
+		
+		row.Close()
+	}
+
+	return nptrs
+}
+
+
+
+//
+// lastseen.go
+//
+
+
+
+
+
+// *********************************************************************
+//
+// text_intentionality.go
+//
+// *********************************************************************
+
+func UpdateSTMContext(sst PoSST,ambient,key string,now int64,params SearchParameters) string {
+
+	var context []string
+
+	if params.Sequence || params.From != nil || params.To != nil {
+		// path / cone are intended
+		context = append(context,params.Name...)
+		context = append(context,params.From...)
+		context = append(context,params.To...)
+		return AddContext(sst,ambient,key,now,context)
+	} else {
+		// ongoing / adhoc are ambient
+		context = append(context,params.Name...)
+
+		for _,ct := range params.Context {
+			if ct != "" {
+				context = append(context,ct)
+			}
+		}
+
+		if params.Chapter != "" {
+			context = append(context,"Chapter:"+params.Chapter)
+		}
+
+		return AddContext(sst,ambient,key,now,context)
+	}
+
+	return ""
+}
+
+// *********************************************************************
+
+func AddContext(sst PoSST,ambient,key string,now int64,tokens []string) string {
+
+	for t := range tokens {
+
+		token := tokens[t]
+
+		if len(token) == 0 || token == "%%" {
+			continue
+		}
+
+		// Check for direct NPtr click, watch out for long text
+
+		if token[0] == '(' {
+			var nptr NodePtr
+			fmt.Sscanf(token,"(%d,%d)",&nptr.Class,&nptr.CPtr)
+
+			if nptr.Class > 0 {
+				node := GetDBNodeByNodePtr(sst,nptr)
+				if node.L < TEXT_SIZE_LIMIT {
+					token = node.S
+				} else {
+					token = node.S[0:TEXT_SIZE_LIMIT] + "..."
+				}
+			} else {
+				continue
+			}
+		}
+		CommitContextToken(token,now,ambient)
+	}
+
+	var format = make(map[string]int)
+
+	for fr := range STM_AMB_FRAG {
+
+		if STM_AMB_FRAG[fr].Delta > FORGOTTEN {
+			delete(STM_AMB_FRAG,fr)
+			continue
+		} 
+
+		format[fr]++
+	}
+
+	for fr := range STM_INT_FRAG {
+
+		if STM_INT_FRAG[fr].Delta > FORGOTTEN {
+			delete(STM_INT_FRAG,fr)
+			continue
+		} 
+
+		format[fr]++
+	}
+
+	full_context := List2String(Map2List(format))
+
+	return full_context
+}
+
+// *********************************************************************
+
+func CommitContextToken(token string,now int64,key string) {
+	
+	var last,obs History
+	
+	// Check if already known ambient
+	last,already := STM_AMB_FRAG[token]
+	
+	// if not, then check if already seen
+	if !already {
+		last,already = STM_INT_FRAG[token]
+	}
+	
+	if !already {
+		last.Last = now
+	}
+	
+	obs.Freq = last.Freq + 1
+	obs.Last = now
+	obs.Time = key
+	obs.Delta = now - last.Last
+	
+	if obs.Freq > 1 {
+		pr,okey := DoNowt(time.Unix(last.Last,0))
+		fmt.Printf("    - last saw \"%s\" at %s (%s)\n",token,pr,okey)
+	}
+	
+	if already {
+		delete(STM_INT_FRAG,token)
+		STM_AMB_FRAG[token] = obs
+	} else {
+		STM_INT_FRAG[token] = obs
+	}
 }
 
 // **************************************************************************
 
-func ParseAppointedNodeCluster(whole string) Appointment {
+func IntersectContextParts(context_clusters []string) (int,[]string,[][]int)  {
 
-    //  (13,-1,maze,{},"(1,3122)","{""(1,3121)"",""(1,3138)""}")
+	// return a weighted upper triangular matrix of overlaps between frags,
+	// and an idempotent list of fragments
 
-	var next Appointment
-      	var l []string
+	var idemp = make(map[string]int)
+	var cluster_list []string
 
-    	whole = strings.Trim(whole,"(")
-    	whole = strings.Trim(whole,")")
-
-	uni_array := []rune(whole)
-
-	var items []string
-	var item []rune
-	var protected = false
-
-	for u := range uni_array {
-
-		if uni_array[u] == '"' {
-			protected = !protected
-			continue
-		}
-
-		if !protected && uni_array[u] == ',' {
-			items = append(items,string(item))
-			item = nil
-			continue
-		}
-
-		item = append(item,uni_array[u])
+	for s := range context_clusters {
+		idemp[context_clusters[s]]++
 	}
 
-	if item != nil {
-		items = append(items,string(item))
+	for each_unique_cluster := range idemp {
+		cluster_list = append(cluster_list,each_unique_cluster)
 	}
 
-	for i := range items {
+	sort.Strings(cluster_list)
 
-	    s := strings.TrimSpace(items[i])
+	var adj [][]int
 
-	    l = append(l,s)
-	    }
+	for ci := 0; ci < len(cluster_list); ci++ {
 
-	var arrp ArrowPtr
-	fmt.Sscanf(l[0],"%d",&arrp)
-	fmt.Sscanf(l[1],"%d",&next.STType)
+		var row []int
 
-	// invert arrow
-	next.Arr = INVERSE_ARROWS[ArrowPtr(arrp)]
-	next.STType = -next.STType
+		for cj := ci+1; cj < len(cluster_list); cj++ {			
+			s,_ := DiffClusters(cluster_list[ci],cluster_list[cj])
+			row = append(row,len(s))
+		}
 
-	next.Chap = l[2]
-	next.Ctx = ParseSQLArrayString(l[3])
+		adj = append(adj,row)
+	}
 
-	fmt.Sscanf(l[4],"(%d,%d)",&next.NTo.Class,&next.NTo.CPtr)
-
-	// Postgres is inconsistent in adding \" to arrays (hack)
-
-	l[5] = strings.Replace(l[5],"(","\"(",-1)
-	l[5] = strings.Replace(l[5],")",")\"",-1)
-	next.NFrom = ParseSQLNPtrArray(l[5])
-
-	return next
+	return len(cluster_list),cluster_list,adj
 }
 
 // **************************************************************************
-// CENTRALITY
+// These functions are about text fractionation of the context strings
+// which is similar to text2N4L scanning but applied to lists of phrases
+// on a much smaller scale. Still looking for "mass spectrum" of fragments ..
+// **************************************************************************
+
+func DiffClusters(l1,l2 string) (string,string) {
+
+	// The fragments arrive as comma separated strings that are
+        // already composed or ordered n-grams
+
+	spectrum1 := strings.Split(l1,", ")
+	spectrum2 := strings.Split(l2,", ")
+
+	// Get orderless idempotent directory of all 1-grams
+
+	m1 := List2Map(spectrum1)
+	m2 := List2Map(spectrum2)
+
+	// split the lists into words into directories for common and individual ngrams
+
+	return OverlapMatrix(m1,m2)
+}
+
+// **************************************************************************
+
+func OverlapMatrix(m1,m2 map[string]int) (string,string) {
+
+	var common = make(map[string]int)
+	var separate = make(map[string]int)
+
+	// sieve shared / individual parts
+
+	for ng := range m1 {
+		if m2[ng] > 0 {
+			common[ng]++
+		} else {
+			separate[ng]++
+		}
+	}
+
+	for ng := range m2 {
+		if m1[ng] > 0 {
+			delete(separate,ng)
+			common[ng]++
+		} else {
+			_,exists := common[ng]
+			if  !exists {
+				separate[ng]++
+			}
+		}
+	}
+
+	return List2String(Map2List(common)),List2String(Map2List(separate))
+}
+
+// **************************************************************************
+
+func GetContextTokenFrequencies(fraglist []string) map[string]int {
+
+	var spectrum = make(map[string]int)
+
+	for l := range fraglist {
+		fragments := strings.Split(fraglist[l],", ")
+		partial := List2Map(fragments)
+
+		// Merge all strands
+
+		for f := range partial {
+			spectrum[f] += partial[f]
+		}
+	}
+
+	return spectrum
+}
+
+//
+// text_intentionality.go
+//
+
+
+
+// **************************************************************************
+//
+// centrality_clustering.go
+//
 // **************************************************************************
 
 func TallyPath(sst PoSST,path []Link,between map[string]int) map[string]int {
@@ -7720,9 +7453,19 @@ func SuperNodes(sst PoSST,solutions [][]Link, maxdepth int) []string {
 	return retval
 }
 
+
+//
+// centrality_clustering.go
+//
+
+
+
+
+
+
 // ******************************************************************
 //
-// Part 4 : SEARCH LANGUAGE
+// service_search_cmd.go
 //
 // ******************************************************************
 
@@ -8534,15 +8277,163 @@ func DeQ(s string) string {
 	return strings.Trim(s,"\"")
 }
 
+
+
+//
+// service_search_cmd.go
+//
+
+
+
+
+
+
+
+
+
+
+
 // **************************************************************************
 //
-// Part 5: Context processing
+// eval_context.go
 //
 // **************************************************************************
 
+func GetContext(contextptr ContextPtr) string {
+
+	exists := int(contextptr) < len(CONTEXT_DIRECTORY)
+
+	if exists {
+		return CONTEXT_DIRECTORY[contextptr].Context
+	}
+
+	return "unknown context"
+}
+
 // ****************************************************************************
-// Semantic 2D time
-// ****************************************************************************
+
+func RegisterContext(parse_state map[string]bool,context []string) ContextPtr {
+
+	ctxstr := NormalizeContextString(parse_state,context)
+
+	if len(ctxstr) == 0 {
+		return 0
+	}
+
+	ctxptr,exists := CONTEXT_DIR[ctxstr] 
+
+	if !exists {
+		var cd ContextDirectory
+		cd.Context = ctxstr
+		cd.Ptr = CONTEXT_TOP
+		CONTEXT_DIRECTORY = append(CONTEXT_DIRECTORY,cd)
+		CONTEXT_DIR[ctxstr] = CONTEXT_TOP
+		ctxptr = CONTEXT_TOP
+		CONTEXT_TOP++
+	}
+
+	return ctxptr
+}
+
+// **************************************************************************
+
+func TryContext(sst PoSST,context []string) ContextPtr {
+
+	ctxstr := CompileContextString(context)
+	str,ctxptr := GetDBContextByName(sst,ctxstr)
+
+	if ctxptr == -1 || str != ctxstr {
+		ctxptr = UploadContextToDB(sst,ctxstr,-1)
+		RegisterContext(nil,context)
+	}
+
+	return ctxptr
+}
+
+// **************************************************************************
+
+func CompileContextString(context []string) string {
+
+	// Ensure idempotence
+
+	var merge = make(map[string]int)
+
+	for c := range context {
+		merge[context[c]]++
+	}
+
+	return List2String(Map2List(merge))	
+}
+
+// **************************************************************************
+
+func NormalizeContextString(contextmap map[string]bool,ctx []string) string {
+
+	// Mitigate combinatoric explosion
+
+	var merge = make(map[string]bool)
+	var clist []string
+
+	// Merge sources into single map
+	
+	if contextmap != nil {
+		for c := range contextmap {
+			merge[c] = true
+		}
+	}
+
+	for c := range ctx {
+		merge[ctx[c]] = true
+	}
+
+	for c := range merge {
+		s := strings.Split(c,",")
+		for i := range s {
+			s[i] = strings.TrimSpace(s[i])
+			if s[i] != "_sequence_" {
+				clist = append(clist,s[i])
+			}
+		}
+	}
+
+	return List2String(clist)
+}
+
+// **************************************************************************
+
+func GetNodeContext(sst PoSST,node Node) []string {
+
+	str := GetNodeContextString(sst,node)
+
+	if str != "" {
+		return strings.Split(str,",")
+	}
+
+	return nil
+}
+
+// **************************************************************************
+
+func GetNodeContextString(sst PoSST,node Node) string {
+
+	// This reads the ghost link planted for the purpose of attaching
+	// a context to floating nodes
+
+	empty := GetDBArrowByName(sst,"empty")
+
+	for _,lnk := range node.I[ST_ZERO+LEADSTO] {
+
+		if lnk.Arr == empty {
+			return GetContext(lnk.Ctx)
+		}
+	}
+
+	return ""
+}
+
+// **************************************************************************
+// Dynamic context
+// **************************************************************************
 
 var GR_DAY_TEXT = []string{
         "Monday",
@@ -8595,7 +8486,7 @@ const SHIFTS_PER_DAY = 4
 const SHIFTS_PER_WEEK = (4*7)
 
 // ****************************************************************************
-// Semantic spacetime timeslots
+// Semantic spacetime timeslots, CFEngine style
 // ****************************************************************************
 
 func DoNowt(then time.Time) (string,string) {
@@ -8774,11 +8665,23 @@ func GetTimeFromSemantics(speclist []string,now time.Time) time.Time {
 	return newnow
 }
 
+
+
+//
+// END context.go
+//
+
+
+
+
+
 //*****************************************************************
-// Read text file
+//
+// text_fractionation.go
+//
 //*****************************************************************
 
-func ReadFile(filename string) string {
+func ReadTextFile(filename string) string {
 
 	// Read a string and strip out characters that can't be used in kenames
 	// to yield a "pure" text for n-gram classification, with fewer special chars
@@ -8869,7 +8772,7 @@ func CleanText(s string) string {
 
 func FractionateTextFile(name string) ([][][]string,int) {
 
-	file := ReadFile(name)
+	file := ReadTextFile(name)
 	proto_text := CleanText(file)
 	pbsf := SplitIntoParaSentences(proto_text)
 
@@ -8973,6 +8876,8 @@ func SplitSentences(para string) []string {
 	
 	return sentences
 }
+
+
 
 //**************************************************************
 
@@ -9635,53 +9540,6 @@ func ExtractIntentionalTokens(L int,selected []TextRank,Nmin,Nmax int) ([][]stri
 }
 
 //**************************************************************
-// Heuristics for Text Processing
-//**************************************************************
-
-func ExcludedByBindings(firstword,whole,lastword string) bool {
-
-	// An empirical standalone fragment can't start/end with these words, because they
-	// Promise to bind to something else...
-	// Rather than looking for semantics, look at spacetime promises only - words that bind strongly
-	// to a prior or posterior word.
-
-	// Promise bindings in English only. This domain knowledge saves us a lot of training analysis
-	// So how to replace this with something generic?
-	
-	var forbidden_ending = []string{"but", "and", "the", "or", "a", "an", "its", "it's", "their", "your", "my", "our", "of", "as", "are", "is", "was", "has", "be", "been", "with", "using", "that", "who", "to" ,"no", "not", "because", "at", "but", "yes", "no", "yeah", "yay", "in", "which", "what", "as", "he", "him", "she", "her","they", "all", "I", "my", "they", "from", "for", "then", "any", "however", "its", "it's", "get", "don't", "this", "one", "shall"}
-
-	var forbidden_starter = []string{"its", "it's", "and", "or", "of", "the", "it", "because", "in", "that", "these", "those", "is", "are", "was", "were", "but", "yes", "no", "yeah", "yay", "also", "me", "them", "him", "his", "her", "but", "been", "however", "get", "do", "don't", "soon", "own", "all", "their", "suppose", "for", "said", "shall", "will"}
-
-	if (len(firstword) <= 2) || len(lastword) <= 2 {
-		return true
-	}
-
-        // Adverbs don't end
-
-        if strings.HasSuffix(lastword,"ly") {
-                return true
-        }
-
-        if strings.Contains(whole,"--") {
-	        return true
-	}
-
-	for s := range forbidden_ending {
-		if strings.ToLower(lastword) == forbidden_ending[s] {
-			return true
-		}
-	}
-	
-	for s := range forbidden_starter {
-		if strings.ToLower(firstword) == forbidden_starter[s] {
-			return true
-		}
-	}
-
-	return false 
-}
-
-//**************************************************************
 
 func RunningIntentionality(t int, frag string) float64 {
 
@@ -9757,9 +9615,79 @@ func StaticIntentionality(L int, s string, freq float64) float64 {
 	return meaning
 }
 
+
+
+//
+// text_fractionation.go
+//
+
+
+
+
+
+//**************************************************************
+//
+// text_heuristics.go
+//
+//**************************************************************
+
+func ExcludedByBindings(firstword,whole,lastword string) bool {
+
+        // This is the extent of grammatical understanding we need to parse the text
+	// In principle, it is determined by training, but we can summarize it like this
+
+	// An empirical standalone fragment can't start/end with these words, because they
+	// Promise to bind to something else...
+	// Rather than looking for semantics, look at spacetime promises only - words that bind strongly
+	// to a prior or posterior word.
+
+	// Promise bindings in English only. This domain knowledge saves us a lot of training analysis
+	// So how to replace this with something generic?
+	
+	var forbidden_ending = []string{"but", "and", "the", "or", "a", "an", "its", "it's", "their", "your", "my", "our", "of", "as", "are", "is", "was", "has", "be", "been", "with", "using", "that", "who", "to" ,"no", "not", "because", "at", "but", "yes", "no", "yeah", "yay", "in", "which", "what", "as", "he", "him", "she", "her","they", "all", "I", "my", "they", "from", "for", "then", "any", "however", "its", "it's", "get", "don't", "this", "one", "shall"}
+
+	var forbidden_starter = []string{"its", "it's", "and", "or", "of", "the", "it", "because", "in", "that", "these", "those", "is", "are", "was", "were", "but", "yes", "no", "yeah", "yay", "also", "me", "them", "him", "his", "her", "but", "been", "however", "get", "do", "don't", "soon", "own", "all", "their", "suppose", "for", "said", "shall", "will"}
+
+	if (len(firstword) <= 2) || len(lastword) <= 2 {
+		return true
+	}
+
+        // Adverbs don't end
+
+        if strings.HasSuffix(lastword,"ly") {
+                return true
+        }
+
+        if strings.Contains(whole,"--") {
+	        return true
+	}
+
+	for s := range forbidden_ending {
+		if strings.ToLower(lastword) == forbidden_ending[s] {
+			return true
+		}
+	}
+	
+	for s := range forbidden_starter {
+		if strings.ToLower(firstword) == forbidden_starter[s] {
+			return true
+		}
+	}
+
+	return false 
+}
+
+
+
+//
+// text_heuristics.go
+//
+
+
+
 // **************************************************************************
 //
-// Toolkits: generic helper functions
+// tools.go
 //
 // **************************************************************************
 
@@ -9874,6 +9802,62 @@ func Str2Array(s string) ([]string,int) {
 	}
 
 	return arr,non_zero
+}
+
+//******************************************************************
+
+func ParseLiteralNodePtrs(names []string) ([]NodePtr,[]string) {
+
+	var current []rune
+	var rest []string
+	var nodeptrs []NodePtr
+
+	// Note that, when we get here (a,b) is already splut into (a and b)
+
+	for n := range names {
+
+		line := []rune(names[n])
+		
+		for i := 0; i < len(line); i++ {
+			
+			if line[i] == '(' {
+
+				rs := strings.TrimSpace(string(current))
+
+				if len(rs) > 0 {
+					rest = append(rest,string(current))
+					current = nil
+				}
+				continue
+			}
+			
+			if line[i] == ')' {
+				np := string(current)
+				var nptr NodePtr
+				var a,b int = -1,-1
+				fmt.Sscanf(np,"%d,%d",&a,&b)
+				if a >= 0 && b >= 0 {
+					nptr.Class = a
+					nptr.CPtr = ClassedNodePtr(b)
+					nodeptrs = append(nodeptrs,nptr)
+					current = nil
+				} else {
+					rest = append(rest,"("+np+")")
+					current = nil
+				}
+				continue
+			}
+			current = append(current,line[i])
+		}
+		rs := strings.TrimSpace(string(current))
+
+		if len(rs) > 0 {
+			rest = append(rest,rs)
+		}
+		current = nil
+	}
+
+	return nodeptrs,rest
 }
 
 // **************************************************************************
@@ -10238,412 +10222,7 @@ func DiracNotation(s string) (bool,string,string,string) {
 	return true,begin,end,context
 }
 
-// **************************************************************************
-// Semantic Spacetime names and channels
-// **************************************************************************
 
-func STTypeDBChannel(sttype int) string {
-
-	// This expects the range for sttype to be unshifted 0,+/-
-
-	var link_channel string
-	switch sttype {
-
-	case NEAR:
-		link_channel = I_NEAR
-	case LEADSTO:
-		link_channel = I_PLEAD
-	case CONTAINS:
-		link_channel = I_PCONT
-	case EXPRESS:
-		link_channel = I_PEXPR
-	case -LEADSTO:
-		link_channel = I_MLEAD
-	case -CONTAINS:
-		link_channel = I_MCONT
-	case -EXPRESS:
-		link_channel = I_MEXPR
-	default:
-		fmt.Println(ERR_ILLEGAL_LINK_CLASS,sttype)
-		os.Exit(-1)
-	}
-
-	return link_channel
-}
-
-// **************************************************************************
-
-func STIndexToSTType(stindex int) int {
-
-	// Convert shifted array index to symmetrical type
-
-	return stindex - ST_ZERO
-}
-
-// **************************************************************************
-
-func STTypeToSTIndex(stindex int) int {
-
-	// Convert shifted array index to symmetrical type
-
-	return stindex + ST_ZERO
-}
-
-// **************************************************************************
-
-func STTypeName(sttype int) string {
-
-	switch sttype {
-	case -EXPRESS:
-		return "-is property of"
-	case -CONTAINS:
-		return "-contained by"
-	case -LEADSTO:
-		return "-comes from"
-	case NEAR:
-		return "=Similarity"
-	case LEADSTO:
-		return "+leads to"
-	case CONTAINS:
-		return "+contains"
-	case EXPRESS:
-		return "+property"
-	}
-
-	return "Unknown ST type"
-}
-
-// **************************************************************************
-// String matching - keep this simple for now
-// **************************************************************************
-
-func SimilarString(full,like string) bool {
-
-	// Placeholder
-	// Need to handle pluralisation patterns etc... multi-language
-
-	if full == like {
-		return true
-	}
-
-	if full == "" || like == "" || full == "any" || like == "any" {  // same as any
-		return true
-	}
-
-	if strings.Contains(full,like) {
-		return true
-	}
-
-	return false
-}
-
-//****************************************************************************
-
-func InList(s string, list []string) (int,bool) {
-
-	for i,v := range list {
-		if s == v {
-			return i,true
-		}
-	}
-
-	return -1,false
-}
-
-//****************************************************************************
-
-func MatchArrows(arrows []ArrowPtr,arr ArrowPtr) bool {
-
-	for a := range arrows {
-		if arrows[a] == arr {
-			return true
-		}
-	}
-
-	return false
-}
-
-//****************************************************************************
-
-func MatchContexts(context1 []string,context2ptr ContextPtr) bool {
-
-	if context1 == nil || context2ptr == 0 {
-		return true
-	}
-
-	context2 := strings.Split(GetContext(context2ptr),",")
-
-	for c := range context1 {
-
-		if MatchesInContext(context1[c],context2) {
-			return true
-		}
-	}
-
-	return false 
-}
-
-//****************************************************************************
-
-func MatchesInContext(s string,context []string) bool {
-	
-	for c := range context {
-		if SimilarString(s,context[c]) {
-			return true
-		}
-	}
-	return false 
-}
-
-// **************************************************************************
-// Misc tools
-// **************************************************************************
-
-func SearchTermLen(names []string) int {
-
-	var maxlen int
-
-	for _,s := range names {
-		if !IsNPtrStr(s) && len(s) > maxlen {
-			maxlen = len(s)
-		}
-	}
-
-	return maxlen
-}
-
-// **************************************************************************
-
-func IsNPtrStr(s string) bool {
-
-	s = strings.TrimSpace(s)
-
-	if s[0] == '(' && s[len(s)-1] == ')' {
-		var a,b int = -1,-1
-		fmt.Sscanf(s,"(%d,%d)",&a,&b)
-		if a >= 0 && b >= 0 {
-			return true
-		}
-	}
-	return false
-}
-
-// **************************************************************************
-
-func RunErr(message string) {
-
-	const red = "\033[31;1;1m"
-	const endred = "\033[0m"
-
-	fmt.Println("SSTorytime",message,endred)
-
-}
-
-// **************************************************************************
-
-func EscapeString(s string) string {
-
-	run := []rune(s)
-	var res []rune
-
-	for r := range run {
-		if run[r] == '\n' {
-		} else if run[r] == '"' {
-			res = append(res,'\\')
-			res = append(res,'"')
-		} else {
-			res = append(res,run[r])
-		}
-	}
-
-	s = string(res)
-	return s
-}
-
-//******************************************************************
-
-func ContextString(context []string) string {
-
-	var s string
-
-	for c := 0; c < len(context); c++ {
-
-		s += context[c] + " "
-	}
-
-	return s
-}
-
-//****************************************************************************
-
-func ShowText(s string, width int) {
-
-	var spacecounter int
-	var linecounter int
-	var indent string = Indent(LEFTMARGIN)
-
-	if width < 40 {
-		width = SCREENWIDTH
-	}
-
-	// Check is the string has a large number of spaces, in which case it's
-	// probably preformatted,
-
-	runes := []rune(s)
-
-	for r := 0; r < len(runes); r++ {
-		if unicode.IsSpace(runes[r]) {
-			spacecounter++
-		}
-	} 
-
-	if len(runes) > SCREENWIDTH - LEFTMARGIN - RIGHTMARGIN {
-		if spacecounter > len(runes) / 3 {
-			fmt.Println()
-			fmt.Println(s)
-			return
-		}
-	}
-
-	// Format
-
-	linecounter = 0
-
-	for r := 0; r < len(runes); r++ {
-
-		if unicode.IsSpace(runes[r]) && linecounter > width-RIGHTMARGIN {
-			if runes[r] != '\n' {
-				fmt.Print("\n",indent)
-				linecounter = 0
-				continue
-			} else {
-				linecounter = 0
-			}
-		}
-		if unicode.IsPunct(runes[r]) && linecounter > width-RIGHTMARGIN {
-			fmt.Print(string(runes[r]))
-			r++
-			if r < len(runes) && runes[r] != '\n' {
-				fmt.Print("\n",indent)
-				linecounter = 0
-				continue
-			} else {
-				linecounter = 0
-			}
-		}
-
-		if r < len(runes) {
-			fmt.Print(string(runes[r]))
-		}
-		linecounter++
-		
-	}
-}
-
-//****************************************************************************
-
-func Indent(indent int) string {
-
-	spc := ""
-
-	for i := 0; i < indent; i++ {
-		spc += " "
-	}
-
-	return spc
-}
-
-//****************************************************************************
-
-func NewLine(n int) {
-
-	if n % 6 == 0 {
-		fmt.Print("\n    ",)
-	}
-}
-
-// **************************************************************************
-
-func Waiting(output bool,total int) {
-
-	if !output {
-		return
-	}
-
-	percent := float64(SILLINESS_COUNTER) / float64(total) * 100
-
-	var propaganda = []string{"\n1) JOT IT DOWN WHEN YOU THINK OF IT. . .\n","\n2) TYPE IT INTO N4L AS SOON AS YOU CAN. . .\n","\n3) ORGANIZE AND TIDY YOUR NOTES EVERY DAY. . .\n","\n4) UPLOAD AND BROWSE THEM ONLINE. . .\n","\n5) AND REMEMBER, IT ISN'T KNOWLEDGE IF YOU DON'T ACTUALLY KNOW IT !!\n"}
-
-	const interval = 2
-
-	if SILLINESS {
-		if SILLINESS_COUNTER % interval != 0 {
-			fmt.Print(" ")
-		} else {
-			fmt.Print(string(propaganda[SILLINESS_SLOGAN][SILLINESS_POS]))
-			SILLINESS_POS++
-
-			if SILLINESS_POS > len(propaganda[SILLINESS_SLOGAN])-1 {
-				SILLINESS_POS = 0
-				SILLINESS = false
-				SILLINESS_SLOGAN++
-				if SILLINESS_SLOGAN >= len(propaganda) {
-					SILLINESS_SLOGAN = 0
-				}
-			}
-		}
-	} else {
-		fmt.Print(".")
-	}
-
-	if SILLINESS_COUNTER % (2000) == 0 {
-		SILLINESS = !SILLINESS
-		if percent > 100 {
-			fmt.Printf("\n(%.1f%% - oops, have to work overtime!)\n",percent)
-		} else {
-			fmt.Printf("\n\n(%.1f%%) uploading . . .\n",percent)
-		}
-	}
-
-	SILLINESS_COUNTER++
-}
-
-// **************************************************************************
-
-func Already (s string, cone map[int][]string) bool {
-
-	for l := range cone {
-		for n := 0; n < len(cone[l]); n++ {
-			if s == cone[l][n] {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
-//****************************************************************************
-
-func Arrow2Int(arr []ArrowPtr) []int {
-
-	var ret []int
-
-	for a := range arr {
-		ret = append(ret,int(arr[a]))
-	}
-
-	return ret
-}
-
-//****************************************************************************
-// Unicod
-//****************************************************************************
-
-const (
-	NON_ASCII_LQUOTE = '“'
-	NON_ASCII_RQUOTE = '”'
-)
 
 //****************************************************************************
 
@@ -10778,8 +10357,651 @@ func ReadToNext(array []rune,pos int,r rune) (string,int) {
 	return ret,len(ret)
 }
 
+
+// **************************************************************************
+
+func SearchTermLen(names []string) int {
+
+	var maxlen int
+
+	for _,s := range names {
+		if !IsNPtrStr(s) && len(s) > maxlen {
+			maxlen = len(s)
+		}
+	}
+
+	return maxlen
+}
+
+// **************************************************************************
+
+func IsNPtrStr(s string) bool {
+
+	s = strings.TrimSpace(s)
+
+	if s[0] == '(' && s[len(s)-1] == ')' {
+		var a,b int = -1,-1
+		fmt.Sscanf(s,"(%d,%d)",&a,&b)
+		if a >= 0 && b >= 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// **************************************************************************
+
+func RunErr(message string) {
+
+	const red = "\033[31;1;1m"
+	const endred = "\033[0m"
+
+	fmt.Println("SSTorytime",message,endred)
+
+}
+
+// **************************************************************************
+
+func EscapeString(s string) string {
+
+	run := []rune(s)
+	var res []rune
+
+	for r := range run {
+		if run[r] == '\n' {
+		} else if run[r] == '"' {
+			res = append(res,'\\')
+			res = append(res,'"')
+		} else {
+			res = append(res,run[r])
+		}
+	}
+
+	s = string(res)
+	return s
+}
+
+//******************************************************************
+
+func ContextString(context []string) string {
+
+	var s string
+
+	for c := 0; c < len(context); c++ {
+
+		s += context[c] + " "
+	}
+
+	return s
+}
+
 //****************************************************************************
-// Allow for simple dynamic content for some approved realtime functions
+
+func InList(s string, list []string) (int,bool) {
+
+	for i,v := range list {
+		if s == v {
+			return i,true
+		}
+	}
+
+	return -1,false
+}
+
+//****************************************************************************
+
+func MatchArrows(arrows []ArrowPtr,arr ArrowPtr) bool {
+
+	for a := range arrows {
+		if arrows[a] == arr {
+			return true
+		}
+	}
+
+	return false
+}
+
+//****************************************************************************
+
+func Arrow2Int(arr []ArrowPtr) []int {
+
+	var ret []int
+
+	for a := range arr {
+		ret = append(ret,int(arr[a]))
+	}
+
+	return ret
+}
+
+//****************************************************************************
+
+func MatchContexts(context1 []string,context2ptr ContextPtr) bool {
+
+	if context1 == nil || context2ptr == 0 {
+		return true
+	}
+
+	context2 := strings.Split(GetContext(context2ptr),",")
+
+	for c := range context1 {
+
+		if MatchesInContext(context1[c],context2) {
+			return true
+		}
+	}
+
+	return false 
+}
+
+//****************************************************************************
+
+func MatchesInContext(s string,context []string) bool {
+	
+	for c := range context {
+		if SimilarString(s,context[c]) {
+			return true
+		}
+	}
+	return false 
+}
+
+
+// **************************************************************************
+
+func SimilarString(full,like string) bool {
+
+	// Placeholder
+	// Need to handle pluralisation patterns etc... multi-language
+
+	if full == like {
+		return true
+	}
+
+	if full == "" || like == "" || full == "any" || like == "any" {  // same as any
+		return true
+	}
+
+	if strings.Contains(full,like) {
+		return true
+	}
+
+	return false
+}
+
+
+//
+// tools.go
+//
+
+
+
+
+// **************************************************************************
+//
+// STtype.go
+//
+// *************************************************************************
+
+func GetSTIndexByName(stname,pm string) int {
+
+	var encoding  int
+	var sign int
+
+	switch pm {
+	case "+":
+		sign = 1
+	case "-":
+		sign = -1
+	}
+
+	switch stname {
+
+	case "leadsto":
+		encoding = ST_ZERO + LEADSTO * sign
+	case "contains":
+		encoding = ST_ZERO + CONTAINS * sign
+	case "properties":
+		encoding = ST_ZERO + EXPRESS * sign
+	case "similarity":
+		encoding = ST_ZERO + NEAR
+	}
+
+	return encoding
+
+}
+
+//**************************************************************
+
+func PrintSTAIndex(stindex int) string {
+
+	sttype := stindex - ST_ZERO
+	var ty string
+
+	switch sttype {
+	case -EXPRESS:
+		ty = "-(expressed by)"
+	case -CONTAINS:
+		ty = "-(part of)"
+	case -LEADSTO:
+		ty = "-(arriving from)"
+	case NEAR:
+		ty = "(close to)"
+	case LEADSTO:
+		ty = "+(leading to)"
+	case CONTAINS:
+		ty = "+(containing)"
+	case EXPRESS:
+		ty = "+(expressing)"
+	default:
+		ty = "unknown relation!"
+	}
+
+	const green = "\x1b[36m"
+	const endgreen = "\x1b[0m"
+
+	return green + ty + endgreen
+}
+
+// **************************************************************************
+
+func STTypeDBChannel(sttype int) string {
+
+	// This expects the range for sttype to be unshifted 0,+/-
+
+	var link_channel string
+	switch sttype {
+
+	case NEAR:
+		link_channel = I_NEAR
+	case LEADSTO:
+		link_channel = I_PLEAD
+	case CONTAINS:
+		link_channel = I_PCONT
+	case EXPRESS:
+		link_channel = I_PEXPR
+	case -LEADSTO:
+		link_channel = I_MLEAD
+	case -CONTAINS:
+		link_channel = I_MCONT
+	case -EXPRESS:
+		link_channel = I_MEXPR
+	default:
+		fmt.Println(ERR_ILLEGAL_LINK_CLASS,sttype)
+		os.Exit(-1)
+	}
+
+	return link_channel
+}
+
+// **************************************************************************
+
+func STIndexToSTType(stindex int) int {
+
+	// Convert shifted array index to symmetrical type
+
+	return stindex - ST_ZERO
+}
+
+// **************************************************************************
+
+func STTypeToSTIndex(stindex int) int {
+
+	// Convert shifted array index to symmetrical type
+
+	return stindex + ST_ZERO
+}
+
+// **************************************************************************
+
+func STTypeName(sttype int) string {
+
+	switch sttype {
+	case -EXPRESS:
+		return "-is property of"
+	case -CONTAINS:
+		return "-contained by"
+	case -LEADSTO:
+		return "-comes from"
+	case NEAR:
+		return "=Similarity"
+	case LEADSTO:
+		return "+leads to"
+	case CONTAINS:
+		return "+contains"
+	case EXPRESS:
+		return "+property"
+	}
+
+	return "Unknown ST type"
+}
+
+
+//
+// STtype.go
+//
+
+
+
+
+
+//****************************************************************************
+//
+// terminal_output.go
+//
+//****************************************************************************
+
+func ShowText(s string, width int) {
+
+	var spacecounter int
+	var linecounter int
+	var indent string = Indent(LEFTMARGIN)
+
+	if width < 40 {
+		width = SCREENWIDTH
+	}
+
+	// Check is the string has a large number of spaces, in which case it's
+	// probably preformatted,
+
+	runes := []rune(s)
+
+	for r := 0; r < len(runes); r++ {
+		if unicode.IsSpace(runes[r]) {
+			spacecounter++
+		}
+	} 
+
+	if len(runes) > SCREENWIDTH - LEFTMARGIN - RIGHTMARGIN {
+		if spacecounter > len(runes) / 3 {
+			fmt.Println()
+			fmt.Println(s)
+			return
+		}
+	}
+
+	// Format
+
+	linecounter = 0
+
+	for r := 0; r < len(runes); r++ {
+
+		if unicode.IsSpace(runes[r]) && linecounter > width-RIGHTMARGIN {
+			if runes[r] != '\n' {
+				fmt.Print("\n",indent)
+				linecounter = 0
+				continue
+			} else {
+				linecounter = 0
+			}
+		}
+		if unicode.IsPunct(runes[r]) && linecounter > width-RIGHTMARGIN {
+			fmt.Print(string(runes[r]))
+			r++
+			if r < len(runes) && runes[r] != '\n' {
+				fmt.Print("\n",indent)
+				linecounter = 0
+				continue
+			} else {
+				linecounter = 0
+			}
+		}
+
+		if r < len(runes) {
+			fmt.Print(string(runes[r]))
+		}
+		linecounter++
+		
+	}
+}
+
+// *********************************************************************
+
+func ShowContext(amb,intent,key string) {
+
+	fmt.Println()
+	fmt.Println("  .......................................................")
+	fmt.Printf("    Recurrent now: %s\n",key)
+	fmt.Printf("    Intentional  : %s\n",intent)
+	fmt.Printf("    Ambient      : %s\n",amb)
+	fmt.Println("  .......................................................")
+
+}
+
+//****************************************************************************
+
+func Indent(indent int) string {
+
+	spc := ""
+
+	for i := 0; i < indent; i++ {
+		spc += " "
+	}
+
+	return spc
+}
+
+//****************************************************************************
+
+func NewLine(n int) {
+
+	if n % 6 == 0 {
+		fmt.Print("\n    ",)
+	}
+}
+
+// **************************************************************************
+
+func Waiting(output bool,total int) {
+
+	if !output {
+		return
+	}
+
+	percent := float64(SILLINESS_COUNTER) / float64(total) * 100
+
+	var propaganda = []string{"\n1) JOT IT DOWN WHEN YOU THINK OF IT. . .\n","\n2) TYPE IT INTO N4L AS SOON AS YOU CAN. . .\n","\n3) ORGANIZE AND TIDY YOUR NOTES EVERY DAY. . .\n","\n4) UPLOAD AND BROWSE THEM ONLINE. . .\n","\n5) AND REMEMBER, IT ISN'T KNOWLEDGE IF YOU DON'T ACTUALLY KNOW IT !!\n"}
+
+	const interval = 2
+
+	if SILLINESS {
+		if SILLINESS_COUNTER % interval != 0 {
+			fmt.Print(" ")
+		} else {
+			fmt.Print(string(propaganda[SILLINESS_SLOGAN][SILLINESS_POS]))
+			SILLINESS_POS++
+
+			if SILLINESS_POS > len(propaganda[SILLINESS_SLOGAN])-1 {
+				SILLINESS_POS = 0
+				SILLINESS = false
+				SILLINESS_SLOGAN++
+				if SILLINESS_SLOGAN >= len(propaganda) {
+					SILLINESS_SLOGAN = 0
+				}
+			}
+		}
+	} else {
+		fmt.Print(".")
+	}
+
+	if SILLINESS_COUNTER % (2000) == 0 {
+		SILLINESS = !SILLINESS
+		if percent > 100 {
+			fmt.Printf("\n(%.1f%% - oops, have to work overtime!)\n",percent)
+		} else {
+			fmt.Printf("\n\n(%.1f%%) uploading . . .\n",percent)
+		}
+	}
+
+	SILLINESS_COUNTER++
+}
+
+
+// **************************************************************************
+
+func PrintNodeOrbit(sst PoSST, nptr NodePtr,limit int) {
+
+	node := GetDBNodeByNodePtr(sst,nptr)		
+	fmt.Print("\"")
+	ShowText(node.S,SCREENWIDTH)
+	fmt.Print("\"")
+	fmt.Println("\tin chapter:",node.Chap)
+	fmt.Println()
+
+	satellites := GetNodeOrbit(sst,nptr,"",limit)
+
+	PrintLinkOrbit(satellites,EXPRESS,0)
+	PrintLinkOrbit(satellites,-EXPRESS,0)
+	PrintLinkOrbit(satellites,-CONTAINS,0)
+	PrintLinkOrbit(satellites,LEADSTO,0)
+	PrintLinkOrbit(satellites,-LEADSTO,0)
+	PrintLinkOrbit(satellites,NEAR,0)
+
+	fmt.Println()
+}
+
+// **************************************************************************
+
+func PrintLinkOrbit(satellites [ST_TOP][]Orbit,sttype int,indent_level int) {
+
+	t := STTypeToSTIndex(sttype)
+
+	for n := range satellites[t] {		
+
+		r := satellites[t][n].Radius + indent_level
+
+		if satellites[t][n].Ctx != "" {
+			txt := fmt.Sprintf(" -    (%s) - %s  \t.. in the context of %s\n",satellites[t][n].Arrow,satellites[t][n].Text,satellites[t][n].Ctx)
+			text := Indent(LEFTMARGIN * r) + txt
+			ShowText(text,SCREENWIDTH)
+		} else {
+			txt := fmt.Sprintf(" -    (%s) - %s\n",satellites[t][n].Arrow,satellites[t][n].Text)
+			text := Indent(LEFTMARGIN * r) + txt
+			ShowText(text,SCREENWIDTH)
+		}
+
+	}
+
+}
+
+// **************************************************************************
+
+func PrintLinkPath(sst PoSST, cone [][]Link, p int, prefix string,chapter string,context []string) {
+
+	PrintSomeLinkPath(sst,cone, p,prefix,chapter,context,10000)
+}
+
+// **************************************************************************
+
+func PrintSomeLinkPath(sst PoSST, cone [][]Link, p int, prefix string,chapter string,context []string,limit int) {
+
+	count := 0
+
+	if len(cone[p]) > 1 {
+
+		path_start := GetDBNodeByNodePtr(sst,cone[p][0].Dst)		
+		
+		start_shown := false
+
+		var format int
+		var stpath []string
+		
+		for l := 1; l < len(cone[p]); l++ {
+
+			if !MatchContexts(context,cone[p][l].Ctx) {
+				return
+			}
+
+			NewLine(format)
+
+			count++
+
+			if count > limit {
+				return
+			}
+
+			if !start_shown {
+
+				if len(cone) > 1 {
+					fmt.Printf("%s (%d) %s",prefix,p+1,path_start.S)
+				} else {
+					fmt.Printf("%s %s",prefix,path_start.S)
+				}
+				start_shown = true
+			}
+
+			nextnode := GetDBNodeByNodePtr(sst,cone[p][l].Dst)
+
+			if !SimilarString(nextnode.Chap,chapter) {
+				break
+			}
+
+			arr := GetDBArrowByPtr(sst,cone[p][l].Arr)
+
+			if arr.Short == "then" {
+				fmt.Print("\n   >>> ")
+				format = 0
+			}
+
+			if arr.Short == "prior" {
+				fmt.Print("\n   <<< ")
+			}
+
+			stpath = append(stpath,STTypeName(STIndexToSTType(arr.STAindex)))
+	
+			if l < len(cone[p]) {
+				fmt.Print("  -(",arr.Long,")->  ")
+			}
+			
+			fmt.Print(nextnode.S)
+			format += 2
+		}
+
+		fmt.Print("\n     -  [ Link STTypes:")
+
+		for s := range stpath {
+			fmt.Print(" -(",stpath[s],")-> ")
+		}
+		fmt.Println(". ]\n")
+	}
+}
+
+
+
+//**************************************************************
+
+func ShowPsi(etc Etc) string {
+
+	result := ""
+
+	if etc.E {
+		result += "event,"
+	}
+	if etc.T {
+		result += "thing,"
+	}
+	if etc.C {
+		result += "concept,"
+	}
+	return result
+}
+
+
+
+//
+// terminal_output.go
+//
+
+
+
+
+
+
+
+//****************************************************************************
+//
+// expand_node_vars.go
+//
 //****************************************************************************
 
 func ExpandDynamicFunctions(s string) string {
@@ -10927,3 +11149,8 @@ func ShowTime(years,days,hours,mins int) string {
 	return s
 }
 
+
+
+//
+// expand_node_vars.go
+//

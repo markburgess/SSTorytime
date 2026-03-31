@@ -20,6 +20,10 @@ var CONTEXT []string
 var STTYPES []int
 var DEPTH int
 
+var CLASS_CHANNEL_DESCRIPTION = []string{"","single word ngram","two word ngram","three word ngram",
+	"string less than 128 chars","string less than 1024 chars","string greater than 1024 chars"}
+
+
 //******************************************************************
 
 func main() {
@@ -131,7 +135,7 @@ func AnalyzeGraph(sst SST.PoSST,chapter string,context []string,sttypes []int,de
 	fmt.Printf("\n* DISTRIBUTION OF NAME TYPE/LENGTHS:\n")
 		for class := 1; class < 7; class++ {
 			if distribution[class] > 0 {
-				fmt.Printf("  - %s : %d / %d\n",SST.CLASS_CHANNEL_DESCRIPTION[class],distribution[class],total)
+				fmt.Printf("  - %s : %d / %d\n",CLASS_CHANNEL_DESCRIPTION[class],distribution[class],total)
 			}
 		}
 	

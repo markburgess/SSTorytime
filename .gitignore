@@ -16,7 +16,6 @@ key.pem
 cert.pem
 
 *edit_me.n4l
-dotest*
 /test-driver
 /tests/unit/*.log
 /tests/load/*.log
@@ -25,7 +24,6 @@ dotest*
 __pycache__/
 
 N4L-db
-definecontext
 search_broad
 search_by_node
 search_clusters
@@ -43,7 +41,6 @@ search_systematic_knowledge_1
 search_systematic_knowledge_2
 search_boundary_nodes
 search_coarse_grain*
-postgres_testdb
 search_maze
 search_maze2
 search_wardley

@@ -1,0 +1,3 @@
+all:
+	mkdir -p ../bin
+	go build -o ../bin/dotest_getnodes ./...

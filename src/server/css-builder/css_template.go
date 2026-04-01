@@ -19,10 +19,9 @@ import (
 
 func main() {
 
-var theme = make(map[string]map[string]string)
+        var theme = make(map[string]map[string]string)
 
         theme["dark"] = make(map[string]string)
-
 	theme["dark"]["PAGE_BACKGROUND_COLOUR"] = "var(--gray-12)"
 	theme["dark"]["LINK_ITEM_BACKGROUND_COLOUR"] = "var(--gray-2)"
 	theme["dark"]["LINK_SECONDARY_COLOUR"] = "var(--gray-5)"

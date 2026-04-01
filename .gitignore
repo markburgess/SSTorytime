@@ -48,6 +48,7 @@ search_maze
 search_maze2
 search_wardley
 ScanText
+http_server
 json
 
 # tags

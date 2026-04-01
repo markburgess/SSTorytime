@@ -5,9 +5,9 @@
 # For now, as things are changing, tests need to be run manually
 #
 
-PASS_PROG="../src/N4L -adj=all"
-FAIL_PROG="../src/N4L"
-WARN_PROG="../src/N4L"
+PASS_PROG="../src/bin/N4L -adj=all"
+FAIL_PROG="../src/bin/N4L"
+WARN_PROG="../src/bin/N4L"
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -69,13 +69,13 @@ echo "-----------------------------------------"
 echo " library tests"
 echo "-----------------------------------------"
 
-DB_TEST_PROG="../src/demo_pocs/postgres_testdb"
+DB_TEST_PROG="../src/demo_pocs/bin/postgres_testdb"
 
 if $DB_TEST_PROG > /dev/null; 
    then 
       echo -e "1. ${GREEN} database ok ${END}"
 
-      TESTPROG=../src/API_EXAMPLE_3
+      TESTPROG=../src/bin/API_EXAMPLE_3
 
       if $TESTPROG > /dev/null; 
          then 
@@ -88,7 +88,7 @@ else
 
 fi
 
-DB_TEST_PROG="../src/API_EXAMPLE_1"
+DB_TEST_PROG="../src/bin/API_EXAMPLE_1"
 
 if $DB_TEST_PROG > /dev/null; 
    then 
@@ -99,7 +99,7 @@ if $DB_TEST_PROG > /dev/null;
 fi
 
 
-DB_TEST_PROG="../src/demo_pocs/dotest_getnodes"
+DB_TEST_PROG="../src/demo_pocs/bin/dotest_getnodes"
 
 if $DB_TEST_PROG > /dev/null; 
    then 
@@ -108,7 +108,7 @@ if $DB_TEST_PROG > /dev/null;
       echo -e "4. ${RED} link model consistency, try rebuilding and add data (cd examples; make) first)${END}"
 fi
 
-DB_TEST_PROG="../src/demo_pocs/dotest_entirecone"
+DB_TEST_PROG="../src/demo_pocs/bin/dotest_entirecone"
 
 if $DB_TEST_PROG > /dev/null; 
    then 
@@ -117,7 +117,7 @@ if $DB_TEST_PROG > /dev/null;
       echo -e "5. ${RED} causal cone consistency, try rebuilding ${END}"
 fi
 
-DB_TEST_PROG="../src/demo_pocs/definecontext"
+DB_TEST_PROG="../src/demo_pocs/bin/definecontext"
 
 if $DB_TEST_PROG > /dev/null; 
    then 

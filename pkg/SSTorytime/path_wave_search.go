@@ -13,7 +13,6 @@ import (
 
 )
 
-
 // **************************************************************************
 
 func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,context []string,arrowptrs []ArrowPtr,sttypes []int,mindepth,maxdepth int) [][]Link {
@@ -483,5 +482,3 @@ func InNodeSet(list []NodePtr,node NodePtr) bool {
 //
 // path_wave_search.go 
 //
-
-

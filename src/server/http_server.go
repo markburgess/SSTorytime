@@ -32,6 +32,7 @@ import (
 
 //This is an ugly Go directive to embed text files into the binary
 //go:embed all:public
+
 var content embed.FS
 
 // *********************************************************************
@@ -151,7 +152,7 @@ func Start(resources string) {
 	}()
 
 	go func() {
-		if err := https_srv.ListenAndServeTLS("server/cert.pem", "server/key.pem"); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := https_srv.ListenAndServeTLS("../server/cert.pem", "../server/key.pem"); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("HTTPS Listen: %v", err)
 		}
 	}()

@@ -12,7 +12,7 @@ import (
 	"os"
 	"strings"
 
-        SST "SSTorytime"
+    SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
 )
 
 //******************************************************************
@@ -43,7 +43,7 @@ func main() {
 //**************************************************************
 
 func Usage() {
-	
+
 	fmt.Printf("usage: PathSolve [-v] -begin <string> -end <string> [-chapter string] subject [context]\n")
 	flag.PrintDefaults()
 
@@ -81,7 +81,7 @@ func Init() []string {
 
 	if *beginPtr != "" {
 		BEGIN = *beginPtr
-	} 
+	}
 
 	if *endPtr != "" {
 		END = *endPtr
@@ -107,7 +107,7 @@ func Init() []string {
 			END = end
 			CONTEXT = cnt
 		}
-	} 
+	}
 
 	SST.MemoryInit()
 
@@ -152,7 +152,7 @@ func PathSolve(sst SST.PoSST, chapter,cntext,begin, end string) {
 	var betweenness = make(map[string]int)
 
 	if len(solutions) > 0 {
-		
+
 		for s := 0; s < len(solutions); s++ {
 			prefix := fmt.Sprintf(" - story path: ")
 			SST.PrintLinkPath(sst,solutions,s,prefix,"",nil)
@@ -218,10 +218,3 @@ func ShowNode(sst SST.PoSST,nptr []SST.NodePtr) string {
 
 	return ret
 }
-
-
-
-
-
-
-

@@ -12,7 +12,8 @@ import (
 	"sort"
 	"flag"
 	"os"
-        SST "SSTorytime"
+
+	SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
 )
 
 var CHAPTER string
@@ -36,7 +37,7 @@ func main() {
 	chaps := SST.GetDBChaptersMatchingName(sst,CHAPTER)
 
 	for chap := range chaps {
-		AnalyzeGraph(sst,chaps[chap],CONTEXT,STTYPES,DEPTH) 
+		AnalyzeGraph(sst,chaps[chap],CONTEXT,STTYPES,DEPTH)
 	}
 
 	SST.Close(sst)
@@ -45,7 +46,7 @@ func main() {
 //**************************************************************
 
 func Usage() {
-	
+
 	fmt.Printf("usage: graph_report [-sttype comma separated L,C,P,N] [-depth integer] [-chapter comma separated string] [context]\n")
 	flag.PrintDefaults()
 
@@ -77,23 +78,23 @@ func Init() []string {
 		array := strings.Split(*sttypePtr,",")
 		for t := range array {
 			switch array[t] {
-			case "L","+L": 
+			case "L","+L":
 				sttypes[1] = true
-			case "C","+C": 
+			case "C","+C":
 				sttypes[2] = true
-			case "E","+E": 
+			case "E","+E":
 				sttypes[3] = true
-			case "P","+P": 
+			case "P","+P":
 				sttypes[3] = true
-			case "N","+N","-N": 
+			case "N","+N","-N":
 				sttypes[4] = true
-			case "-L": 
+			case "-L":
 				sttypes[-1] = true
-			case "-C": 
+			case "-C":
 				sttypes[-2] = true
-			case "-E": 
+			case "-E":
 				sttypes[-3] = true
-			case "-P": 
+			case "-P":
 				sttypes[-3] = true
 			default:
 				fmt.Println("Unknown sttype",array[t],"(should be in { L,C,E,N } +/-)")
@@ -138,7 +139,7 @@ func AnalyzeGraph(sst SST.PoSST,chapter string,context []string,sttypes []int,de
 				fmt.Printf("  - %s : %d / %d\n",CLASS_CHANNEL_DESCRIPTION[class],distribution[class],total)
 			}
 		}
-	
+
 	sources,sinks := SST.GetDBSingletonBySTType(sst,sttypes,chapter,context)
 
 	fmt.Print("\n\n* PROCESS ORIGINS / ROOT DEPENDENCIES / PATH SOURCES for (")
@@ -200,22 +201,22 @@ func AnalyzeGraph(sst SST.PoSST,chapter string,context []string,sttypes []int,de
 
 	for st := range sttypes {
 		var ama map[SST.ArrowPtr][]SST.Appointment
-		
+
 		ama = SST.GetAppointedNodesBySTType(sst,sttypes[st],context,chapter,2)
-		
+
 		for arrowptr := range ama {
-			
+
 			arr_dir := SST.GetDBArrowByPtr(sst,arrowptr)
-			
+
 			// Appointment list
 			for n := 0; n < len(ama[arrowptr]); n++ {
-				
+
 				appointed_nptr := ama[arrowptr][n].NTo
 				appointed := SST.GetDBNodeByNodePtr(sst,appointed_nptr)
 				dim := len(ama[arrowptr][n].NFrom)
-				
+
 				fmt.Printf("\n   Appointer correlates -> %d appointed nodes (%s ...) in chapter \"%s\"\n\n",dim,appointed.S,chapter)
-				
+
 				// Appointers list
 				for m := range ama[arrowptr][n].NFrom {
 					node := SST.GetDBNodeByNodePtr(sst,ama[arrowptr][n].NFrom[m])
@@ -223,12 +224,12 @@ func AnalyzeGraph(sst SST.PoSST,chapter string,context []string,sttypes []int,de
 					fmt.Printf("     %.40s --(%s : %s)--> %.40s...   - in context %v\n",node.S,arr_dir.Long,stname,appointed.S,context)
 				}
 			}
-			
+
 			fmt.Println()
 		}
 	}
 
-	// Now find the undirected graph properties 
+	// Now find the undirected graph properties
 
 	fmt.Println("")
 	evc := SST.ComputeEVC(sadj)
@@ -254,7 +255,7 @@ func AnalyzeGraph(sst SST.PoSST,chapter string,context []string,sttypes []int,de
 	fmt.Println("\n* HILL-CLIMBING EVC-LAMDSCAPE GRADIENT PATHS:\n")
 
 	for index := 0; index < len(evc); index++ {
-		fmt.Println("     - Path node",index,"has local maximum at node *",evctop[index],"*, hop distance",len(path[index])-1,"along",path[index])		
+		fmt.Println("     - Path node",index,"has local maximum at node *",evctop[index],"*, hop distance",len(path[index])-1,"along",path[index])
 	}
 
 }
@@ -306,7 +307,7 @@ func AnalyzePowerMatrix(sst SST.PoSST,symbolic [][]string) (map[string]int,map[s
 		var nodes []string
 
 		vec := strings.Split(symbolic[r][r],"*")
-		
+
 		for i := 0; i < len(vec); i++ {
 			distrib[vec[i]]++
 		}
@@ -393,4 +394,3 @@ func PrintMatrix(matrix [][]float32,symbolic [][]string,str string) {
 	}
 	fmt.Println()
 }
-

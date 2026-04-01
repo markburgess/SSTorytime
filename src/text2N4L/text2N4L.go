@@ -12,7 +12,8 @@ import (
 	"sort"
 	"flag"
 	"strings"
-        SST "SSTorytime"
+
+	SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
 )
 
 var TARGET_PERCENT float64 = 50.0
@@ -47,7 +48,7 @@ func GetArgs() string {
 	if len(args) != 1 {
 		fmt.Println("Missing pure text filename to scan")
 		os.Exit(-2)
-	} 
+	}
 
 	return args[0]
 }
@@ -55,7 +56,7 @@ func GetArgs() string {
 //**************************************************************
 
 func Usage() {
-	
+
 	fmt.Println("usage: Text2N4L [-% percent] filename\n")
 	flag.PrintDefaults()
 
@@ -156,11 +157,11 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 		}
 	}
 
-	fmt.Fprintf(fp,"\n -:: _sequence_ , %s::\n", filealias)	
+	fmt.Fprintf(fp,"\n -:: _sequence_ , %s::\n", filealias)
 	fmt.Fprintf(fp,"\n# (end) ************\n")
 
 	// some stats
-	
+
 	fmt.Fprintf(fp,"\n# Final fraction %.2f of requested %.2f\n",float64(len(selection)*100)/float64(L),percentage)
 
 	WriteSampleSelections(fp,selection,L)
@@ -204,7 +205,7 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	for w := range all_ambi {
 		fmt.Fprintf(fp," # %s\n",all_ambi[w])
 	}
-	
+
 	for w := range all_anom {
 		fmt.Fprintf(fp,"  # %s\n",all_anom[w])
 	} */
@@ -220,11 +221,11 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 func WriteSampleSelections(fp *os.File, selection []SST.TextRank, L int) {
 
 	fmt.Fprintf(fp,"\n# Selected %d samples of %d: ",len(selection),L)
-	
+
 	for i := range selection {
 		fmt.Fprintf(fp,"%d ",selection[i].Order)
 		}
-	
+
 	fmt.Fprintf(fp,"\n#\n")
 }
 
@@ -399,7 +400,7 @@ func MergeSelections(one []SST.TextRank,two []SST.TextRank) []SST.TextRank{
 
 	var merge []SST.TextRank
 	var already_selected = make(map[int]bool)
-	
+
 	for i := range one {
 		merge = append(merge,one[i])
 		already_selected[one[i].Order] = true
@@ -419,5 +420,3 @@ func MergeSelections(one []SST.TextRank,two []SST.TextRank) []SST.TextRank{
 
 	return merge
 }
-
-

@@ -8,7 +8,8 @@ package main
 
 import (
 	"fmt"
-        SST "SSTorytime"
+
+	SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
 )
 
 //******************************************************************
@@ -45,13 +46,3 @@ func main () {
 
 	SST.Close(sst)
 }
-
-
-
-
-
-
-
-
-
-

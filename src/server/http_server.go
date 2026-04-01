@@ -23,7 +23,7 @@ import (
 	"flag"
 	"errors"
 
-	SST "SSTorytime"
+	SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
 )
 
 // *********************************************************************
@@ -70,7 +70,7 @@ func Init() string {
 //**************************************************************
 
 func Usage() {
-	
+
 	fmt.Printf("usage: http_server [-resources string]\n")
 	flag.PrintDefaults()
 	os.Exit(1)
@@ -95,7 +95,7 @@ func Start(resources string) {
 
 	fileserver1 := http.FileServer(http.FS(publicFS))
 	fileserver2 := http.FileServer(http.Dir(resources))
-	
+
 	mux := http.NewServeMux()
 
 	mux.Handle("/", fileserver1)
@@ -125,8 +125,8 @@ func Start(resources string) {
 
 
 	// Graceful Shutdown Channel
-	
-	done := make(chan struct{})	
+
+	done := make(chan struct{})
 	quit := make(chan os.Signal, 1)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -138,7 +138,7 @@ func Start(resources string) {
 		log.Println("Shutting down servers...")
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		
+
 		http_srv.Shutdown(ctx)
 		https_srv.Shutdown(ctx)
 		close(done)
@@ -149,7 +149,7 @@ func Start(resources string) {
 			log.Fatalf("HTTP Listen: %v", err)
 		}
 	}()
-	
+
 	go func() {
 		if err := https_srv.ListenAndServeTLS("server/cert.pem", "server/key.pem"); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("HTTPS Listen: %v", err)
@@ -158,7 +158,7 @@ func Start(resources string) {
 
 	log.Println("Servers running on :8080 and :8443")
 	<-done
-	
+
 	log.Println("Servers stopped gracefully")
 	log.Println("Server exited properly")
 }
@@ -542,29 +542,29 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request, sst SST.PoSST, left
 
 	if len(solutions) > 0 {
 		// format paths
-		
+
 		var pack []SST.WebConePaths
 		var soln SST.WebConePaths
-		
+
 		soln.RootNode = solutions[0][0].Dst
 		soln.Title = fmt.Sprintf("paths solutions from %v to %v",search.From,search.To)
 		soln.BTWC = SST.BetweenNessCentrality(sst, solutions)
 		soln.SuperNodes = SST.SuperNodes(sst, solutions, maxdepth)
-		
+
 		var wpaths [][]SST.WebPath
 		nth := 0
 		swimlanes := 1
-		
+
 		wpaths = append(wpaths, SST.LinkWebPaths(sst, solutions, nth, chapter, context, swimlanes, maxdepth)...)
-		
+
 		soln.Paths = wpaths
 		pack = append(pack, soln)
 		array_pack, _ := json.Marshal(pack)
-		
+
 		response := PackageResponse(sst, search, "PathSolve", string(array_pack))
-		
+
 		//fmt.Println("PATH SOLVE:",string(response))
-		
+
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(response)
 		return
@@ -615,7 +615,7 @@ func FilterSeen(sst SST.PoSST,notes []SST.PageMap,search SST.SearchParameters) [
 	for _,note := range notes {
 
 		var newline SST.PageMap
- 
+
 		for _,l := range note.Path {
 			if excluded_nptrs[l.Dst] {
 				continue
@@ -924,4 +924,3 @@ func SL(list []string) string {
 
 	return s
 }
-

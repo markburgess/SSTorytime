@@ -9,7 +9,7 @@ package main
 import (
 	"fmt"
 
-        SST "SSTorytime"
+	SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
 )
 
 var path [9][]string
@@ -34,7 +34,7 @@ func main() {
 	// Add the paths to a fresh database
 
 	for p := range path {
-		for leg := 1; leg < len(path[p]); leg++ {	
+		for leg := 1; leg < len(path[p]); leg++ {
 
 			chap := "solve maze"
 			context := []string{""}
@@ -87,7 +87,7 @@ func Solve(sst SST.PoSST) {
 		}
 		count++
 	}
-	
+
 }
 
 // **********************************************************
@@ -118,9 +118,3 @@ func ShowNodePath(sst SST.PoSST,lnk []SST.Link) string {
 
 	return ret
 }
-
-
-
-
-
-

@@ -55,7 +55,7 @@ MathJax = {
 document.addEventListener("DOMContentLoaded", function (event)
 {
 
-  /* THE CLOSING OG THIS FUNCTION IS AT THE END OF THE ENTIRE FILE */
+    /* WARNING, WILL ROBINSON!! THE CLOSING OF THIS FUNCTION IS AT THE END OF THE ENTIRE FILE */
 
 var mob = 1;
 if (window.innerWidth < 450)
@@ -1520,9 +1520,11 @@ if (counter == 0)
 
    child.appendChild(setting);
    ProgressCheckBox(setting,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
+   Upload(setting,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
    }
 
-   // Main text
+    
+   // Main card text starts here
 
    if (text.includes("\n") && !IsMath(event.Text))
    {
@@ -1697,6 +1699,29 @@ spanner.className = "checkmark";
 label.appendChild(checkbox);
 label.appendChild(spanner);
 container.appendChild(label);
+}
+
+/***********************************************************/
+
+function Upload(container, nclass, ncptr, chap, context)
+{
+let button = document.createElement("button");
+button.textContent = "+";
+button.onclick = function uploadbutton()
+ {
+ if (uploadbutton)
+    {
+    button.style.backgroundColor = "red";
+    button.disabled = true;
+    }
+ else
+    {
+    button.style.backgroundColor = "green";
+    button.disabled = false;
+    }
+ };
+ 
+container.appendChild(button);
 }
 
 /***********************************************************/

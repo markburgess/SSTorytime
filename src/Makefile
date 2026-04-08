@@ -28,7 +28,7 @@ bin/N4L: N4L/N4L.go ../pkg/SSTorytime
 bin/searchN4L: searchN4L/searchN4L.go ../pkg/SSTorytime
 	cd searchN4L ; make
 
-bin/http_server: server/http_server.go ../pkg/SSTorytime
+bin/http_server: server/http_server.go ../pkg/SSTorytime server/public
 	cd server ; make
 
 bin/notes: notes/notes.go ../pkg/SSTorytime

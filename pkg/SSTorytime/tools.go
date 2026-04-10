@@ -864,8 +864,18 @@ func SimilarString(full,like string) bool {
 func SanitizePath(s string) string {
 
 	re := regexp.MustCompile("[^a-zA-Z0-9]")
-	return re.ReplaceAllString(s, "_")
+	s = re.ReplaceAllString(s, "_")
 
+	brk := 0
+	
+	for i := 0; i < len(s); i++  {
+		if s[i] != '_' {
+			brk = i
+			break
+		}
+	}
+
+	return s[brk:]
 }
 
 // **************************************************************************

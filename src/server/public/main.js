@@ -1313,6 +1313,7 @@ for (let line = 0; line < array.length; line++)
          let thisz = xyz.Z;
 
          // Add graphic rendering
+
          if (i == 0 && line > 0)
             {
             // Connect lines in order
@@ -1360,10 +1361,12 @@ for (let line = 0; line < array.length; line++)
             lastline = line;
 
             let line_no = document.createElement("span");
-	        line_no.id = "line-num";
+	    line_no.id = "line-num";
             line_no.textContent = "At line " + array[line][i].Line;
             parent.appendChild(line_no);
 
+	    FetchAssets(parent,array[line][i].Name,array[line][i].Chp,array[line][i].Ctx);
+	    
             chtxt = array[line][i].Chp + ":" + array[line][i].Ctx;
 
             if (chtxt.length > 4 && chtxt != lastchtxt)
@@ -1404,7 +1407,7 @@ for (let line = 0; line < array.length; line++)
             if (i > 0)
                {
                pre.id = "notes_secondary_colour";
-                }
+               }
             text_link.appendChild(pre);
             subline.appendChild(text_link);
             } 
@@ -1427,6 +1430,7 @@ for (let line = 0; line < array.length; line++)
             }
 
          ProgressCheckBox(subline,nclass,ncptr,array[line][i].Chp,array[line][i].Ctx);
+         FetchAssets(subline,array[line][i].Name,array[line][i].Chp,array[line][i].Ctx);
          } // arrow
       else
          {

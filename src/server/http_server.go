@@ -340,7 +340,7 @@ func UploadInline(w http.ResponseWriter, r *http.Request) {
 
 	file, header, err := r.FormFile("filedata")
 
-	fmt.Printf("File inline upload: %s --> %s\n",header,err)
+	fmt.Sprintf("File inline upload: %s --> %s\n",header,err)
 	
 	if err != nil {
 		http.Error(w, "Error retrieving file", http.StatusBadRequest)
@@ -1148,7 +1148,6 @@ func FileCacheLocation(name,ext,chapter,context string) string {
 
 func ListCacheAssets(path string) []byte {
 
-	fmt.Println("Looking for assets in",path)
 	var response string
 	
 	files, err := os.ReadDir(path)

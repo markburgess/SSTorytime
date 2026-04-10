@@ -295,6 +295,19 @@ h3 {
    margin: 2px;
 }
 
+#cache-asset { 
+    margin: 10px;
+    width: 20%;
+    padding: 5px;
+    font-size: var(--font-size-fluid-0);
+    background-color: darkslategray;
+
+}
+
+#fileselect {
+    display: none;
+}
+
 #chapstyle {
   font-size: var(--font-size-fluid-0);
 }

@@ -11,6 +11,9 @@ import (
 	"os"
 	"strings"
 	"sort"
+	"regexp"
+	"net/http"
+	"io/ioutil"
 	_ "github.com/lib/pq"
 
 )
@@ -856,6 +859,37 @@ func SimilarString(full,like string) bool {
 	return false
 }
 
+// **************************************************************************
+
+func SanitizePath(s string) string {
+
+	re := regexp.MustCompile("[^a-zA-Z0-9]")
+	return re.ReplaceAllString(s, "_")
+
+}
+
+// **************************************************************************
+
+func GetURIFile(url string) (string,error) {
+
+	// Get a remote file
+	
+	resp, err := http.Get(url)
+
+	defer resp.Body.Close()
+
+	if err != nil {
+		return "",err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(body),nil
+}
 
 //
 // tools.go

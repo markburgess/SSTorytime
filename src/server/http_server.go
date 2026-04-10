@@ -16,12 +16,14 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"io"
 	"sort"
 	"strings"
 	"syscall"
 	"time"
 	"flag"
-	"errors"
+	"errors"	
+	"crypto/md5"
 
 	SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
 )
@@ -72,6 +74,9 @@ func Init() string {
 
 func Usage() {
 
+        // We assume that the server is run from the directory under which
+	// it will store all cached files. The resources directory is extra read-only
+
 	fmt.Printf("usage: http_server [-resources string]\n")
 	flag.PrintDefaults()
 	os.Exit(1)
@@ -96,12 +101,16 @@ func Start(resources string) {
 
 	fileserver1 := http.FileServer(http.FS(publicFS))
 	fileserver2 := http.FileServer(http.Dir(resources))
+	fileserver3 := http.FileServer(http.Dir("./cacheroot"))
 
 	mux := http.NewServeMux()
 
 	mux.Handle("/", fileserver1)
 	mux.Handle("/Resources/", http.StripPrefix("/Resources/", fileserver2))
+	mux.Handle("/Assets/", http.StripPrefix("/Assets/cacheroot", fileserver3))
 	mux.HandleFunc("/searchN4L", SearchN4LHandler)
+	mux.HandleFunc("/Upload", UploadHandler)
+	mux.HandleFunc("/SearchAssets", AssetsHandler)
 
 	fmt.Println("\n***********************************************\n")
 	fmt.Println(" *  File serving resources, set to: ",resources)
@@ -120,10 +129,7 @@ func Start(resources string) {
 		}),
 	}
 
-//&http.Server{Addr: ":8080", Handler: mux}
 	https_srv := &http.Server{Addr: ":8443", Handler: mux}
-
-
 
 	// Graceful Shutdown Channel
 
@@ -229,6 +235,189 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
 	}
+}
+
+// *********************************************************************
+
+func UploadHandler(w http.ResponseWriter, r *http.Request) {
+	
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	r.ParseMultipartForm(32 << 20)
+	
+	uri := r.FormValue("uri")
+	
+	if uri != "none" {
+		UploadURI(w,r)
+	} else {
+		UploadInline(w,r)
+	}
+	
+}
+
+// *********************************************************************
+
+func UploadURI(w http.ResponseWriter, r *http.Request) {
+
+	name := r.FormValue("name")
+	chapter := r.FormValue("chapter")
+	context := r.FormValue("context")
+	ext := r.FormValue("extension")
+	
+	uri := r.FormValue("uri")
+	dir := FileCacheLocation(name,ext,chapter,context)
+	
+	file,err := SST.GetURIFile(uri)
+	
+	if file == "" || err != nil {
+		fmt.Println("1. Upload failed making",dir,"\n", err,"\n")
+		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }",err)
+		w.Write([]byte(response))
+		return
+	}
+
+        err = os.MkdirAll(dir, 0755)
+
+	if err != nil {
+		fmt.Println("2. Upload failed making",dir,"\n", err,"\n")
+		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }",err)
+		w.Write([]byte(response))
+		return	
+	}
+	
+	// cache node = 3 words + date pattern
+
+	c1,c2,_ := SST.GetTimeContext()
+
+	target := fmt.Sprintf("%s%s",SST.SanitizePath(c1),SST.SanitizePath(c2))
+	target = strings.ReplaceAll(target,"__","_")
+        location := dir + target + "." + ext
+	
+	dst, err := os.Create(location)
+
+	if err != nil {
+		fmt.Println("3. Upload failed making",dir,"\n", err,"\n")
+		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }",err)
+		w.Write([]byte(response))
+		return
+	}
+	
+	defer dst.Close()
+
+	fmt.Println("Uploaded cache file",location)	
+
+	// Write the file
+	bytes := []byte(file)
+	size, err := dst.Write(bytes)
+	
+	if err != nil {
+		fmt.Println("Upload failed writing",location, err)
+		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }",err)
+		w.Write([]byte(response))
+		return
+	}
+
+	response := fmt.Sprintf("{ \"Response\" : \"Uploaded\",\n \"Content\" : \"wrote %d bytes to %s\" }",size,location)
+	w.Write([]byte(response))
+
+}
+
+// *********************************************************************
+
+func UploadInline(w http.ResponseWriter, r *http.Request) {
+
+
+	fmt.Println("HANDLE INLINE UPLOAD\n")
+	var err error		
+
+	name := r.FormValue("name")
+	chapter := r.FormValue("chapter")
+	context := r.FormValue("context")
+	ext := r.FormValue("extension")
+
+	file, header, err := r.FormFile("filedata")
+
+	fmt.Printf("File inline upload: %s --> %s\n",header,err)
+	
+	if err != nil {
+		http.Error(w, "Error retrieving file", http.StatusBadRequest)
+		return
+	}
+
+	defer file.Close()
+
+	dir := FileCacheLocation(name,ext,chapter,context)
+
+        err = os.MkdirAll(dir, 0755)
+
+	if err != nil {
+		fmt.Println("2. Upload failed making",dir,"\n", err,"\n")
+		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }",err)
+		w.Write([]byte(response))
+		return	
+	}
+	
+	// cache node = 3 words + date pattern
+
+	c1,c2,_ := SST.GetTimeContext()
+
+	target := fmt.Sprintf("%s%s",SST.SanitizePath(c1),SST.SanitizePath(c2))
+	target = strings.ReplaceAll(target,"__","_")
+        location := dir + target + "." + ext
+	
+	dst, err := os.Create(location)
+
+	if err != nil {
+		fmt.Println("3. Upload failed making",dir,"\n", err,"\n")
+		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }",err)
+		w.Write([]byte(response))
+		return
+	}
+	
+	defer dst.Close()
+
+	fmt.Println("Uploaded cache file",location)	
+
+	_, err = io.Copy(dst,file)
+		
+	if err != nil {
+		fmt.Println("Upload failed writing",location, err)
+		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }",err)
+		w.Write([]byte(response))
+		return
+	}
+
+	if CheckFile(location) {
+		response := fmt.Sprintf("{ \"Response\" : \"Uploaded\",\n \"Content\" : \"wrote %s\" }",location)
+		w.Write([]byte(response))
+	} else {
+		os.Remove(location)
+		fmt.Println("Upload filetype rejected",location, err)
+		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }",err)
+		w.Write([]byte(response))		
+	}
+	
+}
+
+// *********************************************************************
+
+func AssetsHandler(w http.ResponseWriter, r *http.Request) {
+
+	name := r.FormValue("name")
+	chapter := r.FormValue("chapter")
+	context := r.FormValue("context")
+	ext := "any"
+
+	dir := FileCacheLocation(name,ext,chapter,context)
+	
+	w.Header().Set("Content-Type", "application/json")
+
+	response := ListCacheAssets(dir)
+
+	w.Write([]byte(response))
 }
 
 // *********************************************************************
@@ -498,7 +687,6 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request, sst SST.PoSST, np
 	array, _ := json.Marshal(cones)
 
 	response := PackageResponse(sst, search, "ConePaths", string(array))
-	//fmt.Println("CasualConePath reponse",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -563,8 +751,6 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request, sst SST.PoSST, left
 		array_pack, _ := json.Marshal(pack)
 
 		response := PackageResponse(sst, search, "PathSolve", string(array_pack))
-
-		//fmt.Println("PATH SOLVE:",string(response))
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(response)
@@ -924,4 +1110,89 @@ func SL(list []string) string {
 	s += fmt.Sprint(" ]")
 
 	return s
+}
+
+//******************************************************************
+
+func FileCacheLocation(name,ext,chapter,context string) string {
+
+        // We assume that the server is run from the directory under which
+	// it will store all cached files
+
+	chap := SST.SanitizePath(chapter)
+        context = SST.SanitizePath(context)
+	item := ""
+
+        // For long texts we need to hash something, hoping the text will not change
+
+	_,class := SST.StorageClass(name)
+	
+        switch class {
+
+        case SST.N1GRAM, SST.N2GRAM, SST.N3GRAM:
+
+		item = SST.SanitizePath(name)
+        default:
+		words := strings.Split(name," ")
+		data := []byte(name)
+		hash := md5.Sum(data)
+		item = fmt.Sprintf("%s_%s_%s_%x",words[0],words[1],words[2],hash)
+        }
+
+        dir := fmt.Sprintf("./cacheroot/%s/%s/%s/",chap,context,item)
+
+	return dir
+}
+
+//******************************************************************
+
+func ListCacheAssets(path string) []byte {
+
+	fmt.Println("Looking for assets in",path)
+	var response string
+	
+	files, err := os.ReadDir(path)
+
+	if err != nil {
+		response = fmt.Sprintf("{ \"Response\" : \"Assets\",\n \"Content\" : [] }")
+		return []byte(response)
+	}
+
+	var array []string
+	
+	for _, file := range files {
+		array = append(array,"/Assets/"+path+file.Name())
+	}
+	
+	data, _ := json.Marshal(array)
+	response = fmt.Sprintf("{ \"Response\" : \"Assets\",\n \"Content\" : %s }",data)
+
+	return []byte(response)
+
+}
+
+//******************************************************************
+
+func CheckFile(location string) bool {
+
+	f, err := os.Open(location)
+
+	if err == nil {
+
+		buf := make([]byte, 64)
+
+		_, err := io.ReadFull(f, buf)
+		
+		if err != nil {
+			return false
+		}
+
+		contenttype := http.DetectContentType(buf)
+
+		fmt.Println("TYPE",contenttype)
+		f.Close();
+		return true
+	}
+
+	return false
 }

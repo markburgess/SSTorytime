@@ -58,6 +58,7 @@ document.addEventListener("DOMContentLoaded", function (event)
     /* WARNING, WILL ROBINSON!! THE CLOSING OF THIS FUNCTION IS AT THE END OF THE ENTIRE FILE */
 
 var mob = 1;
+
 if (window.innerWidth < 450)
    {
    mob = 0.4;
@@ -1368,7 +1369,7 @@ for (let line = 0; line < array.length; line++)
             if (chtxt.length > 4 && chtxt != lastchtxt)
                {
                let sec = document.createElement("i");
-	           sec.id = "line-num";
+	       sec.id = "line-num";
                sec.textContent = '  From: "' + chtxt + '"';
                parent.appendChild(sec);
                }
@@ -1520,9 +1521,9 @@ if (counter == 0)
 
    child.appendChild(setting);
    ProgressCheckBox(setting,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
-   Upload(setting,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
+   Upload(setting,event.Text,event.Chap,event.Context);
+   FetchAssets(setting,event.Text,event.Chap,event.Context);
    }
-
     
    // Main card text starts here
 
@@ -1703,25 +1704,139 @@ container.appendChild(label);
 
 /***********************************************************/
 
-function Upload(container, nclass, ncptr, chap, context)
+function Upload(container, text, chap, context)
 {
-let button = document.createElement("button");
-button.textContent = "+";
-button.onclick = function uploadbutton()
- {
- if (uploadbutton)
-    {
-    button.style.backgroundColor = "red";
-    button.disabled = true;
-    }
- else
-    {
-    button.style.backgroundColor = "green";
-    button.disabled = false;
-    }
- };
+let button1 = document.createElement("button");
+button1.textContent = "+";
+container.appendChild(button1);
+
+let button2 = document.createElement("button");
+button2.textContent = "F";
+container.appendChild(button2);
+
+// Hidden button
+
+let select = document.createElement('input');
+select.type = "file";
+select.textContent = "F";
+select.id = "fileselect";
+container.appendChild(select);
+   
+select.addEventListener('change', (event) => {
+
+let localfile = event.target.files[0];
+
+if (localfile)
+   {
+   try
+      {
+      let ack = SendUpload(localfile,"none",text,chap,context);
+      console.log('Upload successful:', ack)
+      }
+   catch (error)
+      {
+      console.error('Upload error:', error)
+      }
+   }
+ });
  
-container.appendChild(button);
+button1.onclick = function uploadbutton()
+   { 
+   let uri = prompt("Filename or URI:", "https://example.com/picture.jpg");
+  
+   if (uri == null || uri == "")
+      {
+      return;
+      }
+   else
+      {
+      let ack = SendUpload("none",uri,text,chap,context);
+      }
+ };
+
+
+// Custom button to trigger concealed default button, which is inconsistent
+ 
+button2.addEventListener("click", () => {
+  select.click();
+});
+
+}
+
+/***********************************************************/
+
+function FetchAssets(container, text, chap, context)
+{
+let formData = new FormData();
+formData.set("name", text);
+formData.set("chapter", chap);
+formData.set("context", context);
+
+fetch("/SearchAssets", { method: POST_METHOD, body: formData })
+.then((response) =>
+   {
+   if (!response.ok)
+      {
+      DisplayError("FetchAssets() - network returns error");
+      throw new Error("network returns error");
+      }
+   return response.json();
+   })
+
+.then((resp) =>
+   {
+   switch (resp.Response)
+      {
+      case "Assets":
+         DisplayAssets(container,resp.Content);
+         break;
+      }
+
+   })
+
+.catch((error) =>
+   {
+   console.log("error ", error);
+   DisplayError("No results (perhaps no connection)");
+   });
+}
+
+/***********************************************************/
+
+function DisplayAssets(container,list)
+{
+let gallery = document.createElement("div");
+container.appendChild(gallery);
+
+for (let asset of list)
+   {
+   let text_link = document.createElement("a");
+   text_link.href = asset;
+   text_link.target = "_blank";
+   text_link.rel = "noopener";
+
+   let ext = FileExtension(asset);
+   let date1 = asset.split("Day");
+   let date2 = date1[1].split("_Qu");
+   
+   if (ext == "jpg" || ext == "png" || ext == "gif")
+      {
+      let img = document.createElement("img");
+      img.src = asset;
+      img.id = "cache-asset";
+      text_link.appendChild(img);
+      }
+   else
+      {
+      let oth = document.createElement("span");
+      oth.textContent = date2[0] + "("+ext+")"
+      oth.src = asset;
+      oth.id = "cache-asset";
+      text_link.appendChild(oth);
+      }
+   
+   gallery.appendChild(text_link);      
+   }
 }
 
 /***********************************************************/
@@ -2062,6 +2177,59 @@ fetch("/searchN4L", { method: POST_METHOD, body: formData })
 
 /***********************************************************/
 
+function SendUpload(localfile,uri,text,chap,context)
+{
+let formData = new FormData();
+
+formData.set("name", text);
+formData.set("chapter", chap);
+formData.set("context", context);
+formData.append("filedata",localfile);
+ 
+if (localfile != "none")
+   {
+   let ext = FileExtension(localfile.name);
+   formData.set("extension", ext);
+   formData.set("uri","none");
+
+   return fetch('/Upload',
+		{
+		method: 'POST',
+		body: formData
+		})
+   .then(response => {
+      if (!response.ok)
+	 {
+	 throw new Error('Upload failed')
+	 }
+      return response.json()
+      })
+   }
+ else
+    {
+    let ext = FileExtension(uri);
+    formData.set("extension", ext);
+    formData.set("filedata", "none"); 
+    formData.set("uri", SanitizeURI(uri));
+ 
+    fetch("/Upload",
+	  {
+	  method: 'POST',
+	  body: formData
+	  })
+    .then((response) =>
+	  {
+	  if (!response.ok)
+	     {
+	     DisplayError("upload failed");
+	     }
+	  return response.json();
+	  })
+    }
+}
+
+/***********************************************************/
+
 async function sendLinkSearch(search)
 {
 let formData = new FormData();
@@ -2129,6 +2297,53 @@ fetch("/searchN4L", { method: POST_METHOD, body: formData })
    {
    console.log("error ", error + " No solver found");
    });
+}
+
+/***********************************************************/
+
+function SanitizeURI(uri)
+{
+let dot = uri.lastIndexOf("?");
+
+if (dot == -1 || dot == 0)
+   {
+   return uri;
+   }
+
+return uri.slice(dot)
+}
+
+/***********************************************************/
+
+function FileExtension(filename)
+{
+let dot = filename.lastIndexOf("/");
+
+ if (dot > 1)
+   {
+   filename = filename.slice(dot + 1,filename.length);
+   }
+
+ dot = filename.lastIndexOf("=");
+
+ filename = filename.slice(dot+1)
+ 
+ dot = filename.lastIndexOf("?");
+
+ if (dot > 1)
+   {
+   filename = filename.slice(dot + 1);
+   }
+
+ dot = filename.lastIndexOf(".");
+
+ if (dot > 1)
+   {
+   filename = filename.slice(dot + 1);
+   return filename
+   }
+
+ return "" // guess
 }
 
 /***********************************************************/

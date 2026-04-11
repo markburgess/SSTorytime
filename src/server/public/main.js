@@ -1833,7 +1833,11 @@ for (let asset of list)
    else
       {
       let oth = document.createElement("span");
-      oth.textContent = date2[0] + "("+ext+")"
+      oth.textContent = date2[0]
+      if (ext != "")
+	 {
+	 oth.textContent += " (."+ext+")";
+	 }
       oth.src = asset;
       oth.id = "cache-asset";
       text_link.appendChild(oth);

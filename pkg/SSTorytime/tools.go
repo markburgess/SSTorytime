@@ -886,11 +886,11 @@ func GetURIFile(url string) (string,error) {
 	
 	resp, err := http.Get(url)
 
-	defer resp.Body.Close()
-
 	if err != nil {
 		return "",err
 	}
+
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 

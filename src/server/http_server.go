@@ -274,6 +274,7 @@ func UploadURI(w http.ResponseWriter, r *http.Request) {
 	
 	if file == "" || err != nil {
 		fmt.Println("1. Upload failed making",dir,"\n", err,"\n")
+		w.WriteHeader(http.StatusInternalServerError)
 		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }",err)
 		w.Write([]byte(response))
 		return
@@ -283,6 +284,7 @@ func UploadURI(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		fmt.Println("2. Upload failed making",dir,"\n", err,"\n")
+		w.WriteHeader(http.StatusInternalServerError)
 		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }",err)
 		w.Write([]byte(response))
 		return	
@@ -300,6 +302,7 @@ func UploadURI(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		fmt.Println("3. Upload failed making",dir,"\n", err,"\n")
+		w.WriteHeader(http.StatusInternalServerError)
 		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }",err)
 		w.Write([]byte(response))
 		return
@@ -315,6 +318,7 @@ func UploadURI(w http.ResponseWriter, r *http.Request) {
 	
 	if err != nil {
 		fmt.Println("Upload failed writing",location, err)
+		w.WriteHeader(http.StatusInternalServerError)
 		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }",err)
 		w.Write([]byte(response))
 		return
@@ -372,6 +376,7 @@ func UploadInline(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		fmt.Println("3. Upload failed making",dir,"\n", err,"\n")
+		w.WriteHeader(http.StatusInternalServerError)
 		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }",err)
 		w.Write([]byte(response))
 		return
@@ -385,6 +390,7 @@ func UploadInline(w http.ResponseWriter, r *http.Request) {
 		
 	if err != nil {
 		fmt.Println("Upload failed writing",location, err)
+		w.WriteHeader(http.StatusInternalServerError)
 		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }",err)
 		w.Write([]byte(response))
 		return
@@ -396,6 +402,7 @@ func UploadInline(w http.ResponseWriter, r *http.Request) {
 	} else {
 		os.Remove(location)
 		fmt.Println("Upload filetype rejected",location, err)
+		w.WriteHeader(http.StatusInternalServerError)
 		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }",err)
 		w.Write([]byte(response))		
 	}

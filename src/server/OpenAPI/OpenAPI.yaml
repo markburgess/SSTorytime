@@ -1,0 +1,341 @@
+openapi: 3.0.0
+info:
+  title: SSTorytime Web API
+  version: 2.0.0
+
+paths:
+  /searchN4L:
+    post:
+      operationId: N4Lquery
+      summary: Interpret search command
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+       
+              properties:
+                name:
+                  type: string
+                  description: A search string in the N4L query language
+                chapcontext:
+                  type: string
+                  description: string used for web group updates 
+                nclass:
+                  type: string
+                  description: NPtr string classification for direct lookup
+                ncptr:
+                  type: string
+                  description: NPtr hash number for direct lookup
+              required:
+                - name
+      responses:
+        '200':
+          description: Default for all non error reponses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Response:
+                    type: string
+                  Content:
+                    oneOf:
+                      - $ref: '#/components/schemas/Orbits'
+                      - $ref: '#/components/schemas/ConePaths'
+                      - $ref: '#/components/schemas/PathSolve'
+                      - $ref: '#/components/schemas/Sequence'
+                      - $ref: '#/components/schemas/PageMap'
+                      - $ref: '#/components/schemas/TOC'
+                      - $ref: '#/components/schemas/Arrows'
+
+components:
+
+  schemas:
+
+    NodePtr:
+      description: An internal direct reference to a knowable item
+      type: object
+      properties:
+        Class:
+          type: integer
+        CPtr:
+          type: integer
+
+    ###
+
+    Coords:
+      description: The coordinates of the node, relative to a search in 3d semantic spacetime
+      type: object
+      properties:
+        X:
+          type: number
+        Y:
+          type: number
+        Z:
+          type: number
+        R:
+          type: number
+        Lat:
+          type: number
+        Lon:
+          type: number
+
+    ###
+    
+    NodeEvent:
+      description: The content pointed to by a NodePtr
+      type: object
+      properties:
+        Text:
+          description: The knowable data
+          type: string
+        L:
+          description: The string length of the text
+          type: integer
+        Chap:
+          description: The chapter containing the text
+          type: string
+        Context:
+          description: The context keywords explaining the relevance of the text
+          type: string
+        NPtr:
+          $ref: '#/components/schemas/NodePtr' 
+        XYZ:
+          $ref: '#/components/schemas/Coords' 
+
+    ###
+    
+    WebPath:
+      description: A curated journey through the knowable graph
+      type: object
+      properties:
+        NPtr:
+          $ref: '#/components/schemas/NodePtr' 
+        Arr:
+          description: The arrow type of the next leg of the path
+          type: integer
+        STindex:
+          description: The Semantic Spacetime (0-6) type of the arrow 
+          type: integer
+        Line:
+          type: integer
+          description: The line number reference of the text in the original N4L notes
+        Name:
+          description: The text for this location in the path
+          type: string
+        Chp:
+          description: The chapter the text belongs to
+          type: string
+        Ctx:
+          description: The context keywords the text belongs to
+          type: string
+        XYZ:
+          $ref: '#/components/schemas/Coords' 
+        Wgt:
+          description: The weight assigned to the arrow link
+          type: number
+
+    ###
+
+    Orbits:
+      description: An array of nearest neighbours of the selected knowable text
+      type: array
+      items:
+        type: array
+        items:
+          $ref: '#/components/schemas/Orbit' 
+
+    ###
+
+    Orbit:
+      description: An element in orbit around the knowable text
+      type: object
+      properties:
+        Radius:
+          description: The distance of the related item from the base knowable text
+          type: integer
+        Arrow:
+          description: The arrow type relating the orbiting item to the base knowable text
+          type: string
+        STindex:
+          description: The Semantic Spacetime type (0-6) of the arrow
+          type: integer
+        Dst:
+          description: The NodePtr of the orbiting item 
+          $ref: '#/components/schemas/NodePtr' 
+        Ctx:
+          type: string
+          description: The context key words of the orbiting item
+        Wgt:
+          type: number
+          description: The link weight of the arrow
+        Text:
+          type:  string
+          description: The dereferenced text of the orbiting item
+        XYZ:
+          $ref: '#/components/schemas/Coords'
+        OOO:
+          $ref: '#/components/schemas/Coords'
+
+    ###
+
+    ConePaths:
+      description: A structure listing paths from a root node
+      type: object
+      properties:
+        RootNode:
+          $ref: '#/components/schemas/NodePtr' 
+        Title:
+          type: string
+          description: The text of the root node
+        BTWC:
+          description: An array of Betweenness Centrality scores for the path matrix
+          type: array
+          items:
+            type: string
+        Paths:
+          description: An array of paths starting from the root node
+          type: array
+          items:
+            type : array
+            items:
+              $ref: '#/components/schemas/WebPath'
+        SuperNodes:
+          description: A list of nodes identified by their symmetrical roles in the paths
+          type: array
+          items:
+            type: string
+
+    ###
+
+    PathSolve:
+      description: A structure listing paths from a root node
+      type: object
+      properties:
+        RootNode:
+          $ref: '#/components/schemas/NodePtr' 
+        Title:
+          type: string
+          description: The text of the root node
+        BTWC:
+          description: An array of Betweenness Centrality scores for the path matrix
+          type: array
+          items:
+            type: string
+        Paths:
+          description: An array of paths starting from the root node
+          type: array
+          items:
+            type : array
+            items:
+              $ref: '#/components/schemas/WebPath'
+        SuperNodes:
+          description: A list of nodes identified by their symmetrical roles in the paths
+          type: array
+          items:
+            type: string
+
+    ###
+
+    Sequence:
+      description: An array of NodeEvents forming a story sequence about the search topic
+      type: array
+      items:
+        $ref: '#/components/schemas/NodeEvent'
+
+    ###
+
+    PageMap:
+      description: A literal rendering of the original N4L page notes
+      type: object
+      properties:
+        Title:
+          description: The knowable item
+          type: string
+        Context:
+          description: The context keywords labelling the knowable item
+          type: string
+        Notes:
+          description: An array of the related notes matching the knowable item
+          type: array
+          items:
+            type: array
+            items:
+               $ref: '#/components/schemas/WebPath'
+
+    ###
+
+    Loc:
+      type: object
+      properties:
+        Text:
+          type: string
+        Reln:
+          type: array
+          items:
+            type: integer
+        XYZ:
+          $ref: '#/components/schemas/Coords'
+
+    ###
+
+    ChCtx:
+      type: object   
+      properties:
+        Chapter:
+          type: string
+        XYZ:
+          $ref: '#/components/schemas/Coords'
+        Context:
+          type: array
+          items:
+            $ref: '#/components/schemas/Loc'
+        Single:
+          type: array
+          items:
+            $ref: '#/components/schemas/Loc'
+        Common:
+          type: array
+          items:
+            $ref: '#/components/schemas/Loc'
+
+    ###
+
+    TOC:
+      description: A table of contents matching chapters and contexts
+      type: array
+      items:
+          $ref: '#/components/schemas/ChCtx'
+
+    ###
+
+    ArrowList:
+      description: Spceific information explaining a single type of arrow
+      type: object
+      properties:
+        ArrPtr:
+          type: integer
+        ASTtype:
+          type: integer
+        Short:
+          type: string
+        Long:
+          type: string
+        InvPtr:
+          type: integer
+        ISTtype:
+          type: integer
+        InvS:
+          type: string
+        InvL:
+          type: string
+
+    ###
+    
+    Arrows:
+      type: array
+      items:
+          $ref: '#/components/schemas/ArrowList'
+

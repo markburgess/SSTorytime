@@ -14,7 +14,7 @@ import (
 func main() {
 
 	uri := "https://127.0.0.1:8443/searchN4L"
-	query := "brain \\chapter neuro"
+	query := "forebrain \\chapter neuro"
 	
 	formdata := url.Values{
 		"name": { query },
@@ -36,7 +36,7 @@ func main() {
 	
 	body, _ = io.ReadAll(resp.Body)
 	
-	fmt.Println("TRUSTED",string(body))
+	fmt.Printf("TRUSTED: %v",string(body))
 }
 
 // *********************************************************************

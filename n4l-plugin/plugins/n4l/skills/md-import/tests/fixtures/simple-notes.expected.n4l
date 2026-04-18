@@ -1,0 +1,25 @@
+# n4l:md-import :: src=simple-notes.md
+
+- Italian Cooking Notes
+:: food, cooking ::
+
++:: Italian Cooking ::
++:: Ingredients ::
+
+Ingredients (contain) pasta                # src:simple-notes.md:L9
+"          (contain) tomato sauce          # src:simple-notes.md:L10
+"          (see)     parmesan cheese       # src:simple-notes.md:L11 url:https://en.wikipedia.org/wiki/Parmigiano-Reggiano
+
+-:: Ingredients ::
++:: Recipe ::
++:: _sequence_ ::
+
+Recipe (contain) Boil water                # src:simple-notes.md:L15
+Boil water
+Add salt
+Add pasta
+Drain and serve
+
+-:: _sequence_ ::
+-:: Recipe ::
+-:: Italian Cooking ::

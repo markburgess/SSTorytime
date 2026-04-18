@@ -1,0 +1,18 @@
+# n4l:md-import :: src=table-heavy.md
+
+- table-heavy
+
++:: Movies ::
++:: Classics ::
+
+Citizen Kane                (note) Orson Welles           # src:table-heavy.md:L7 SUGGEST: column 'Director'
+"                           (note) 1941                   # src:table-heavy.md:L7 SUGGEST: column 'Year'
+
+Vertigo                     (note) Alfred Hitchcock       # src:table-heavy.md:L8 SUGGEST: column 'Director'
+"                           (note) 1958                   # src:table-heavy.md:L8 SUGGEST: column 'Year'
+
+"2001: A Space Odyssey"     (note) Stanley Kubrick        # src:table-heavy.md:L9 SUGGEST: column 'Director'
+"                           (note) 1968                   # src:table-heavy.md:L9 SUGGEST: column 'Year'
+
+-:: Classics ::
+-:: Movies ::

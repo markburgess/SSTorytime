@@ -10,7 +10,7 @@ The skill is prompt-based — Pass 1 is Claude following `../SKILL.md` instructi
 2. **Every edge has `# src:` provenance** with a line number.
 3. **Edge tuple set** (source, arrow, target) matches the expected output's tuple set exactly.
 4. **Context stack balance:** every `+:: X ::` has a matching `-:: X ::` in LIFO order.
-5. **Placeholder arrows only:** arrows in emitted edges are drawn from `{contain, fwd, see, note}` (Pass 2 specialization is deferred to a future iteration).
+5. **Arrow codes valid:** every arrow in an edge is either a placeholder (`contain`, `fwd`, `see`, `note`) or a code defined in one of the four `SSTconfig/arrows-*.sst` files. When Pass 2 runs, expect specialized codes (e.g., `ingred`, `e.g.`, `then`) rather than only placeholders. When Pass 2 is skipped (no SSTconfig), expect placeholders + a top-of-file `# NOTE: SSTconfig/ not found.` line.
 6. **Chapter line present:** matches `^- <title-or-filename>`.
 7. **`N4L -v` accepts the output** without syntax errors (integration check; requires the `N4L` binary on PATH).
 
@@ -21,6 +21,8 @@ The skill is prompt-based — Pass 1 is Claude following `../SKILL.md` instructi
 | `simple-notes.md` | Frontmatter (title, tags), heading hierarchy, unordered list, ordered list → `_sequence_`, link-with-url. |
 | `table-heavy.md` | Markdown table → row-per-node with column-header SUGGEST comments. First-column quoting when value contains `:`. |
 | `collision.md` | Numeric-suffix collision rule for duplicate stripped text within a context. Cross-context duplicates (two `## Usage` under different H1s) are NOT collisions because contexts scope identity. |
+
+Note: the `.expected.n4l` files show placeholder arrows because they predate Pass 2 specialization. When Pass 2 runs against the live SSTconfig/, expect specialized codes (e.g., `see` → `ref` under documentation contexts; `contain` → `has-pt` under structural contexts) plus some `# REVIEW:` tags where arrow choice is ambiguous. Tuple-set validation still holds: the (source, meta-type, target) tuples match regardless of which specific code within the meta-type was picked.
 
 ## Not covered yet
 

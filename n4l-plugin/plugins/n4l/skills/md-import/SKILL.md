@@ -1,12 +1,17 @@
 ---
 name: n4l:md-import
-description: "Convert a Markdown file into N4L knowledge graph format using structure-first parsing. Maps headings to contexts, lists to CONTAINS/LEADSTO edges, tables to row-per-node, and links/blockquotes/code fences to EXPRESS annotations. Emits generic placeholder arrows with SUGGEST comments for later specialization. Use when the user says 'import markdown', 'md to n4l', 'convert markdown', or 'markdown to knowledge graph'."
+description: "Convert a Markdown file into N4L knowledge graph format using two-pass parsing. Pass 1 walks markdown structure (headings → contexts, lists → CONTAINS/LEADSTO edges, tables → row-per-node, links/blockquotes/code-fences → EXPRESS edges) and emits a skeleton with placeholder arrows and provenance comments. Pass 2 reads the active SSTconfig/arrows-*.sst and specializes each placeholder into a specific arrow code, flagging ambiguous picks with # REVIEW. Use when the user says 'import markdown', 'md to n4l', 'convert markdown', or 'markdown to knowledge graph'."
 argument-hint: "<markdown-file-path> [--output filename.n4l] [--force]"
 ---
 
 # N4L Markdown Import Skill
 
-Convert a single Markdown file into a valid N4L file by walking the document's structure and emitting generic placeholder arrows with provenance comments. This is **Pass 1 only** (structural parse) — arrow specialization against SSTconfig/ (Pass 2) and merge-on-rerun are deferred to future iterations. The output is valid N4L that uploads cleanly via `/n4l:upload`; review the `# SUGGEST:` comments to refine arrow choices by hand.
+Convert a single Markdown file into a valid N4L file by walking the document's structure and specializing arrow choices against the active `SSTconfig/`. Two-pass architecture:
+
+- **Pass 1 (structural):** walk markdown, emit skeleton with generic placeholder arrows (`contain`, `fwd`, `see`, `note`) and `# src:<path>:L<n>` provenance comments on every edge.
+- **Pass 2 (semantic):** read the skeleton + `SSTconfig/arrows-*.sst` + heading breadcrumb per edge, specialize each placeholder into a specific SSTconfig arrow code. Ambiguous calls surface as `# REVIEW:` or `# SUGGEST:` trailing comments — never as prompts.
+
+If `SSTconfig/` cannot be located, Pass 2 is skipped and placeholders are kept (the four placeholders are real SSTconfig codes, so output still parses). Merge-on-rerun is deferred to a future iteration; v1 aborts on existing output unless `--force` is used.
 
 ## Reference Material
 
@@ -17,17 +22,19 @@ Convert a single Markdown file into a valid N4L file by walking the document's s
 
 **Does:**
 - Parses markdown structure: YAML frontmatter, H1–H6 headings, unordered/ordered lists, tables, links, blockquotes, code fences.
-- Emits a valid `.n4l` file with generic placeholder arrows (`contain`, `fwd`, `see`, `note`) that are real SSTconfig codes — unspecialized output uploads cleanly.
+- Emits a valid `.n4l` file with arrow codes drawn from the active `SSTconfig/` (Pass 2 specialization) or generic placeholders when `SSTconfig/` is unavailable.
 - Tags every edge with `# src:<path>:L<line>` provenance comments.
+- Flags ambiguous arrow picks with `# REVIEW: or (<alt>)?` trailing comments for human review.
 - Warns when a file is mostly prose (suggest running `text2N4L` instead).
 - Aborts on existing output unless `--force` is used (prevents clobbering hand-edited files).
 
 **Does not (deferred to future iterations):**
-- Specialize placeholder arrows using SSTconfig/ and heading context (Pass 2).
 - Detect hand-edits in existing `.n4l` and preserve them on re-run (merge).
 - Import from Obsidian vaults with wikilink resolution (multi-file).
 - Fractionate prose into sentences (use `text2N4L` for that).
 - Interpret wikilinks `[[foo]]` or Obsidian tags `#foo` as structure (treated as literal text).
+
+**Known Pass 2 limitation:** Claude's arrow specialization is non-deterministic. Re-running the skill on the same markdown may produce slightly different specialized arrows for the same edge. Provenance comments and hashes are computed from Pass-1 (placeholder) form, so re-runs do not falsely flag edges as "edited" when merge ships. But the diff of two `.n4l` outputs from the same markdown will show arrow variance. Review `# REVIEW:` tags before upload.
 
 ## Workflow
 
@@ -149,9 +156,9 @@ Trim leading and trailing whitespace.
 
 **After-last-heading content.** After the final heading's scope closes at EOF, any remaining bullets are rare in practice — treat them the same way as pre-heading content (source = chapter; context = frontmatter tags, if any).
 
-### Step 7: Emit the Output File
+### Step 7: Emit Pass-1 Skeleton (in memory)
 
-Build the output in this order:
+Build the Pass-1 skeleton string in this order. This is still an in-memory skeleton — not yet written to disk. Pass 2 (Steps 8–10) may modify arrow codes before the final write in Step 11.
 
 1. **Marker line (always first):**
    ```
@@ -184,16 +191,102 @@ Build the output in this order:
 
 7. **Blank line between edge-groups** (each group is all edges sharing a source node).
 
-### Step 8: Write the Output and Report
+### Step 8: Pass 2 — Locate SSTconfig/ and Load Arrow Catalogs
 
-Use the Write tool to save the output. Report:
+Find the arrow definition files in this order:
+
+1. Use the Glob tool to check for `SSTconfig/` in the current working directory.
+2. If not found, check `$SSTORYTIME_HOME` using Bash: `echo $SSTORYTIME_HOME`; if set, look for `SSTconfig/` there.
+3. If still not found, **skip Pass 2 entirely**. Insert a second conditional NOTE line near the top of the skeleton:
+   ```
+   # NOTE: SSTconfig/ not found. Placeholders kept. Set $SSTORYTIME_HOME or run from your project root.
+   ```
+   Then jump to Step 11.
+
+Do NOT prompt the user — matches the `n4l:import` silent-fallback convention.
+
+If `SSTconfig/` is located, read all four arrow definition files:
+
+- `arrows-NR-0.sst` — NEAR (symmetric)
+- `arrows-LT-1.sst` — LEADSTO (directional)
+- `arrows-CN-2.sst` — CONTAINS (directional)
+- `arrows-EP-3.sst` — EXPRESS (directional)
+
+Parse per the format documented in `@./references/arrow-types.md` ("Arrow Definition File Format" section). Build four per-meta-type candidate lists:
+
+- NEAR candidates: `[(short_code, label), ...]` from symmetric `name (code)` lines.
+- LEADSTO / CONTAINS / EXPRESS candidates: for each `+ forward (code) - reverse (code)` line, emit **both** directions as candidates so Pass 2 can pick either orientation. Keep them tagged: `{"code": "cause", "label": "causes", "direction": "forward", "pair_code": "cause-by"}`.
+
+Skip lines matching `:: tag1, tag2 ::` (these are organizational groupings within arrow files, not arrow definitions).
+
+### Step 9: Pass 2 — Specialize Each Placeholder Arrow
+
+For each edge line in the Pass-1 skeleton whose arrow is exactly one of the four placeholders (`contain`, `fwd`, `see`, `note`), decide whether to specialize.
+
+**Per-edge decision procedure:**
+
+1. **Identify the meta-type** from the placeholder:
+   - `contain` → CONTAINS candidates
+   - `fwd` → LEADSTO candidates
+   - `see` → NEAR candidates
+   - `note` → EXPRESS candidates
+
+2. **Gather decision context:**
+   - Source node text
+   - Target node text
+   - Heading breadcrumb (full chain of open `+:: ::` contexts at this edge's position)
+   - Any existing `# SUGGEST:` hint already on the edge line (e.g., `SUGGEST: column 'Director'`, `SUGGEST: consider (quote)`, `SUGGEST: consider (example) language=python`, `url:<href>`)
+   - The candidate list for the matching meta-type
+
+3. **Pick the best code** using these heuristics (in order):
+
+   a. **Honor existing hints.** If the edge already carries a `SUGGEST: consider (code)` hint (blockquote → `quote`, code fence → `example`), and that code exists in the candidate list, pick it.
+
+   b. **Keyword match the node text.** Look for explicit relationship words in the source or target: "causes"/"leads to" → `(cause)`/`(fwd)`; "means"/"definition" → `(means)`; "example"/"e.g." → `(e.g.)`; "contains"/"has"/"ingredient" → `(contain)`/`(has-pt)`/`(ingred)`; "consists of" → `(consists)`; "note"/"remark" → `(note)`; "describes" → `(describe)`; "synonym"/"same as" → `(syn)`/`(=)`; "see also"/"related" → `(see)`/`(related)`.
+
+   c. **Match the heading breadcrumb.** Recipes/cooking contexts favor `(ingred)` over `(contain)`. Processes/steps/workflow contexts favor `(then)`/`(next)` over `(fwd)`. Glossary/definitions favor `(means)`/`(describe)` over `(note)`. Taxonomy/categories favor `(is-a)` (if present) or `(contain)`.
+
+   d. **Link edges specifically.** For a `see` placeholder that came from a markdown link, prefer `(ref)` / `(cite)` / `(source)` if present, else keep `(see)`.
+
+   e. **Table column edges.** The `SUGGEST: column '<header>'` hint carries a column name; treat it as a potential arrow-label match (e.g., column `role` → `(role)`, column `description` → `(describe)`, column `category` → `(is-a)` or `(contain)`).
+
+4. **Confidence gating:**
+
+   - If a single candidate is distinctly better than the placeholder AND clearly better than all alternatives → emit the specialized code with **no extra comment**.
+   - If two (or more) candidates are equally plausible → pick the first one and append ` # REVIEW: or (<alt>)?` listing **exactly one** alternative. Never list more than one REVIEW alternative per edge.
+   - If no candidate is confidently better than the placeholder → keep the placeholder and append ` # SUGGEST: review against <arrow-file>.sst` (where `<arrow-file>` is the matching meta-type file name).
+
+5. **Preserve the provenance comment unchanged.** The `# src:<path>:L<n>` and any `url:...` / `SUGGEST: column '<x>'` annotations remain on the line. REVIEW/SUGGEST arrow-choice comments are appended after the provenance comment with a space separator:
+   ```
+   <source> (ingred) <target>   # src:notes.md:L12 # REVIEW: or (contain)?
+   ```
+
+6. **Do not change node text, ditto alignment, or context blocks.** Pass 2 only rewrites the arrow code in parentheses; everything else is byte-preserved from the Pass-1 skeleton.
+
+### Step 10: Pass 2 — Chunking for Large Skeletons
+
+If the in-memory skeleton exceeds approximately 40k tokens (rough guide: >30,000 bytes of skeleton text), process it in chunks rather than one pass:
+
+1. Split the skeleton at top-level heading boundaries (where a `+:: <top-heading-text> ::` opens at indent level 0 of the context stack). Each chunk is one top-level heading's scope.
+2. Include the full chapter header + frontmatter tag context at the top of every chunk so Claude has consistent base context.
+3. Include the full candidate list (all four meta-types) in every chunk prompt — it's ~6K tokens, cheap to duplicate for modest chunk counts.
+4. Process each chunk independently. Each chunk self-contains its `+::` / `-::` blocks.
+5. If the heuristic would split inside a `+:: _sequence_ ::` / `-:: _sequence_ ::` block, bump the chunk boundary to include the whole sequence.
+6. Reassemble chunks in order; the output is a single file.
+
+For skeletons under the threshold, process the whole thing in one pass.
+
+### Step 11: Write the Output and Report
+
+Use the Write tool to save the final (post-Pass-2) output. Report:
 
 - Output file path.
 - Edge count.
 - Chapter name.
 - Distinct context count (number of headings encountered).
 - Prose-ratio (so the user knows whether the NOTE was emitted).
-- Review hint: *"Output uses generic placeholder arrows (`contain`, `fwd`, `see`, `note`). Specialize by hand against SSTconfig/ or run `/n4l:upload` to validate and upload."*
+- Pass 2 stats: count of specialized edges, count of `# REVIEW:` tags, count of `# SUGGEST:` tags, and whether Pass 2 ran at all (skipped if no SSTconfig).
+- Review hint: *"Review `# REVIEW:` tags before upload. Run `/n4l:upload <output-path>` to validate and upload."*
 
 ## Worked Example
 
@@ -226,7 +319,7 @@ tags: [food, cooking]
 /n4l:md-import cooking.md
 ```
 
-### Output (`cooking.n4l`)
+### Pass-1 skeleton (intermediate, not written to disk)
 
 ```
 # n4l:md-import :: src=cooking.md
@@ -255,6 +348,40 @@ Drain and serve
 -:: Recipe ::
 -:: Italian Cooking ::
 ```
+
+### Output (`cooking.n4l`, after Pass 2 specialization)
+
+Pass 2 reads the skeleton + `SSTconfig/arrows-*.sst` + heading breadcrumb. Under `Ingredients`, the placeholder `(contain)` for food items specializes to `(ingred)` (food domain). The link to a Wikipedia article stays `(see)` — it's a generic reference, not a domain-specific relationship. Pass 2 does not touch the sequence-mode items (they're implicitly `(then)`-chained by `+:: _sequence_ ::`, no placeholder present).
+
+```
+# n4l:md-import :: src=cooking.md
+
+- Italian Cooking Notes
+:: food, cooking ::
+
++:: Italian Cooking ::
++:: Ingredients ::
+
+Ingredients (ingred) pasta                 # src:cooking.md:L9
+"          (ingred) tomato sauce           # src:cooking.md:L10
+"          (see)    parmesan cheese        # src:cooking.md:L11 url:https://en.wikipedia.org/wiki/Parmigiano-Reggiano
+
+-:: Ingredients ::
++:: Recipe ::
++:: _sequence_ ::
+
+Recipe (contain) Boil water                # src:cooking.md:L15 # REVIEW: or (has-pt)?
+Boil water
+Add salt
+Add pasta
+Drain and serve
+
+-:: _sequence_ ::
+-:: Recipe ::
+-:: Italian Cooking ::
+```
+
+The `Recipe (contain) Boil water` edge was flagged because `(contain)` and `(has-pt)` are both reasonable for "a recipe is made up of these steps" — the user can pick during review. If `SSTconfig/` was not found at Pass 2 time, the skeleton above is written as-is with a `# NOTE: SSTconfig/ not found.` line near the top and no REVIEW tags.
 
 ## Special Handling Notes
 

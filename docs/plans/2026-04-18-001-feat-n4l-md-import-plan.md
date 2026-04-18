@@ -173,7 +173,7 @@ Input: skeleton chapter-by-chapter, candidate arrows from the four `arrows-*.sst
 
 ## Implementation Units
 
-- [ ] **Unit 1: Scaffold skill directory and SKILL.md**
+- [x] **Unit 1: Scaffold skill directory and SKILL.md**
 
 **Goal:** Create the skill directory, SKILL.md skeleton, per-skill references, and argument-parsing logic. Establish the R3 marker-check and `--force` / `--output` flag handling.
 
@@ -213,7 +213,7 @@ Input: skeleton chapter-by-chapter, candidate arrows from the four `arrows-*.sst
 - References imports resolve (no `@./references/...` path errors).
 - Marker-check branches correctly on fixture files with and without the marker.
 
-- [ ] **Unit 2: Pass 1 — structural parse + skeleton emission**
+- [x] **Unit 2: Pass 1 — structural parse + skeleton emission**
 
 **Goal:** Implement the prompt steps that walk markdown structure and emit a valid `.n4l` skeleton with placeholder arrows and provenance comments on every edge.
 
@@ -297,7 +297,7 @@ pass1(md_path) -> n4l_string:
 - Every edge line has a `# src:` and `h:` stanza.
 - Hash collisions on the fixture set are zero (verifies 6-hex-char truncation is safe for realistic file sizes).
 
-- [ ] **Unit 3: Pass 2 — Claude arrow specialization**
+- [x] **Unit 3: Pass 2 — Claude arrow specialization**
 
 **Goal:** Given a Pass-1 skeleton and the active SSTconfig/ arrow files, walk the skeleton and replace placeholder arrows with specific codes where a confident pick exists. Leave placeholder + `# SUGGEST:` when no candidate is better; emit `# REVIEW:` when multiple candidates are plausible.
 

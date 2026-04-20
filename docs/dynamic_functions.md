@@ -10,7 +10,7 @@ data security, or operate in a sandbox.**
 
 ## Examples
 
-Currently, there are only two example functions, demonstrated in the [reminders.n4l](../examples/reminders.n4l)
+Currently, there are only two example functions, demonstrated in the [reminders.n4l](https://github.com/markburgess/SSTorytime/blob/main/examples/reminders.n4l)
 example. 
 <pre>
  Dynamic: {TimeSince Day25 May Yr2018 Hr13} have elapsed since the ChiTek-i company was founded

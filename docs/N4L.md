@@ -47,14 +47,26 @@ and turns it into a machine representation in the form of a "Semantic Spacetime"
  refer to RDF in what follows, except to occasionally clarify the distinction. 
 The command options currently include:
 <pre>
-usage: N4L [-v] [-u] [-s] [file].dat
+usage: N4L [-v] [-d] [-s] [-u] [-force] [-wipe] [-adj "list"] file.n4l [...]
   -adj string
-        a quoted, comma-separated list of short link names (default "none")
+        a quoted, comma-separated list of short link names to include in
+        summary/adjacency output (default "none")
   -d    diagnostic mode
-  -s    summary (node,links...)
-  -u    upload
+  -s    summary (nodes, links...)
+  -u    upload parsed notes to the database
   -v    verbose
+  -force
+        skip confirmation prompts on upload conflicts
+  -wipe
+        drop and recreate all database state before loading. Combine with
+        -u for an atomic re-upload: <code>N4L -wipe -u *.n4l</code>
 </pre>
+
+!!! tip "Atomic re-upload pattern"
+    The cleanest way to update a large, interlinked note set is `N4L -wipe -u *.n4l`.
+    This wipes the database and reloads everything in one pass, which avoids
+    fragmentation that accumulates when you delete and re-add chapters individually.
+    See [Removing notes](removeN4L.md) for the trade-offs.
 For example, to parse and validate a file of notes, one can simply type:
 <pre>
 $ N4L chinese.in
@@ -180,7 +192,7 @@ A useful ranking of nodes (known as EVC, or Eigenvector Centrality, which is som
 can be calculated from the weighted graph matrix (see below). The higher the score number, the more
 interconnected or "important" a term of text is, e.g.
 <pre>
-$ ../src/N4L -v -s -adj="" chinese.in
+$ ../src/bin/N4L -v -s -adj="" chinese.in
 
   ...
 

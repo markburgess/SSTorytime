@@ -29,9 +29,9 @@ $ make
 With data, you can now run the web server:
 <pre>
 cd src
-./http_server
+./bin/http_server
 </pre>
-and open a web browser `http://localhost:8080`. Try searching for SSTorytime!
+and open a web browser at `https://localhost:8443`. (The plaintext port `:8080` will issue a 301 redirect to the HTTPS URL.) You'll see a self-signed-certificate warning the first time — accept it for local development. Try searching for SSTorytime!
 
 ## 1. Find your operating system
 
@@ -48,7 +48,7 @@ Here is the rough plan:
 
 ### 2a. Steps for running postgres in a Docker container
 
-The PostgreSQL database dependency can by run in a Docker container to avoid local installation and configuration. See [Running the SSTorytime database in docker](../postgres-docker/README.md) for further details.
+The PostgreSQL database dependency can by run in a Docker container to avoid local installation and configuration. See [Running the SSTorytime database in docker](https://github.com/markburgess/SSTorytime/blob/main/postgres-docker/README.md) for further details.
 
 ### or 2b. Steps for postgres with package installation
 
@@ -263,5 +263,5 @@ Now that everything is working, simply do the following to try out the examples 
 ```
 $ cd examples
 $ make
-$ ../src/N4L -u LoopyLoo.n4l
+$ ../src/bin/N4L -u LoopyLoo.n4l
 ```

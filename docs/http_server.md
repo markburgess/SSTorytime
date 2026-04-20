@@ -8,7 +8,7 @@ graphs.
 
 The web server has a single argument:
 <pre>
-./http_server -resources /data/directory
+./bin/http_server -resources /data/directory
 </pre>
 This is a directory path which serves as a root for any file paths referenced in URLs, e.g.
 where images of documents may be cached in order to be accessible from links rendered in the
@@ -16,7 +16,7 @@ browser. It may include any kind of MIME type, such as music files, images, docu
 
 For example, if we share a folder called `/mnt/Recordings`, then start the server
 <pre>
-./http_server -resources /mnt/Recordings
+./bin/http_server -resources /mnt/Recordings
 </pre>
 which leads to a disk file
 <pre>
@@ -28,10 +28,26 @@ which maps an image reference
 </pre>
 to the URL
 <pre>
-http://localhost:8080/Resources/Rush/Presto/Folder.jpg
+https://localhost:8443/Resources/Rush/Presto/Folder.jpg
 </pre>
 
-* The web server exposes port 8080 for now.
+## Ports and TLS
+
+The server binds **HTTPS on port 8443** as its primary endpoint. A secondary
+listener on port 8080 issues a 301 redirect to the HTTPS URL, so any plaintext
+HTTP client is transparently upgraded. See the listener setup at
+[`src/server/http_server.go:123-166`](https://github.com/markburgess/SSTorytime/blob/main/src/server/http_server.go#L123-L166).
+
+TLS certificates are auto-generated on first build of `src/server/` by the
+[`make_certificate`](https://github.com/markburgess/SSTorytime/blob/main/src/server/make_certificate)
+script (self-signed RSA-4096, 365-day validity). The running server reads them
+from `../server/cert.pem` / `../server/key.pem` relative to the binary at
+`src/bin/http_server`, so the default working directory for launching the
+server is `src/bin/`.
+
+For production deployments, terminate TLS at an external reverse proxy
+(nginx, Caddy, Traefik) and have the SSTorytime server listen on a
+loopback-only HTTP port behind it.
 
 ## Four search formats
 

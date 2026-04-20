@@ -87,3 +87,6 @@ conceptualize
 # SHD ###########
 # `air`
 **/tmp
+
+# mkdocs build output
+/site/

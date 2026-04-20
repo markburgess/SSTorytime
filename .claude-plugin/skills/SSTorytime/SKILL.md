@@ -163,7 +163,7 @@ PATTERN \chapter CHAPTER
 
   - To limit any search to a particular context keywords,
 ```
-PATTERN \chapter CHPPTER \context CONTEXT
+PATTERN \chapter CHAPTER \context CONTEXT
 ```
 
 - To see the compiled notes in the exactly as they appear in .N4L files

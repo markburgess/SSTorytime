@@ -152,19 +152,50 @@ to skip 2 lexemes
 ```
 
 - Default searches match against all data in the whole graph
-  - To limit any search to a particular chapter, PATTERN \chapter CHAPTER
-  - To limit any search to a particular context keywords, PATTERN \context CHAPTER
+  - To limit any search to a particular chapter,
+```
+PATTERN \chapter CHAPTER
+```
 
-- \notes PATTERN search reproduces the compiled notes in the exactly as they appear in .N4L files
+  - To limit any search to a particular context keywords,
+```
+PATTERN \chapter CHPPTER \context CONTEXT
+```
 
-- \from START-NODE \to END-END solves for connected paths from start to finish
-- \from START-NODE finds an expandng cone of paths leaving from a node
-- \to END-NODE finds a converging cone of paths arriving at a node
+- To see the compiled notes in the exactly as they appear in .N4L files
+```
+\notes PATTERN
+```
 
-- \story search looks for paths connected by
+- To solve for connected paths from start to finish
+```
+\from START-NODE \to END-END
+```
 
+- To find an expanding cone of paths leaving from a node
+```
+\from START-NODE
+```
+
+- To finds a converging cone of paths arriving at a node
+```
+\to END-NODE
+```
+
+- To search looks for paths connected by
+```
+\sequence PATTERN
+```
 
 ## Special searches
 
-- \arrow PATTERN/NUMBER retrieves an arrow definition
-- (nclass,ncptr) 
+- To retrieve an arrow definition
+```
+\arrow PATTERN/NUMBER
+```
+
+- To retried an exact node by its internal key value use (nclass,ncptr), e.g.
+```
+(1,14)
+```
+

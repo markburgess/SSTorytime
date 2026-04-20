@@ -6,6 +6,9 @@
 `pathsolve` is an experimental tool for finding contiguous paths between node sets.
 It can also be accessed through the web browser.
 
+<!-- TODO(visuals): Before/after diagram of path expansion — left side shows two boundary sets (begin / end) as dotted outlines; right side shows the converged wave-fronts meeting in the middle, with the winning path highlighted. Style A (pen-and-ink). Place after the intro, before the Flags section. -->
+
+
 `pathsolve` also reports about two deeper analyses of the paths:
 
 * *Betweenness centrality*:  a score for how many times each path passes through each node in the path sets.

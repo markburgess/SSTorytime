@@ -63,6 +63,8 @@ There are also tools for helping you to get started making notes about a text do
 
 * Use `text2N4L` to read a text file and select parts to produce an editable file in N4L that you can use as a starting point for your own notes.
 
+<!-- TODO(visuals): N4L syntax legend — a one-glance cheat sheet mapping the punctuation marks to their roles: "-" chapter, "::" context, "(rel)" arrow relation, "@alias"/"$alias.N" aliases, "+/-" context stack. Target Style A (pen-and-ink). Add under a "Syntax at a glance" heading near the top of this section. -->
+
 ## The idea
 
 The knowledge database is divided into

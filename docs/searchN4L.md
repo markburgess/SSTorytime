@@ -1,10 +1,13 @@
 
 # searchN4L
 
-![A hand-drawn graph network with a cone of flashlight-beam light sweeping across it, illuminating a path through the nodes.](figs/searching_hero.jpg){ align=center }
+![A graph network of nodes and links with a cone of flashlight-beam light sweeping across it, illuminating a path through the nodes.](figs/searching_hero.jpg){ align=center }
 
 This is a tool for querying the database. This is redesigned to avoid having to use command line options.
 The only command line option is `-v` for verbose output, which is helpful for debugging.
+
+<!-- TODO(visuals): Worked query example — a three-panel diagram that walks a single query through the DSL parser: (1) raw query string; (2) parsed SearchParameters struct (commands, text, filters); (3) result orbits on the graph. Style A (pen-and-ink). Place between this paragraph and the "Command-line flags" heading below. -->
+
 
 ## Command-line flags
 

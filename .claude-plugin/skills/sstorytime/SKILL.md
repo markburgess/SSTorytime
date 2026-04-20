@@ -138,12 +138,18 @@ A table of contents listing chapters and search contexts can be obtained with co
 ```
        strange<->kind<->of<->woman
 ```
-       to skip 2 lexemes
+
+to skip 2 lexemes
+
 ```
        strange<2>woman
 ```
-       - Use | character to delimint: e.g.  |a1|, "|deep purple|"
 
+- Use | character to delimint: e.g.
+
+```
+|a1|, "|deep purple|"
+```
 
 - Default searches match against all data in the whole graph
   - To limit any search to a particular chapter, PATTERN \chapter CHAPTER

@@ -6,7 +6,8 @@ do not speak each other's languages natively. **MCP-SST** is the external
 proxy that bridges them: a small service that accepts
 [Model Context Protocol](https://modelcontextprotocol.io/) tool-call
 messages from an LLM and re-issues them as HTTPS requests to an
-SSTorytime server's `/searchN4L` endpoint.
+SSTorytime server's `/searchN4L` endpoint, translating MCP parameters into
+[N4L](../concepts/glossary.md#n4l) queries against the graph.
 
 !!! info "Inferred content"
     The MCP-SST project lives in a separate repository at
@@ -44,15 +45,15 @@ sequenceDiagram
     participant SST as SSTorytime<br/>HTTPS :8443
     participant DB as PostgreSQL
 
-    LLM->>MCP: tool_call("sst_search", {name: "Alice"})
-    MCP->>MCP: translate to N4L DSL
+    LLM->>MCP: tool_call("sst_search (inferred)", {name: "Alice"})
+    MCP->>MCP: translate to N4L DSL (see glossary: N4L)
     MCP->>SST: POST /searchN4L<br/>name=alice
     SST->>DB: orbit / cone / path query
     DB-->>SST: rows
     SST-->>MCP: { "Response": "Orbits", "Content": [...] }
-    MCP->>MCP: reshape for MCP
+    MCP->>MCP: reshape for MCP (tool name inferred)
     MCP-->>LLM: tool_result (text or structured)
-    LLM->>LLM: reason over result,<br/>maybe call again
+    LLM->>LLM: reason over result,<br/>maybe call "sst_path (inferred)"
 ```
 
 Three processes, two network hops, one trust boundary at the MCP-SST
@@ -186,6 +187,12 @@ ideally, between MCP-SST and SSTorytime. Production checklist:
 
 ## Example: an LLM asking a question through MCP-SST
 
+!!! warning "Inferred tool shape"
+    The exact tool-call shape below is inferred from the MCP-SST proxy
+    pattern; verify against the live proxy's JSON Schema once available.
+    Do not rely on `sst_search` or `sst_path` as verified identifiers —
+    the MCP-SST repository is authoritative.
+
 Imagine you have loaded the Alice-in-Wonderland corpus into SSTorytime
 and the model has discovered the `sst_search` and `sst_path` tools.
 
@@ -207,6 +214,16 @@ and the model has discovered the `sst_search` and `sst_path` tools.
 The model did not see any SQL, any N4L command syntax, or any `NodePtr`
 values. The proxy handled the translation; the graph handled the search;
 the model handled the language.
+
+## Stability
+
+This integration surface has no compatibility guarantee. The SSTorytime
+wire protocol, the MCP-SST proxy's tool names, and the tool parameter
+shapes can all change between commits without notice. Pin both the
+SSTorytime server and the MCP-SST proxy by commit SHA. See
+[versioning](../versioning.md) for the project-wide policy; the same
+caveat applies to the [Web API](../WebAPI.md#stability) and
+[Go API](../API.md#stability) surfaces.
 
 ## See also
 

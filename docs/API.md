@@ -4,7 +4,7 @@
 
 ![A human silhouette on the left and a crystalline geometric shape on the right connected by a bridge made of arrows and small nodes — a visual metaphor for the API as a bridge between your program and the graph.](figs/api_hero.jpg){ align=center }
 
-The simplest way to manage graphs is to use the N4L language to create
+The simplest way to manage graphs is to use the [N4L](concepts/glossary.md#n4l) language to create
 and manage them, then rebuild the whole database consistently as a
 cache of the information. This makes editing very intuitive and simple.
 However, sometimes you want to work directly with a programming interface.
@@ -418,6 +418,16 @@ For uploading a PageMap structure from memory to postgres
 
 
 
+
+## Stability
+
+The Go API surface described on this page has no compatibility
+guarantee. Exported function names, signatures, and the semantics of the
+underlying SQL tables can all change between commits without notice. Pin
+integrations by commit SHA and review the diff before bumping. See
+[versioning](versioning.md) for the project-wide policy; the same caveat
+applies to the [Web API](WebAPI.md#stability) and
+[MCP-SST](http-api/mcp-sst.md#stability) surfaces.
 
 ## Basic queries from SQL
 

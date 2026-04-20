@@ -103,11 +103,14 @@ nav:
       - Tutorial: Tutorial.md
       - FAQ: FAQ.md
   - Concepts:
+      - Why Semantic Spacetime: concepts/why-semantic-spacetime.md
+      - Architecture: concepts/architecture.md
+      - Glossary: concepts/glossary.md
       - Knowledge & Learning: KnowledgeAndLearning.md
       - Storytelling: Storytelling.md
       - How Context Works: howdoescontextwork.md
       - Arrows & Relationships: arrows.md
-      - Namespaces: namespaces.md
+      - Namespaces (planned): namespaces.md
       - Outreach: outreach.md
   - N4L Language:
       - N4L Reference: N4L.md
@@ -125,12 +128,26 @@ nav:
       - http_server: http_server.md
   - APIs:
       - Go API: API.md
+      - API walkthroughs: API_WALKTHROUGH.md
       - Web API: WebAPI.md
+      - MCP-SST integration: http-api/mcp-sst.md
+  - Cookbooks:
+      - Bring your own corpus: cookbooks/bring-your-own-corpus.md
+      - 10 search recipes: cookbooks/search-recipes.md
+      - Your first Go program: cookbooks/first-go-program.md
+      - Python integration: cookbooks/python-integration.md
+      - Connecting an LLM via MCP-SST: cookbooks/llm-via-mcp-sst.md
+      - Backup, restore, delete: cookbooks/backup-restore-delete.md
   - Reference:
+      - Concept → Code index: code-index.md
       - Debug: debug.md
       - To-Do: ToDo.md
       - Database:
+          - Setup: Database/Setup.md
           - Schema: Database/Schema.md
+          - Stored functions: Database/Functions.md
+          - Indexes: Database/Indexes.md
+          - Performance: Database/Performance.md
   - Contributing:
       - How to Contribute: howtocontribute.md
       - Testing: testing.md

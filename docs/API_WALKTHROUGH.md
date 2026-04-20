@@ -22,7 +22,7 @@ the binary alongside the source.
 
 **Goal:** demonstrate the minimum viable Go program that (a) writes a
 small story into the graph using `Vertex` / `Edge`, and (b) reads the
-story back as a forward [cone](concepts/glossary.md#cone--cone-search) of linked nodes.
+story back as a forward [cone](concepts/glossary.md#cone-cone-search) of linked nodes.
 
 This is the shape of every custom SSTorytime client. `Open` establishes
 the database connection; `Vertex` creates idempotent nodes; `Edge` wires

@@ -216,11 +216,11 @@ A minimal smoke test from a Go program:
 sst := SSTorytime.Open(true)  // true = also load arrow/context directories
 defer SSTorytime.Close(sst)
 // If this returns without exit(-1), the connection works
-// and Configure() has installed all 6 tables + ~34 stored functions.
+// and Configure() has installed all 6 tables + 35 stored functions.
 ```
 
 `Open()` calls `Configure()`, which creates the 3 custom types, 6 tables, and
-installs the ~34 PL/pgSQL functions (see
+installs the 35 PL/pgSQL functions (see
 [`session.go:185-302`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/session.go#L185-L302)
 and the [Stored functions](Functions.md) reference). It also calls
 `CREATE EXTENSION unaccent` on every open —

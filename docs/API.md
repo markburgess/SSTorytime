@@ -41,8 +41,7 @@ Links between nodes are not stored in a separate `nodearrownode` table; they
 live embedded in the `Node` table as arrays of the custom `Link` type, one
 array per signed arrow channel (`Im3`, `Im2`, `Im1`, `In0`, `Il1`, `Ic2`,
 `Ie3`). See [`pkg/SSTorytime/postgres_types_functions.go:32-48`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_types_functions.go#L32-L48)
-for the full DDL. A dedicated Database Schema reference page is planned as
-part of the ongoing [documentation upleveling](plans/2026-04-20-documentation-upleveling.md).
+for the full DDL. See the dedicated [Database Schema reference](Database/Schema.md).
 
 Another thing we need to do is register arrow definitions used in links/edges.
 For this we use two functions: `SST.InsertArrowDirectory(stname,alias,name,pm string)` and

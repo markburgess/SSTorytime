@@ -62,7 +62,7 @@ The returned tuple matches the layout in [`SSTorytime.py`](https://github.com/ma
 
 ## 4. Cone search
 
-The simplest path query — forward [cone](../concepts/glossary.md#cone--cone-search) starting at a [NodePtr](../concepts/glossary.md#nodeptr), following a single STtype.
+The simplest path query — forward [cone](../concepts/glossary.md#cone-cone-search) starting at a [NodePtr](../concepts/glossary.md#nodeptr), following a single STtype.
 
 ```python
 leadsto   = 1       # +leads-to; see STtype table in docs/graph_report.md

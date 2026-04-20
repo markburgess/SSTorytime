@@ -1,7 +1,7 @@
 
 # N4L - Notes for Learning
 
-![Four arrow forms illustrating the four STtypes: CONTAINS as an embrace, LEADSTO as a runner, NEAR as parallel equals signs, EXPRESSES as a speaking mouth.](figs/n4l_hero.jpg){ align=center }
+![Four-quadrant pen-and-ink grid showing the four STtypes: NEAR as mirror-twin figures, LEADSTO as a runner mid-stride, CONTAINS as a parent's embrace, EXPRESSES as an open mouth with speech bubble.](figs/n4l_hero.jpg){ align=center }
 
 ## A simple knowledge management language
 
@@ -22,6 +22,8 @@ and can reason through stories.
 on maps, in which things are close together or laid out in a logical manner,
 In the future, N4L should be able to support simple sketches too, but that's
 for future development.*
+
+![Photograph of a hotel kitchen with four callout bubbles annotating the Chinese names for the refrigerator, microwave, kettle and dishwasher (冰箱 Bīngxiāng, 微波炉 Wéibōlú, 热水壶 Rè shuǐhú, 洗碗机 Xǐ wǎn jī) — an everyday example of using N4L-style annotation to learn vocabulary in context.](figs/ExampleAnnotation.jpg){ align=center }
 
 ## Why do we need a language?
 

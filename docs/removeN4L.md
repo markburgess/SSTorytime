@@ -48,7 +48,7 @@ $ N4L -wipe -u file1.n4l ....... reminders.n4l
 </pre>
 Then you can remove the reminders:
 <pre>
-$ removeN4L reminders.n4l
+$ removeN4L -force reminders.n4l
 </pre>
 and add them back again without fragmentation:
 <pre>
@@ -56,3 +56,22 @@ $ N4L -u reminders.n4l
 </pre>
 Reminders might still overlap with more permanent items from other chapters, but this will minimize the
 disruption.
+
+## Exit codes & environment
+
+- **Exit `0`** — a `DeleteChapter` call was issued (success is printed as `Deleted <chapter>`).
+- **Exit `1`** — called with no chapter name, or called without `-force`. The tool prints
+  `Are you sure you want to remove a chapter? Use -force to confirm.` and stops.
+- **Exit `2`** — invalid flag.
+- **Exit `-1`** — any database error (e.g. PostgreSQL unreachable).
+
+Environment variables:
+
+- `POSTGRESQL_URI` — overrides the hardcoded DSN in [`pkg/SSTorytime/session.go:41`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/session.go#L41).
+- `SST_CONFIG_PATH` — unused at deletion time; not consulted by `removeN4L`.
+
+!!! danger "Destructive operation"
+    `removeN4L` calls the `DeleteChapter` PL/pgSQL stored procedure, which drops all nodes,
+    links, and page-map rows tagged with the chapter. There is no undo. If you do not have a
+    copy of the source `.n4l` files you will have to rebuild the chapter manually. Keep N4L
+    sources in version control.

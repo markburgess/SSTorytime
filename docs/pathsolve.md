@@ -14,6 +14,52 @@ The hiighest scoring nodes are 'most central' in the sense of flow throughput.
 * *Supernodes*: these are nodes that form equivalence sets. The members of a supernode are interchangeable as far
 as the path process is concerned. The map to and from the same locations, so they are symmetrical.
 
+## Flags
+
+```
+pathsolve [-v] -begin <string> -end <string> [-chapter string] [-bwd] [subject] [context]
+```
+
+Flag declarations live at [`src/pathsolve/pathsolve.go:59-63`](https://github.com/markburgess/SSTorytime/blob/main/src/pathsolve/pathsolve.go#L59-L63).
+
+- `-v` — verbose mode. Prints the boundary condition match sets and internal wave-front state.
+- `-begin <string>` — text for the **start** set. Matches by substring via `GetDBNodePtrMatchingName`.
+- `-end <string>` — text for the **end** set.
+- `-chapter <string>` — **optional** substring filter. Restricts the start/end node lookups and the path search to nodes tagged with this chapter. Default: empty (search the whole graph).
+- `-bwd` — **reverse** the search direction. Internally swaps the forward/backward wave-front labels (`FWD` and `BWD` in the source). Use this when you want paths from `end` to `begin` along reverse-arrow semantics.
+
+The single positional argument, if present, is checked against `DiracNotation` (see below). If it is a Dirac-form string, the boundary conditions parsed from it override `-begin` / `-end`.
+
+## Hardcoded search depth
+
+`pathsolve` searches paths of length **2 to 20** hops. These are `const` values in the source:
+
+```go
+const mindepth = 2
+const maxdepth = 20
+```
+
+See [`src/pathsolve/pathsolve.go:121-122`](https://github.com/markburgess/SSTorytime/blob/main/src/pathsolve/pathsolve.go#L121-L122).
+
+- **`mindepth = 2`** — skips the trivial "start and end are the same node" result. If your search is entirely scoped to one node (common when the start/end strings overlap), you need at least 2 hops for the result to be a genuine path.
+- **`maxdepth = 20`** — caps the wave-front expansion. Graphs with very long paths may exceed this; paths longer than 20 hops simply will not be found. Edit the source and rebuild if your use case needs a larger horizon.
+
+## Dirac `<end|start>` notation
+
+`pathsolve` accepts a single positional argument in Dirac bra-ket form:
+
+```
+pathsolve "<end|start>"
+pathsolve "<B6|A1>"
+pathsolve "<target|start>"
+```
+
+The **end set comes first** (the bra `<end|`) and the **start set comes second** (the ket `|start>`). This mirrors quantum-mechanical transition-matrix notation: you read `<end|start>` as "amplitude for the system to evolve into `end`, given it starts in `start`."
+
+Parsing is done by `DiracNotation` (see [`pkg/SSTorytime/service_search_cmd.go`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go) and [`src/pathsolve/pathsolve.go:102-110`](https://github.com/markburgess/SSTorytime/blob/main/src/pathsolve/pathsolve.go#L102-L110)), which also extracts an optional trailing context string.
+
+When Dirac notation is used, the `-begin`/`-end` flags are overridden.
+
 ## Command line
 
 For now, you can get started by trying the examples, e.g.
@@ -172,3 +218,16 @@ And using the arrows:
 ./searchN4L -v \\from \!a1\! \\to b6 \\arrow 20,21
 </pre>
 Remember to always give pairs of arrow,inverse since the FROM and the TO match opposite arrow directions.
+
+## Exit codes & environment
+
+- **Exit `0`** — at least one path found and printed.
+- **Exit `-1`** — no paths satisfy the constraints, or any library/DB error (see [`src/pathsolve/pathsolve.go:164-167`](https://github.com/markburgess/SSTorytime/blob/main/src/pathsolve/pathsolve.go#L164-L167)).
+- **Exit `2`** — invalid flag.
+
+Environment variables:
+
+- `POSTGRESQL_URI` — overrides the hardcoded DSN in [`pkg/SSTorytime/session.go:41`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/session.go#L41).
+- `SST_CONFIG_PATH` — location of `SSTconfig/`. Arrows are actually loaded from the DB via `Open(true)`, so this is usually not needed.
+
+If the database is unreachable, `pathsolve` prints a connection error and exits `-1` before any wave-front work runs.

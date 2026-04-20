@@ -782,6 +782,22 @@ The declarations are as follows:
 </pre>
 the symbols + and - are reserved.
 
+## Exit codes & environment
+
+- **Exit `0`** — success.
+- **Exit `-1`** — any error, including parse failure, missing required arguments, or database errors (see `os.Exit(-1)` calls throughout [`src/N4L/N4L.go`](https://github.com/markburgess/SSTorytime/blob/main/src/N4L/N4L.go)).
+- **Exit `1`** — invoked with no input files (see [`src/N4L/N4L.go:242-245`](https://github.com/markburgess/SSTorytime/blob/main/src/N4L/N4L.go#L242-L245)).
+
+Environment variables:
+
+- `POSTGRESQL_URI` — overrides the hardcoded DSN in [`pkg/SSTorytime/session.go:41`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/session.go#L41). Use this to point `N4L` at a non-default PostgreSQL instance.
+- `SST_CONFIG_PATH` — where `N4L` looks for the `SSTconfig/` arrow definitions. If unset, the parser searches `./`, `../`, etc.
+
+!!! warning "Database must be reachable for `-u`"
+    `N4L -u` will fail and exit with `-1` if it cannot connect to PostgreSQL. Parse-only modes
+    (without `-u`) work without a database. Verify the DSN by setting `POSTGRESQL_URI` or by
+    testing with `psql` first.
+
 
 
 

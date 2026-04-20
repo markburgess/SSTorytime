@@ -1,8 +1,5 @@
 
 # N4L - Notes for Learning
-
-![Four-quadrant pen-and-ink grid showing the four STtypes: NEAR as mirror-twin figures, LEADSTO as a runner mid-stride, CONTAINS as a parent's embrace, EXPRESSES as an open mouth with speech bubble.](figs/n4l_hero.jpg){ align=center }
-
 ## A simple knowledge management language
 
 *Notes for learning*<br>
@@ -23,8 +20,6 @@ on maps, in which things are close together or laid out in a logical manner,
 In the future, N4L should be able to support simple sketches too, but that's
 for future development.*
 
-![Photograph of a hotel kitchen with four callout bubbles annotating the Chinese names for the refrigerator, microwave, kettle and dishwasher (冰箱 Bīngxiāng, 微波炉 Wéibōlú, 热水壶 Rè shuǐhú, 洗碗机 Xǐ wǎn jī) — an everyday example of using N4L-style annotation to learn vocabulary in context.](figs/ExampleAnnotation.jpg){ align=center }
-
 ## Why do we need a language?
 
 These days there are too many software engineers and we tend to make
@@ -43,38 +38,6 @@ Without any structure, it's only guesswork to
 understand intent. N4L is a compromise that allows you to use any kind of
 familiar editor to write notes in pure text (Unicode).
 
-## How N4L compiles
-
-```mermaid
-flowchart LR
-    INPUT[/"N4L source<br/>(.n4l files)"/]
-    TOKEN["Tokenize<br/>src/N4L/N4L.go:1463"]
-    CLASSIFY["Classify roles<br/>(header · context · item ·<br/>relation · continuation)<br/>src/N4L/N4L.go:1500"]
-    ALIAS["Resolve aliases<br/>@name · $name.N<br/>src/N4L/N4L.go:644"]
-    CONTEXT["Apply context stack<br/>::, +::, -::<br/>src/N4L/N4L.go:2441"]
-    EMIT["Emit nodes &amp; links<br/>N4L_parsing.go"]
-    GTDB["GraphToDB<br/>walk NODE_DIRECTORY<br/>db_upload.go:19"]
-    UNLOGGED["UNLOGGED writes<br/>(fast bulk load; no WAL)<br/>postgres_types_functions.go:32"]
-    GIN["CREATE INDEX … GIN<br/>tsvector, GIN on S/NPtr/Ctx<br/>db_upload.go:114-118"]
-    LOGGED["ALTER TABLE … SET LOGGED<br/>(promote to durable)<br/>db_upload.go:119-120"]
-
-    INPUT --> TOKEN --> CLASSIFY --> ALIAS --> CONTEXT --> EMIT --> GTDB
-    GTDB --> UNLOGGED --> GIN --> LOGGED
-
-    classDef upload fill:#3949AB,stroke:#1a237e,color:#fff;
-    class GTDB,UNLOGGED,GIN,LOGGED upload;
-```
-
-The upload pipeline is deliberately staged: tables start as
-[`CREATE UNLOGGED TABLE`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_types_functions.go#L32)
-so that bulk inserts skip the write-ahead log, GIN indexes
-([`db_upload.go:114-118`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/db_upload.go#L114-L118))
-are built *after* the bulk load rather than maintained incrementally, and
-only then is the table promoted with
-[`ALTER TABLE … SET LOGGED`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/db_upload.go#L119-L120).
-On power loss before the final `SET LOGGED`, the graph is discarded — which
-is fine because the N4L source is the origin of truth.
-
 ## Command line tool
 
 The N4L tool ingests a file of "notes" written in a simple language
@@ -84,26 +47,14 @@ and turns it into a machine representation in the form of a "Semantic Spacetime"
  refer to RDF in what follows, except to occasionally clarify the distinction. 
 The command options currently include:
 <pre>
-usage: N4L [-v] [-d] [-s] [-u] [-force] [-wipe] [-adj "list"] file.n4l [...]
+usage: N4L [-v] [-u] [-s] [file].dat
   -adj string
-        a quoted, comma-separated list of short link names to include in
-        summary/adjacency output (default "none")
+        a quoted, comma-separated list of short link names (default "none")
   -d    diagnostic mode
-  -s    summary (nodes, links...)
-  -u    upload parsed notes to the database
+  -s    summary (node,links...)
+  -u    upload
   -v    verbose
-  -force
-        skip confirmation prompts on upload conflicts
-  -wipe
-        drop and recreate all database state before loading. Combine with
-        -u for an atomic re-upload: <code>N4L -wipe -u *.n4l</code>
 </pre>
-
-!!! tip "Atomic re-upload pattern"
-    The cleanest way to update a large, interlinked note set is `N4L -wipe -u *.n4l`.
-    This wipes the database and reloads everything in one pass, which avoids
-    fragmentation that accumulates when you delete and re-add chapters individually.
-    See [Removing notes](removeN4L.md) for the trade-offs.
 For example, to parse and validate a file of notes, one can simply type:
 <pre>
 $ N4L chinese.in
@@ -229,7 +180,7 @@ A useful ranking of nodes (known as EVC, or Eigenvector Centrality, which is som
 can be calculated from the weighted graph matrix (see below). The higher the score number, the more
 interconnected or "important" a term of text is, e.g.
 <pre>
-$ ../src/bin/N4L -v -s -adj="" chinese.in
+$ ../src/N4L -v -s -adj="" chinese.in
 
   ...
 
@@ -800,22 +751,6 @@ The declarations are as follows:
  > (has subject)
 </pre>
 the symbols + and - are reserved.
-
-## Exit codes & environment
-
-- **Exit `0`** — success.
-- **Exit `-1`** — any error, including parse failure, missing required arguments, or database errors (see `os.Exit(-1)` calls throughout [`src/N4L/N4L.go`](https://github.com/markburgess/SSTorytime/blob/main/src/N4L/N4L.go)).
-- **Exit `1`** — missing input files or an unrecoverable parse error (e.g. an undefined alias reference). Triggered at [`src/N4L/N4L.go:242-245`](https://github.com/markburgess/SSTorytime/blob/main/src/N4L/N4L.go#L242-L245) when no input files are given, and at [`src/N4L/N4L.go:650`](https://github.com/markburgess/SSTorytime/blob/main/src/N4L/N4L.go#L650) when `LookupAlias` cannot resolve a referenced alias.
-
-Environment variables:
-
-- `POSTGRESQL_URI` — overrides the hardcoded DSN in [`pkg/SSTorytime/session.go:41`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/session.go#L41). Use this to point `N4L` at a non-default PostgreSQL instance.
-- `SST_CONFIG_PATH` — where `N4L` looks for the `SSTconfig/` arrow definitions. If unset, the parser searches `./`, `../`, etc.
-
-!!! warning "Database must be reachable for `-u`"
-    `N4L -u` will fail and exit with `-1` if it cannot connect to PostgreSQL. Parse-only modes
-    (without `-u`) work without a database. Verify the DSN by setting `POSTGRESQL_URI` or by
-    testing with `psql` first.
 
 
 

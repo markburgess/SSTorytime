@@ -1,13 +1,8 @@
 
 # pathsolve
 
-![Aerial view of a foggy bay at dusk where two lighthouse beams sweep toward each other through the mist, creating interference where they meet, with a graph network faintly visible beneath — a visual metaphor for bidirectional wave-front path solving.](figs/pathsolve_beams.jpg){ align=center }
-
-`pathsolve` is an experimental tool for finding contiguous paths between sets of [NodePtr](concepts/glossary.md#nodeptr)-labelled nodes.
+`pathsolve` is an experimental tool for finding contiguous paths between node sets.
 It can also be accessed through the web browser.
-
-<!-- TODO(visuals): Before/after diagram of path expansion — left side shows two boundary sets (begin / end) as dotted outlines; right side shows the converged wave-fronts meeting in the middle, with the winning path highlighted. Style A (pen-and-ink). Place after the intro, before the Flags section. -->
-
 
 `pathsolve` also reports about two deeper analyses of the paths:
 
@@ -17,61 +12,15 @@ The hiighest scoring nodes are 'most central' in the sense of flow throughput.
 * *Supernodes*: these are nodes that form equivalence sets. The members of a supernode are interchangeable as far
 as the path process is concerned. The map to and from the same locations, so they are symmetrical.
 
-## Flags
-
-```
-pathsolve [-v] -begin <string> -end <string> [-chapter string] [-bwd] [subject] [context]
-```
-
-Flag declarations live at [`src/pathsolve/pathsolve.go:59-63`](https://github.com/markburgess/SSTorytime/blob/main/src/pathsolve/pathsolve.go#L59-L63).
-
-- `-v` — verbose mode. Prints the boundary condition match sets and internal wave-front state.
-- `-begin <string>` — text for the **start** set. Matches by substring via `GetDBNodePtrMatchingName`.
-- `-end <string>` — text for the **end** set.
-- `-chapter <string>` — **optional** substring filter. Restricts the start/end node lookups and the path search to nodes tagged with this chapter. Default: empty (search the whole graph).
-- `-bwd` — **reverse** the search direction. Internally swaps the forward/backward wave-front labels (`FWD` and `BWD` in the source). Use this when you want paths from `end` to `begin` along reverse-arrow semantics.
-
-The single positional argument, if present, is checked against `DiracNotation` (see below). If it is a Dirac-form string, the boundary conditions parsed from it override `-begin` / `-end`.
-
-## Hardcoded search depth
-
-`pathsolve` searches paths of length **2 to 20** hops. These are `const` values in the source:
-
-```go
-const mindepth = 2
-const maxdepth = 20
-```
-
-See [`src/pathsolve/pathsolve.go:121-122`](https://github.com/markburgess/SSTorytime/blob/main/src/pathsolve/pathsolve.go#L121-L122).
-
-- **`mindepth = 2`** — skips the trivial "start and end are the same node" result. If your search is entirely scoped to one node (common when the start/end strings overlap), you need at least 2 hops for the result to be a genuine path.
-- **`maxdepth = 20`** — caps the wave-front expansion. Graphs with very long paths may exceed this; paths longer than 20 hops simply will not be found. Edit the source and rebuild if your use case needs a larger horizon.
-
-## Dirac `<end|start>` notation
-
-`pathsolve` accepts a single positional argument in Dirac bra-ket form:
-
-```
-pathsolve "<end|start>"
-pathsolve "<B6|A1>"
-pathsolve "<target|start>"
-```
-
-The **end set comes first** (the bra `<end|`) and the **start set comes second** (the ket `|start>`). This mirrors quantum-mechanical transition-matrix notation: you read `<end|start>` as "amplitude for the system to evolve into `end`, given it starts in `start`."
-
-Parsing is dispatched from `DecodeSearchField` at [`pkg/SSTorytime/service_search_cmd.go:180`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go#L180) (the call site of `DiracNotation`); the `DiracNotation` function itself is defined in [`pkg/SSTorytime/tools.go:523`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/tools.go#L523). `pathsolve` wires it into its own argument loop at [`src/pathsolve/pathsolve.go:102-110`](https://github.com/markburgess/SSTorytime/blob/main/src/pathsolve/pathsolve.go#L102-L110). The parser also extracts an optional trailing context string.
-
-When Dirac notation is used, the `-begin`/`-end` flags are overridden.
-
 ## Command line
 
 For now, you can get started by trying the examples, e.g.
 <pre>
 $ cd examples
 $ make
-$ pathsolve -begin A1 -end B6 
+$ ../src/pathsolve -begin A1 -end B6 
 
-mark% pathsolve -begin a1 -end b6 
+mark% go run pathsolve.go -begin a1 -end b6 
 
  Paths < end_set= {B6, b6, } | {A1, } = start set>
 
@@ -149,15 +98,15 @@ Or the adjoint path search:
 
 <pre>
 
-$ pathsolve -begin B6 -end A1 -bwd
+$ go run pathsolve.go -begin B6 -end A1 -bwd
 
 </pre>
 You can also use Dirac transition matrix notation like this:
 <pre>
 
-$ pathsolve "<B6|A1>"
-$ pathsolve "<end|start>"
-$ pathsolve "<target|start>"
+$ go run pathsolve.go "<B6|A1>"
+$ go run pathsolve.go "<end|start>"
+$ go run pathsolve.go "<target|start>"
 
 </pre>
 Notice the order of the start and end sets.
@@ -166,8 +115,8 @@ Notice the order of the start and end sets.
 
 In the search field, enter the Dirac notation, e.g. `<target|start>` and relevant chapter `interference`, then click on `geometry`.
 
-![Alpha interface](figs/pathsolve1.png 'pathsolving in a web interface')
-![Alpha interface](figs/pathsolve2.png 'pathsolving in a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/pathsolve1.png 'pathsolving in a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/pathsolve2.png 'pathsolving in a web interface')
 
 
 Notice the reporting about supernodes and betweenness centrality scores. 
@@ -214,23 +163,10 @@ Remember: the power of SST becomes more apparent when using the STTypes 0,1,2,3 
 Path searches grow exponentially with the length of the path, so they get slower and slower as the distance between nodes
 increases. If you know the type of arrow along the whole path, you can speed up the search by specifying the arrow types, or the sttypes, e.g. using the STtypes:
 <pre>
-searchN4L -v \\from \!gun\! \\to scarlet \\arrow +3,-3,0
+./searchN4L -v \\from \!gun\! \\to scarlet \\arrow +3,-3,0
 </pre>
 And using the arrows:
 <pre>
-searchN4L -v \\from \!a1\! \\to b6 \\arrow 20,21
+./searchN4L -v \\from \!a1\! \\to b6 \\arrow 20,21
 </pre>
 Remember to always give pairs of arrow,inverse since the FROM and the TO match opposite arrow directions.
-
-## Exit codes & environment
-
-- **Exit `0`** — at least one path found and printed.
-- **Exit `-1`** — no paths satisfy the constraints, or any library/DB error (see [`src/pathsolve/pathsolve.go:164-167`](https://github.com/markburgess/SSTorytime/blob/main/src/pathsolve/pathsolve.go#L164-L167)).
-- **Exit `2`** — invalid flag.
-
-Environment variables:
-
-- `POSTGRESQL_URI` — overrides the hardcoded DSN in [`pkg/SSTorytime/session.go:41`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/session.go#L41).
-- `SST_CONFIG_PATH` — location of `SSTconfig/`. Arrows are actually loaded from the DB via `Open(true)`, so this is usually not needed.
-
-If the database is unreachable, `pathsolve` prints a connection error and exits `-1` before any wave-front work runs.

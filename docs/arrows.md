@@ -37,8 +37,6 @@ get quite far with just a few that are already defined.
 
 ## Starting with a few ...
 
-![A 2x2 grid illustrating the four arrow personalities — NEAR as mirror twins, LEADSTO as a runner mid-stride, CONTAINS as a parent's embrace, EXPRESSES as an open mouth mid-word.](figs/four_arrows.jpg){ align=center }
-
 Try starting with these basic arrows:
 
 * `(then)` - a LEADSTO arrow. You can always join up subsequent events `a (then) b (then) c` etc.
@@ -55,66 +53,6 @@ usage:
 * `(note)` - add a note about the thing before the arrow
 * `(tbd)` - "to be discussed/decided" no idea how to label this, will come back to it! 
 
-??? example "In code: 4 conceptual types, 7 storage channels"
-    When you write `(then)` or `(contains)` in N4L, the compiler classifies the
-    arrow into one of **4 conceptual types** — `NEAR`, `LEADSTO`, `CONTAINS`, or
-    `EXPRESS` — defined as integer constants in
-    [`pkg/SSTorytime/globals.go:23-26`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/globals.go#L23-L26).
-
-    The database, however, stores **7 signed channels** per node: `NEAR` is
-    symmetric (1 channel), and each directional type (`LEADSTO`, `CONTAINS`,
-    `EXPRESS`) exists in forward (`+`) and backward (`-`) form, giving
-    3 × 2 + 1 = 7. Each channel is a `Link[]` column on the `Node` table:
-
-    | Column | Constant | Meaning |
-    |---|---|---|
-    | `Im3` | `-EXPRESS` | expressed-by (inverse of EXPRESS) |
-    | `Im2` | `-CONTAINS` | part-of (inverse of CONTAINS) |
-    | `Im1` | `-LEADSTO` | arriving-from (inverse of LEADSTO) |
-    | `In0` | `NEAR` | symmetric similarity |
-    | `Il1` | `+LEADSTO` | leads-to |
-    | `Ic2` | `+CONTAINS` | contains |
-    | `Ie3` | `+EXPRESS` | expresses |
-
-    The offset `ST_ZERO = 3` ([`globals.go:33`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/globals.go#L33))
-    lets library code index `Node.I[]` via `I[ST_ZERO + STtype]` regardless of sign.
-    The mapping between STtype values and column names lives in
-    [`STtype.go:82-109`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/STtype.go#L82-L109)
-    as `STTypeDBChannel`.
-
-### 4 types, 7 channels — visually
-
-```mermaid
-graph TB
-    subgraph types["4 conceptual types"]
-        NEAR["NEAR<br/>similarity · symmetric"]
-        LEADSTO["LEADSTO<br/>causal / sequential"]
-        CONTAINS["CONTAINS<br/>membership / composition"]
-        EXPRESS["EXPRESSES<br/>property / attribute"]
-    end
-
-    subgraph channels["7 storage channels (Node.Im3..Ie3)"]
-        direction LR
-        Im3["Im3<br/>-EXPRESS"]
-        Im2["Im2<br/>-CONTAINS"]
-        Im1["Im1<br/>-LEADSTO"]
-        In0["In0<br/>NEAR"]
-        Il1["Il1<br/>+LEADSTO"]
-        Ic2["Ic2<br/>+CONTAINS"]
-        Ie3["Ie3<br/>+EXPRESS"]
-    end
-
-    NEAR --> In0
-    LEADSTO --> Il1
-    LEADSTO -.-> Im1
-    CONTAINS --> Ic2
-    CONTAINS -.-> Im2
-    EXPRESS --> Ie3
-    EXPRESS -.-> Im3
-```
-
-Solid arrows = forward direction; dotted = backward (inverse) direction.
-`NEAR` has no inverse because it's symmetric.
 
 This is enough. Now make notes!
 

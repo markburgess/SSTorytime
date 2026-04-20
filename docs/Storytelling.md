@@ -3,8 +3,6 @@
 # The Mission of STTorytime
 ### An approach to managing human knowledge
 
-![A garden viewed from slightly above: winding paths, small plants, a figure tending to them — knowledge as something slowly cultivated.](figs/knowledge_garden.jpg){ align=center }
-
 *If you want to know the deep thought behind an apparently ad hoc bit of
 software, please take a look at [the project's own research website](http://markburgess.org/spacetime.html).*
 
@@ -286,7 +284,7 @@ Start (next) Find Door (next) $question.1
 
 The picture looks like this:
 
-![A Flow Chart is a knowledge representation](figs/flow.png 'Flow Charts Are Knowledge Graphs')
+![A Flow Chart is a knowledge representation](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/flow.png 'Flow Charts Are Knowledge Graphs')
 
 In this case, we defined the arrows in the `SSTconfig/*` files.
 
@@ -320,7 +318,7 @@ imagine that they lead to an organization of thought something like
 the picture below.
 
 
-![A study or murder](figs/knowledge.png 'The large scale structure of a well-formed knowledge graph organizes knowledge into regions that lead from one to the other.')
+![A study or murder](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/knowledge.png 'The large scale structure of a well-formed knowledge graph organizes knowledge into regions that lead from one to the other.')
 
 Data entry is generally on a low level, item by item, but certain similarities
 lead to groupings of things that are related only by inference. This is what we 
@@ -344,7 +342,7 @@ different meanings.
 
 In a directed graph there are two major type of matroid for incoming and outgoing nodes.
 
-![Common structures](figs/matroid.png 'Matroids, or hub nodes, are important structures in scaling.')
+![Common structures](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/matroid.png 'Matroids, or hub nodes, are important structures in scaling.')
 
 We can use these structures to good effect when walking through the graph and analysing it.
 For example, if we see a hub that connected a number of things together, it acts as a kind of group leader

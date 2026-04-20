@@ -1,16 +1,6 @@
 
 # Tutorial on N4L and SSTorytime
 
-!!! tip "Keep the glossary open"
-    We'll use *arrow*, *orbit*, *chapter*, *context*, *NodePtr*, *PoSST* without re-defining them here.  
-    See the [Glossary](concepts/glossary.md) for quick reference.
-
-!!! info "We assume `src/bin/` is on your `$PATH`"
-    This page uses bare tool names (`N4L`, `searchN4L`, `notes`, `http_server`).
-    If you haven't exported `PATH=$PWD/src/bin:$PATH` yet, see the
-    [Getting Started](GettingStarted.md) walk-through, or substitute
-    `src/bin/<tool>` from the repo root wherever you see a bare name.
-
 This is a project in the age of so-called Artificial Intelligence. But
 it's not about machines.  It's a project about knowledge--*your*
 knowledge, human knowledge, but not the abstract knowledge of Mankind
@@ -29,17 +19,6 @@ the API.
 
 
 ## Five steps to heaven
-
-```mermaid
-flowchart LR
-    JOT["1. Jot<br/>capture the thought"]
-    TYPE["2. Structure<br/>write it in N4L"]
-    ORG["3. Organize<br/>revise &amp; refine"]
-    UPLOAD["4. Upload<br/>N4L -u your.n4l"]
-    KNOW["5. Know<br/>browse · search ·<br/>path-solve"]
-
-    JOT --> TYPE --> ORG --> UPLOAD --> KNOW
-```
 
 * JOT IT DOWN WHEN YOU THINK OF IT. . .
 * TYPE IT INTO N4L AS SOON AS YOU CAN. . .
@@ -73,16 +52,14 @@ There are also tools for helping you to get started making notes about a text do
 
 * Use `text2N4L` to read a text file and select parts to produce an editable file in N4L that you can use as a starting point for your own notes.
 
-<!-- TODO(visuals): N4L syntax legend — a one-glance cheat sheet mapping the punctuation marks to their roles: "-" chapter, "::" context, "(rel)" arrow relation, "@alias"/"$alias.N" aliases, "+/-" context stack. Target Style A (pen-and-ink). Add under a "Syntax at a glance" heading near the top of this section. -->
-
 ## The idea
 
 The knowledge database is divided into
 
-* [**Chapter**](concepts/glossary.md#chapter)s: each file starting or section with a ` - ` mark is a chapter section. There should only be one
+* **Chapter**s: each file starting or section with a ` - ` mark is a chapter section. There should only be one
 section per file, at the start of the file.
-* [**Context**](concepts/glossary.md#context)s: inside each chapter, you can tag subsections with ` :: context, tags, words...` that may be used to limit or enable search criteria.
-* **Nodes** and **Links**: each item is a node, and each connection between items is a link. Links have types (called [arrows](concepts/glossary.md#arrow-sttype)) that you define for yourself, but they must all belong to one of the four meta-types: `leads to`, `contains`, `expresses property`, or `is near or similar to`.
+* **Context**s: inside each chapter, you can tag subsections with ` :: context, tags, words...` that may be used to limit or enable search criteria.
+* **Nodes** and **Links**: each item is a node, and each connection between items is a link. Links have types that you define for yourself, but they must all belong to one of the four meta-types: `leads to`, `contains`, `expresses property`, or `is near or similar to`.
 
 The purpose of chapters and contexts is to enable a separation of
 concerns. You could throw everything into one giant chapter with no contexts, e.g. if
@@ -93,7 +70,7 @@ will want to separate your notes. e.g. you might have chapters on learning Frenc
 
 When you search for a topic you will match a node in the graph. Relating to that starting point, there are different views:
 
-* The [**orbit**](concepts/glossary.md#orbit) of a node is all the nodes connected to it, to some depth or radius (number of link hops).
+* The **orbit** of a node is all the nodes connected to it, to some depth or radius (number of link hops).
 When you search, you typically get to see matching nodes and their orbits up to **radius** 2 hops.
 
 * A set of **path**s is set of connected links starting from a set of FROM nodes and ending with a set of TO nodes.
@@ -204,16 +181,16 @@ This file is already available in the distribution:
 <pre>
 $ cd SSTorytime
 $ make
-$ cd examples
-$ N4L tutorial.n4l
+$ cd example
+$ ../src/N4L tutorial.n4l
 </pre>
 When you run this, you'll see something like this:
 
-![A Flow Chart is a knowledge representation](figs/nooptions.png 'Without options, you only see your note to self.')
+![A Flow Chart is a knowledge representation](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/nooptions.png 'Without options, you only see your note to self.')
 
 If you choose verbose output, you see more of what's going on:
 
-![A Flow Chart is a knowledge representation](figs/verbose.png 'Verbose output')
+![A Flow Chart is a knowledge representation](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/verbose.png 'Verbose output')
 
 * First N4L reads a number of configuration files in `SSTconfig/*`. These contain arrow definitions.
 * Then it reads your file and chops it into parts that are related.
@@ -234,20 +211,20 @@ $ make
 </pre>
 You see this runs the following command:
 <pre>
-N4L -u -wipe doors.n4l Mary.n4l chinese*n4l branches.n4l doubleslit.n4l ConstructionProcesses.n4l wardleymap.n4l 
+../src/N4L -u -wipe doors.n4l Mary.n4l chinese*n4l branches.n4l doubleslit.n4l ConstructionProcesses.n4l wardleymap.n4l 
 brains.n4l kubernetes.n4l SSTorytime.n4l integral.n4l reasoning.n4l
 </pre>
 The `-u` option tells the program to upload to the database. The `-wipe` option, tells it to override
 whatever is already in the database and start again. If you want to append new data, you can simply
 omit the `-wipe` option:
 <pre>
-$ N4L -u LoopyLoo.n4l
+$ ../src/N4L -u LoopyLoo.n4l
 </pre>
 The examples in the documentation assume you set up from the start with these uploads:
 <pre>
 $ cd examples
 $ make 
-$ N4L -u LoopyLoo.n4l
+$ ../src/N4L -u LoopyLoo.n4l
 </pre>
 
 ## Searching
@@ -260,40 +237,40 @@ notes chapter brain
 please in chinese
 paths from a1 to s1
 </pre>
-You can either use the `searchN4L` tool, or the web browser by running the web server `http_server` and connecting to `https://localhost:8443` (the plaintext port `:8080` redirects to HTTPS) or an address, e.g. `https://192.168.0.5:8443`.
+You can either use the `searchN4L` tool, or the web browser by running the web server `http_server` and connecting to `localhost:8080` or an address, e.g.`192.168.0.5:8080`.
 
 On the command line:
 <pre>
 
-$ searchN4L please in chinese
-$ searchN4L "(zai chengshi)"
-$ searchN4L from a1
-$ searchN4L notes about chinese context restaurant
-$ searchN4L notes about brain context waves
-$ searchN4L chapter brain
-$ searchN4L from a1
-$ searchN4L from a1 to b5
-$ searchN4L to "target 3"
+$ ./searchN4L please in chinese
+$ ./searchN4L "(zai chengshi)"
+$ ./searchN4L from a1
+$ ./searchN4L notes about chinese context restaurant
+$ ./searchN4L notes about brain context waves
+$ ./searchN4L chapter brain
+$ ./searchN4L from a1
+$ ./searchN4L from a1 to b5
+$ ./searchN4L to "target 3"
 </pre>
 Notice that, if you want to match accented characters using unaccented substitutes (like 'o' for 'ø'), then you write the word in parentheses).
 
 You can also types these directly into the web browser:
 
-![Alpha interface](figs/webapp11.png 'Testing a web interface')
-![Alpha interface](figs/webapp12.png 'Testing a web interface')
-![Alpha interface](figs/webapp13.png 'Testing a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp11.png 'Testing a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp12.png 'Testing a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp13.png 'Testing a web interface')
 
 
-![Alpha interface](figs/webapp2.png 'Testing a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp2.png 'Testing a web interface')
 
 
-![Alpha interface](figs/webapp3.png 'Testing a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp3.png 'Testing a web interface')
 
-![Alpha interface](figs/webapp4.png 'Testing a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp4.png 'Testing a web interface')
 
-![Alpha interface](figs/webapp5.png 'Testing a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp5.png 'Testing a web interface')
 
-![Alpha interface](figs/webapp6.png 'Testing a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp6.png 'Testing a web interface')
 
 
 
@@ -303,12 +280,12 @@ Eventually, there will be tools for scripting the search in simple
 ways, because the most powerful ways to search any structure are to
 use a programming language that allows you to express your own
 intent. You can see examples in the demos and proof of concept
-directory under `src/demo_pocs/`.  But as the project progresses, you can
+directory under src/demo_poc.  But as the project progresses, you can
 use the `notes` and `searchN4L` tool to play around with the result.
 The simplest way to see what you entered (which is like a cleaned up version of `more`)
 is to use:
 <pre>
-$ notes fox and crow
+$ src/notes fox and crow
 
 
 Title: chinese story about fox and crow
@@ -327,7 +304,7 @@ Húli zài shùlín lĭ zhăo chī de.  Tā lái dào yì kē dà shù xià,
 </pre>
 This take only a page number as an argument for controlling long note sets:
 <pre>
-$ notes -page 2 brain
+$ src/notes -page 2 brain
 
 </pre>
 
@@ -434,6 +411,6 @@ Currently under development is a new feature.
 As you start to use the tool more, you can use the checkboxes to click and leave a trace of what you've worked
 on. This will be traced and give feedback on your learning goals.
 
-![Alpha interface](figs/progresstracker.png 'Testing a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/progresstracker.png 'Testing a web interface')
 
 

@@ -1,8 +1,6 @@
 
 ## Frequently Asked Questions
 
-![Wide landscape banner: distant mountains representing big ideas, forking paths in the foreground representing different tools, and a small figure climbing one of the paths.](figs/faq_landscape.jpg){ align=center }
-
 ### General
 
 * **What does it do?**

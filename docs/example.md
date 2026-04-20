@@ -1,8 +1,6 @@
 
 # Case study: making notes
 
-![A network of story nodes labeled Alice, rabbit, pocket-watch, garden, Queen with links between them showing how a narrative becomes a graph.](figs/alice_graph.jpg){ align=center }
-
 How should you use N4L and SSTorytime? You can either use it as a programming framework, using the API,
  or you can create knowledge graphs by making notes with N4L. There are many
  advantages to using N4L: it's a very simple language that tries to

@@ -1,0 +1,199 @@
+
+# How to use arrows
+
+Getting to grips with notes can feel like a challenge, so don't try to do too much.
+It's a simple knowledge management lesson: start with fundamentals and turn them into habits,
+then you can build on that.
+The important thing is to write things down quickly, before you forget or lose the will.
+So it's better to write this:
+<pre>
+
+  I saw three ships (blah) it's a song we used to sing
+        "           (something) primary school song
+        "           (tbd) get the lyrics 
+</pre>
+than to stop and try to write a perfect documentation, with correct labels.
+Later, when you look at it again, you can start changing "blah", "something", and "tbd"
+into more useful arrow names that will mean something when you want to search for them later.
+
+For example, later when you are calm, you might want to change this to something like this:
+<pre>
+  I saw three ships (note) it's a song we used to sing
+        "           (first heard) in primary school
+        "           (wiki) "https://en.wikipedia.org/wiki/I_Saw_Three_Ships"
+        "           (has lyrics) "I saw three ships come sailing in
+On Christmas day, on Christmas day
+I saw three ships come sailing in
+On Christmas day in the morning
+And what was in those ships, all three
+On Christmas day, on Christmas day?
+And what was in those ships, all three
+On Christmas day in the morning?
+..."
+
+</pre>
+To do that, you would have to define the arrows in parentheses. But you can also 
+get quite far with just a few that are already defined.
+
+## Starting with a few ...
+
+![A 2x2 grid illustrating the four arrow personalities — NEAR as mirror twins, LEADSTO as a runner mid-stride, CONTAINS as a parent's embrace, EXPRESSES as an open mouth mid-word.](figs/four_arrows.jpg){ align=center }
+
+Try starting with these basic arrows:
+
+* `(then)` - a LEADSTO arrow. You can always join up subsequent events `a (then) b (then) c` etc.
+Even if this isn't very specific, you will understand what it means, and you can always go back and change it.
+
+* `(contains)` - a CONTAINS arrows, pretty obvious, though not as common as we might think.
+
+* `(see)` - a NEAR of SIMILAR arrow, useful for just adding a kind of footnote.
+
+Then the most common kind of arrow is EXPRESS PROPERTY, so we add a few that are in common
+usage:
+
+* `(e.g.)` - for example, add an example of the thing before the arrow
+* `(note)` - add a note about the thing before the arrow
+* `(tbd)` - "to be discussed/decided" no idea how to label this, will come back to it! 
+
+??? example "In code: 4 conceptual types, 7 storage channels"
+    When you write `(then)` or `(contains)` in N4L, the compiler classifies the
+    arrow into one of **4 conceptual types** — `NEAR`, `LEADSTO`, `CONTAINS`, or
+    `EXPRESS` — defined as integer constants in
+    [`pkg/SSTorytime/globals.go:23-26`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/globals.go#L23-L26).
+
+    The database, however, stores **7 signed channels** per node: `NEAR` is
+    symmetric (1 channel), and each directional type (`LEADSTO`, `CONTAINS`,
+    `EXPRESS`) exists in forward (`+`) and backward (`-`) form, giving
+    3 × 2 + 1 = 7. Each channel is a `Link[]` column on the `Node` table:
+
+    | Column | Constant | Meaning |
+    |---|---|---|
+    | `Im3` | `-EXPRESS` | expressed-by (inverse of EXPRESS) |
+    | `Im2` | `-CONTAINS` | part-of (inverse of CONTAINS) |
+    | `Im1` | `-LEADSTO` | arriving-from (inverse of LEADSTO) |
+    | `In0` | `NEAR` | symmetric similarity |
+    | `Il1` | `+LEADSTO` | leads-to |
+    | `Ic2` | `+CONTAINS` | contains |
+    | `Ie3` | `+EXPRESS` | expresses |
+
+    The offset `ST_ZERO = 3` ([`globals.go:33`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/globals.go#L33))
+    lets library code index `Node.I[]` via `I[ST_ZERO + STtype]` regardless of sign.
+    The mapping between STtype values and column names lives in
+    [`STtype.go:82-109`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/STtype.go#L82-L109)
+    as `STTypeDBChannel`.
+
+### 4 types, 7 channels — visually
+
+```mermaid
+graph TB
+    subgraph types["4 conceptual types"]
+        NEAR["NEAR<br/>similarity · symmetric"]
+        LEADSTO["LEADSTO<br/>causal / sequential"]
+        CONTAINS["CONTAINS<br/>membership / composition"]
+        EXPRESS["EXPRESSES<br/>property / attribute"]
+    end
+
+    subgraph channels["7 storage channels (Node.Im3..Ie3)"]
+        direction LR
+        Im3["Im3<br/>-EXPRESS"]
+        Im2["Im2<br/>-CONTAINS"]
+        Im1["Im1<br/>-LEADSTO"]
+        In0["In0<br/>NEAR"]
+        Il1["Il1<br/>+LEADSTO"]
+        Ic2["Ic2<br/>+CONTAINS"]
+        Ie3["Ie3<br/>+EXPRESS"]
+    end
+
+    NEAR --> In0
+    LEADSTO --> Il1
+    LEADSTO -.-> Im1
+    CONTAINS --> Ic2
+    CONTAINS -.-> Im2
+    EXPRESS --> Ie3
+    EXPRESS -.-> Im3
+```
+
+Solid arrows = forward direction; dotted = backward (inverse) direction.
+`NEAR` has no inverse because it's symmetric.
+
+This is enough. Now make notes!
+
+<pre>
+
+-some notes
+
+  # basic sequence
+
+  You put your left leg in (then) you put your left leg out (then) you do the hokey cokey and you turn about
+
+  # We can add a note
+
+  $PREV.3 (note) In the US, they say hokey pokey, not hokey cokey
+
+  :: instructions , destructions ::
+
+
+  +:: _sequence_ ::   # short cut to using (then)
+  
+You put ONE HAND in    (e.g.) like Napoleon
+One hand out           (e.g.) like Oliver Twist
+In, out, in out, shake it all about
+You do the Hokey Cokey
+And you turn around
+That’s what it’s all about.
+
+Whoa-o the Hokey Cokey [1st]  (note) how does this change in America? Nothing to do with Cola.
+Whoa-o the Hokey Cokey [2nd]
+Whoa-o the Hokey Cokey [3rd]
+Knees bend, arms stretch rah, rah, rah!  (tbd) this is a kind of yoga for hokey people
+
+  -:: _sequence_ ::  # end auto (then)
+
+Hokey Cokey (see also) Hokey Pokey
+
+</pre>
+
+Then searching try it:
+
+<pre>
+\notes "some notes"
+</pre>
+
+## Editing your own arrows
+
+To create new arrows, you go to the `SST-config/` sub-directory, either in your current directory
+or the one above it. Each type of arrow has its own file. You can add as many lines as you like
+in the form:
+
+<pre>
+ +  forward arrow meaning (short name) - backward arrow meaning (bwd alias)
+</pre>
+
+## Advanced arrow features
+
+The `N4L` compiler can reduce the pain of adding arrows where there are small clusters of
+arrows that form cliques.
+
+* `NEAR/SIMILAR` arrows (which do not start with ! in their short name) are completed.
+If A is NEAR B and B is NEAR C, then A is NEAR C, as long as the arrow is not a negative.
+This is computed and completed without further ado.
+
+* Arrows forming polygon sequences can be closed automatically from end to start, e.g.
+the path sequence in `chinese.n4l` from Pinyin to Hanzi to English
+<pre>
+ qǐng (ph) 请 (he) please
+</pre>
+also needs an arrow `please (ep) qǐng`, but this is a pain to add manually.
+By defining a rule in `SSTconfig/closures.sst`, this can be made automatically, by adding rules
+to complete sequences of the relevant arrows:
+<pre>
+- closures
+
+ (ph) + (he) => (ep)
+ (eh) + (hp) => (pe)
+ (he) + (ep) => (ph)
+ (pe) + (eh) => (hp)
+
+</pre>
+
+

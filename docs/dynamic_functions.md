@@ -1,8 +1,6 @@
 
 # Dynamic functions in graph node text
 
-![A timeline showing a lightning bolt (event trigger) entering a function box, with a downstream graph node lighting up in response — dynamic functions connect live events to the graph.](figs/dynamic_fn_flow.jpg){ align=center }
-
 When using a knowledge base as a link to the real present world, we can't expect to use only the
 static snapshot of data in the database as a source of truth. A useful feature it to be able
 to post-process what the database serves, in order to expand variable content on the fly.
@@ -12,7 +10,7 @@ data security, or operate in a sandbox.**
 
 ## Examples
 
-Currently, there are only two example functions, demonstrated in the [reminders.n4l](https://github.com/markburgess/SSTorytime/blob/main/examples/reminders.n4l)
+Currently, there are only two example functions, demonstrated in the [reminders.n4l](../examples/reminders.n4l)
 example. 
 <pre>
  Dynamic: {TimeSince Day25 May Yr2018 Hr13} have elapsed since the ChiTek-i company was founded

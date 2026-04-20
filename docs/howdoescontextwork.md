@@ -1,8 +1,6 @@
 
 # How does context work?
 
-![A cluttered desk seen from above with a translucent cloud of aroma, sound waves, and light rays hovering above it — the invisible context around every memory.](figs/context_cloud.jpg){ align=center }
-
 Context is the "hard problem" of knowledge management. In its simplest form, we use it
 as disambiguation, like the disambiguation pages in Wikipedia for a name like "queen". There
 are many possible things it could refer to, but only one of them is the one we are looking for.
@@ -19,39 +17,6 @@ The knowledge graph is a way of painting a picture of a scene, but we still need
 Modern recognition methods can match sensory inputs like vision and sound as well as writing now, but
 they don't solve the problem of how to know which experience is the correct match given a generic
 sensory input. There was that one time at band camp....
-
-```mermaid
-flowchart TB
-    SIGNAL["Original signal<br/>graph nodes &amp; links"]
-    AMBIENT["Ambient context<br/>reusable scene-level state<br/>(chapter · time · place)"]
-    INTENT["Intentional context<br/>per-query lookup tags<br/>(user's search intent)"]
-    RESULT["Filtered match<br/>overlap of signal + context"]
-
-    SIGNAL --> RESULT
-    AMBIENT --> RESULT
-    INTENT --> RESULT
-
-    classDef note fill:#FBC02D,stroke:#b08600,color:#000;
-    note["Context is stored as a flat string→int<br/>pointer via CONTEXT_DIRECTORY<br/>(eval_context.go:33-54)"]
-    class note note;
-    RESULT -.- note
-```
-
-Ambient and intentional context are *not* a precedence-ordered pair. Both
-streams are folded into the same scoring pass — the ranking of candidate
-matches is decided by the `ScoreContext` comparator at
-[`postgres_retrieval.go:940`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_retrieval.go#L940),
-which `sort.Slice` uses to order the result set. There is no "ambient wins
-if present, otherwise intentional" rule; the two contribute to overlap
-additively.
-
-!!! info "Precedence"
-    Ambient context (`::` tags inherited from the scene) and intentional
-    context (the user's per-query `in context …` clause) are **combined via
-    scoring**, not precedence-ordered. Neither stream short-circuits the
-    other. The `ScoreContext` comparator
-    ([`postgres_retrieval.go:940`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_retrieval.go#L940))
-    is what decides which candidate wins when both match.
 
 ## The technical challenge of context
 

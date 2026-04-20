@@ -2,8 +2,6 @@
 
 # Knowledge and learning
 
-![Multiple threads woven together and labeled context, chapter, arrow, story, node — a visual metaphor for how knowledge is a weaving of meaning.](figs/concepts_hero.jpg){ align=center }
-
 You might think you know how to acquire knowledge. You learn stuff---how hard could it be?
 You take a course, or read a book. But, of course, there is much more to it than that.
 
@@ -12,8 +10,6 @@ extinguisher is, but when there's a fire, do you know what to do? You
 might have seen people knit a sweater, but could you do it?  We need
 to use knowledge to actually `know' it. It's like food. You can collect it,
 but you don't know what it is until you actually taste it.
-
-![Still life: an open notebook with a slice of fruit beside it, warmly lit — knowledge is tasted, not just remembered.](figs/knowledge_tasted.jpg){ align=center }
 
 ## Wikis and why documentation is so bad
 

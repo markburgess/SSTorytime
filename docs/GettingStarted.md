@@ -1,7 +1,5 @@
 # Setting up and getting started
 
-![A retro CRT terminal on a wooden desk flanked by a PostgreSQL elephant and a Go gopher, connected by ochre flow arrows.](figs/getting_started_hero.jpg){ align=center }
-
 As we figure out how to make the project easily available, you will need to compile
 the programs by following these destructions below. You can get started with or without Docker (for those who know). You may need to install these prerequisites:
 
@@ -15,19 +13,6 @@ First compile the software. From the project root, run:
 <pre>
 $ make
 </pre>
-
-The build drops every binary into `src/bin/`. Put that directory on your `$PATH`
-so the tools below — `N4L`, `searchN4L`, `http_server`, `pathsolve`, `notes`,
-`graph_report`, `text2N4L`, `removeN4L` — work as bare commands:
-
-<pre>
-$ export PATH=$PWD/src/bin:$PATH    # so `N4L`, `searchN4L`, `http_server` work directly
-</pre>
-
-The rest of this page, the [Tutorial](Tutorial.md), and the cookbooks all
-assume you've done this. If you prefer not to, substitute `src/bin/<tool>`
-(from the repo root) wherever you see a bare tool name.
-
 Next, setup the PostgreSQL database:
 <pre>
 $ make db
@@ -43,9 +28,10 @@ $ make
 </pre>
 With data, you can now run the web server:
 <pre>
-$ http_server
+cd src
+./http_server
 </pre>
-and open a web browser at `https://localhost:8443`. (The plaintext port `:8080` will issue a 301 redirect to the HTTPS URL.) You'll see a self-signed-certificate warning the first time — accept it for local development. Try searching for SSTorytime!
+and open a web browser `http://localhost:8080`. Try searching for SSTorytime!
 
 ## 1. Find your operating system
 
@@ -62,7 +48,7 @@ Here is the rough plan:
 
 ### 2a. Steps for running postgres in a Docker container
 
-The PostgreSQL database dependency can by run in a Docker container to avoid local installation and configuration. See [Running the SSTorytime database in docker](https://github.com/markburgess/SSTorytime/blob/main/postgres-docker/README.md) for further details.
+The PostgreSQL database dependency can by run in a Docker container to avoid local installation and configuration. See [Running the SSTorytime database in docker](../postgres-docker/README.md) for further details.
 
 ### or 2b. Steps for postgres with package installation
 
@@ -109,14 +95,6 @@ and all will be lost.
 But you can always rebuild the schema, and reload your data graph from your N4L files using the tool N4L.
 e.g. paste in the following commands to a shell, giving the root password:
 
-!!! warning "PostgreSQL 14+ required; system-managed install assumed"
-    SSTorytime needs PostgreSQL **14 or newer**. The snippet below resolves the
-    Postgres binary directory dynamically (via `pg_config` or the location of
-    `initdb` on `$PATH`), which works across Fedora 43 (pg 16), Debian/Ubuntu
-    22.04+ (pg 14+), and macOS Homebrew. It assumes you installed Postgres via
-    your system package manager; if you are running Postgres inside Docker,
-    use the RAM-disk recipe in the container instead.
-
 ```
 sudo su -
 
@@ -125,12 +103,8 @@ mount -t tmpfs -o size=800M tmpfs /mnt/pg_ram
 chown postgres:postgres /mnt/pg_ram
 systemctl stop postgresql
 su postgres -
-
-# Resolve the Postgres bin directory for whichever major version is installed.
-PG_BINDIR=$(pg_config --bindir 2>/dev/null || dirname $(which initdb 2>/dev/null))
-
-$PG_BINDIR/initdb -D /mnt/pg_ram/pgdata
-$PG_BINDIR/pg_ctl -D /mnt/pg_ram/pgdata -l /mnt/pg_ram/logfile start
+/usr/lib/postgresql17/bin/initdb -D /mnt/pg_ram/pgdata
+/usr/lib/postgresql17/bin/pg_ctl -D /mnt/pg_ram/pgdata -l /mnt/pg_ram/logfile start
 
 ```
 
@@ -246,21 +220,41 @@ Notice that the `psql` is a tool that accepts commands of two kind: backslash co
 
 ## 4. Installing the Go programming language for building and scripting
 
-The Go language is easy like "Python" but fast and strongly typed, with compiler
-checks. You can think of it as a "better Python" — in spite of some questionable
-aesthetic choices. Grab an installer for your operating system from
-[golang.org/dl](https://golang.org/dl/). Any Go 1.24 or newer is fine.
+The Go language is easy like "Python" but fast and strongly typed, with compiler checks.
+You can think of it as a "better Python" -- in spite of some questionable aesthetic choices.
+Get it from:
 
-After installing, make sure `go version` works in a fresh shell. That's all the
-setup you need — the project builds straight out of the source checkout via
-`make`, which uses the standard `go.mod` in the repo root. There is **no
-GOPATH symlink** required and no need to touch `~/go/src`.
+```
+https://golang.org/dl/
+```
+After installing a package for your operating system, you need to set up some things in your environment so that you can forget about golang for the rest of your tortured life. One less thing to fret over.
 
-!!! info "Writing your own Go program against SSTorytime?"
-    See [Build your first SSTorytime program](cookbooks/first-go-program.md).
-    That cookbook uses a local `go.mod` with a `replace` directive pointing at
-    your checkout — the modern, Go-modules-native equivalent of the old GOPATH
-    trick some older docs still describe.
+You’ll need a command window (shell).
+Then create some directories for the Golang workspace.
+These are used to simplify the importing of packages. Finally, you need to link a gopath to your code download area.
+
+```
+% mkdir -p ~/go/bin
+% mkdir -p ~/go/src
+% git clone https://github.com/markburgess/SSTorytime
+% ln -s ~/clonedirectory/pkg/SST ~/go/src/SSTorytime
+```
+
+The last step links the directory where you will keep the Smart Spacetime code library to the list of libraries that Go knows about. You’ll also need to set a GOPATH environment variable and add the installation directory to your execution path.For Linux (using default bash shell) you edit the file “~/.bashrc” in your home directory using your favourite text editor. It should contain these lines, as per the golang destructions:
+
+```
+export PATH=$PATH:/usr/local/go/bin
+export GOPATH=~/go
+```
+
+Don’t forget to restart your shell or command window after editing this.
+
+To use the Go Driver, download it
+
+```
+% go get github.com/lib/pq
+
+```
 
 ## Uploading the ready-made examples
 
@@ -269,5 +263,5 @@ Now that everything is working, simply do the following to try out the examples 
 ```
 $ cd examples
 $ make
-$ N4L -u LoopyLoo.n4l
+$ ../src/N4L -u LoopyLoo.n4l
 ```

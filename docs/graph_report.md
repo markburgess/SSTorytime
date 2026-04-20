@@ -3,59 +3,10 @@
 
 There's a few things one would like to know about pretty much every graph.
 the `graph_report` tool offers a simple analysis for determining these basic
-features, for each link meta-type ([arrow](concepts/glossary.md#arrow-sttype)
-class), [chapter](concepts/glossary.md#chapter) by chapter etc. These are particularly
+features, for each link meta-type, chapter by chapter etc. These are particularly
 useful when we don't know much about the graph to begin with, because it was
 collected from a data set rather than as a set of personal notes. The `graph_report`
 tool helps us to get a technical overview of the graph.
-
-## Flags
-
-```
-graph_report [-chapter string] [-sttype L,C,E,N] [-depth N] [context]
-```
-
-Declarations: [`src/graph_report/graph_report.go:62-64`](https://github.com/markburgess/SSTorytime/blob/main/src/graph_report/graph_report.go#L62-L64).
-
-- `-chapter <string>` — substring filter on chapter name. If empty, every chapter matching the default `none` sentinel is analyzed. Passing a substring like `-chapter maze` limits analysis to chapters whose names contain `maze`.
-- `-sttype <codes>` — comma-separated ST-type codes selecting which link classes to include. Default is `+L` (positive leads-to only). See the code table below.
-- `-depth <N>` — maximum probe depth used by the loop-detection and path-source/sink analysis. Default is `3`. Larger values explore farther but cost exponentially more time.
-
-The trailing positional argument, if present, is parsed as a context filter.
-
-## ST-type codes
-
-Each STtype in SSTorytime is a signed integer (`±0..±3`) encoding one of the four arrow meta-types. `graph_report` accepts any of the following short codes for `-sttype`:
-
-| Code | STtype | Meaning |
-|---|---|---|
-| `L` / `+L` | `+1` | leads-to (causal / sequential, forward) |
-| `-L` | `-1` | arriving-from (leads-to, reverse) |
-| `C` / `+C` | `+2` | contains (membership, forward) |
-| `-C` | `-2` | is-part-of (contains, reverse) |
-| `E` / `+E` | `+3` | expresses (property, forward) |
-| `-E` | `-3` | expressed-by (property, reverse) |
-| `P` / `+P` | `+3` | synonym of `E` (property/express) — aliased to `+3` in code |
-| `-P` | `-3` | synonym of `-E` |
-| `N` / `+N` / `-N` | `0` (public) / `4` (internal bucket) | near / similarity (symmetric, one channel). See footnote. |
-
-!!! note "Why the `0` vs `4` discrepancy for `N`"
-    In the public [STtype](concepts/glossary.md#arrow-sttype) vocabulary the "near" meta-type is `0`
-    (the symmetric channel). Internally, `graph_report` stores active STtype
-    buckets in a `map[int]bool` and uses bucket index `4` for `N` so it does
-    not collide with the signed directional buckets `-3..+3`. That is why you
-    will see `sttypes[4] = true` at [`src/graph_report/graph_report.go:90`](https://github.com/markburgess/SSTorytime/blob/main/src/graph_report/graph_report.go#L90)
-    when you pass `-sttype N`. The on-wire arrow STtype in the database is
-    still `0`; `4` is a private implementation detail of this tool.
-
-The mapping is implemented as an explicit `switch` at [`src/graph_report/graph_report.go:80-102`](https://github.com/markburgess/SSTorytime/blob/main/src/graph_report/graph_report.go#L80-L102). Unknown codes cause the tool to print `Unknown sttype ...` and exit with `-1`.
-
-!!! tip "Multiple codes"
-    Pass a comma-separated list to analyse several arrow families together, e.g.
-    `-sttype L,C` to include both directional flow and containment arrows in the same
-    run. Signs are independent of one another, so `-sttype +L,-L` gives you forward
-    and reverse leads-to in one report.
-
 
 * *Loops*: graphs that contain loops (cyclic graphs)
 
@@ -87,16 +38,9 @@ their topological connectivity, setting aside the directedness of the arrows.  T
 reports the unbiased vector normalization of the principal eigenvector when removing all arrow
 directions but preserving their weights.
 
-!!! warning "`-chapter` takes a plain substring, not a regex"
-    `-chapter` is a simple substring filter (see [`graph_report.go:62`](https://github.com/markburgess/SSTorytime/blob/main/src/graph_report/graph_report.go#L62)
-    and the usage in `AnalyzeGraph`). `|` in the shell is a pipe, not an
-    alternation operator. If you want to run the tool for two different
-    chapters, invoke it twice (`-chapter multi` and `-chapter more`), or
-    pass one substring that occurs in both chapter names.
-
 For example, the report on the "demo_pocs/search_maze" example graph, for leadsto links:
 <pre>
-$ graph_report -chapter multi | more
+go run graph_report.go  -chapter multi|more
 ----------------------------------------------------------------
 Analysing chapter "multi slit interference", context [] to path length 6
 ----------------------------------------------------------------
@@ -201,7 +145,7 @@ Analysing chapter "multi slit interference", context [] to path length 6
 
 Another example:
 <pre>
-$ graph_report -chapter maze -sttype L
+$ go run graph_report.go -chapter maze -sttype L
 ----------------------------------------------------------------
 Analysing chapter "maze", context [] to path length 6
 ----------------------------------------------------------------
@@ -415,7 +359,7 @@ Analysing chapter "maze", context [] to path length 6
 and the report on the "doors.n4l" graph, for leadsto links:
 <pre>
 
-$ graph_report -chapter multi
+$ go run graph_report.go -chapter multi
 ----------------------------------------------------------------
 Analysing chapter "multi slit interference", context [] to path length 6
 ----------------------------------------------------------------
@@ -497,16 +441,3 @@ Analysing chapter "multi slit interference", context [] to path length 6
      - Path node 12 has local maximum at node * 4 *, hop distance 3 along [12 11 5 4]
 
 </pre>
-
-## Exit codes & environment
-
-- **Exit `0`** — the requested chapters were analysed and the report printed.
-- **Exit `-1`** — an unknown `-sttype` code was passed (see the code table above), or any library/DB error.
-- **Exit `2`** — invalid flag (Go `flag` package default).
-
-Environment variables:
-
-- `POSTGRESQL_URI` — overrides the hardcoded DSN in [`pkg/SSTorytime/session.go:41`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/session.go#L41).
-- `SST_CONFIG_PATH` — unused at report time. Arrows are loaded from the DB.
-
-If the database is unreachable, `graph_report` exits with a connection error before analysis begins.

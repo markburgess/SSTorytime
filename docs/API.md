@@ -2,9 +2,7 @@
 
 # An API for interacting with the SST graph
 
-![A human silhouette on the left and a crystalline geometric shape on the right connected by a bridge made of arrows and small nodes — a visual metaphor for the API as a bridge between your program and the graph.](figs/api_hero.jpg){ align=center }
-
-The simplest way to manage graphs is to use the [N4L](concepts/glossary.md#n4l) language to create
+The simplest way to manage graphs is to use the N4L language to create
 and manage them, then rebuild the whole database consistently as a
 cache of the information. This makes editing very intuitive and simple.
 However, sometimes you want to work directly with a programming interface.
@@ -25,23 +23,16 @@ we have to maintain several tables.
 
 <pre>
 sstoryline=# \dt
-               List of relations
- Schema |       Name       | Type  |   Owner    
---------+------------------+-------+------------
- public | arrowdirectory   | table | sstoryline
- public | arrowinverses    | table | sstoryline
- public | contextdirectory | table | sstoryline
- public | lastseen         | table | sstoryline
- public | node             | table | sstoryline
- public | pagemap          | table | sstoryline
+              List of relations
+ Schema |      Name      | Type  |   Owner    
+--------+----------------+-------+------------
+ public | arrowdirectory | table | sstoryline
+ public | arrowinverses  | table | sstoryline
+ public | node           | table | sstoryline
+ public | nodearrownode  | table | sstoryline
+ public | pagemap        | table | sstoryline
 
 </pre>
-
-Links between nodes are not stored in a separate `nodearrownode` table; they
-live embedded in the `Node` table as arrays of the custom `Link` type, one
-array per signed arrow channel (`Im3`, `Im2`, `Im1`, `In0`, `Il1`, `Ic2`,
-`Ie3`). See [`pkg/SSTorytime/postgres_types_functions.go:32-48`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_types_functions.go#L32-L48)
-for the full DDL. See the dedicated [Database Schema reference](Database/Schema.md).
 
 Another thing we need to do is register arrow definitions used in links/edges.
 For this we use two functions: `SST.InsertArrowDirectory(stname,alias,name,pm string)` and
@@ -59,42 +50,9 @@ that interact with the database through the Go API
 
 ## Creating an SST graph from data
 
-![Pen-and-ink schematic: three rectangular blocks labeled VERTEX, EDGE, HUBJOIN flow via straight arrows into a database cylinder on the right; NodePtr coordinate pairs (x1,y1), (x2,y2), (x3,y3) annotate each block.](figs/api_lifecycle.jpg){ align=center }
-
-See the [example](https://github.com/markburgess/SSTorytime/blob/main/src/API_EXAMPLE_1/API_EXAMPLE_1.go). To make node registration as easy as possible, you can use two functions
+See the [example](../src/API_EXAMPLE_1.go). To make node registration as easy as possible, you can use two functions
 `Vertex()` and `Edge()` to create nodes and links respectively. These names are chosen to distance themselves
 from the underlying `Node` and `Link`naming, by using the more mathematical names for these objects.
-
-### What happens when you call the API
-
-```mermaid
-sequenceDiagram
-    participant App as Go application
-    participant API as pkg/SSTorytime<br/>(API.go)
-    participant Cache as NODE_CACHE<br/>(globals.go)
-    participant DB as PostgreSQL
-
-    App->>API: Open(load_arrows=true)
-    API->>DB: CONNECT via lib/pq
-    API->>DB: Configure() schema
-    API->>Cache: Load ARROW_DIRECTORY,<br/>CONTEXT_DIRECTORY
-    Cache-->>API: ready
-
-    App->>API: Vertex(sst, "Alice", "Ch1")
-    API->>Cache: check NODE_CACHE
-    alt cache miss
-        API->>DB: IdempInsertNode(...)
-        DB-->>API: NodePtr
-        API->>Cache: CacheNode(ptr, text)
-    end
-    API-->>App: Node
-
-    App->>API: Edge(sst, a, "leads to", b, ctx, 1.0)
-    API->>DB: IdempDBAddLink(...)
-    Note over DB: bidirectional: forward + inverse
-    DB-->>API: ok
-    API-->>App: ArrowPtr, STType
-```
 
 ### Open/Close the connection to SST
 
@@ -223,11 +181,6 @@ of type `sttype` from the starting set of node pointers.
 
 </pre>
 </ol>
-
-!!! tip "Annotated walkthroughs"
-    For line-by-line annotations of this example and three progressively
-    richer ones (hub joins, maze solver, low-level wave-front search) see
-    the [API walkthroughs](API_WALKTHROUGH.md) page.
 
 ### Checking the result
 
@@ -417,16 +370,6 @@ For uploading a PageMap structure from memory to postgres
 
 
 
-
-## Stability
-
-The Go API surface described on this page has no compatibility
-guarantee. Exported function names, signatures, and the semantics of the
-underlying SQL tables can all change between commits without notice. Pin
-integrations by commit SHA and review the diff before bumping. See
-[versioning](versioning.md) for the project-wide policy; the same caveat
-applies to the [Web API](WebAPI.md#stability) and
-[MCP-SST](http-api/mcp-sst.md#stability) surfaces.
 
 ## Basic queries from SQL
 

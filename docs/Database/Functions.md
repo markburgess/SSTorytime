@@ -37,7 +37,7 @@ paths — composes like this:
 
 ```mermaid
 flowchart LR
-    Go[["Go: GetEntireNCSuperConePathsAsLinks<br/>postgres_retrieval.go:1182"]]
+    Go[["Go: GetConstraintConePathsAsLinks<br/>postgres_retrieval.go:1164"]]
     CPL["ConstraintPathsAsLinks<br/>(per-start dispatcher)"]
     SCP["SumConstraintPaths<br/>(recursive walker)"]
     GCFL["GetConstrainedFwdLinks<br/>(per-hop filter)"]
@@ -50,7 +50,7 @@ flowchart LR
     GCFL --> MA
     SCP -->|recurse| SCP
 
-    GoNC[["Go: AllNCPathsAsLinks<br/>postgres_retrieval.go:1138"]]
+    GoNC[["Go: GetEntireNCConePathsAsLinks<br/>postgres_retrieval.go:1125"]]
     ANCL["AllNCPathsAsLinks<br/>(context/chapter cone)"]
     SNCP["SumAllNCPaths"]
     GNFL["GetNCFwdLinks"]
@@ -250,8 +250,8 @@ AllNCPathsAsLinks(start NodePtr[], chapter text, rm_acc bool, context text[],
 
 Multi-start dispatcher: calls `SumAllNCPaths` once per starting node. Lets a
 client ask "all paths from any of these 5 starts within chapter X with
-context Y". Called from
-[`postgres_retrieval.go:1138`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_retrieval.go#L1138).
+context Y". Called from the Go wrapper `GetEntireNCConePathsAsLinks` at
+[`postgres_retrieval.go:1125`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_retrieval.go#L1125).
 [`postgres_types_functions.go:1166`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_types_functions.go#L1166).
 
 #### `ConstraintPathsAsLinks`
@@ -264,9 +264,9 @@ ConstraintPathsAsLinks(start NodePtr[], chapter, rm_acc, context, arrows int[],
 The most expressive search: adds **arrow-id and STtype whitelists** on top
 of chapter+context. If `sttypes` is NULL it expands to all 7 channels
 (`-3..3`). This is the function backing the public `pathsolve` CLI and the
-HTTP server's constraint queries. Called from
-`GetEntireNCSuperConePathsAsLinks` at
-[`postgres_retrieval.go:1182`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_retrieval.go#L1182).
+HTTP server's constraint queries. Called from the Go wrapper
+`GetConstraintConePathsAsLinks` at
+[`postgres_retrieval.go:1164`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_retrieval.go#L1164).
 [`postgres_types_functions.go:1205`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_types_functions.go#L1205).
 
 #### `SumConstraintPaths`

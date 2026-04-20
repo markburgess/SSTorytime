@@ -4,8 +4,7 @@
 ![Six tools arranged on a worktable — sieve, builder's square, magnifying glass, open book, twin flashlights, microscope — representing the family of CLI utilities in the SSTorytime toolkit.](figs/tools_hero.jpg){ align=center }
 
 Sometimes you want to make notes on a text that's already written in natural language,
-and it might be quite long. Reworking the text in note form would take a long time and might
-be difficult.
+and it might be quite long. Reworking the text in note form as N4L (producing [chapters](concepts/glossary.md#chapter) and [arrows](concepts/glossary.md#arrow-sttype)) would take a long time and might be difficult.
 
 The `text2N4L` command reads a plain text `filename.txt` like the examples in `examples/example_data`
 and turns it into a prototype N4Lfile automatically, based on a model of deconstructing narrative

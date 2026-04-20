@@ -3,7 +3,7 @@
 
 ![Aerial view of a foggy bay at dusk where two lighthouse beams sweep toward each other through the mist, creating interference where they meet, with a graph network faintly visible beneath — a visual metaphor for bidirectional wave-front path solving.](figs/pathsolve_beams.jpg){ align=center }
 
-`pathsolve` is an experimental tool for finding contiguous paths between node sets.
+`pathsolve` is an experimental tool for finding contiguous paths between sets of [NodePtr](concepts/glossary.md#nodeptr)-labelled nodes.
 It can also be accessed through the web browser.
 
 <!-- TODO(visuals): Before/after diagram of path expansion — left side shows two boundary sets (begin / end) as dotted outlines; right side shows the converged wave-fronts meeting in the middle, with the winning path highlighted. Style A (pen-and-ink). Place after the intro, before the Flags section. -->
@@ -59,7 +59,7 @@ pathsolve "<target|start>"
 
 The **end set comes first** (the bra `<end|`) and the **start set comes second** (the ket `|start>`). This mirrors quantum-mechanical transition-matrix notation: you read `<end|start>` as "amplitude for the system to evolve into `end`, given it starts in `start`."
 
-Parsing is done by `DiracNotation` (see [`pkg/SSTorytime/service_search_cmd.go`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go) and [`src/pathsolve/pathsolve.go:102-110`](https://github.com/markburgess/SSTorytime/blob/main/src/pathsolve/pathsolve.go#L102-L110)), which also extracts an optional trailing context string.
+Parsing is dispatched from `DecodeSearchField` at [`pkg/SSTorytime/service_search_cmd.go:180`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go#L180) (the call site of `DiracNotation`); the `DiracNotation` function itself is defined in [`pkg/SSTorytime/tools.go:523`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/tools.go#L523). `pathsolve` wires it into its own argument loop at [`src/pathsolve/pathsolve.go:102-110`](https://github.com/markburgess/SSTorytime/blob/main/src/pathsolve/pathsolve.go#L102-L110). The parser also extracts an optional trailing context string.
 
 When Dirac notation is used, the `-begin`/`-end` flags are overridden.
 
@@ -69,9 +69,9 @@ For now, you can get started by trying the examples, e.g.
 <pre>
 $ cd examples
 $ make
-$ ../src/pathsolve -begin A1 -end B6 
+$ pathsolve -begin A1 -end B6 
 
-mark% go run pathsolve.go -begin a1 -end b6 
+mark% pathsolve -begin a1 -end b6 
 
  Paths < end_set= {B6, b6, } | {A1, } = start set>
 
@@ -149,15 +149,15 @@ Or the adjoint path search:
 
 <pre>
 
-$ go run pathsolve.go -begin B6 -end A1 -bwd
+$ pathsolve -begin B6 -end A1 -bwd
 
 </pre>
 You can also use Dirac transition matrix notation like this:
 <pre>
 
-$ go run pathsolve.go "<B6|A1>"
-$ go run pathsolve.go "<end|start>"
-$ go run pathsolve.go "<target|start>"
+$ pathsolve "<B6|A1>"
+$ pathsolve "<end|start>"
+$ pathsolve "<target|start>"
 
 </pre>
 Notice the order of the start and end sets.
@@ -214,11 +214,11 @@ Remember: the power of SST becomes more apparent when using the STTypes 0,1,2,3 
 Path searches grow exponentially with the length of the path, so they get slower and slower as the distance between nodes
 increases. If you know the type of arrow along the whole path, you can speed up the search by specifying the arrow types, or the sttypes, e.g. using the STtypes:
 <pre>
-./searchN4L -v \\from \!gun\! \\to scarlet \\arrow +3,-3,0
+searchN4L -v \\from \!gun\! \\to scarlet \\arrow +3,-3,0
 </pre>
 And using the arrows:
 <pre>
-./searchN4L -v \\from \!a1\! \\to b6 \\arrow 20,21
+searchN4L -v \\from \!a1\! \\to b6 \\arrow 20,21
 </pre>
 Remember to always give pairs of arrow,inverse since the FROM and the TO match opposite arrow directions.
 

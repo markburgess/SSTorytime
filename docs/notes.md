@@ -2,7 +2,7 @@
 # The notes tool
 
 The `notes` tool is the simplest way of retrieving what you wrote in your notes.N4L file. It just outputs what you entered in
-roughly the same order as your original input, page by page. This is useful when reading things back as you wrote them.
+roughly the same order as your original input, page by page, using the [PageMap](concepts/glossary.md#chapter) preserved at upload time. This is useful when reading things back as you wrote them.
 
 Often we remember that we wrote something in a certain place, but we don't remember the details. This tool helps you to
 see how you intentionally wrote the notes, but without comments and variables.
@@ -10,7 +10,7 @@ see how you intentionally wrote the notes, but without comments and variables.
 `notes` works page by page.
 
 <pre>
-$ src/notes fox and crow
+$ notes fox and crow
 
 
 Title: chinese story about fox and crow
@@ -29,7 +29,7 @@ Húli zài shùlín lĭ zhăo chī de.  Tā lái dào yì kē dà shù xià,
 </pre>
 This take only a page number as an argument for controlling long note sets:
 <pre>
-$ src/notes -page 2 brain
+$ notes -page 2 brain
 
 </pre>
 

@@ -4,7 +4,7 @@ site_author: Mark Burgess (ChiTek-i)
 site_url: https://markburgess.github.io/SSTorytime/
 repo_name: markburgess/SSTorytime
 repo_url: https://github.com/markburgess/SSTorytime
-edit_uri: edit/main/docs/
+edit_uri: edit/main/pages/docs/
 copyright: Copyright &copy; Mark Burgess / ChiTek-i — an NLnet sponsored project
 
 docs_dir: docs

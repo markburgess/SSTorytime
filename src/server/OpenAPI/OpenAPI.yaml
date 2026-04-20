@@ -1,58 +1,369 @@
 openapi: 3.0.0
 info:
   title: SSTorytime Web API
-  version: 2.0.0
+  version: 2.1.0
+  description: >
+    HTTPS JSON API for the SSTorytime semantic-spacetime graph database.
+    All endpoints are served on :8443 (self-signed TLS by default); a
+    companion listener on :8080 issues a 301 redirect to HTTPS. There is
+    no API authentication — rely on TLS and network placement for access
+    control.
+
+servers:
+  - url: https://localhost:8443
+    description: Local development server (self-signed TLS)
 
 paths:
+
   /searchN4L:
     post:
       operationId: N4Lquery
-      summary: Interpret search command
+      summary: Interpret an N4L query and return graph content
+      description: >
+        Accepts an N4L DSL string in the `name` field (or a direct NodePtr
+        via `nclass`/`ncptr`) and dispatches to one of nine search
+        handlers. The response envelope's `Response` discriminator tells
+        the client which payload shape to expect.
       requestBody:
         required: true
         content:
           application/x-www-form-urlencoded:
             schema:
-              type: object
-       
-              properties:
-                name:
-                  type: string
-                  description: A search string in the N4L query language
-                chapcontext:
-                  type: string
-                  description: string used for web group updates 
-                nclass:
-                  type: string
-                  description: NPtr string classification for direct lookup
-                ncptr:
-                  type: string
-                  description: NPtr hash number for direct lookup
-              required:
-                - name
+              $ref: '#/components/schemas/SearchRequest'
       responses:
         '200':
-          description: Default for all non error reponses
+          description: Default response for any non-transport-error result
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Response:
-                    type: string
-                  Content:
-                    oneOf:
-                      - $ref: '#/components/schemas/Orbits'
-                      - $ref: '#/components/schemas/ConePaths'
-                      - $ref: '#/components/schemas/PathSolve'
-                      - $ref: '#/components/schemas/Sequence'
-                      - $ref: '#/components/schemas/PageMap'
-                      - $ref: '#/components/schemas/TOC'
-                      - $ref: '#/components/schemas/Arrows'
+                $ref: '#/components/schemas/SearchEnvelope'
+        '405':
+          description: Method not allowed (anything other than GET/POST)
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /Upload:
+    post:
+      operationId: UploadAsset
+      summary: Cache an asset file under a node / chapter / context
+      description: >
+        Dual-mode endpoint.  If the `uri` form field is exactly the
+        string `"none"`, the request must be `multipart/form-data` with a
+        `filedata` part.  Otherwise, `uri` is treated as a remote URL that
+        the server fetches on the caller's behalf.  The multipart parser
+        caps the request body at 32 MB.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadInlineRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UploadURIRequest'
+      responses:
+        '200':
+          description: Upload succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          description: Inline upload missing the `filedata` part
+          content:
+            text/plain:
+              schema:
+                type: string
+        '405':
+          description: Method not allowed (non-POST)
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Disk write, directory creation, or URI fetch failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-size-limit: 33554432
+      x-cache-path: "./cacheroot/<chapter>/<context>/<item>/<timestamp>.<ext>"
+
+  /SearchAssets:
+    post:
+      operationId: ListAssets
+      summary: List cached assets previously uploaded for a node
+      description: >
+        Returns the list of files currently cached under
+        ./cacheroot/<chapter>/<context>/<item>/ for the given node.  If
+        the directory does not exist, the response's `Content` is an
+        empty array.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AssetsRequest'
+      responses:
+        '200':
+          description: Asset list (may be empty)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetsResponse'
+
+  /Resources/{path}:
+    get:
+      operationId: GetResource
+      summary: Serve a file from the operator-provided resource root
+      description: >
+        Static file server rooted at the directory passed to
+        `http_server -resources`. Any path under that directory is
+        reachable here; no authentication.
+      parameters:
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+          description: Relative path within the resource root
+      responses:
+        '200':
+          description: File contents (MIME inferred from extension)
+        '404':
+          description: File does not exist
+
+  /Assets/{path}:
+    get:
+      operationId: GetAsset
+      summary: Serve a previously uploaded asset
+      description: >
+        Static file server rooted at `./cacheroot/` (relative to the
+        http_server binary's working directory).  Serves files created
+        by `/Upload`.
+      parameters:
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+          description: Relative path within `./cacheroot/`
+      responses:
+        '200':
+          description: Asset file contents
+        '404':
+          description: Asset does not exist
+
+  /:
+    get:
+      operationId: GetUIAsset
+      summary: Serve the embedded HTML/CSS/JS UI
+      description: >
+        Files baked into the binary via Go's embed.FS, rooted at
+        `src/server/public/`.
+      responses:
+        '200':
+          description: UI asset contents
 
 components:
 
   schemas:
+
+    # ------------------------------------------------------------------
+    # Request schemas
+    # ------------------------------------------------------------------
+
+    SearchRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: N4L DSL query string. See the Web API docs for the full command set.
+        chapcontext:
+          type: string
+          description: Ambient chapter/context label; used by the `\lastnptr` telemetry command.
+        nclass:
+          type: string
+          description: NodePtr.Class for direct pointer lookup (overrides name).
+        ncptr:
+          type: string
+          description: NodePtr.CPtr for direct pointer lookup (with nclass).
+      required:
+        - name
+
+    UploadInlineRequest:
+      type: object
+      description: >
+        Multipart form for inline uploads. `uri` must be the exact string
+        `"none"` to select this mode.
+      properties:
+        name:
+          type: string
+          description: Node text the asset belongs to.
+        chapter:
+          type: string
+          description: Chapter string (filesystem-sanitised on the server).
+        context:
+          type: string
+          description: Context keyword (filesystem-sanitised on the server).
+        extension:
+          type: string
+          description: File extension, used in the cached filename.
+        uri:
+          type: string
+          description: Must be the literal string "none" for inline mode.
+          enum: ["none"]
+        filedata:
+          type: string
+          format: binary
+          description: The file being uploaded (max 32 MB).
+      required:
+        - name
+        - chapter
+        - context
+        - extension
+        - uri
+        - filedata
+
+    UploadURIRequest:
+      type: object
+      description: >
+        URL-encoded form for remote-fetch uploads. `uri` is any value
+        other than `"none"` and is treated as a remote URL.
+      properties:
+        name:
+          type: string
+        chapter:
+          type: string
+        context:
+          type: string
+        extension:
+          type: string
+        uri:
+          type: string
+          format: uri
+          description: Remote URL the server will fetch on the caller's behalf.
+      required:
+        - name
+        - chapter
+        - context
+        - extension
+        - uri
+
+    AssetsRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Node text whose assets to list.
+        chapter:
+          type: string
+        context:
+          type: string
+      required:
+        - name
+        - chapter
+        - context
+
+    # ------------------------------------------------------------------
+    # Response envelopes
+    # ------------------------------------------------------------------
+
+    SearchEnvelope:
+      type: object
+      description: >
+        The canonical `/searchN4L` response envelope.  `Response` is a
+        string discriminator; the shape of `Content` depends on its value.
+      properties:
+        Response:
+          type: string
+          enum:
+            - Orbits
+            - ConePaths
+            - PathSolve
+            - Sequence
+            - PageMap
+            - TOC
+            - Arrows
+            - STAT
+            - Error
+            - LastSaw
+        Content:
+          oneOf:
+            - $ref: '#/components/schemas/Orbits'
+            - $ref: '#/components/schemas/ConePaths'
+            - $ref: '#/components/schemas/PathSolve'
+            - $ref: '#/components/schemas/Sequence'
+            - $ref: '#/components/schemas/PageMap'
+            - $ref: '#/components/schemas/TOC'
+            - $ref: '#/components/schemas/Arrows'
+            - $ref: '#/components/schemas/STAT'
+            - type: string
+              description: Error diagnostic (Response=Error or LastSaw ack).
+        Time:
+          type: string
+          description: Ambient-time key captured when the response was packaged.
+        Intent:
+          type: array
+          items:
+            type: string
+          description: Intentional keywords from the server's short-term-memory context.
+        Ambient:
+          type: array
+          items:
+            type: string
+          description: Ambient scene tags from the server's short-term-memory context.
+      required:
+        - Response
+        - Content
+
+    UploadResponse:
+      type: object
+      properties:
+        Response:
+          type: string
+          enum: ["Uploaded", "Failed"]
+        Content:
+          type: string
+          description: 'Success message with byte count and path, or "Error: ..." diagnostic.'
+      required:
+        - Response
+        - Content
+
+    AssetsResponse:
+      type: object
+      properties:
+        Response:
+          type: string
+          enum: ["Assets"]
+        Content:
+          type: array
+          items:
+            type: string
+          description: Absolute `/Assets/cacheroot/...` URL paths for each cached file.
+      required:
+        - Response
+        - Content
+
+    ErrorResponse:
+      type: object
+      description: Application-level error envelope used by /Upload and the search dispatcher fallback.
+      properties:
+        Response:
+          type: string
+          enum: ["Failed", "Error"]
+        Content:
+          type: string
+          description: 'Diagnostic string, typically prefixed with "Error: ".'
+      required:
+        - Response
+        - Content
+
+    # ------------------------------------------------------------------
+    # Core graph types (mirror pkg/SSTorytime/types_structures.go)
+    # ------------------------------------------------------------------
 
     NodePtr:
       description: An internal direct reference to a knowable item
@@ -60,212 +371,166 @@ components:
       properties:
         Class:
           type: integer
+          description: Text size-class bucket (1-gram, 2-gram, 3-gram, <128B, <1KB, >1KB).
         CPtr:
           type: integer
-
-    ###
+          description: Index within the size-class lane.
 
     Coords:
-      description: The coordinates of the node, relative to a search in 3d semantic spacetime
+      description: 3D (optionally spherical) coordinates pre-computed by the server for rendering
       type: object
       properties:
-        X:
-          type: number
-        Y:
-          type: number
-        Z:
-          type: number
-        R:
-          type: number
-        Lat:
-          type: number
-        Lon:
-          type: number
+        X: { type: number }
+        Y: { type: number }
+        Z: { type: number }
+        R: { type: number }
+        Lat: { type: number }
+        Lon: { type: number }
 
-    ###
-    
     NodeEvent:
-      description: The content pointed to by a NodePtr
+      description: The content pointed to by a NodePtr, with pre-computed orbits
       type: object
       properties:
         Text:
-          description: The knowable data
           type: string
+          description: The knowable text data.
         L:
-          description: The string length of the text
           type: integer
+          description: String length of Text.
         Chap:
-          description: The chapter containing the text
           type: string
+          description: Chapter this node belongs to.
         Context:
-          description: The context keywords explaining the relevance of the text
           type: string
+          description: Context keywords for this node.
         NPtr:
-          $ref: '#/components/schemas/NodePtr' 
+          $ref: '#/components/schemas/NodePtr'
         XYZ:
-          $ref: '#/components/schemas/Coords' 
+          $ref: '#/components/schemas/Coords'
+        Orbits:
+          type: array
+          description: Seven-channel array of Orbit arrays (one channel per signed STtype).
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Orbit'
 
-    ###
-    
     WebPath:
-      description: A curated journey through the knowable graph
+      description: A single step in a curated walk through the graph
       type: object
       properties:
         NPtr:
-          $ref: '#/components/schemas/NodePtr' 
+          $ref: '#/components/schemas/NodePtr'
         Arr:
-          description: The arrow type of the next leg of the path
           type: integer
+          description: Arrow pointer for the next leg.
         STindex:
-          description: The Semantic Spacetime (0-6) type of the arrow 
           type: integer
+          description: Semantic-Spacetime index (0-6) of the arrow.
         Line:
           type: integer
-          description: The line number reference of the text in the original N4L notes
+          description: Original N4L source line number (used in PageMap).
         Name:
-          description: The text for this location in the path
           type: string
+          description: Text for this step.
         Chp:
-          description: The chapter the text belongs to
           type: string
+          description: Chapter this step belongs to.
         Ctx:
-          description: The context keywords the text belongs to
           type: string
+          description: Context keywords for this step.
         XYZ:
-          $ref: '#/components/schemas/Coords' 
+          $ref: '#/components/schemas/Coords'
         Wgt:
-          description: The weight assigned to the arrow link
           type: number
-
-    ###
+          description: Link weight.
 
     Orbits:
-      description: An array of nearest neighbours of the selected knowable text
+      description: Response content for `Response = "Orbits"` — an array of NodeEvents each carrying its satellite set
       type: array
       items:
-        type: array
-        items:
-          $ref: '#/components/schemas/Orbit' 
-
-    ###
+        $ref: '#/components/schemas/NodeEvent'
 
     Orbit:
-      description: An element in orbit around the knowable text
+      description: One satellite record relative to a NodeEvent
       type: object
       properties:
         Radius:
-          description: The distance of the related item from the base knowable text
           type: integer
         Arrow:
-          description: The arrow type relating the orbiting item to the base knowable text
           type: string
         STindex:
-          description: The Semantic Spacetime type (0-6) of the arrow
           type: integer
         Dst:
-          description: The NodePtr of the orbiting item 
-          $ref: '#/components/schemas/NodePtr' 
+          $ref: '#/components/schemas/NodePtr'
         Ctx:
           type: string
-          description: The context key words of the orbiting item
         Wgt:
           type: number
-          description: The link weight of the arrow
         Text:
-          type:  string
-          description: The dereferenced text of the orbiting item
+          type: string
         XYZ:
           $ref: '#/components/schemas/Coords'
         OOO:
           $ref: '#/components/schemas/Coords'
 
-    ###
-
-    ConePaths:
-      description: A structure listing paths from a root node
+    WebConePaths:
+      description: Paths radiating from a root node, optionally annotated with symmetry analysis
       type: object
       properties:
         RootNode:
-          $ref: '#/components/schemas/NodePtr' 
+          $ref: '#/components/schemas/NodePtr'
         Title:
           type: string
-          description: The text of the root node
         BTWC:
-          description: An array of Betweenness Centrality scores for the path matrix
           type: array
           items:
             type: string
+          description: Betweenness-centrality scores for each path.
         Paths:
-          description: An array of paths starting from the root node
-          type: array
-          items:
-            type : array
-            items:
-              $ref: '#/components/schemas/WebPath'
-        SuperNodes:
-          description: A list of nodes identified by their symmetrical roles in the paths
-          type: array
-          items:
-            type: string
-
-    ###
-
-    PathSolve:
-      description: A structure listing paths from a root node
-      type: object
-      properties:
-        RootNode:
-          $ref: '#/components/schemas/NodePtr' 
-        Title:
-          type: string
-          description: The text of the root node
-        BTWC:
-          description: An array of Betweenness Centrality scores for the path matrix
-          type: array
-          items:
-            type: string
-        Paths:
-          description: An array of paths starting from the root node
-          type: array
-          items:
-            type : array
-            items:
-              $ref: '#/components/schemas/WebPath'
-        SuperNodes:
-          description: A list of nodes identified by their symmetrical roles in the paths
-          type: array
-          items:
-            type: string
-
-    ###
-
-    Sequence:
-      description: An array of NodeEvents forming a story sequence about the search topic
-      type: array
-      items:
-        $ref: '#/components/schemas/NodeEvent'
-
-    ###
-
-    PageMap:
-      description: A literal rendering of the original N4L page notes
-      type: object
-      properties:
-        Title:
-          description: The knowable item
-          type: string
-        Context:
-          description: The context keywords labelling the knowable item
-          type: string
-        Notes:
-          description: An array of the related notes matching the knowable item
           type: array
           items:
             type: array
             items:
-               $ref: '#/components/schemas/WebPath'
+              $ref: '#/components/schemas/WebPath'
+        SuperNodes:
+          type: array
+          items:
+            type: string
+          description: Groups of symmetrically-equivalent nodes across the paths.
 
-    ###
+    ConePaths:
+      description: Response content for `Response = "ConePaths"`
+      type: array
+      items:
+        $ref: '#/components/schemas/WebConePaths'
+
+    PathSolve:
+      description: Response content for `Response = "PathSolve"`
+      type: array
+      items:
+        $ref: '#/components/schemas/WebConePaths'
+
+    Sequence:
+      description: Response content for `Response = "Sequence"` — an axial array of NodeEvents
+      type: array
+      items:
+        $ref: '#/components/schemas/NodeEvent'
+
+    PageMap:
+      description: Response content for `Response = "PageMap"` — a PageView literal of N4L notes
+      type: object
+      properties:
+        Title:
+          type: string
+        Context:
+          type: string
+        Notes:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/WebPath'
 
     Loc:
       type: object
@@ -279,10 +544,8 @@ components:
         XYZ:
           $ref: '#/components/schemas/Coords'
 
-    ###
-
     ChCtx:
-      type: object   
+      type: object
       properties:
         Chapter:
           type: string
@@ -301,18 +564,14 @@ components:
           items:
             $ref: '#/components/schemas/Loc'
 
-    ###
-
     TOC:
-      description: A table of contents matching chapters and contexts
+      description: Response content for `Response = "TOC"` — chapter × context table
       type: array
       items:
-          $ref: '#/components/schemas/ChCtx'
-
-    ###
+        $ref: '#/components/schemas/ChCtx'
 
     ArrowList:
-      description: Spceific information explaining a single type of arrow
+      description: Arrow directory record, including its inverse
       type: object
       properties:
         ArrPtr:
@@ -332,10 +591,42 @@ components:
         InvL:
           type: string
 
-    ###
-    
     Arrows:
+      description: Response content for `Response = "Arrows"`
       type: array
       items:
-          $ref: '#/components/schemas/ArrowList'
+        $ref: '#/components/schemas/ArrowList'
 
+    LastSeen:
+      description: Activity-log row (STAT response)
+      type: object
+      properties:
+        Section:
+          type: string
+        First:
+          type: integer
+          format: int64
+          description: Unix timestamp of first access.
+        Last:
+          type: integer
+          format: int64
+          description: Unix timestamp of most recent access.
+        Pdelta:
+          type: number
+          description: Previous average interval between accesses.
+        Ndelta:
+          type: number
+          description: Current (most recent) interval between accesses.
+        Freq:
+          type: integer
+          description: Total access count.
+        NPtr:
+          $ref: '#/components/schemas/NodePtr'
+        XYZ:
+          $ref: '#/components/schemas/Coords'
+
+    STAT:
+      description: Response content for `Response = "STAT"` — array of recency records
+      type: array
+      items:
+        $ref: '#/components/schemas/LastSeen'

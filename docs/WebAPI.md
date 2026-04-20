@@ -13,7 +13,7 @@ orbitals, which model a single node at a time with a cloud of arrow
 paths up to two arrows in length, and corresponding to satellites of
 the original node (see the figure below to see the geometry).
 
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/geometry.png 'Testing a web interface')
+![Alpha interface](figs/geometry.png 'Testing a web interface')
 
 Data are returned in JSON packages by the `PackageResponse()` function, which
 wraps data in a structure:

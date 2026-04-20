@@ -1,6 +1,17 @@
 
 # Removing, Replacing, or Editing notes
 
+## Usage
+
+```
+removeN4L -force "chapter name"
+```
+
+!!! warning "`-force` is required"
+    `removeN4L` will **exit without doing anything** if you omit `-force`. This is
+    intentional — deletion is destructive, so the tool asks you to opt in explicitly.
+    See the flag check at [`src/removeN4L/removeN4L.go:48-71`](https://github.com/markburgess/SSTorytime/blob/main/src/removeN4L/removeN4L.go#L48-L71).
+
 Eventually you will want to update your notes. Some knowledge is long lived, other knowledge is ephemeral.
 Apart from [`reminders'](https://github.com/markburgess/SSTorytime/blob/main/examples/reminders.n4l) you
 probably don't want to commit short lived information to a database, but nevertheless we need to update

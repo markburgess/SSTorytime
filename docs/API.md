@@ -23,16 +23,24 @@ we have to maintain several tables.
 
 <pre>
 sstoryline=# \dt
-              List of relations
- Schema |      Name      | Type  |   Owner    
---------+----------------+-------+------------
- public | arrowdirectory | table | sstoryline
- public | arrowinverses  | table | sstoryline
- public | node           | table | sstoryline
- public | nodearrownode  | table | sstoryline
- public | pagemap        | table | sstoryline
+               List of relations
+ Schema |       Name       | Type  |   Owner    
+--------+------------------+-------+------------
+ public | arrowdirectory   | table | sstoryline
+ public | arrowinverses    | table | sstoryline
+ public | contextdirectory | table | sstoryline
+ public | lastseen         | table | sstoryline
+ public | node             | table | sstoryline
+ public | pagemap          | table | sstoryline
 
 </pre>
+
+Links between nodes are not stored in a separate `nodearrownode` table; they
+live embedded in the `Node` table as arrays of the custom `Link` type, one
+array per signed arrow channel (`Im3`, `Im2`, `Im1`, `In0`, `Il1`, `Ic2`,
+`Ie3`). See [`pkg/SSTorytime/postgres_types_functions.go:32-48`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_types_functions.go#L32-L48)
+for the full DDL. A dedicated Database Schema reference page is planned as
+part of the ongoing [documentation upleveling](plans/2026-04-20-documentation-upleveling.md).
 
 Another thing we need to do is register arrow definitions used in links/edges.
 For this we use two functions: `SST.InsertArrowDirectory(stname,alias,name,pm string)` and
@@ -50,7 +58,7 @@ that interact with the database through the Go API
 
 ## Creating an SST graph from data
 
-See the [example](../src/API_EXAMPLE_1.go). To make node registration as easy as possible, you can use two functions
+See the [example](https://github.com/markburgess/SSTorytime/blob/main/src/API_EXAMPLE_1/API_EXAMPLE_1.go). To make node registration as easy as possible, you can use two functions
 `Vertex()` and `Edge()` to create nodes and links respectively. These names are chosen to distance themselves
 from the underlying `Node` and `Link`naming, by using the more mathematical names for these objects.
 

@@ -182,15 +182,15 @@ This file is already available in the distribution:
 $ cd SSTorytime
 $ make
 $ cd example
-$ ../src/N4L tutorial.n4l
+$ ../src/bin/N4L tutorial.n4l
 </pre>
 When you run this, you'll see something like this:
 
-![A Flow Chart is a knowledge representation](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/nooptions.png 'Without options, you only see your note to self.')
+![A Flow Chart is a knowledge representation](figs/nooptions.png 'Without options, you only see your note to self.')
 
 If you choose verbose output, you see more of what's going on:
 
-![A Flow Chart is a knowledge representation](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/verbose.png 'Verbose output')
+![A Flow Chart is a knowledge representation](figs/verbose.png 'Verbose output')
 
 * First N4L reads a number of configuration files in `SSTconfig/*`. These contain arrow definitions.
 * Then it reads your file and chops it into parts that are related.
@@ -211,20 +211,20 @@ $ make
 </pre>
 You see this runs the following command:
 <pre>
-../src/N4L -u -wipe doors.n4l Mary.n4l chinese*n4l branches.n4l doubleslit.n4l ConstructionProcesses.n4l wardleymap.n4l 
+../src/bin/N4L -u -wipe doors.n4l Mary.n4l chinese*n4l branches.n4l doubleslit.n4l ConstructionProcesses.n4l wardleymap.n4l 
 brains.n4l kubernetes.n4l SSTorytime.n4l integral.n4l reasoning.n4l
 </pre>
 The `-u` option tells the program to upload to the database. The `-wipe` option, tells it to override
 whatever is already in the database and start again. If you want to append new data, you can simply
 omit the `-wipe` option:
 <pre>
-$ ../src/N4L -u LoopyLoo.n4l
+$ ../src/bin/N4L -u LoopyLoo.n4l
 </pre>
 The examples in the documentation assume you set up from the start with these uploads:
 <pre>
 $ cd examples
 $ make 
-$ ../src/N4L -u LoopyLoo.n4l
+$ ../src/bin/N4L -u LoopyLoo.n4l
 </pre>
 
 ## Searching
@@ -256,21 +256,21 @@ Notice that, if you want to match accented characters using unaccented substitut
 
 You can also types these directly into the web browser:
 
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp11.png 'Testing a web interface')
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp12.png 'Testing a web interface')
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp13.png 'Testing a web interface')
+![Alpha interface](figs/webapp11.png 'Testing a web interface')
+![Alpha interface](figs/webapp12.png 'Testing a web interface')
+![Alpha interface](figs/webapp13.png 'Testing a web interface')
 
 
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp2.png 'Testing a web interface')
+![Alpha interface](figs/webapp2.png 'Testing a web interface')
 
 
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp3.png 'Testing a web interface')
+![Alpha interface](figs/webapp3.png 'Testing a web interface')
 
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp4.png 'Testing a web interface')
+![Alpha interface](figs/webapp4.png 'Testing a web interface')
 
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp5.png 'Testing a web interface')
+![Alpha interface](figs/webapp5.png 'Testing a web interface')
 
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp6.png 'Testing a web interface')
+![Alpha interface](figs/webapp6.png 'Testing a web interface')
 
 
 
@@ -411,6 +411,6 @@ Currently under development is a new feature.
 As you start to use the tool more, you can use the checkboxes to click and leave a trace of what you've worked
 on. This will be traced and give feedback on your learning goals.
 
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/progresstracker.png 'Testing a web interface')
+![Alpha interface](figs/progresstracker.png 'Testing a web interface')
 
 

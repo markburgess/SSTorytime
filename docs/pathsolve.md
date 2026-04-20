@@ -115,8 +115,8 @@ Notice the order of the start and end sets.
 
 In the search field, enter the Dirac notation, e.g. `<target|start>` and relevant chapter `interference`, then click on `geometry`.
 
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/pathsolve1.png 'pathsolving in a web interface')
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/pathsolve2.png 'pathsolving in a web interface')
+![Alpha interface](figs/pathsolve1.png 'pathsolving in a web interface')
+![Alpha interface](figs/pathsolve2.png 'pathsolving in a web interface')
 
 
 Notice the reporting about supernodes and betweenness centrality scores. 

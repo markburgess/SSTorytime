@@ -1,11 +1,18 @@
 
 # Namespace concept in SSTorytime: "Many Worlds" Knowledge Graphs
 
+!!! info "Planned feature — not yet implemented"
+    Namespaces are a design vision, not a currently-implemented feature of the
+    graph library. There are no namespace types in `pkg/SSTorytime/types_structures.go`,
+    and the database layer does not scope nodes or links by user or world. This page
+    documents the intended model so contributors can discuss the approach.
+    See the [To-Do list](ToDo.md) for current status.
+
 The principles for SSTorytime are that knowledge is a personal
 (individual) creation, a personal journey--but sharing is caring, and we can be inspired by another's 
 work (see diagram).
 
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/namespaces.png 'namespaces')
+![Alpha interface](figs/namespaces.png 'namespaces')
 
 ## The principles
 

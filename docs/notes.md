@@ -38,7 +38,7 @@ $ src/notes -page 2 brain
 The web browser has an equivalent to the notes command line tool. Enter the relevant chapter into the chapter field and
 press `browse`, then use the `next` and `previous` page buttons to move through the pages.
 
-![Equivalent in web browser](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/notes.png 'notes search')
+![Equivalent in web browser](figs/notes.png 'notes search')
 
 
  

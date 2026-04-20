@@ -53,6 +53,32 @@ usage:
 * `(note)` - add a note about the thing before the arrow
 * `(tbd)` - "to be discussed/decided" no idea how to label this, will come back to it! 
 
+??? example "In code: 4 conceptual types, 7 storage channels"
+    When you write `(then)` or `(contains)` in N4L, the compiler classifies the
+    arrow into one of **4 conceptual types** — `NEAR`, `LEADSTO`, `CONTAINS`, or
+    `EXPRESS` — defined as integer constants in
+    [`pkg/SSTorytime/globals.go:23-26`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/globals.go#L23-L26).
+
+    The database, however, stores **7 signed channels** per node: `NEAR` is
+    symmetric (1 channel), and each directional type (`LEADSTO`, `CONTAINS`,
+    `EXPRESS`) exists in forward (`+`) and backward (`-`) form, giving
+    3 × 2 + 1 = 7. Each channel is a `Link[]` column on the `Node` table:
+
+    | Column | Constant | Meaning |
+    |---|---|---|
+    | `Im3` | `-EXPRESS` | expressed-by (inverse of EXPRESS) |
+    | `Im2` | `-CONTAINS` | part-of (inverse of CONTAINS) |
+    | `Im1` | `-LEADSTO` | arriving-from (inverse of LEADSTO) |
+    | `In0` | `NEAR` | symmetric similarity |
+    | `Il1` | `+LEADSTO` | leads-to |
+    | `Ic2` | `+CONTAINS` | contains |
+    | `Ie3` | `+EXPRESS` | expresses |
+
+    The offset `ST_ZERO = 3` ([`globals.go:33`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/globals.go#L33))
+    lets library code index `Node.I[]` via `I[ST_ZERO + STtype]` regardless of sign.
+    The mapping between STtype values and column names lives in
+    [`STtype.go:82-109`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/STtype.go#L82-L109)
+    as `STTypeDBChannel`.
 
 This is enough. Now make notes!
 

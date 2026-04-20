@@ -1,6 +1,6 @@
 # Connect an LLM via MCP-SST
 
-Model Context Protocol (MCP) is an open standard for letting LLMs reach out to external tools over a well-defined RPC. **MCP-SST** is a separate proxy project that translates MCP tool calls into SSTorytime HTTP API requests, so an LLM client (Claude Desktop, for example) can search your personal knowledge graph, browse notes, and walk paths.
+Model Context Protocol (MCP) is an open standard for letting LLMs reach out to external tools over a well-defined RPC. **MCP-SST** is a separate proxy project that translates MCP tool calls into SSTorytime HTTP API requests, so an LLM client (Claude Desktop, for example) can search your personal knowledge [graph](../concepts/glossary.md#node), browse notes, and walk [paths](../concepts/glossary.md#path).
 
 This cookbook walks the full path: start the SSTorytime server, install MCP-SST, wire up a client, and run a sample conversation.
 

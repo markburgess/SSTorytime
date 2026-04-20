@@ -62,7 +62,7 @@ The returned tuple matches the layout in [`SSTorytime.py`](https://github.com/ma
 
 ## 4. Cone search
 
-The simplest path query — forward cone starting at a NodePtr, following a single STtype.
+The simplest path query — forward [cone](../concepts/glossary.md#cone--cone-search) starting at a [NodePtr](../concepts/glossary.md#nodeptr), following a single STtype.
 
 ```python
 leadsto   = 1       # +leads-to; see STtype table in docs/graph_report.md
@@ -134,10 +134,39 @@ It covers: connect, insert with context, fetch node, cone search, multi-context 
 
 ## Differences from the Go library
 
-- **No HubJoin.** The Python module does not yet expose `HubJoin`. For hub-style inserts go through N4L or Go.
-- **String NPtrs.** NodePtrs round-trip as strings (`"(1,0)"`), not structs. The Go code uses the `NodePtr` type.
-- **No idempotent mock.** `Node.IdempDBAddNode` in the Python source returns a dummy `(1,2)` tuple — this is a stub, not the real insertion path. The real insertion happens through `Vertex()` using direct SQL.
-- **Subset coverage.** Only the most common retrieval functions are exposed. For complex work (path wave search, context evaluation, etc.) use Go or drop to psycopg2 and call the PL/pgSQL stored functions directly.
+The Python module (`src/SSTorytime.py`) is a deliberate subset of the Go
+library. Each bullet below names a specific gap and tells you what to
+reach for instead. "Drop to psycopg2" means call the PL/pgSQL stored
+functions directly from a raw cursor; "use the Go HTTP API" means POST to
+`/searchN4L` on `:8443` via the `requests` library (see
+[WebAPI.md](../WebAPI.md) for the wire shape).
+
+- **No `HubJoin`.** Hub-pattern inserts are not exposed. Do them through
+  N4L (recommended) or a Go helper. Do not try to fake it from Python by
+  calling `IdempDBAddNode` — see the next bullet.
+- **No `GetPathsAndSymmetries`.** The high-level path solver is Go-only.
+  For simple cone walks use `GetFwdPathsAsLinks`/`GetEntireNCConePathsAsLinks`
+  (covered above); for full path-solve go via the Go HTTP API with a
+  `\from … \to …` query.
+- **No `WaveFrontsOverlap`.** The path-integral-style wave intersection
+  is Go-only. Same workaround: use `/searchN4L` with `\from … \to …`.
+- **No `GetDBArrowByPtr`.** Reverse lookup from an `ArrowPtr` to its
+  short/long name and STtype is not wrapped. Drop to psycopg2 and
+  `SELECT * FROM arrowdirectory WHERE arrptr = $1`.
+- **No `/Upload` or `/SearchAssets` wrappers.** Asset attachment is not
+  exposed in the Python module. Use the Go HTTP API via `requests`
+  (POST `/Upload` or `/SearchAssets`); the wire protocol is documented
+  in [WebAPI.md](../WebAPI.md).
+- **No idempotent mock layer.** `Node.IdempDBAddNode` in the Python
+  source returns a dummy `(1,2)` tuple — it is a stub, not the real
+  insertion path. Real inserts go through `Vertex()`, which runs direct
+  SQL. Do not build hub-style logic on top of the stub.
+- **String NPtrs.** NodePtrs round-trip as strings (`"(1,0)"`), not
+  structs. The Go code uses the `NodePtr` type. Parse before comparing.
+- **Subset coverage more broadly.** When a function you need is not in
+  the Python module, the two escape hatches are (a) drop to psycopg2
+  and call the PL/pgSQL stored functions directly, or (b) use the Go
+  HTTP API via `requests` and parse the JSON envelope.
 
 ## Troubleshooting
 

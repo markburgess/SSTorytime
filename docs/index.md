@@ -1,6 +1,6 @@
 # SSTorytime
 
-![A profile silhouette with a network of labeled concept nodes — memory, idea, perception, synapse — expanding outward from the head, rendered in classical pen-and-ink cross-hatching.](figs/index_hero.jpg){ align=center }
+![Profile silhouette of a head on the left; a network of labeled concept nodes — NETWORK, IDEAS, CONTEXT, STORY, MEMORY, PERCEPTION — expands outward to the right like a cognitive map.](figs/index_hero.jpg){ align=center }
 
 > **A unified graph process for mapping knowledge.**
 > Semantic Spacetime Story graph database over PostgreSQL — an

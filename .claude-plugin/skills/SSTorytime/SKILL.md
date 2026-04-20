@@ -172,7 +172,7 @@ PATTERN \chapter CHPPTER \context CONTEXT
 
 - To solve for connected paths from start to finish
 ```
-\from START-NODE \to END-END
+\from START-NODE \to END-NODE
 ```
 
 - To find an expanding cone of paths leaving from a node

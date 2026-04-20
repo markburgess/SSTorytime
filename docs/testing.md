@@ -8,12 +8,26 @@ data, and checks a handful of graph-invariant integration scenarios. This
 page explains what each tier does, how to run the whole thing, how to add
 a new test, and which limits you should know about.
 
-!!! warning "The harness is not wired to CI yet"
-    At the time of writing there is no GitHub Actions workflow that runs
-    `tests/run_tests` on every PR. Phase 8 of the
-    [documentation upleveling plan](plans/2026-04-20-documentation-upleveling.md)
-    adds a build-validation workflow; automated test-running is a
-    follow-up after that.
+!!! warning "CI posture: build-only, tests run locally"
+    The GitHub Actions workflow at
+    [`.github/workflows/build.yml`](https://github.com/markburgess/SSTorytime/blob/main/.github/workflows/build.yml)
+    deliberately runs `cd src && make` (build-only), **not**
+    `tests/run_tests`. This is a production-honesty decision, not a
+    TODO: `tests/Makefile`'s `test` target shells out to `./run_tests`
+    which invokes the library and integration tiers against PostgreSQL,
+    and on database failure those tiers print red `NOT ok` lines but
+    *do not exit non-zero*. Running the harness without a Postgres
+    service — or with a service that mis-loads — therefore produces
+    green CI that hides real failures. Until:
+
+    1. A Postgres service container is wired into CI with a verified
+       successful `Configure()` / schema load, **and**
+    2. `run_tests` is modified to exit non-zero when any tier fails,
+
+    the honest contract is: **CI proves the code compiles; local test
+    runs prove it works.** Contributors should run `cd tests && ./run_tests`
+    against a populated database before merging non-trivial changes.
+    See the inline comment in `build.yml` for the decision log.
 
 ## The three tiers
 
@@ -176,7 +190,11 @@ with "DATABASE NOT CONFIGURED", re-run the example data load first.
 
 ## Known limitations
 
-- **No CI wiring.** Tests must be run by hand today.
+- **CI is build-only.** Tests must be run by hand today (see the
+  warning at the top of this page). Two specific gaps have to close
+  before `run_tests` can safely run in CI: a Postgres service container
+  with verified schema load, and `run_tests` itself must exit non-zero
+  on any tier failure instead of printing `NOT ok` and carrying on.
 - **No coverage reporting.** The harness runs binaries, not `go test`,
   so there's no `-cover` output. Adding `go test` packages under
   `pkg/SSTorytime/` is a welcome contribution.

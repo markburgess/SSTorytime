@@ -25,11 +25,16 @@ As of this writing the repository has:
   (see [Build system](build-system.md)).
 - **No deprecation markers.** When an API changes, the old form is
   either kept indefinitely or removed silently.
-- **No CI-enforced compatibility.** The planned
+- **No CI-enforced compatibility.** The
   [`.github/workflows/build.yml`](https://github.com/markburgess/SSTorytime/tree/main/.github/workflows)
-  (added in Phase 8 of the documentation upleveling) only validates
-  that `make all` succeeds — it doesn't run tests or diff exported
-  symbols.
+  workflow runs `cd src && make` (build-only) and `go vet`. It does
+  not run the test harness — `tests/run_tests` silently passes on
+  database failures, so running it without a Postgres service would
+  produce green CI that hides real errors. See
+  [Testing → CI posture](testing.md) for the rationale and
+  [Observability → gaps worth naming](operations/observability.md#4-gaps-worth-naming)
+  for the broader story. No exported-symbol diffing or API compatibility
+  check runs either.
 
 For a pre-1.0 research codebase this is reasonable. It does mean that:
 
@@ -82,7 +87,7 @@ format. One section per version, with subsections for `Added`,
 ## [0.1.0] - 2026-04-20
 ### Added
 - MkDocs Material site scaffolding
-- Visual layer (8 mermaid diagrams + 18 AI-generated images)
+- Visual layer (~16 mermaid diagrams + 18 AI-generated images)
 ### Fixed
 - `make db` target invocation
 ```

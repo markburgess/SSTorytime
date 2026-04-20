@@ -14,7 +14,7 @@ Ten ready-to-run `searchN4L` recipes, each with annotated expected output and a 
 ./src/bin/searchN4L brain
 ```
 
-Expected output: a list of nodes whose text contains `brain` as a substring, each followed by its immediate neighbours grouped by arrow type.
+Expected output: a list of nodes whose text contains `brain` as a substring, each followed by its immediate neighbours grouped by [arrow](../concepts/glossary.md#arrow-sttype) type.
 
 ```
 0: neuroscience brain
@@ -118,7 +118,7 @@ The `\\chapter <string>` scope filters both the substring match and the neighbou
 ./src/bin/searchN4L "(1,1)"
 ```
 
-A NodePtr is a tuple `(Class, CPtr)` where `Class` is the size bucket (1 for single-word ngrams, 2 for two-word, … up to 6 for `>1KB`) and `CPtr` is the index within that bucket. See [service_search_cmd.go](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go) and `IsLiteralNptr`. Output is the node's orbit at radius 1.
+A [NodePtr](../concepts/glossary.md#nodeptr) is a tuple `(Class, CPtr)` where `Class` is the size bucket (1 for single-word ngrams, 2 for two-word, … up to 6 for `>1KB`) and `CPtr` is the index within that bucket. See [service_search_cmd.go](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go) and `IsLiteralNptr`. Output is the node's orbit at radius 1.
 
 ## 9. Arrows introspection with `\arrow`
 
@@ -126,8 +126,14 @@ A NodePtr is a tuple `(Class, CPtr)` where `Class` is the size bucket (1 for sin
 
 ```bash
 ./src/bin/searchN4L "\\arrow ph,pe"
-./src/bin/searchN4L "\\arrow -2"
+./src/bin/searchN4L -- "\\arrow -2"
 ```
+
+!!! note "Why `--` before `\arrow -2`"
+    Go's `flag` package reads any token starting with `-` as a potential flag, so
+    `./src/bin/searchN4L "\\arrow -2"` is rejected with "flag provided but not
+    defined: -2". The `--` sentinel tells the flag parser "positional arguments
+    only from here on" and the `-2` reaches the query DSL intact.
 
 ```
 192. (3) ph -> pinyin has hanzi

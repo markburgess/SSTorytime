@@ -133,5 +133,9 @@ nav:
           - Schema: Database/Schema.md
   - Contributing:
       - How to Contribute: howtocontribute.md
+      - Testing: testing.md
+      - Build system: build-system.md
+      - TLS & certificates: tls-certificates.md
+      - Versioning: versioning.md
   - Project:
       - Documentation roadmap: plans/2026-04-20-documentation-upleveling.md

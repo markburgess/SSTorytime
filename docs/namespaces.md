@@ -8,6 +8,8 @@
     documents the intended model so contributors can discuss the approach.
     See the [To-Do list](ToDo.md) for current status.
 
+![Translucent soap bubbles floating in shared space, each holding a small personal constellation of knowledge nodes, with thin bridges connecting nearby bubbles — a vision of multi-user namespaces with consented sharing.](figs/namespaces_worlds.jpg){ align=center }
+
 The principles for SSTorytime are that knowledge is a personal
 (individual) creation, a personal journey--but sharing is caring, and we can be inspired by another's 
 work (see diagram).

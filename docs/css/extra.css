@@ -1,0 +1,41 @@
+/* SSTorytime MkDocs overrides.
+ * Palette:
+ *   Graphite #4A4A4A — node outlines, primary text
+ *   Indigo   #3949AB — primary arrows, emphasis, decision paths
+ *   Amber    #FBC02D — highlights, success states, "aha" moments
+ *   Steel    #78909C — context boundaries, secondary flows
+ */
+
+/* Mermaid diagram palette — matches Material indigo/amber. */
+.mermaid {
+  --primary-color: #3949AB;
+  --primary-text-color: #ffffff;
+  --primary-border-color: #1a237e;
+  --secondary-color: #FBC02D;
+  --secondary-text-color: #000000;
+  --tertiary-color: #78909C;
+  --background-color: #ffffff;
+  --lineColor: #4A4A4A;
+}
+
+/* Dark-mode background for mermaid code blocks so labels stay readable. */
+[data-md-color-scheme="slate"] .mermaid {
+  --background-color: #1e1e2f;
+  --lineColor: #cfd8dc;
+}
+
+/* Custom admonition: "code-ref" for "see in code" callouts. */
+.md-typeset .admonition.code-ref,
+.md-typeset details.code-ref {
+  border-left-color: #3949AB;
+}
+.md-typeset .code-ref > .admonition-title,
+.md-typeset .code-ref > summary {
+  background-color: rgba(57, 73, 171, 0.08);
+}
+.md-typeset .code-ref > .admonition-title::before,
+.md-typeset .code-ref > summary::before {
+  background-color: #3949AB;
+  -webkit-mask-image: var(--md-admonition-icon--example);
+          mask-image: var(--md-admonition-icon--example);
+}

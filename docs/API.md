@@ -2,6 +2,8 @@
 
 # An API for interacting with the SST graph
 
+![A human silhouette on the left and a crystalline geometric shape on the right connected by a bridge made of arrows and small nodes — a visual metaphor for the API as a bridge between your program and the graph.](figs/api_hero.jpg){ align=center }
+
 The simplest way to manage graphs is to use the N4L language to create
 and manage them, then rebuild the whole database consistently as a
 cache of the information. This makes editing very intuitive and simple.
@@ -58,9 +60,42 @@ that interact with the database through the Go API
 
 ## Creating an SST graph from data
 
+![Three blocks labeled Vertex, Edge, and HubJoin flowing into a database cylinder on the right, with NodePtr coordinate pairs floating in the margin — the lifecycle of an API call.](figs/api_lifecycle.jpg){ align=center }
+
 See the [example](https://github.com/markburgess/SSTorytime/blob/main/src/API_EXAMPLE_1/API_EXAMPLE_1.go). To make node registration as easy as possible, you can use two functions
 `Vertex()` and `Edge()` to create nodes and links respectively. These names are chosen to distance themselves
 from the underlying `Node` and `Link`naming, by using the more mathematical names for these objects.
+
+### What happens when you call the API
+
+```mermaid
+sequenceDiagram
+    participant App as Go application
+    participant API as pkg/SSTorytime<br/>(API.go)
+    participant Cache as NODE_CACHE<br/>(globals.go)
+    participant DB as PostgreSQL
+
+    App->>API: Open(load_arrows=true)
+    API->>DB: CONNECT via lib/pq
+    API->>DB: Configure() schema
+    API->>Cache: Load ARROW_DIRECTORY,<br/>CONTEXT_DIRECTORY
+    Cache-->>API: ready
+
+    App->>API: Vertex(sst, "Alice", "Ch1")
+    API->>Cache: check NODE_CACHE
+    alt cache miss
+        API->>DB: IdempInsertNode(...)
+        DB-->>API: NodePtr
+        API->>Cache: CacheNode(ptr, text)
+    end
+    API-->>App: Node
+
+    App->>API: Edge(sst, a, "leads to", b, ctx, 1.0)
+    API->>DB: IdempDBAddLink(...)
+    Note over DB: bidirectional: forward + inverse
+    DB-->>API: ok
+    API-->>App: ArrowPtr, STType
+```
 
 ### Open/Close the connection to SST
 

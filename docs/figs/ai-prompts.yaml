@@ -1,0 +1,220 @@
+# AI image prompt manifest for SSTorytime documentation.
+#
+# Regeneration: rerun the prompt below against the nvidia-image-gen skill
+# (Gemini 3 Pro image preview via NVIDIA LLM Gateway) to reproduce or refine
+# an image consistently. Style prefixes are reused across many images —
+# update them here and then regenerate the affected set.
+#
+# Source of the overall visual strategy:
+# docs/plans/2026-04-20-documentation-upleveling.md (Phase 2).
+
+styles:
+  A_hand_drawn_academic: |
+    Pen-and-ink technical diagram, white background, thin black lines,
+    hand-drawn shading with cross-hatching. Academic journal style,
+    1970s-1980s scientific illustration. Slight paper texture, no color
+    except black and white. No caption or figure number.
+
+  B_warm_retro_editorial: |
+    Editorial illustration in warm earth tones (ochre, rust, cream, warm
+    grey). Slightly retro 1970s-80s science textbook. Hand-stippling
+    shading. Geometric but approachable. Focus on process and flow.
+    No text overlay. No caption or figure number.
+
+images:
+  - id: I1
+    file: figs/index_hero.jpg
+    style: A
+    placement: docs/index.md (top hero)
+    alt: "Profile silhouette of a head on the left; a network of labeled concept nodes (memory, idea, perception, synapse) expanding outward to the right like a cognitive map."
+    prompt: |
+      Composition: profile silhouette of a person on the left; from their
+      head, a luminous network of nodes and labelled arrows expands
+      outward to the right, filling the frame. The network is soft,
+      organic, suggestive of living thought. No caption. Evocative
+      without being precious.
+
+  - id: I2
+    file: figs/getting_started_hero.jpg
+    style: B
+    placement: docs/GettingStarted.md (hero)
+    alt: "A command-line terminal on a wooden desk flanked by a PostgreSQL elephant and a Go gopher, connected by flow arrows."
+    prompt: |
+      A command-line terminal in the foreground rendered as a retro
+      object on a wooden desk, with a stylized PostgreSQL elephant icon
+      and Go gopher silhouette arranged on either side like companions.
+      Process-flow arrows connect them. Warm ochre and rust palette.
+
+  - id: I3
+    file: figs/concepts_hero.jpg
+    style: A
+    placement: docs/KnowledgeAndLearning.md (hero)
+    alt: "Multiple hand-drawn threads converging at intersection points, labeled with words context, chapter, arrow, story, node."
+    prompt: |
+      Multiple hand-drawn threads converging at intersection points.
+      Threads are labeled with small words: context, chapter, arrow,
+      story, node. Cross-hatching shading. Suggests a weaving of
+      meaning.
+
+  - id: I4
+    file: figs/n4l_hero.jpg
+    style: B
+    placement: docs/N4L.md (hero)
+    alt: "Four arrow forms (embrace, runner, equals sign, open mouth) arranged in a balanced composition representing the four STtypes."
+    prompt: |
+      Four distinct arrow forms arranged in a balanced composition, each
+      subtly suggesting its type: an embrace shape (CONTAINS), a running
+      figure (LEADSTO), an equals sign (NEAR), an open mouth (EXPRESSES).
+      Retro textbook style. No labels.
+
+  - id: I5
+    file: figs/searching_hero.jpg
+    style: A
+    placement: docs/searchN4L.md (hero)
+    alt: "Hand-drawn graph network with a cone of flashlight-beam light illuminating a path through it."
+    prompt: |
+      Hand-drawn graph network of nodes and links. A cone of light
+      (flashlight beam) illuminates a path through the network from one
+      node to another. Ink cross-hatching. White background.
+
+  - id: I6
+    file: figs/tools_hero.jpg
+    style: B
+    placement: docs/text2N4L.md (hero)
+    alt: "Six small tools arranged on a worktable: sieve, builder's square, magnifying glass, open book, twin flashlights, microscope."
+    prompt: |
+      Six small tool objects arranged on a worktable: a sieve, a
+      builder's square, a magnifying glass, an open book, twin
+      flashlights, and a microscope. Warm palette, hand-stippled. Each
+      tool distinct and labeled with its shape rather than text.
+
+  - id: I7
+    file: figs/api_hero.jpg
+    style: A
+    placement: docs/API.md (hero)
+    alt: "Two silhouettes — a human and a crystalline geometric shape — connected by a bridge made of arrows and nodes."
+    prompt: |
+      Two silhouettes facing each other — a human on the left, a
+      geometric crystalline shape on the right — connected by a bridge
+      constructed from arrows and small nodes. Ink drawing, cross-hatched
+      shading.
+
+  - id: I8
+    file: figs/knowledge_tasted.jpg
+    style: A
+    placement: docs/KnowledgeAndLearning.md (inline)
+    alt: "Open notebook with a slice of fruit beside it, warmly lit, rendered in pen-and-ink cross-hatching."
+    prompt: |
+      Hand-drawn still life from slightly above: an open notebook, a
+      slice of fruit next to it, a shaft of light across the page.
+      Cross-hatching throughout. Feels intimate, as if knowledge has a
+      flavor. No text.
+
+  - id: I9
+    file: figs/knowledge_garden.jpg
+    style: B
+    placement: docs/Storytelling.md (inline)
+    alt: "A garden of paths and plants seen from above, with a small figure tending it."
+    prompt: |
+      A garden seen from slightly above: paths, small plants, a figure
+      tending. Warm ochre, rust, cream. Hand-stippled shading. Suggests
+      slow cultivation.
+
+  - id: I10
+    file: figs/four_arrows.jpg
+    style: A
+    placement: docs/arrows.md (inline)
+    alt: "Four-quadrant grid illustrating the four arrow personalities: mirror-twins, runner, embrace, open mouth."
+    prompt: |
+      Four quadrants in a 2x2 grid, each showing one arrow personality:
+      top-left, mirror-twins facing each other (NEAR); top-right, a
+      runner mid-stride (LEADSTO); bottom-left, a parent's arms embracing
+      a child (CONTAINS); bottom-right, an open mouth mid-word
+      (EXPRESSES). Ink cross-hatching.
+
+  - id: I11
+    file: figs/context_cloud.jpg
+    style: B
+    placement: docs/howdoescontextwork.md (inline)
+    alt: "Cluttered desk viewed from above, with a translucent context cloud of aroma, sound waves, light rays, and shadows hovering above."
+    prompt: |
+      A cluttered desk seen from above; translucent overlay above the
+      desk shows a ghostly cloud representing context — suggested by
+      wisps of aroma from a coffee cup, soft sound waves, diagonal light
+      rays, soft shadows. Warm editorial tones. No text.
+
+  - id: I12
+    file: figs/pathsolve_beams.jpg
+    style: A
+    placement: docs/pathsolve.md (inline)
+    alt: "Aerial view of a foggy bay at dusk with two lighthouse beams converging over a faintly visible graph network."
+    prompt: |
+      Aerial view of a foggy bay at dusk in ink drawing. Two lighthouse
+      beams sweep toward each other through mist, creating interference
+      where they overlap. Beneath the fog, a graph network is faintly
+      visible. All in black and white.
+
+  - id: I13
+    file: figs/api_lifecycle.jpg
+    style: B
+    placement: docs/API.md (inline)
+    alt: "Three labeled blocks (Vertex, Edge, HubJoin) flowing into a database cylinder, with NodePtr coordinates floating nearby."
+    prompt: |
+      Three rectangular blocks labeled Vertex, Edge, HubJoin, connecting
+      via flowing lines to a database cylinder on the right. NodePtr
+      coordinate pairs float in the margin. Earth-tone editorial style,
+      stippled.
+
+  - id: I14
+    file: figs/web_lifecycle.jpg
+    style: B
+    placement: docs/WebAPI.md (inline)
+    alt: "Browser, server tower guarded by a TLS padlock, and a glowing JSON object with request/response arrows between them."
+    prompt: |
+      A browser window on the left, a stylized server tower in the center
+      guarded by a small padlock (TLS), a JSON object glowing on the
+      right. Request and response arrows flow between them. Warm palette,
+      hand-drawn.
+
+  - id: I15
+    file: figs/alice_graph.jpg
+    style: A
+    placement: docs/example.md (inline)
+    alt: "Hand-drawn network of labeled story nodes: Alice, rabbit, pocket-watch, garden, Queen."
+    prompt: |
+      A network of interconnected nodes labeled with short names: Alice,
+      rabbit, pocket-watch, garden, Queen. Ink cross-hatching, story-book
+      feel. Links between them suggesting a narrative.
+
+  - id: I16
+    file: figs/namespaces_worlds.jpg
+    style: B
+    placement: docs/namespaces.md (inline, under Planned banner)
+    alt: "Translucent soap bubbles, each containing a personal constellation of knowledge nodes, connected by thin bridges."
+    prompt: |
+      Four or five translucent soap bubbles floating in shared space,
+      each containing a small personal constellation of nodes. Thin
+      glowing bridges connect nearby bubbles. Iridescent warm light
+      palette.
+
+  - id: I17
+    file: figs/dynamic_fn_flow.jpg
+    style: B
+    placement: docs/dynamic_functions.md (inline)
+    alt: "Lightning bolt (event) entering a function box, with a downstream graph node lighting up in response."
+    prompt: |
+      A timeline showing: a lightning bolt (event trigger) on the left, a
+      rectangular function box in the middle consuming it, a graph node
+      on the right lighting up in response. Earth tones.
+      Process-oriented.
+
+  - id: I18
+    file: figs/faq_landscape.jpg
+    style: A
+    placement: docs/FAQ.md (banner)
+    alt: "Wide landscape banner: mountains, forking paths, a small climbing figure. Academic ink drawing."
+    prompt: |
+      A wide landscape banner: mountains in the distance (representing
+      big ideas), forking paths in the foreground (representing tools), a
+      small figure climbing along one path. Ink drawing, academic style.
+      Wide 16:4 banner format.

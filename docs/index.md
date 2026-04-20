@@ -1,5 +1,7 @@
 # SSTorytime
 
+![A profile silhouette with a network of labeled concept nodes — memory, idea, perception, synapse — expanding outward from the head, rendered in classical pen-and-ink cross-hatching.](figs/index_hero.jpg){ align=center }
+
 > **A unified graph process for mapping knowledge.**
 > Semantic Spacetime Story graph database over PostgreSQL — an
 > [NLnet-sponsored](https://nlnet.nl/project/SmartSemanticDataLookup/) project by
@@ -14,6 +16,39 @@ human and machine intelligence alike.
 **SSTorytime is an independent knowledge graph based on Semantic Spacetime.** It is
 not a Topic Map or RDF-based project. It aims to be both easier to use and more
 powerful than RDF.
+
+---
+
+## System at a glance
+
+```mermaid
+flowchart LR
+    N4L["N4L notes<br/>(plain text)"]
+    Parser["N4L parser<br/>src/N4L/"]
+    PG[("PostgreSQL<br/>semantic cache")]
+    Lib["Go library<br/>pkg/SSTorytime"]
+    CLI["CLI tools<br/>searchN4L · pathsolve · notes · graph_report"]
+    Web["HTTPS :8443<br/>src/server/http_server"]
+    MCP["MCP-SST proxy<br/>(external repo)"]
+    LLM["AI / LLM clients"]
+
+    N4L --> Parser --> PG
+    Lib --> PG
+    CLI --> Lib
+    Web --> Lib
+    MCP --> Web
+    LLM --> MCP
+
+    classDef code fill:#3949AB,stroke:#1a237e,color:#fff;
+    classDef store fill:#FBC02D,stroke:#b08600,color:#000;
+    class Parser,Lib,CLI,Web,MCP code;
+    class PG store;
+```
+
+Notes travel from plain-text N4L source → parser → PostgreSQL (the semantic
+cache). The Go library sits over the database; CLI tools, the HTTPS server,
+and — via the external [MCP-SST proxy](https://github.com/markburgess/MCP-SST) —
+LLM clients, all read and write through it.
 
 ---
 
@@ -93,6 +128,25 @@ SSTorytime pins relationships to **four universal arrow types** —
 *near*, *leads-to*, *contains*, *expresses* — that align with how humans actually
 search. No formal ontologies to design upfront. No closed-world schema. Context
 and narrative are first-class citizens.
+
+```mermaid
+flowchart TB
+    subgraph RDF["RDF / OWL / Topic Maps"]
+        R1["Fixed ontology<br/>Subject–Predicate–Object triples"]
+        R2["Schema-first<br/>Closed-world assumption"]
+        R3["Static classification"]
+    end
+
+    subgraph SST["Semantic Spacetime"]
+        S1["4 universal arrow types<br/>+ context + narrative"]
+        S2["Notation-first (N4L)<br/>Open-world"]
+        S3["Process-centric"]
+    end
+
+    R1 -. rejected .-> S1
+    R2 -. rejected .-> S2
+    R3 -. rejected .-> S3
+```
 
 > **Looking for an AI/LLM interface?** See [MCP-SST](https://github.com/markburgess/MCP-SST)
 > to run a proxy connector. The server runs HTTPS on port 8443; start it under

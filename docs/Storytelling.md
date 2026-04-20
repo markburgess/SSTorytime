@@ -3,6 +3,8 @@
 # The Mission of STTorytime
 ### An approach to managing human knowledge
 
+![A garden viewed from slightly above: winding paths, small plants, a figure tending to them — knowledge as something slowly cultivated.](figs/knowledge_garden.jpg){ align=center }
+
 *If you want to know the deep thought behind an apparently ad hoc bit of
 software, please take a look at [the project's own research website](http://markburgess.org/spacetime.html).*
 

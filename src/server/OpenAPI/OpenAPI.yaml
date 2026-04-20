@@ -7,7 +7,12 @@ info:
     All endpoints are served on :8443 (self-signed TLS by default); a
     companion listener on :8080 issues a 301 redirect to HTTPS. There is
     no API authentication — rely on TLS and network placement for access
-    control.
+    control. No CORS headers are emitted, so browser clients from foreign
+    origins are blocked by the same-origin policy.
+
+    This version reflects the OpenAPI spec document, not a server
+    compatibility contract. The server has no versioning policy today —
+    pin by commit SHA. See /versioning/.
 
 servers:
   - url: https://localhost:8443
@@ -24,6 +29,7 @@ paths:
         via `nclass`/`ncptr`) and dispatches to one of nine search
         handlers. The response envelope's `Response` discriminator tells
         the client which payload shape to expect.
+      security: []
       requestBody:
         required: true
         content:
@@ -54,8 +60,21 @@ paths:
         `filedata` part.  Otherwise, `uri` is treated as a remote URL that
         the server fetches on the caller's behalf.  The multipart parser
         caps the request body at 32 MB.
+      security: []
       requestBody:
         required: true
+        description: >
+          The `uri` form field is the mode discriminator.
+          When `uri` is empty, absent, or the literal string `"none"`, the
+          request must be `multipart/form-data` and must include a `filedata`
+          part — the server writes the bytes of that part directly to the
+          cache path (inline-upload mode).
+          When `uri` is set to a non-empty value other than `"none"`, the
+          request may be `application/x-www-form-urlencoded`; the server
+          treats the `uri` value as a remote URL, fetches it with its own
+          HTTP client, and caches the fetched bytes (URI-fetch mode).
+          A single request cannot mix modes — if `uri` is present and not
+          `"none"`, any `filedata` part is ignored.
         content:
           multipart/form-data:
             schema:
@@ -100,6 +119,7 @@ paths:
         ./cacheroot/<chapter>/<context>/<item>/ for the given node.  If
         the directory does not exist, the response's `Content` is an
         empty array.
+      security: []
       requestBody:
         required: true
         content:
@@ -122,6 +142,7 @@ paths:
         Static file server rooted at the directory passed to
         `http_server -resources`. Any path under that directory is
         reachable here; no authentication.
+      security: []
       parameters:
         - in: path
           name: path
@@ -143,6 +164,7 @@ paths:
         Static file server rooted at `./cacheroot/` (relative to the
         http_server binary's working directory).  Serves files created
         by `/Upload`.
+      security: []
       parameters:
         - in: path
           name: path
@@ -163,6 +185,7 @@ paths:
       description: >
         Files baked into the binary via Go's embed.FS, rooted at
         `src/server/public/`.
+      security: []
       responses:
         '200':
           description: UI asset contents
@@ -518,7 +541,16 @@ components:
         $ref: '#/components/schemas/NodeEvent'
 
     PageMap:
-      description: Response content for `Response = "PageMap"` — a PageView literal of N4L notes
+      description: >
+        Response content for `Response = "PageMap"` — a PageView literal of N4L notes.
+        **Schema-name collision note:** the Go server has a struct named `PageMap`
+        at `pkg/SSTorytime/types_structures.go:97-104` that is a **different
+        shape** (`Chapter`, `Alias`, `Context`, `Line`, `Path []Link`) used as an
+        internal per-line record. The wire shape documented here is the
+        rendered page view (title + grouped notes) that the `PageMap` response
+        returns to the browser. Treat this schema as the Go type `PageView`;
+        do not confuse it with the internal `PageMap` record type.
+      x-go-type: PageView
       type: object
       properties:
         Title:

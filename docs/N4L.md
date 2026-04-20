@@ -51,10 +51,27 @@ flowchart LR
     ALIAS["Resolve aliases<br/>@name · $name.N<br/>src/N4L/N4L.go:644"]
     CONTEXT["Apply context stack<br/>::, +::, -::<br/>src/N4L/N4L.go:2441"]
     EMIT["Emit nodes &amp; links<br/>N4L_parsing.go"]
-    UPLOAD[("Upload to PostgreSQL<br/>db_upload.go (idempotent)")]
+    GTDB["GraphToDB<br/>walk NODE_DIRECTORY<br/>db_upload.go:19"]
+    UNLOGGED["UNLOGGED writes<br/>(fast bulk load; no WAL)<br/>postgres_types_functions.go:32"]
+    GIN["CREATE INDEX … GIN<br/>tsvector, GIN on S/NPtr/Ctx<br/>db_upload.go:114-118"]
+    LOGGED["ALTER TABLE … SET LOGGED<br/>(promote to durable)<br/>db_upload.go:119-120"]
 
-    INPUT --> TOKEN --> CLASSIFY --> ALIAS --> CONTEXT --> EMIT --> UPLOAD
+    INPUT --> TOKEN --> CLASSIFY --> ALIAS --> CONTEXT --> EMIT --> GTDB
+    GTDB --> UNLOGGED --> GIN --> LOGGED
+
+    classDef upload fill:#3949AB,stroke:#1a237e,color:#fff;
+    class GTDB,UNLOGGED,GIN,LOGGED upload;
 ```
+
+The upload pipeline is deliberately staged: tables start as
+[`CREATE UNLOGGED TABLE`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_types_functions.go#L32)
+so that bulk inserts skip the write-ahead log, GIN indexes
+([`db_upload.go:114-118`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/db_upload.go#L114-L118))
+are built *after* the bulk load rather than maintained incrementally, and
+only then is the table promoted with
+[`ALTER TABLE … SET LOGGED`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/db_upload.go#L119-L120).
+On power loss before the final `SET LOGGED`, the graph is discarded — which
+is fine because the N4L source is the origin of truth.
 
 ## Command line tool
 
@@ -786,7 +803,7 @@ the symbols + and - are reserved.
 
 - **Exit `0`** — success.
 - **Exit `-1`** — any error, including parse failure, missing required arguments, or database errors (see `os.Exit(-1)` calls throughout [`src/N4L/N4L.go`](https://github.com/markburgess/SSTorytime/blob/main/src/N4L/N4L.go)).
-- **Exit `1`** — invoked with no input files (see [`src/N4L/N4L.go:242-245`](https://github.com/markburgess/SSTorytime/blob/main/src/N4L/N4L.go#L242-L245)).
+- **Exit `1`** — missing input files or an unrecoverable parse error (e.g. an undefined alias reference). Triggered at [`src/N4L/N4L.go:242-245`](https://github.com/markburgess/SSTorytime/blob/main/src/N4L/N4L.go#L242-L245) when no input files are given, and at [`src/N4L/N4L.go:650`](https://github.com/markburgess/SSTorytime/blob/main/src/N4L/N4L.go#L650) when `LookupAlias` cannot resolve a referenced alias.
 
 Environment variables:
 

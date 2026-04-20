@@ -1,9 +1,20 @@
 /* SSTorytime MkDocs overrides.
- * Palette:
+ *
+ * Palette rationale (used by both Material theme and mermaid classDef
+ * fills scattered across the docs):
  *   Graphite #4A4A4A — node outlines, primary text
  *   Indigo   #3949AB — primary arrows, emphasis, decision paths
  *   Amber    #FBC02D — highlights, success states, "aha" moments
  *   Steel    #78909C — context boundaries, secondary flows
+ *
+ * Why these four: they are readable against both the Material default
+ * light background (#ffffff) and the slate dark background (#1e1e2f).
+ * Indigo and Amber are a Material-standard complementary pair; both are
+ * hardcoded as `classDef fill:…` values in mermaid blocks (index.md,
+ * testing.md, build-system.md, concepts/architecture.md,
+ * howdoescontextwork.md) together with an explicit `color:` so the
+ * label contrast is theme-independent. If this palette ever changes,
+ * sweep the docs for `classDef fill:#` and update those hex values too.
  */
 
 /* Mermaid diagram palette — matches Material indigo/amber. */

@@ -5,6 +5,13 @@
 # an image consistently. Style prefixes are reused across many images —
 # update them here and then regenerate the affected set.
 #
+# Post-processing: every generated PNG is downscaled to a 1200px long edge,
+# re-encoded as JPEG at quality 85 with chroma subsampling 4:2:0, and
+# stripped of metadata. Target size ≤ 240 KB. Use:
+#
+#   magick in.png -strip -resize '1200x1200>' -quality 85 \
+#     -sampling-factor 4:2:0 out.jpg
+#
 # Source of the overall visual strategy:
 # docs/plans/2026-04-20-documentation-upleveling.md (Phase 2).
 
@@ -26,12 +33,20 @@ images:
     file: figs/index_hero.jpg
     style: A
     placement: docs/index.md (top hero)
-    alt: "Profile silhouette of a head on the left; a network of labeled concept nodes (memory, idea, perception, synapse) expanding outward to the right like a cognitive map."
+    last_regenerated: 2026-04-20
+    alt: "Profile silhouette of a head on the left; a network of labeled concept nodes — NETWORK, IDEAS, CONTEXT, STORY, MEMORY, PERCEPTION — expands outward to the right like a cognitive map."
     prompt: |
-      Composition: profile silhouette of a person on the left; from their
-      head, a luminous network of nodes and labelled arrows expands
-      outward to the right, filling the frame. The network is soft,
-      organic, suggestive of living thought. No caption. Evocative
+      Pen-and-ink technical diagram, white background, thin black lines,
+      hand-drawn shading with cross-hatching. Academic journal style,
+      1970s-1980s scientific illustration. Slight paper texture, no color
+      except black and white. Composition: profile silhouette of a person
+      on the left rendered with dense cross-hatching; from their head, a
+      luminous network of nodes and labelled arrows expands outward to
+      the right, filling the frame. The network is soft, organic,
+      suggestive of living thought. NODES ARE LABELED ONLY WITH THESE
+      EXACT ENGLISH WORDS: NETWORK, IDEAS, CONTEXT, STORY, MEMORY,
+      PERCEPTION. Labels must be spelled correctly in all caps. No other
+      text or gibberish anywhere. No caption or figure number. Evocative
       without being precious.
 
   - id: I2
@@ -49,7 +64,7 @@ images:
     file: figs/concepts_hero.jpg
     style: A
     placement: docs/KnowledgeAndLearning.md (hero)
-    alt: "Multiple hand-drawn threads converging at intersection points, labeled with words context, chapter, arrow, story, node."
+    alt: "Multiple threads woven together and labeled context, chapter, arrow, story, node — a visual metaphor for how knowledge is a weaving of meaning."
     prompt: |
       Multiple hand-drawn threads converging at intersection points.
       Threads are labeled with small words: context, chapter, arrow,
@@ -58,20 +73,35 @@ images:
 
   - id: I4
     file: figs/n4l_hero.jpg
-    style: B
+    style: A
     placement: docs/N4L.md (hero)
-    alt: "Four arrow forms (embrace, runner, equals sign, open mouth) arranged in a balanced composition representing the four STtypes."
+    last_regenerated: 2026-04-20
+    alt: "Four-quadrant pen-and-ink grid showing the four STtypes: NEAR as mirror-twin figures, LEADSTO as a runner mid-stride, CONTAINS as a parent's embrace, EXPRESSES as an open mouth with speech bubble."
     prompt: |
-      Four distinct arrow forms arranged in a balanced composition, each
-      subtly suggesting its type: an embrace shape (CONTAINS), a running
-      figure (LEADSTO), an equals sign (NEAR), an open mouth (EXPRESSES).
-      Retro textbook style. No labels.
+      Pen-and-ink technical diagram, white background, thin black lines,
+      hand-drawn shading with cross-hatching. Academic journal style,
+      1970s-1980s scientific illustration. Slight paper texture, no color
+      except black and white. Composition: four quadrants in a 2x2 grid,
+      each showing one arrow personality: top-left, two human figures
+      standing side-by-side in mirror symmetry labeled NEAR; top-right,
+      a running figure mid-stride with a bold arrow labeled LEADSTO;
+      bottom-left, a parent figure embracing a child labeled CONTAINS;
+      bottom-right, an open mouth mid-word with a speech bubble labeled
+      EXPRESSES. Thin grid lines separate the quadrants. All labels
+      spelled correctly in clean all-caps serif. Ink cross-hatching
+      throughout. No caption or figure number.
+    notes: |
+      Regenerated from Style B (warm retro) to Style A (pen-and-ink)
+      2026-04-20 to match its sibling docs/figs/four_arrows.jpg. The
+      four arrows are the project's deepest primitive; visual
+      consistency between the N4L hero and the arrows grid is
+      load-bearing.
 
   - id: I5
     file: figs/searching_hero.jpg
     style: A
     placement: docs/searchN4L.md (hero)
-    alt: "Hand-drawn graph network with a cone of flashlight-beam light illuminating a path through it."
+    alt: "A graph network of nodes and links with a cone of flashlight-beam light sweeping across it, illuminating a path through the nodes."
     prompt: |
       Hand-drawn graph network of nodes and links. A cone of light
       (flashlight beam) illuminates a path through the network from one
@@ -103,7 +133,7 @@ images:
     file: figs/knowledge_tasted.jpg
     style: A
     placement: docs/KnowledgeAndLearning.md (inline)
-    alt: "Open notebook with a slice of fruit beside it, warmly lit, rendered in pen-and-ink cross-hatching."
+    alt: "Still life: an open notebook with a slice of fruit beside it, warmly lit — knowledge is tasted, not just remembered."
     prompt: |
       Hand-drawn still life from slightly above: an open notebook, a
       slice of fruit next to it, a shaft of light across the page.
@@ -156,14 +186,27 @@ images:
 
   - id: I13
     file: figs/api_lifecycle.jpg
-    style: B
+    style: A
     placement: docs/API.md (inline)
-    alt: "Three labeled blocks (Vertex, Edge, HubJoin) flowing into a database cylinder, with NodePtr coordinates floating nearby."
+    last_regenerated: 2026-04-20
+    alt: "Pen-and-ink schematic: three rectangular blocks labeled VERTEX, EDGE, HUBJOIN flow via straight arrows into a database cylinder on the right; NodePtr coordinate pairs (x1,y1), (x2,y2), (x3,y3) annotate each block."
     prompt: |
-      Three rectangular blocks labeled Vertex, Edge, HubJoin, connecting
-      via flowing lines to a database cylinder on the right. NodePtr
-      coordinate pairs float in the margin. Earth-tone editorial style,
-      stippled.
+      Pen-and-ink technical schematic, white background, thin black
+      lines, hand-drawn shading with cross-hatching. Academic journal
+      style, 1970s-1980s scientific illustration. Slight paper texture,
+      no color except black and white. Composition: three labeled
+      rectangular blocks on the left arranged vertically — labeled
+      VERTEX, EDGE, HUBJOIN in clean serif caps — each with a small
+      coordinate pair notation in the margin reading (x1,y1), (x2,y2),
+      (x3,y3). Clean straight arrows flow from each block on the left
+      into a tidy database cylinder on the right labeled DATABASE. The
+      diagram is a clear schematic: simple shapes, straight lines,
+      labeled clearly. Cross-hatching shading on the cylinder. No
+      caption or figure number.
+    notes: |
+      Regenerated from Style B (warm retro "spaghetti" cylinder) to
+      Style A (pure schematic) 2026-04-20. The original visually
+      overwhelmed the data-structure clarity that the section needs.
 
   - id: I14
     file: figs/web_lifecycle.jpg
@@ -180,7 +223,7 @@ images:
     file: figs/alice_graph.jpg
     style: A
     placement: docs/example.md (inline)
-    alt: "Hand-drawn network of labeled story nodes: Alice, rabbit, pocket-watch, garden, Queen."
+    alt: "A network of story nodes labeled Alice, rabbit, pocket-watch, garden, Queen with links between them showing how a narrative becomes a graph."
     prompt: |
       A network of interconnected nodes labeled with short names: Alice,
       rabbit, pocket-watch, garden, Queen. Ink cross-hatching, story-book
@@ -212,9 +255,51 @@ images:
     file: figs/faq_landscape.jpg
     style: A
     placement: docs/FAQ.md (banner)
-    alt: "Wide landscape banner: mountains, forking paths, a small climbing figure. Academic ink drawing."
+    alt: "Wide landscape banner: mountains, forking paths, a small climbing figure."
     prompt: |
       A wide landscape banner: mountains in the distance (representing
       big ideas), forking paths in the foreground (representing tools), a
       small figure climbing along one path. Ink drawing, academic style.
       Wide 16:4 banner format.
+
+  # Non-generated (upstream or photo) assets kept intentionally in
+  # docs/figs/. Listed here so the orphan-asset check stays green.
+  - id: U1
+    file: figs/SmartSpaceTime.jpg
+    source: upstream
+    placement: docs/outreach.md ("Further reading" sidebar)
+    alt: "Book cover of 'Smart Spacetime: How Information Challenges Our Ideas About Space, Time, and Process' by Mark Burgess."
+    notes: |
+      Publisher cover art for the background book by Mark Burgess.
+      Not AI-generated. Do not regenerate.
+
+  - id: U2
+    file: figs/ExampleAnnotation.jpg
+    source: upstream
+    placement: docs/N4L.md (intro — "making notes" paragraph)
+    alt: "Photograph of a hotel kitchen with four callout bubbles annotating the Chinese names for the refrigerator, microwave, kettle and dishwasher."
+    notes: |
+      Real photograph annotated with Chinese-language callouts, kept as
+      a concrete illustration of N4L-style annotation in the wild. Not
+      AI-generated. Downscaled from ~2.7 MB to ≤240 KB on 2026-04-20.
+
+# Missing high-value diagrams — deferred. The next visual pass should
+# address each of these. Where a TODO marker lives in a Markdown file
+# we list the page; where the Markdown is owned by another agent we
+# carry the note here instead so we do not edit their page.
+pending_visuals:
+  - page: docs/Tutorial.md
+    marker: inline TODO(visuals) comment above "## The idea"
+    want: "N4L syntax legend — a cheat sheet mapping punctuation (-, ::, (rel), @alias, $alias.N, +::, -::) to roles."
+
+  - page: docs/concepts/architecture.md
+    marker: "none — file owned by Rigor, no TODO inserted"
+    want: "Read-path sequence diagram — N4L query → parser → PostgreSQL → results. Style A recommended."
+
+  - page: docs/pathsolve.md
+    marker: inline TODO(visuals) comment in intro
+    want: "Before/after path expansion — boundary sets on the left, converged wave-fronts with highlighted winning path on the right."
+
+  - page: docs/searchN4L.md
+    marker: inline TODO(visuals) comment under intro
+    want: "Worked query example — three-panel walk-through: raw query string → parsed SearchParameters → result orbits on the graph."

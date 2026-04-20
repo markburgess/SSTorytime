@@ -1,18 +1,22 @@
 # How you can contribute to SSTorytime
 
-SSTorytime and the Semantic Spacetime model of knowledge is a unique project
-based on leading-edge research. You'll recognize some of the ideas that are
-old, but there are some new concepts to know too — and the best way to help is
-to dive in and try it. This page walks you through the practical side:
+This project is, in the end, a teaching project — an argument that knowledge
+is what happens in the head of someone who has sat with material for long
+enough to know it like a friend. Teachers and students are both welcome here,
+and the line between them is meant to be porous: the best teachers are still
+learning, and the best students are already teaching the person sitting next
+to them. If you found the tool useful, you are in a position to make it
+useful for the next person. This page walks you through the practical side —
 setting up a development environment, the repository layout, how code and
 documentation changes flow through the project, and where to ask when you
 get stuck.
 
 !!! tip "The single biggest thing you can do"
-    Use SSTorytime for something real. Take notes on a book you're reading.
-    Map a problem you're trying to understand. Build a little knowledge graph
-    for a class, a project, or a family history. The tool gets better when
-    real humans push on it with real questions.
+    Use SSTorytime on something you actually want to know. A book you're
+    reading. A problem you're stuck on. A subject you'd like to teach, or a
+    family history you'd like to hold on to. The tool improves when real
+    humans push on it with real questions — and, not incidentally, so do
+    the humans.
 
 ## Development setup
 

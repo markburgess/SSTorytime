@@ -2,11 +2,16 @@
 
 This cookbook walks through writing a small Go program that imports the SSTorytime library, creates a handful of nodes, links them, and reads a path back out. Model: `src/API_EXAMPLE_1/API_EXAMPLE_1.go`. At the end you will have a complete, compilable program.
 
+!!! tip "Keep the glossary open"
+    We'll use *arrow*, *orbit*, *chapter*, *context*, *NodePtr*, *PoSST* without re-defining them here.  
+    See the [Glossary](../concepts/glossary.md) for quick reference.
+
 !!! info "Prerequisites"
     - Go 1.24 or newer in `$PATH`.
     - PostgreSQL running with the SSTorytime schema loaded (`make db` from the repo root).
-    - The SSTorytime arrow directory populated — run `make` at the repo root once to ensure the default arrow set is uploaded.
+    - The SSTorytime [arrow](../concepts/glossary.md#arrow-sttype) directory populated — run `make` at the repo root once to ensure the default arrow set is uploaded.
     - The SSTorytime repository cloned at a known path. We'll use `/home/you/SSTorytime` as a placeholder.
+    - This cookbook does **not** require the GOPATH symlink mentioned in older docs — just the `replace` directive below. A modern Go-modules checkout is all you need.
 
 ## 1. Set up a module
 
@@ -130,8 +135,8 @@ Each call hit a specific layer of the library:
 
 | Call | What it does | Code reference |
 |---|---|---|
-| `SST.Open(false)` | Connects to PostgreSQL via `lib/pq`. Returns a `PoSST` session handle. | [`session.go`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/session.go) |
-| `SST.Vertex(sst, name, chapter)` | Idempotent node insert. Creates the node if missing; reuses the existing `NodePtr` if the `(name, chapter)` pair is already in the graph. | [`API.go:18-28`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/API.go#L18-L28) |
+| `SST.Open(false)` | Connects to PostgreSQL via `lib/pq`. Returns a [`PoSST`](../concepts/glossary.md#posst) session handle. | [`session.go`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/session.go) |
+| `SST.Vertex(sst, name, chapter)` | Idempotent node insert. Creates the node if missing; reuses the existing [`NodePtr`](../concepts/glossary.md#nodeptr) if the `(name, [chapter](../concepts/glossary.md#chapter))` pair is already in the graph. | [`API.go:18-28`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/API.go#L18-L28) |
 | `SST.Edge(sst, from, arrow, to, context, weight)` | Idempotent link insert; looks up the arrow by its short name, translates to a channel, and writes both the forward and inverse links. | [`API.go:32-46`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/API.go#L32-L46) |
 | `SST.GetDBArrowsWithArrowName(sst, "then")` | Resolves the arrow's pointer and STtype. | [`postgres_retrieval.go`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_retrieval.go) |
 | `SST.GetDBNodePtrMatchingName(sst, prefix, chapter)` | Substring match on node text within a chapter. | [`postgres_retrieval.go`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_retrieval.go) |
@@ -141,9 +146,15 @@ Each call hit a specific layer of the library:
 ## 5. Things worth knowing
 
 - **Idempotency.** Running the program twice does not double-insert. The second invocation's `Vertex` calls return the same `NodePtr`s and the `Edge` calls no-op.
-- **Arrow vocabulary.** `Vertex/Edge` callers cannot invent new arrows on the fly. Use one of the short names from the loaded arrow directory (run `searchN4L \\arrow any` to list them), or define new arrows in an N4L file uploaded with `N4L -u`.
-- **Context is cheap.** Pass any `[]string` of tags as context; SSTorytime interns the set in the `ContextDirectory` table and keys links by the interned pointer.
-- **Cleanup.** To wipe the chapter between runs, call `../src/bin/removeN4L -force "first program"`.
+- **Arrow vocabulary.** `Vertex/Edge` callers cannot invent new arrows on the fly. Use one of the short names from the loaded arrow directory (list them with the command below), or define new arrows in an N4L file uploaded with `N4L -u`.
+
+    ```bash
+    searchN4L '\arrow' any
+    ```
+
+    The single leading backslash is a `searchN4L` query sigil — quote the argument so bash does not try to interpret it or expand an alias.
+- **[Context](../concepts/glossary.md#context) is cheap.** Pass any `[]string` of tags as context; SSTorytime interns the set in the `ContextDirectory` table and keys links by the interned pointer.
+- **Cleanup.** To wipe the chapter between runs, call `removeN4L -force "first program"` (assuming `src/bin/` is on your `$PATH` — see [Getting Started](../GettingStarted.md)).
 
 ## Next steps
 

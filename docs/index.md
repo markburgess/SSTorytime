@@ -62,9 +62,19 @@ LLM clients, all read and write through it.
 
     ---
 
-    Spin up PostgreSQL, build the binaries, load your first `.n4l` file.
+    Spin up PostgreSQL, build the binaries, load your first `.n4l` file, then
+    work through the [Tutorial](Tutorial.md).
 
     [:octicons-arrow-right-24: Getting Started](GettingStarted.md)
+
+-   :material-lightbulb-on:{ .lg .middle } **Why Semantic Spacetime?**
+
+    ---
+
+    Four universal arrow types, open-world, context-first — and what that buys
+    you over RDF / OWL / property graphs.
+
+    [:octicons-arrow-right-24: Why Semantic Spacetime](concepts/why-semantic-spacetime.md)
 
 -   :material-school:{ .lg .middle } **Learn the concepts**
 
@@ -98,10 +108,13 @@ LLM clients, all read and write through it.
 
     ---
 
-    Build directly with the Go library or the HTTP/JSON API.
+    Build directly with the Go library, call the HTTP/JSON API, drive it from
+    Python, or expose the graph to LLMs through the MCP-SST proxy.
 
     [:octicons-arrow-right-24: Go API](API.md) ·
-    [Web API](WebAPI.md)
+    [Web API](WebAPI.md) ·
+    [Python](cookbooks/python-integration.md) ·
+    [MCP-SST](http-api/mcp-sst.md)
 
 -   :material-hand-heart:{ .lg .middle } **Contribute**
 
@@ -150,9 +163,11 @@ flowchart TB
     R3 -. rejected .-> S3
 ```
 
-> **Looking for an AI/LLM interface?** See [MCP-SST](https://github.com/markburgess/MCP-SST)
-> to run a proxy connector. The server runs HTTPS on port 8443; start it under
-> `src/bin/` to pick up the default TLS certificates.
+> **Looking for an AI/LLM interface?** See the
+> [MCP-SST integration page](http-api/mcp-sst.md) for the hand-off between
+> SSTorytime and the external [MCP-SST proxy](https://github.com/markburgess/MCP-SST).
+> The server runs HTTPS on port 8443; start `http_server` from `src/bin/` so it
+> picks up the default TLS certificates.
 
 ---
 

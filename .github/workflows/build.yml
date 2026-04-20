@@ -1,0 +1,37 @@
+name: Build
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.go'
+      - '**/Makefile'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/build.yml'
+  pull_request:
+    paths:
+      - '**.go'
+      - '**/Makefile'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          check-latest: true
+      - name: Build all binaries
+        run: make all
+      - name: go vet
+        run: go vet ./...
+      # TODO: once Postgres is wired up as a service container,
+      #       add a step that runs `cd tests && ./run_tests`.
+      #       See docs/testing.md for the harness details.

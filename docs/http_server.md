@@ -1,11 +1,11 @@
 
 # `http_server` — operator guide
 
-The `http_server` binary is the HTTPS entry point to SSTorytime's graph. It
-serves JSON to web clients, files to browsers, and (via a proxy) requests
-from LLMs. This page is for people running the server; for the wire
-protocol see [Web API](WebAPI.md), and for LLM wiring see
-[MCP-SST](http-api/mcp-sst.md).
+The `http_server` binary is the HTTPS entry point to SSTorytime's
+[graph](concepts/glossary.md#node). It serves JSON to web clients, files to
+browsers, and (via a proxy) requests from LLMs. This page is for people
+running the server; for the wire protocol see [Web API](WebAPI.md), and
+for LLM wiring see [MCP-SST](http-api/mcp-sst.md).
 
 ## Starting the server
 
@@ -105,9 +105,11 @@ For anything beyond that:
 
 - **Put a real reverse proxy in front.** Terminate TLS with a CA-issued
   certificate at nginx, Caddy, or Traefik, and have SSTorytime listen on
-  a loopback-only HTTP port behind it. The self-signed cert and the
-  permissive CORS policy then only affect the hop inside the trusted
-  network.
+  a loopback-only HTTP port behind it. The self-signed cert then only
+  affects the hop inside the trusted network. **No CORS headers are
+  sent by SSTorytime**, so browser clients from foreign origins will be
+  blocked by the same-origin policy regardless; call from same-origin
+  code or via the reverse proxy.
 - **Add authentication at the proxy.** The server itself has no notion of
   users or API keys. HTTP Basic, mTLS, or an OIDC side-car are all
   straightforward.

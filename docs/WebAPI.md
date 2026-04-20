@@ -62,8 +62,8 @@ with the following fields (all optional except `name`):
 
 | Field         | Type    | Meaning                                                    |
 |---------------|---------|------------------------------------------------------------|
-| `name`        | string  | N4L DSL query string (see below).                          |
-| `nclass`      | integer | `NodePtr.Class` for direct pointer lookup.                 |
+| `name`        | string  | [N4L](concepts/glossary.md#n4l) DSL query string (see below). |
+| `nclass`      | integer | [`NodePtr`](concepts/glossary.md#nodeptr)`.Class` for direct pointer lookup. |
 | `ncptr`       | integer | `NodePtr.CPtr` for direct pointer lookup.                  |
 | `chapcontext` | string  | Current chapter/context label, used by `\lastnptr` telemetry. |
 
@@ -416,11 +416,11 @@ production-acceptable stance:
 1. **No API authentication.** Any client that can reach `:8443` can read
    and write the graph. TLS confirms the server's identity to the client,
    not the reverse.
-2. **CORS reflects the request's `Origin` verbatim.** See
-   [`EnableCORS`](https://github.com/markburgess/SSTorytime/blob/main/src/server/http_server.go#L179-L200)
-   — the handler echoes whatever origin the caller sends. This makes
-   cross-origin development easy and cross-origin attacks equally easy; do
-   not expose the raw port to the public internet.
+2. **No CORS headers are sent.** Browser clients from foreign origins
+   will be blocked by the same-origin policy. Call from same-origin code
+   or via a server-side proxy. (The repository contains an `EnableCORS`
+   helper in `http_server.go`, but it is never wired into the mux — it
+   is dead code as of this revision; do not rely on it.)
 3. **The TLS certificate is self-signed.** Browsers will warn; MCP-SST and
    other programmatic clients need explicit trust configuration.
 
@@ -429,9 +429,18 @@ authentication (HTTP Basic, mTLS, or an OIDC side-car), then have the
 SSTorytime server listen on a loopback-only HTTP port behind it. Rate
 limits and request-body quotas can be enforced at the same layer.
 
+## Stability
+
+This surface has no compatibility guarantee. Method names, request
+fields, response envelope keys, and the `Response` discriminator values
+can all change between commits without notice. Pin integrations by
+commit SHA and review the diff before bumping. See
+[versioning](versioning.md) for the project-wide policy.
+
 ## See also
 
 - [Operator guide for `http_server`](http_server.md) — starting, stopping, rotating certs.
 - [MCP-SST integration](http-api/mcp-sst.md) — wiring an LLM through to this API.
 - [OpenAPI specification](https://github.com/markburgess/SSTorytime/blob/main/src/server/OpenAPI/OpenAPI.yaml) — machine-readable version of the above.
 - [API walkthroughs](API_WALKTHROUGH.md) — annotated Go client examples.
+- [Versioning policy](versioning.md) — why you must pin by commit SHA.

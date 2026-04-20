@@ -37,6 +37,22 @@ flowchart TB
     RESULT -.- note
 ```
 
+Ambient and intentional context are *not* a precedence-ordered pair. Both
+streams are folded into the same scoring pass — the ranking of candidate
+matches is decided by the `ScoreContext` comparator at
+[`postgres_retrieval.go:940`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_retrieval.go#L940),
+which `sort.Slice` uses to order the result set. There is no "ambient wins
+if present, otherwise intentional" rule; the two contribute to overlap
+additively.
+
+!!! info "Precedence"
+    Ambient context (`::` tags inherited from the scene) and intentional
+    context (the user's per-query `in context …` clause) are **combined via
+    scoring**, not precedence-ordered. Neither stream short-circuits the
+    other. The `ScoreContext` comparator
+    ([`postgres_retrieval.go:940`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_retrieval.go#L940))
+    is what decides which candidate wins when both match.
+
 ## The technical challenge of context
 
 Adding context through N4L is straightforwardish, and we can let the compiler ensure consistency.

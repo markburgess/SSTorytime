@@ -105,6 +105,46 @@ origin. The origin is the N4L files; if the database is wiped you can always
 rebuild by re-running `N4L -u *.n4l` (see [Sequence mode](../concepts/glossary.md#sequence-mode)
 and [Idempotence](../concepts/glossary.md#idempotence-insertion)).
 
+Because Postgres is treated as a cache, the Go library keeps **three
+in-memory mirrors** of the database state. When the library is live these
+mirrors are what the CLI and HTTPS server actually read from; Postgres is
+touched on open (to hydrate the mirrors) and on write (to persist mutations).
+
+```mermaid
+flowchart LR
+    PG[("PostgreSQL<br/>durable store")]
+    NC["NODE_CACHE<br/>map[NodePtr]NodePtr<br/>idempotent-write de-dup<br/>globals.go:93 · cache.go:79"]
+    BC["BASE_DB_CHANNEL_STATE[7]<br/>high-water mark per<br/>size-class channel<br/>globals.go:94 · db_upload.go:27"]
+    ND["NODE_DIRECTORY<br/>six size-classed node arrays<br/>(N1/N2/N3/LT128/LT1024/GT1024)<br/>globals.go:112 · N4L_parsing.go:39"]
+
+    PG -.->|hydrate on Open| NC
+    PG -.->|hydrate on Open| BC
+    PG -.->|hydrate on Open| ND
+    NC -->|upload node| PG
+    ND -->|GraphToDB| PG
+    BC -->|offset per class| ND
+
+    classDef store fill:#FBC02D,stroke:#b08600,color:#000;
+    classDef mem fill:#3949AB,stroke:#1a237e,color:#fff;
+    class PG store;
+    class NC,BC,ND mem;
+```
+
+- **`NODE_CACHE`** ([`globals.go:93`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/globals.go#L93))
+  is written by [`CacheNode`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/cache.go#L79)
+  under the global `MUTEX`. Its purpose is to de-duplicate repeated node
+  references at insertion time — the second time you mention "Alice", the
+  cache short-circuits the DB round-trip.
+- **`BASE_DB_CHANNEL_STATE`** ([`globals.go:94`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/globals.go#L94))
+  is a 7-element array (one per size-class channel) tracking the highest
+  `CPtr` currently durable in PostgreSQL. It is read at
+  [`db_upload.go:27`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/db_upload.go#L27)
+  so that `GraphToDB` only ships newly-added nodes, not the entire directory.
+- **`NODE_DIRECTORY`** ([`globals.go:112`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/globals.go#L112))
+  is the full size-classed node store (six slices: N1/N2/N3 grams plus
+  LT128/LT1024/GT1024 byte buckets). It is where node text actually lives
+  in memory; `NODE_CACHE` keys into it via its `NodePtr` values.
+
 ### 5. User-facing surfaces
 
 Three ways to *consume* the graph sit above the library:
@@ -119,6 +159,8 @@ Three ways to *consume* the graph sit above the library:
 - **LLM proxy** — the external [MCP-SST](https://github.com/markburgess/MCP-SST)
   project translates between Model Context Protocol requests (as spoken by
   Claude, ChatGPT, and other LLM clients) and the HTTPS JSON endpoints above.
+  See the dedicated [MCP-SST integration page](../http-api/mcp-sst.md) for
+  how to run the proxy and what tools it exposes.
 
 ## Where decisions happen
 
@@ -132,7 +174,7 @@ decisions are fixed in storage.
 **Query time.** Context intersection scoring, cone depth, arrow filtering,
 chapter scoping, path wave-front expansion. These are *not* baked into the
 database — they are arguments to every retrieval call. `SearchParameters`
-([`postgres_retrieval.go:21-30`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_retrieval.go#L21-L30))
+([`service_search_cmd.go:20`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go#L20))
 is where they hang together.
 
 **Render time.** Orbit assembly (one goroutine per STtype channel), betweenness

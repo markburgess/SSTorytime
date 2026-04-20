@@ -39,6 +39,8 @@ flowchart LR
     MCP --> Web
     LLM --> MCP
 
+    click MCP "/SSTorytime/http-api/mcp-sst/" "MCP-SST integration page"
+
     classDef code fill:#3949AB,stroke:#1a237e,color:#fff;
     classDef store fill:#FBC02D,stroke:#b08600,color:#000;
     class Parser,Lib,CLI,Web,MCP code;

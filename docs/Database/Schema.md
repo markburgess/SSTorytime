@@ -375,12 +375,28 @@ stateDiagram-v2
     LOGGED --> LOGGED: normal transactional reads/writes<br/>(WAL-protected)
 ```
 
-!!! warning "If the uploader crashes mid-run"
-    Tables remain `UNLOGGED`, so any subsequent unclean PostgreSQL restart
-    will truncate them to zero. The recovery procedure is to re-run
-    `N4L -wipe -u` from the canonical `.n4l` sources — trivial when the N4L
-    is version-controlled, catastrophic otherwise. See also
+!!! danger "Crash-loss window spans the full `N4L -u` run"
+    Any unclean Postgres shutdown — SIGKILL of the postmaster, an
+    OOM-killer kill, host power loss, `docker kill` of the container,
+    `docker compose down` without `-f` in some configurations — during
+    the **entire** `N4L -u` run truncates `Node`, `PageMap`,
+    `ArrowDirectory`, and `ArrowInverses` to zero. The vulnerable window
+    is not a narrow race around `ALTER TABLE ... SET LOGGED` at
+    [`db_upload.go:119`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/db_upload.go#L119);
+    it is the full ingest duration, from the first `UNLOGGED` insert
+    through the `SET LOGGED` flip. Recovery is always
+    `N4L -wipe -u *.n4l` from the canonical sources — trivial when the
+    N4L is version-controlled, catastrophic otherwise. See also
     [Performance](Performance.md#unlogged-logged-lifecycle).
+
+!!! info "`LastSeen` is `LOGGED` from birth — analytics survive a crash"
+    `LastSeen` is **not** declared `UNLOGGED` (see
+    [`postgres_types_functions.go:74`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_types_functions.go#L74)).
+    Its rows are WAL-protected from the moment they are written, so
+    recency-weighted analytics and `ReadLastSeenDrift` history persist
+    across the crash window above. `ContextDirectory` is also regular
+    (logged). The UNLOGGED hazard is narrower than "everything is at
+    risk": it is the bulk-load tables only.
 
 The 5 GIN indexes are created **between** bulk insert and the SET LOGGED
 calls — see [Indexes](Indexes.md) for why.

@@ -26,14 +26,37 @@ for the full picture. The short version:
   rebuilt from the in-memory cache on the next `Configure()`, so their
   durability does not matter.
 
-!!! warning "Crash during upload → re-run the uploader"
-    If `N4L -u` crashes (SIGKILL, OOM, Postgres crash) before
-    `db_upload.go:119` runs, `Node` and `PageMap` stay `UNLOGGED`. Any
-    subsequent Postgres restart that is not strictly clean (including
-    `docker compose down` without `-f`) will truncate them. Recovery is
-    always `N4L -wipe -u *.n4l`. This is fine provided your `.n4l` sources
+!!! danger "Crash window is the *full* ingest, not just the `SET LOGGED` moment"
+    Any unclean Postgres shutdown during the entire `N4L -u` run
+    truncates `Node`, `PageMap`, `ArrowDirectory`, and `ArrowInverses`
+    to zero. That includes:
+
+    - `SIGKILL` / `kill -9` of the postmaster.
+    - The kernel OOM-killer taking out the postmaster.
+    - Host power loss or panic.
+    - `docker kill sstorytime-postgres` (or any SIGKILL-equivalent
+      container stop).
+    - Storage disappearing under the cluster (`umount /mnt/pg_ram`,
+      volume detach).
+
+    The vulnerable window is the full ingest duration — from the first
+    `UNLOGGED` insert through the `ALTER TABLE … SET LOGGED` at
+    [`db_upload.go:119-120`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/db_upload.go#L119-L120) —
+    not a narrow race around that moment. Recovery is always
+    `N4L -wipe -u *.n4l`. This is fine provided your `.n4l` sources
     are in version control — **treat the database as a cache, never as
     source of truth**.
+
+!!! info "`LastSeen` is `LOGGED` — activity history survives a crash"
+    Unlike the bulk-load tables, `LastSeen` is created as a normal
+    (WAL-protected) table at
+    [`postgres_types_functions.go:74`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_types_functions.go#L74).
+    Its rows — first/last timestamps, exponentially-smoothed delta,
+    frequency counter — are not truncated by an unclean Postgres
+    shutdown. Analytics built on `ReadLastSeenDrift` (see
+    [LastSeen 60-second sampling threshold](#lastseen-60-second-sampling-threshold))
+    continue to work after a crash-driven `N4L -wipe -u` rebuild of the
+    graph itself.
 
 ## `CAUSAL_CONE_MAXLIMIT` — cone cardinality cap
 

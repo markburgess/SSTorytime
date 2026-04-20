@@ -1,6 +1,9 @@
 
 # Removing, Replacing, or Editing notes
 
+`removeN4L` deletes one [chapter](concepts/glossary.md#chapter) at a time from the database. See the warning below: it is destructive, `-force` is required, and it is intentionally limited in scope.
+
+
 ## Usage
 
 ```
@@ -59,11 +62,29 @@ disruption.
 
 ## Exit codes & environment
 
-- **Exit `0`** — a `DeleteChapter` call was issued (success is printed as `Deleted <chapter>`).
-- **Exit `1`** — called with no chapter name, or called without `-force`. The tool prints
-  `Are you sure you want to remove a chapter? Use -force to confirm.` and stops.
-- **Exit `2`** — invalid flag.
-- **Exit `-1`** — any database error (e.g. PostgreSQL unreachable).
+Exit-code behaviour is literal from the source at [`src/removeN4L/removeN4L.go:48-99`](https://github.com/markburgess/SSTorytime/blob/main/src/removeN4L/removeN4L.go#L48-L99). It is not cleanly normalised; the summary below matches the source exactly.
+
+- **Exit `0`** — `DeleteChapter` was invoked and `main` fell off its end. This covers both
+  the success path (`Deleted <chapter>` printed) **and** the SQL-error branch that prints
+  `Error running deletechapter function: …` — both paths return `0` because the final
+  `return` in `main` is unconditional.
+- **Exit `1`** — `-force` was omitted. The tool prints
+  `Are you sure you want to remove a chapter? Use -force to confirm.` at
+  [`removeN4L.go:63-66`](https://github.com/markburgess/SSTorytime/blob/main/src/removeN4L/removeN4L.go#L63-L66) and stops.
+- **Exit `2`** — invalid flag **or** no chapter-name positional argument. `Usage()` is
+  called, which itself exits `2` at [`removeN4L.go:79`](https://github.com/markburgess/SSTorytime/blob/main/src/removeN4L/removeN4L.go#L79);
+  the `os.Exit(1)` at line 60 is unreachable.
+- **Panic (no clean exit code)** — if `sst.DB.Query` returns `err != nil`, `row` is `nil`
+  and the unconditional `row.Close()` at
+  [`removeN4L.go:97`](https://github.com/markburgess/SSTorytime/blob/main/src/removeN4L/removeN4L.go#L97)
+  panics with `runtime error: invalid memory address or nil pointer dereference`
+  and a stack trace. This is a known wart; document it so operators are not surprised.
+
+!!! warning "`removeN4L` does not return `-1` on DB error"
+    Unlike most tools in this suite, `removeN4L` does not map database failure to
+    `-1`. A DB-error branch either falls through to `exit 0` (printing the error
+    message) or panics at `row.Close()`. If you script around this tool, do **not**
+    rely on a non-zero exit to signal deletion failure — check the printed output.
 
 Environment variables:
 

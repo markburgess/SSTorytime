@@ -22,7 +22,7 @@ the binary alongside the source.
 
 **Goal:** demonstrate the minimum viable Go program that (a) writes a
 small story into the graph using `Vertex` / `Edge`, and (b) reads the
-story back as a forward cone of linked nodes.
+story back as a forward [cone](concepts/glossary.md#cone--cone-search) of linked nodes.
 
 This is the shape of every custom SSTorytime client. `Open` establishes
 the database connection; `Vertex` creates idempotent nodes; `Edge` wires
@@ -203,8 +203,13 @@ in your database.
 
 **Exercises:**
 
-1. After the hub-joins, query `GetFwdPathsAsLinks` from `mummy_node` and
-   confirm you can reach every leaf in one hop.
+1. `HubJoin` creates links **leaves → hub** (see
+   [`pkg/SSTorytime/API.go:97-106`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/API.go#L97-L106)
+   — each leaf becomes the `from` and the hub is `link.Dst`). So a
+   forward query from the hub reaches nothing. To confirm the wiring,
+   either (a) call `GetFwdPathsAsLinks` from each leaf and verify the
+   path lands on `mummy_node`, or (b) use the inverse-arrow orientation
+   (`"bwd"` in the search APIs) from `mummy_node` to reach every leaf.
 2. Change the third `HubJoin` arrow to one of the 4 canonical types
    (`contains`, `leads to`, `expresses`, `near`) and observe how the
    storage channel (`Im3`..`Ie3`) the links land in changes.
@@ -388,7 +393,10 @@ func main() {
         // Forward cone from the start, current depth.
         left_paths, Lnum = SST.GetEntireConePathsAsLinks(sst, "any", leftptrs[0], ldepth, branching_limit)
 
-        // Forward cone from the end (treated as backward from end).
+        // Forward cone from the end node — the wave-front collision
+        // logic (WaveFrontsOverlap, below) treats this as the reverse
+        // frontier when intersecting the two cones. Note both calls use
+        // "any" orientation; no sign flip happens at the call site.
         right_paths, Rnum = SST.GetEntireConePathsAsLinks(sst, "any", rightptrs[0], rdepth, branching_limit)
 
         // Intersect the two wave fronts. Returns DAG solutions and

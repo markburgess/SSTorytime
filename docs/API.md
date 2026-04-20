@@ -60,7 +60,7 @@ that interact with the database through the Go API
 
 ## Creating an SST graph from data
 
-![Three blocks labeled Vertex, Edge, and HubJoin flowing into a database cylinder on the right, with NodePtr coordinate pairs floating in the margin — the lifecycle of an API call.](figs/api_lifecycle.jpg){ align=center }
+![Pen-and-ink schematic: three rectangular blocks labeled VERTEX, EDGE, HUBJOIN flow via straight arrows into a database cylinder on the right; NodePtr coordinate pairs (x1,y1), (x2,y2), (x3,y3) annotate each block.](figs/api_lifecycle.jpg){ align=center }
 
 See the [example](https://github.com/markburgess/SSTorytime/blob/main/src/API_EXAMPLE_1/API_EXAMPLE_1.go). To make node registration as easy as possible, you can use two functions
 `Vertex()` and `Edge()` to create nodes and links respectively. These names are chosen to distance themselves

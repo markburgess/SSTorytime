@@ -80,10 +80,11 @@ src/bin/N4L FILE.N4L
 
 ```
 
-- To convert an ASCII text file into a single chapter file of notes:
+- To sample 50 percent of a long ASCII text file, like a book, into a single chapter file of notes:
 ```bash
-- src/bin/text2N4L FILE.txt
+- src/bin/text2N4L -% 50 FILE.txt
 ```
+This produces FILE.txt_edit_me.n4l
 
 - To start a web interface to the database
 ```bash

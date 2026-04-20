@@ -1,5 +1,7 @@
 # Setting up and getting started
 
+![A retro CRT terminal on a wooden desk flanked by a PostgreSQL elephant and a Go gopher, connected by ochre flow arrows.](figs/getting_started_hero.jpg){ align=center }
+
 As we figure out how to make the project easily available, you will need to compile
 the programs by following these destructions below. You can get started with or without Docker (for those who know). You may need to install these prerequisites:
 

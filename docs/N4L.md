@@ -1,5 +1,8 @@
 
 # N4L - Notes for Learning
+
+![Four arrow forms illustrating the four STtypes: CONTAINS as an embrace, LEADSTO as a runner, NEAR as parallel equals signs, EXPRESSES as a speaking mouth.](figs/n4l_hero.jpg){ align=center }
+
 ## A simple knowledge management language
 
 *Notes for learning*<br>
@@ -37,6 +40,21 @@ and change our minds. It makes modelling fragile and fraught with risk.
 Without any structure, it's only guesswork to
 understand intent. N4L is a compromise that allows you to use any kind of
 familiar editor to write notes in pure text (Unicode).
+
+## How N4L compiles
+
+```mermaid
+flowchart LR
+    INPUT[/"N4L source<br/>(.n4l files)"/]
+    TOKEN["Tokenize<br/>src/N4L/N4L.go:1463"]
+    CLASSIFY["Classify roles<br/>(header · context · item ·<br/>relation · continuation)<br/>src/N4L/N4L.go:1500"]
+    ALIAS["Resolve aliases<br/>@name · $name.N<br/>src/N4L/N4L.go:644"]
+    CONTEXT["Apply context stack<br/>::, +::, -::<br/>src/N4L/N4L.go:2441"]
+    EMIT["Emit nodes &amp; links<br/>N4L_parsing.go"]
+    UPLOAD[("Upload to PostgreSQL<br/>db_upload.go (idempotent)")]
+
+    INPUT --> TOKEN --> CLASSIFY --> ALIAS --> CONTEXT --> EMIT --> UPLOAD
+```
 
 ## Command line tool
 

@@ -1,6 +1,8 @@
 
 # searchN4L
 
+![A hand-drawn graph network with a cone of flashlight-beam light sweeping across it, illuminating a path through the nodes.](figs/searching_hero.jpg){ align=center }
+
 This is a tool for querying the database. This is redesigned to avoid having to use command line options.
 The only command line option is `-v` for verbose output, which is helpful for debugging.
 

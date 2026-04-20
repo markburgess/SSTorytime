@@ -86,6 +86,9 @@ markdown_extensions:
 plugins:
   - search
 
+extra_css:
+  - css/extra.css
+
 extra:
   social:
     - icon: fontawesome/brands/github
@@ -126,6 +129,8 @@ nav:
   - Reference:
       - Debug: debug.md
       - To-Do: ToDo.md
+      - Database:
+          - Schema: Database/Schema.md
   - Contributing:
       - How to Contribute: howtocontribute.md
   - Project:

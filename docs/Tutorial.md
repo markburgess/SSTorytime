@@ -20,6 +20,17 @@ the API.
 
 ## Five steps to heaven
 
+```mermaid
+flowchart LR
+    JOT["1. Jot<br/>capture the thought"]
+    TYPE["2. Structure<br/>write it in N4L"]
+    ORG["3. Organize<br/>revise &amp; refine"]
+    UPLOAD["4. Upload<br/>N4L -u your.n4l"]
+    KNOW["5. Know<br/>browse · search ·<br/>path-solve"]
+
+    JOT --> TYPE --> ORG --> UPLOAD --> KNOW
+```
+
 * JOT IT DOWN WHEN YOU THINK OF IT. . .
 * TYPE IT INTO N4L AS SOON AS YOU CAN. . .
 * ORGANIZE AND TIDY YOUR N4L NOTES EVERY DAY. . .

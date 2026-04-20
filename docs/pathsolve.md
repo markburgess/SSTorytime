@@ -1,6 +1,8 @@
 
 # pathsolve
 
+![Aerial view of a foggy bay at dusk where two lighthouse beams sweep toward each other through the mist, creating interference where they meet, with a graph network faintly visible beneath — a visual metaphor for bidirectional wave-front path solving.](figs/pathsolve_beams.jpg){ align=center }
+
 `pathsolve` is an experimental tool for finding contiguous paths between node sets.
 It can also be accessed through the web browser.
 

@@ -37,6 +37,8 @@ get quite far with just a few that are already defined.
 
 ## Starting with a few ...
 
+![A 2x2 grid illustrating the four arrow personalities — NEAR as mirror twins, LEADSTO as a runner mid-stride, CONTAINS as a parent's embrace, EXPRESSES as an open mouth mid-word.](figs/four_arrows.jpg){ align=center }
+
 Try starting with these basic arrows:
 
 * `(then)` - a LEADSTO arrow. You can always join up subsequent events `a (then) b (then) c` etc.
@@ -79,6 +81,40 @@ usage:
     The mapping between STtype values and column names lives in
     [`STtype.go:82-109`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/STtype.go#L82-L109)
     as `STTypeDBChannel`.
+
+### 4 types, 7 channels — visually
+
+```mermaid
+graph TB
+    subgraph types["4 conceptual types"]
+        NEAR["NEAR<br/>similarity · symmetric"]
+        LEADSTO["LEADSTO<br/>causal / sequential"]
+        CONTAINS["CONTAINS<br/>membership / composition"]
+        EXPRESS["EXPRESSES<br/>property / attribute"]
+    end
+
+    subgraph channels["7 storage channels (Node.Im3..Ie3)"]
+        direction LR
+        Im3["Im3<br/>-EXPRESS"]
+        Im2["Im2<br/>-CONTAINS"]
+        Im1["Im1<br/>-LEADSTO"]
+        In0["In0<br/>NEAR"]
+        Il1["Il1<br/>+LEADSTO"]
+        Ic2["Ic2<br/>+CONTAINS"]
+        Ie3["Ie3<br/>+EXPRESS"]
+    end
+
+    NEAR --> In0
+    LEADSTO --> Il1
+    LEADSTO -.-> Im1
+    CONTAINS --> Ic2
+    CONTAINS -.-> Im2
+    EXPRESS --> Ie3
+    EXPRESS -.-> Im3
+```
+
+Solid arrows = forward direction; dotted = backward (inverse) direction.
+`NEAR` has no inverse because it's symmetric.
 
 This is enough. Now make notes!
 

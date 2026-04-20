@@ -1,6 +1,8 @@
 
 # Web JSON queries
 
+![A browser on the left, a server tower in the center guarded by a small TLS padlock, and a glowing JSON object on the right — with request and response arrows flowing between them.](figs/web_lifecycle.jpg){ align=center }
+
 Query data returned by searches are addressed to the `http_server.go`
 program handler as POST requests, either with a command string into a
 `name` field, or as an NPtr reference sent as two separate form

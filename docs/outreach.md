@@ -9,6 +9,14 @@ In May 2025, several handfuls of people have contacted me about the project, exp
 and usefulness in their own work. For privacy, I won't list these contacts here, but this is
 encouraging news.
 
+## Further reading
+
+![Book cover of "Smart Spacetime: How Information Challenges Our Ideas About Space, Time, and Process" by Mark Burgess — the conceptual background for SSTorytime.](figs/SmartSpaceTime.jpg){ align=right width=180 }
+
+*Smart Spacetime — How Information Challenges Our Ideas About Space, Time, and Process*, by **Mark Burgess**, is the conceptual background for SSTorytime. It is not a HOWTO for this software; it develops the ideas behind Semantic Spacetime.
+
+<br clear="right">
+
 ## Articles about Semantic Spacetime by others
 
 * [A γ(3,4) Semantic Spacetime Agent](https://github.com/kzk2000/sstt-agent/tree/master) - Semantic Spacetime applied to LLMs

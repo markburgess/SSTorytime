@@ -40,12 +40,14 @@ make
 - Search commands are denoted by \command, e.g. \path, \sequence, \chapter
 
 
+
+
 ## Procedure
 - Step 1: A user writes notes in N4L. The compiler validates file.N4L based on arrows defined in SSTconfig/ directory
 - Step 2: User compiles notes with the bin/N4L tool and they become a graph.
 - Step 3: Search the graph, edit notes, and repeat
 - Advanced: the user can define new arrows by editing files in SSTconfig/
-
+- Step 4: Go back and edit notes regularly to add new knowledge, improve, and update.
 
 
 ## Tools
@@ -109,10 +111,11 @@ To add a single file of notes
 
 ## N4L usage
 
-- Create a text file containing lines with fields: first items (arrow) second item (arrow) third item, etc
+- Create or edit a text file containing lines with fields: first items (arrow) second item (arrow) third item, etc
 - Lines may be labelled with @token to refer later as $token.1, $token.2, etc
 - The ditto character " may be used to copy the previous line's field
 - The $PREV.1, $PREV.2 may also be used to refer to the previous line's fields
+- Each file is a work in progress. Revisit it regularly to add new comments, relationships, and make edits.
 
 ## Search Usage
 

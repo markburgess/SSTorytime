@@ -46,8 +46,8 @@ make
 - Step 1: A user writes notes in N4L. The compiler validates file.N4L based on arrows defined in SSTconfig/ directory
 - Step 2: User compiles notes with the bin/N4L tool and they become a graph.
 - Step 3: Search the graph, edit notes, and repeat
-- Advanced: the user can define new arrows by editing files in SSTconfig/
 - Step 4: Go back and edit notes regularly to add new knowledge, improve, and update.
+- Advanced: the user can define new arrows by editing files in SSTconfig/
 
 
 ## Tools

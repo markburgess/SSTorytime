@@ -133,12 +133,15 @@ A compact `(Class, CPtr)` address for a node. `Class` is a **size bucket** (see
 
 ## Orbit
 
-The set of neighbouring nodes around a focal node, organised by STtype, fetched
-within a fixed radius. Default `probe_radius = 3`. Implemented at
+The immediate neighbourhood of a focal node — the set of nodes within a small
+radius, organised by STtype. In Semantic Spacetime terms this is a node's
+*neighbourhood of significance*: the handful of things it touches closely
+enough that knowing the node means roughly knowing the orbit too. Default
+`probe_radius = 3`. Implemented at
 [`GetNodeOrbit`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/json_marshalling.go#L273-L306)
-which fans out one goroutine per STtype channel. The result is shaped for
-JSON and web rendering; struct at
-[`types_structures.go:220-231`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/types_structures.go#L220-L231).
+which fans out one goroutine per STtype channel; the result is shaped for
+JSON and web rendering (struct at
+[`types_structures.go:220-231`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/types_structures.go#L220-L231)).
 
 ## PageMap
 
@@ -174,9 +177,13 @@ and applied by
 
 ## Story
 
-A chapter plus an ordered axis of `NodeEvent`s — the narrative walk through a
-corner of the graph. Stories are how SSTorytime prefers to present knowledge:
-not a flat query result, but a traversal that reads like prose. Struct at
+The path a reader walks through a corner of the graph — a chapter plus an
+ordered axis of `NodeEvent`s. Stories are the *point*, not a presentation
+wrapper: knowledge that can't be told as a story is incomplete, and the
+structure of the story is what you remember after the individual facts have
+faded (see [`Storytelling.md`](../Storytelling.md)). SSTorytime prefers to
+return a traversal that reads like prose rather than a flat query result; the
+struct lives at
 [`types_structures.go:185-205`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/types_structures.go#L185-L205).
 
 ## Supernode
@@ -189,9 +196,14 @@ and
 
 ## Wave-front (bidirectional search)
 
-The path-solving algorithm: expand a frontier outward from the start node and
-*simultaneously* expand an inverse frontier inward from the end node until the
-two fronts overlap. Cheaper than single-direction BFS on long paths. Core at
+A *propagation* through the graph. The image is the one Mark uses in the
+Smart Spacetime work: an influence spreads outward from a point the way a
+wave spreads across water, crossing one neighbourhood of significance after
+another. To solve a path from A to B, SSTorytime starts a wave at A and a
+second, inverse wave at B, and lets them travel until they meet. Where the
+fronts overlap is the path. This is cheaper than a single-direction sweep
+because each wave only has to reach the meeting place, not the far shore.
+Core at
 [`GetPathsAndSymmetries`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/path_wave_search.go#L18-L75)
 and
 [`WaveFrontsOverlap`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/path_wave_search.go#L309).

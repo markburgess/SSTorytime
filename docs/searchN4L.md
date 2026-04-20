@@ -46,15 +46,14 @@ All commands are defined as constants in [`pkg/SSTorytime/service_search_cmd.go:
 | `\chapter` / `\section` / `\in` | `in` | Scope to a chapter | `\chapter "chinese"` |
 | `\contents` / `\toc` / `\map` | `toc` | Table of contents | `\toc any` |
 | `\arrow` / `\arrows` | | Arrow introspection (by name, number, or STtype) | `\arrow ph,pe` |
-| `\limit <N>` | | Cap number of results | `\limit 10` |
-| `\range <N>` / `\depth <N>` / `\distance <N>` | | Max path length / search cone radius | `\depth 16` |
+| `\limit` / `\range` / `\depth` / `\distance` `<N>` | | All four aliases set `param.Range`  — cap on results / path length / search-cone radius. See [`service_search_cmd.go:270`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go#L270). | `\depth 16` |
 | `\min <N>` / `\atleast <N>` / `\gt <N>` | | Minimum path length | `\min 2` |
 | `\max <N>` / `\atmost <N>` / `\lt <N>` | | Maximum arrow or path length | `\max 8` |
 | `\stats` | `stats` | Print graph statistics | `\stats \in brain` |
 | `\finds` / `\finding` | | What to find on an orbit | `\finds fleece` |
 | `\remind` | | Use recent-activity filtering | `\remind` |
-| `\new` | | Restrict to items last-seen within 4 hours (`RECENT`) | `\new` |
-| `\never` | | Restrict to items never seen (`NEVER = -1`) | `\never` |
+| `\new` | | Restrict to items last-seen within 4 hours (`RECENT = 4`, see [`service_search_cmd.go:411-413`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go#L411-L413)) | `\new` |
+| `\never` | | Disable the recent-activity horizon (`Horizon = NEVER = -1` — unbounded, not "items never seen"; see [`service_search_cmd.go:414-416`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go#L414-L416)) | `\never` |
 | `\help` | `help` | Show help chapter | `\help` |
 
 ### Literal and precise matches
@@ -62,9 +61,11 @@ All commands are defined as constants in [`pkg/SSTorytime/service_search_cmd.go:
 - Bang/pling quotes — `!term!` or `|term|` — force an **exact** string match. Useful for tokens that are common substrings (e.g. `!A!` to find just `A` rather than every string containing `A`).
 - Parenthesized, unaccented terms — `"(fangzi)"` — search an **unaccented** tsvector column. This lets you find `fángzǐ` without typing the accents. See [`pkg/SSTorytime/postgres_types_functions.go`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_types_functions.go) for the `UnSearch` column.
 - `NodePtr` references — `"(1,1)"` — match a node by its `(Class, CPtr)` address directly. See [`IsLiteralNptr` in service_search_cmd.go`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go).
-- Dirac notation — `"<end|start>"` — path from `start` to `end`. Parsed by `DiracNotation` at [`pkg/SSTorytime/service_search_cmd.go:178-188`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go#L178-L188); order is **end first, start second**.
+- Dirac notation — `"<end|start>"` — path from `start` to `end`. Dispatched at [`pkg/SSTorytime/service_search_cmd.go:178-189`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go#L178-L189) inside `DecodeSearchField`; the `DiracNotation` function itself lives in [`pkg/SSTorytime/tools.go:523`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/tools.go#L523). Order is **end first, start second**.
 
-### Original short list (kept for quick reference)
+### Original short list (partial subset — see table above for full DSL)
+
+This list is kept for historical continuity. It is **not exhaustive**. `\max`, `\atmost`, `\lt`, `\stats`, `\new`, `\never`, `\finds`, `\help`, `\sequence`, `\story`, and `\stories` are **not** listed below but are fully documented in the table above.
 
 - `\on` `\for` `\about`
 - `\notes` or `\page`
@@ -83,7 +84,7 @@ All commands are defined as constants in [`pkg/SSTorytime/service_search_cmd.go:
 - `\limit` or `\depth` or `\range` or `\distance`
 - `\min` or `\atleast` or `\gt` 
 
-SSToryline allows you to use node addresses, called NPtr-s, which are coordinates looking like `(a,b)`. These are shown in searches
+SSToryline allows you to use node addresses, called [NodePtr](concepts/glossary.md#nodeptr)-s (also written NPtr), which are coordinates looking like `(a,b)`. These are shown in searches
 in case you want to go quickly to a specific dode.
 
 Text searches are otherwise based on substring matches, unless you mark a string with pling/bang/exclamation characters,
@@ -116,7 +117,7 @@ Using the pre-loaded examples, you can try:
 
 ## Search for nodes and their close neighbour orbits matching a name
 <pre>
-$ ./searchN4L Mark
+$ searchN4L Mark
 ------------------------------------------------------------------
 
 0: supermarket
@@ -146,7 +147,7 @@ $ ./searchN4L Mark
 If you can only get English characters on your keyboard, you can still search for accented
 words by placing parentheses around them "(...)":
 <pre>
-% ./searchN4L  "(fangzi)" \\chapter "chinese" 
+% searchN4L  "(fangzi)" \\chapter "chinese" 
 ------------------------------------------------------------------
 
 0: fángzi
@@ -169,7 +170,7 @@ words by placing parentheses around them "(...)":
 ## Searching for anything in a given context
 
 <pre>
-$ ./searchN4L %% \\context smalltalk brain wave \\limit 3
+$ searchN4L "%%" \\context smalltalk brain wave \\limit 3
 ------------------------------------------------------------------
  Limiting to maximum of 3 results
 ------------------------------------------------------------------
@@ -201,7 +202,7 @@ If you know about the database internals, you can look up node pointers directly
 as long as you quote the parentheses for the shell.
 Notice how the indentation shows you the distance from the starting node.
 <pre>
-./searchN4L "(1,1)"
+searchN4L "(1,1)"
 ------------------------------------------------------------------
 
 0: door
@@ -223,7 +224,7 @@ Notice how the indentation shows you the distance from the starting node.
 
 Context strings are clustered into groups. If you don't remember, you can search:
 <pre>
-% ./searchN4L context restaurant
+% searchN4L context restaurant
   0. "buildings"
   1. "come"
   2. "come in"
@@ -237,19 +238,19 @@ Context strings are clustered into groups. If you don't remember, you can search
 </pre>
 
 
-## Searching for arrows
+## Searching for [arrows](concepts/glossary.md#arrow-sttype)
 
 You can look up arrow definitions too, by name, number, or spacetime type.
 The output format is `arrowptr, sttype, long name`:
 <pre>
-$ ./searchN4L \\arrow ph,pe
+$ searchN4L \\arrow ph,pe
 192. (3) ph -> pinyin has hanzi
 190. (3) pe -> pinyin has english
 
-$ ./searchN4L \\arrow 125
+$ searchN4L \\arrow 125
 125. (-2) during -> happened during
 
-$ ./searchN4L \\arrow -2
+$ searchN4L -- \\arrow -2
   9. (-2) in -> is in
  11. (-2) is an emphatic proto-concept in -> is emph in
  13. (-2) is mentioned in -> ismentin
@@ -263,11 +264,19 @@ $ ./searchN4L \\arrow -2
 
 </pre>
 
+!!! note "Why the `--` separator before `\arrow -2`?"
+    Go's `flag` package treats any token starting with `-` as a potential flag.
+    Without `--`, `searchN4L \arrow -2` is rejected because `-2` is read as an
+    undefined flag. The bare `--` sentinel tells the flag parser "everything
+    after this point is a positional argument," so `-2` reaches the query DSL
+    intact. The same trick works for any DSL token beginning with `-` (for
+    instance an STtype like `-3`).
+
 ## Searching for paths
 
 You can search for paths from one location to another:
 <pre>
- ./searchN4L \\from start \\to "target 1"
+ searchN4L \\from start \\to "target 1"
 ------------------------------------------------------------------
 
      - story path:  start  -(leads to)->  door  -(leads to)->  passage  -(debug)->  target 1
@@ -277,11 +286,11 @@ The default path length limtis to 5 hops. There might be longer paths, so you ca
 to force a larger search:
 
 <pre>
-$ ./searchN4L \\paths \\from a7 \\to i6 \\depth 16
+$ searchN4L \\paths \\from a7 \\to i6 \\depth 16
 </pre>
 or simply
 <pre>
-$ ./searchN4L a7 \\to i6 \\depth 16
+$ searchN4L a7 \\to i6 \\depth 16
 ------------------------------------------------------------------
 
      - story path:  maze_a7  -(forwards)->  maze_b7  -(forwards)->  maze_b6  -(forwards)->  maze_c6
@@ -300,7 +309,7 @@ $ ./searchN4L a7 \\to i6 \\depth 16
 ## Searching for story sequences
 
 <pre>
-./searchN4L sequence "Mary had"
+searchN4L sequence "Mary had"
 The following story/sequence (standalone trail without title anchor) "..."
 
 
@@ -317,7 +326,7 @@ The following story/sequence (standalone trail without title anchor) "..."
 
 Sometimes you want to see your full notes, the way you ordered them:
 <pre>
-$ ./searchN4L \\notes brain
+$ searchN4L \\notes brain
 
 ---------------------------------------------
 
@@ -345,7 +354,7 @@ gamma waves (occurs in) frontal cortex
 To get a table of contents, with embedded contexts:
 
 <pre>
-./searchN4L \\chapter any \\limit 4
+searchN4L \\chapter any \\limit 4
 ------------------------------------------------------------------
  Limiting to maximum of 4 results
 
@@ -386,7 +395,7 @@ To get a table of contents, with embedded contexts:
 To get a list of phrases you've used to label contexts:
 
 <pre>
-$ ./searchN4L \\context any
+$ searchN4L \\context any
 
 ------------------------------------------------------------------
  Limiting to maximum of 10 results
@@ -410,7 +419,7 @@ $ ./searchN4L \\context any
 </pre>
 To find tokens related to a particular match:
 <pre>
-$ ./searchN4L.go \\context direct keyi |more
+$ searchN4L \\context direct keyi | more
 
 ------------------------------------------------------------------
  Limiting to maximum of 10 results
@@ -437,7 +446,8 @@ $ ./searchN4L.go \\context direct keyi |more
 ## Exit codes & environment
 
 - **Exit `0`** — success (may print zero results if nothing matches).
-- **Exit `-1`** — any error (e.g. DB unreachable, malformed Dirac notation).
+- **Exit `2`** — usage error (e.g. `-h` / invalid flag). `Usage()` calls `os.Exit(2)` at [`src/searchN4L/searchN4L.go:137`](https://github.com/markburgess/SSTorytime/blob/main/src/searchN4L/searchN4L.go#L137).
+- **Exit `-1`** — any other error (e.g. DB unreachable, malformed Dirac notation).
 
 Environment variables:
 

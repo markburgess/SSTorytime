@@ -1,6 +1,22 @@
-# From .txt to N4L in 10 minutes
+# Bringing your own corpus — from prose to graph
 
-This cookbook walks through taking a plaintext document, running it through `text2N4L`, polishing the generated N4L file, uploading it to the graph, and searching it — start to finish, under ten minutes for a small corpus.
+The helper tool `text2N4L` will take a plaintext document and propose an N4L
+file from it. The operative word is *propose*. The draft it produces is
+deliberately imperfect: it picks out sentences it thinks are high-signal,
+sketches containment links, and decorates everything with n-gram context
+tags, and then it hands the result to you to argue with. That argument is
+the point. A corpus you have not argued with is not a corpus you know.
+
+Expect to spend real time on this — certainly longer than it takes to run
+the command. The first pass gives you a rough shape; the second pass gives
+you chapters you believe in; later passes turn the chapters into something
+you can tell a story from. Everything in SSTorytime is designed to make
+that iteration cheap: the `.n4l` file is plain text, the upload is
+idempotent, `-wipe` lets you start over without regret. Treat the tool
+chain as a loom rather than a printer.
+
+This cookbook walks the mechanics: generate a draft, refine it, upload it,
+search it. The judgement happens between the steps, not inside them.
 
 !!! info "Prerequisites"
     - `src/bin/N4L`, `src/bin/text2N4L`, `src/bin/searchN4L` compiled (run `make` from repo root).

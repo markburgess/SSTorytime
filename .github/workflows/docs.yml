@@ -56,6 +56,11 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      # Opt actions/deploy-pages@v4 into Node 24 early; Node 20
+      # support is removed June 2026. Drop this once deploy-pages@v5
+      # ships with native Node 24.
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     steps:
       - name: Deploy to GitHub Pages
         id: deployment

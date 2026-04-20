@@ -225,6 +225,11 @@ of type `sttype` from the starting set of node pointers.
 </pre>
 </ol>
 
+!!! tip "Annotated walkthroughs"
+    For line-by-line annotations of this example and three progressively
+    richer ones (hub joins, maze solver, low-level wave-front search) see
+    the [API walkthroughs](API_WALKTHROUGH.md) page.
+
 ### Checking the result
 
 Running the `API_EXAMPLE.go` program:

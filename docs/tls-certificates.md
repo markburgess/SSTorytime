@@ -95,12 +95,24 @@ path relative to its own binary — `../server/cert.pem` and
 `../server/key.pem` — so the conventional workflow (`cd src && ./bin/http_server`)
 "just works" without any path configuration.
 
-!!! warning "`key.pem` is unencrypted"
+!!! warning "`key.pem` is unencrypted — set `chmod 600` immediately"
     Because the server has to start without a human typing a passphrase,
     the private key is stored in cleartext. Treat `src/server/key.pem`
     the same way you'd treat any other secret on disk — don't copy it to
     a shared directory, don't include it in a backup that leaves the
     host, and rotate it if a box is compromised.
+
+    The `make_certificate` script does not set restrictive permissions
+    on its output, so after first build run:
+
+    ```bash
+    chmod 600 src/server/key.pem
+    chmod 644 src/server/cert.pem   # cert is public, key is not
+    ```
+
+    Confirm with `ls -l src/server/{cert,key}.pem` — `key.pem` should
+    read `-rw-------`. A world-readable `key.pem` on a shared host means
+    any local user can impersonate the server.
 
 ## Validity
 

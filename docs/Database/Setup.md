@@ -120,6 +120,15 @@ and [`contrib/makeramdb.sh`](https://github.com/markburgess/SSTorytime/blob/main
     with `N4L -wipe -u *.n4l` after each reboot. Never use RAM mode for the
     only copy of a corpus.
 
+!!! warning "`tmpfs` is not a security boundary — pages can swap"
+    "RAM-only" here is a *persistence* claim, not a secrecy one. Linux
+    tmpfs pages are eligible for swap-out to the configured swap device
+    under memory pressure, so cluster contents (including data in
+    memory-mapped buffers) can land on the block device anyway. If your
+    threat model requires data never to touch disk, either disable swap
+    on the host or use a distinct encrypted swap. Otherwise treat a
+    tmpfs cluster's confidentiality the same as any disk-backed cluster.
+
 **When to use it**: comparing ingest throughput, profiling queries without
 disk I/O noise, one-shot ad-hoc experiments. **When not to use it**: any
 workflow where losing the DB without warning would cost more than five
@@ -153,6 +162,21 @@ see [`pkg/SSTorytime/session.go:20-69`](https://github.com/markburgess/SSTorytim
     (alias `db:`). Whitespace between key and value is ignored; anything
     unrecognised is skipped.
 
+    !!! warning "File permissions — set `chmod 600 ~/.SSTorytime`"
+        The credentials file stores the database password in plaintext.
+        Immediately after creating it, tighten permissions:
+
+        ```bash
+        chmod 600 ~/.SSTorytime
+        ```
+
+        The loader at
+        [`session.go:85`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/session.go#L85)
+        does **not** check file mode — a world-readable `~/.SSTorytime`
+        silently leaks credentials to every user on the host. This matters
+        on shared dev boxes, CI runners, and containers with
+        multi-tenant `$HOME` mounts. Enforce the mode yourself.
+
 3. **Hardcoded defaults** (lowest priority) — fallback only, for a
    zero-config local dev box:
 
@@ -170,6 +194,20 @@ see [`pkg/SSTorytime/session.go:20-69`](https://github.com/markburgess/SSTorytim
     `src/server/http_server.go` is a separate layer and does not affect the
     DB connection.
 
+!!! warning "Fallback-path `sql.Open` error is swallowed"
+    When `POSTGRESQL_URI` is **not** set and the hardcoded / `~/.SSTorytime`
+    credentials are used, the `err` returned by
+    [`sql.Open` at `session.go:44`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/session.go#L44)
+    is ignored. The `POSTGRESQL_URI` branch at
+    [`:46-50`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/session.go#L46-L50)
+    checks `err` correctly; the non-env branch does not. A malformed
+    driver string or an unreachable socket on the fallback path therefore
+    does not fail at `Open()` — it surfaces later as a confusing error from
+    the subsequent `Ping()` or from `Configure()`. If your troubleshooting
+    trail leads to a "connection" error that points at a query instead of
+    `Open()`, suspect this. Set `POSTGRESQL_URI` explicitly to get loud
+    failures.
+
 ### Verify
 
 A minimal smoke test from a Go program:
@@ -178,11 +216,11 @@ A minimal smoke test from a Go program:
 sst := SSTorytime.Open(true)  // true = also load arrow/context directories
 defer SSTorytime.Close(sst)
 // If this returns without exit(-1), the connection works
-// and Configure() has installed all 6 tables + 35 stored functions.
+// and Configure() has installed all 6 tables + ~34 stored functions.
 ```
 
 `Open()` calls `Configure()`, which creates the 3 custom types, 6 tables, and
-installs the ~35 PL/pgSQL functions (see
+installs the ~34 PL/pgSQL functions (see
 [`session.go:185-302`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/session.go#L185-L302)
 and the [Stored functions](Functions.md) reference). It also calls
 `CREATE EXTENSION unaccent` on every open —

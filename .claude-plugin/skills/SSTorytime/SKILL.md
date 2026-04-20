@@ -23,6 +23,7 @@ If Linux
 - install SSTorytime respository
 ```bash
 git clone git@github.com:markburgess/SSTorytime.git
+cd SSTorytime
 make
 ```
 

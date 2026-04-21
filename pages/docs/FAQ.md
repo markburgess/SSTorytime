@@ -1,121 +1,172 @@
-
-## Frequently Asked Questions
+# Frequently Asked Questions
 
 ![Wide landscape banner: distant mountains representing big ideas, forking paths in the foreground representing different tools, and a small figure climbing one of the paths.](figs/faq_landscape.jpg){ align=center }
 
-### General
+## General
 
-* **What does it do?**
+### What does it do?
 
-SSTorytime tools allow you capture information that you would like to know, make notes on, edit, and learn
-over time, to yield a searchable database of "knowable" information: but, of course, it's not magic--it isn't
-knowledge unless you actually know it yourself. It let's you see your own thinking in the mirror!
+SSTorytime turns notes — things you jot down, edit, and come back to —
+into a graph you can ask questions of. You write in plain text (a notation
+called N4L), saying what points at what: *this book is about that topic*,
+*this decision came before that one*, *this person said this*. The graph
+falls out of the writing. You can then ask questions — *what connects
+these two papers? what have I read about decision making?* — that a
+search box cannot answer because they are about *connections*, not about
+keyword matches.
 
-It turns written notes (or data input through an API) into a map or
-"Knowledge Graphs", to show you how you think about things. It creates
-your personal view, rather than someone else's imposed point of view.
-It encourages you to engage in the on-going process of learning by
-making notes, editing, compiling into a graph/map and iterating so
-that you learn as part of that process. If you choose to share the result, others can browse your view
-and see an explanation your terms, in your language.
+It is not magic: it does not *know* the material for you. What it does
+is let you see your own thinking in the mirror, and come back to it
+without re-reading from scratch.
 
-Thinking is easier in free text, rather than trying to force feed your thoughts into a scheme for searching.
+### What would I use it for?
 
-Using the additional tools `text2N4L`, you can scan an existing text and create an initial set of notes
-automatically to make browsing a book easy, searchable, and informative.
+- A personal reading list or research trail that grows as you read more.
+- A decision log where "what led to what" matters as much as the decisions.
+- Meeting notes, interview transcripts, or a course's worth of lecture
+  notes, where you want to ask *what came up about X*.
+- A family tree, a cast of characters for a novel, a set of connected
+  places.
+- Team topologies, service directories, or dependency maps where the
+  connections are the point.
 
-* **What would I use it for?**
+If your data is strictly tabular and you really just want SQL with joins,
+SSTorytime is not for you. If a standards body requires OWL or SPARQL,
+it is not for you either. For almost anything else you intend to *learn
+from* rather than just look up, it fits.
 
-* * Do you have HR processes that track staff capabilities?
-* * Are you designing team topologies without noting down your thinking?
-* * Are you designing a process, a user interface, user journeys through a website or organization?
-* * Are you mapping supply chains or tracing work execution?
-* * Are you creating service directories, tracing dependencies?
-* * Do you want to annotate your music collection or photos, tracing attribution, comments, similarities, etc
+### What is the process?
 
-* **What are the DON'T DOs of graphs?**
+Mark's five-step programme:
 
-Graphs are fragile structures so there are some modelling issues you should avoid.
-
-* * Don't try to link everything in a large data set to one or two nodes, e.g. make groups, say classifying all your music into mp3, flac, and m4a. This will lead to nodes for mp3, flac, and m4a that have thousands of radial links--with very long data structures that skew the database and cause memory problems! If something belongs to a small number of categories, use contexts instead. If you try to look up mp3 files the list would be so long as to be useless anyway. Instead you should look up `fred* \context mp3`
-
-* **What is the process?**
-
-The five step programme is this:
-* * JOT IT DOWN WHEN YOU THINK OF IT. . .
-* * TYPE IT INTO N4L AS SOON AS YOU CAN. . .
-* * ORGANIZE AND TIDY YOUR N4L NOTES EVERY DAY. . .
-* * UPLOAD AND BROWSE THEM ONLINE. . .
-* * REMEMBER, IT ISN'T KNOWLEDGE IF YOU DON'T ACTUALLY KNOW IT !!
+- **Jot it down when you think of it.**
+- **Type it into N4L as soon as you can.**
+- **Organise and tidy your N4L notes every day.**
+- **Upload and browse them online.**
+- **Remember — it isn't knowledge if you don't actually know it.**
 
 Look at your thinking in the mirror.
 
-* **Why does it take so long to upload data?**
+### What are the don'ts of graph modelling?
 
-Uploading to a database is a slow process compared to retrieving as there are many checks that have to happen. try to debug your data as far as possible using the text interface in N4L before actually committing to the database. Normally, we don't notice the  overhead in uploading to a database because we add things one at a time, but when we upload large amounst of bulk data, it's quite noticable. Be patient, make yourself a snack and except long files to take hours or even daysfor the largest data sets. Fortunately, searching the data is much faster.
+Graphs are fragile structures, and there are a few patterns that will
+bite you later.
 
-Even after loading has finished, the database will be working on creating indexing and text optimization, so when data get very large, we try not to change it too often!
+- **Do not link everything to one or two hub nodes.** If you classify
+  your whole music library as `mp3`, `flac`, or `m4a`, you get three
+  nodes each with thousands of radial links — unwieldy to store, useless
+  to query (the answer to "what is an mp3?" is *everything*), and rough
+  on the database. If something belongs to a small number of categories,
+  use [context](howdoescontextwork.md) instead, then ask
+  `fred* context mp3`.
+- **Do not try to invent the perfect arrow at first write.** Drop in
+  `(blah)` or `(tbd)` and refine later. The whole point of N4L is that
+  editing the text is easy; ontology-first modelling is where projects
+  go to die.
 
-* **Why do some searches take a long time?**
-Immediately after uploading the data, the database will be building its indices. Indexing takes time, then the return time should stabilize and be faster. After that, the scope of the search determines the speed of a query. If you are searching for a lot of data, it takes time to assemble into a graphable structure. 
+## Writing N4L
 
-### Writing notes in N4L
+### Can I make up new arrow types?
 
-* **Can I use URLs in N4L?**
+You compose the *name* — `is-the-capital-of`, `was-painted-by`,
+`bib-cite` — and SSTorytime is happy. But every arrow has to be
+**pre-declared** in the project's `SSTconfig/` files, against one of
+the four spacetime meta-types (NEAR, LEADSTO, CONTAINS, EXPRESSES),
+before N4L will accept it. You cannot invent an arrow mid-file. See
+[Thinking in arrows](arrows.md) for the declared vocabulary and how to
+add your own.
 
-Yes, you should enclose them in quotes because they usually include the substring "//", which is also a comment designation.
+### Can I use URLs in N4L?
 
+Yes — but enclose them in quotes. URLs contain `//`, which is also N4L's
+comment marker, so a bare URL gets truncated at the first slash-pair.
 
-* **Why are there relationships that I didn't intend when I browse the data?**
+### Why are there relationships I didn't intend when I browse the data?
 
-Be careful to ensure that you haven't accidentally used any of the annotation markers (e.g. +,-,=) without surroundings spaces in your text, as these will be interpreted as annotations. Use the verbose mode in N4L to debug.
+Usually because an annotation marker (`+`, `-`, `=`) sneaked into your
+text without surrounding spaces. Run N4L in verbose mode to see what
+the parser is reading.
 
-* **Why do I see chapters that don't seem to be relevant in search results?**
+### Why do I see chapters that don't seem relevant in my search results?
 
-SSTorytime does some "lateral thinking". If you don't explicitly restrict to a particular chapter, it will
-take examples from everywhere.
-Seeing unexpected results is probably a result of certain words and phrases belonging to more than one chapter, and thus bridging chapters that you didn't intend. This bridging is intentional, as it allows >"lateral thinking", which is an important source of discovery.
+SSTorytime does some lateral thinking on purpose. If you do not
+restrict to a chapter, it will pull matches from anywhere in the
+graph — some words and phrases sit in several chapters, and the
+bridges between chapters are often where insight lives. If you want a
+tight answer, scope the query: `"decision making" in chapter "reading list"`.
 
-* **Why doesn't pathsolve understand my search on the command line**
+## Searching and paths
 
-Shell characters interfere with the syntax. We need to escape characters, e.g. using single quotes to avoid expansion:
-<pre>
-$ ./pathsolve -begin '!a1!' -end s1
-$ ./searchN4L \\from '!a1!'
-</pre>
+### What's the difference between searchN4L and pathsolve?
 
-* **Why doesn't a path solution work?**
+They answer different shapes of question.
 
-Path solving is a potentially exponential process. Without some constraints it could take a very long time. You can restrict the time significantly by specifying precise start and end nodes, e.g. write `from !a1! to !b6!` to match the precise a1 (not a substring of many possibilities. You can also use a context `from a1 to b4 context connection`. See also 'Why are the results different each time?'
+- **`searchN4L`** asks *what is near this?* It returns the orbit of a
+  node — everything it is about, who wrote it, what it cites, the
+  notes hanging off it, plus one hop further out. Use it when you
+  want the full neighbourhood of a topic or a book.
+- **`pathsolve`** asks *how do I get from here to there?* It traces
+  `leadsto`-type arrows (the causal / sequence family) between two
+  nodes you name, and hands you back the chain of steps. Use it when
+  you want the route between two points, not the fog around each one.
 
-By default, SSTorytime will also try to search all possible path types. Narrative links are nearly always arrow type 1 (leads to), so you can try to limit by arrow too `from door arrow 1`.
+See [Finding things](searchN4L.md) and [Finding paths](pathsolve.md).
 
-* **Why does a path search take so long?
-Path searches grow exponentially with the length of the path, so they get slower and slower as the distance between nodes
-increases. If you know the type of arrow along the whole path, you can speed up the search by specifying the arrow types, or the sttypes, e.g. using the STtypes:
-<pre>
-./searchN4L -v \\from \!gun\! \\to scarlet \\arrow +3,-3,0
-</pre>
-And using the arrows:
-<pre>
-./searchN4L -v \\from \!a1\! \\to b6 \\arrow 20,21
-</pre>
-Remember to always give pairs of arrow,inverse since the FROM and the TO match opposite arrow directions.
+### Why doesn't pathsolve understand my query on the command line?
 
-* **Why are the results different each time?**
+Shell characters. You usually need single quotes to prevent expansion:
 
-Lookup in a database is not a deterministic process. The database may select different values on each search and return them in a different order. The default number of data returned is 10 items. If there are many possible matches, the probability of getting the same 10 will decrease with more possibilities. You can also increase the number of matches `mysearch limit 20`. The more you constrain your search the more likely you are to get the same answer each time. 
+```
+./pathsolve -begin '!a1!' -end s1
+./searchN4L \\from '!a1!'
+```
 
-### Errors
+### Why doesn't a path solution work?
 
-* **I have no errors in my N4L, but when I try to upload without wiping previous data `N4L -u ...` I keep getting "Warning: Redefinition of arrow ...". What's wrong?**
+Path-finding is potentially exponential — without constraints, the
+search can take a very long time or return nothing within its limit.
+Two fixes help. **Pin the ends precisely:** `from !a1! to !b6!`
+matches *a1* exactly, rather than any substring. **Narrow the arrow
+family:** narrative chains are nearly always LEADSTO, so restricting
+to that family shortens the search. A [context](howdoescontextwork.md)
+clause helps too: `from a1 to b4 context connection`.
 
-If you don't wipe the database, you need to ensure that all your arrows are compatible across the whole database. If you've already used an arrow name for something else, then you can't reuse it with a different meaning now. It's not an error when you are just checking the syntax. It only becomes a problem when you try to merge with earlier data. 
+### Why does a path search take so long?
 
-Although one could, in principle merge the definitions in a kind of
-private namespace, this would be laze and not pedagogically well
-motivated. If we are going to put data into the same database, and
-allow cross-pollenation of ideas, then we need to resolve those
-inconsistencies.
+Path searches grow exponentially with distance, so long chains slow
+down fast. If you know what kind of arrow the path travels on —
+LEADSTO, CONTAINS, NEAR, or EXPRESSES — say so, and the search
+prunes the space aggressively. Always give pairs of arrow and
+inverse, since FROM and TO match opposite directions along the same
+path.
 
+### Why are the results different each time?
 
+A database does not guarantee return order on unconstrained lookups,
+and the default result limit is small (ten items). If the graph has
+many possible matches, the ten it returns may rotate. Tighten your
+query (more specific text, chapter restriction, context scope) and
+the answer stabilises. You can also raise the limit: `mysearch limit
+20`.
+
+## Upload and build
+
+### Why does uploading take so long?
+
+Uploading to a database runs more work per row than querying does —
+there are deduplication checks, arrow-consistency checks, context
+registration, index maintenance. Normally you do not notice, because
+you add one thing at a time; a bulk upload makes the overhead
+visible. Big files can take hours. Searching is much faster. While
+the database is still building indices after an upload, early
+searches may be slow; give it a minute and times settle.
+
+### Why do I get "Warning: Redefinition of arrow ..." when I upload without wiping?
+
+If you are adding to a graph that already has data, every arrow name
+you use has to mean the same thing as it did last time. If you once
+declared `(friend)` as a NEAR-type relation and now you are trying to
+use it as EXPRESSES, the parser complains. The fix is to pick one
+meaning and stick with it — or to wipe the database and re-ingest
+everything under the new meaning. The warning is noise during syntax
+checking; it only bites when you actually try to merge.

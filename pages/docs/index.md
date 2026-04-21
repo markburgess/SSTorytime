@@ -2,152 +2,118 @@
 
 ![Profile silhouette of a head on the left; a network of labeled concept nodes — NETWORK, IDEAS, CONTEXT, STORY, MEMORY, PERCEPTION — expands outward to the right like a cognitive map.](figs/index_hero.jpg){ align=center }
 
-> **A unified graph process for mapping knowledge.**
-> Semantic Spacetime Story graph database over PostgreSQL — an
-> [NLnet-sponsored](https://nlnet.nl/project/SmartSemanticDataLookup/) project by
+> **Keep notes that remember how they are connected — and ask them questions later.**
+> An [NLnet-sponsored](https://nlnet.nl/project/SmartSemanticDataLookup/) project by
 > [Mark Burgess](https://markburgess.org) / ChiTek-i.
 
-Imagine a tool that helps you *know your own thinking* — to capture it, visualize it,
-and make it searchable for the days when your scatterbrain isn't working on all
-cylinders. We might not call it Artificial Intelligence; we might call it a
-**cyborg enhancement**. Still, the results are useful for training and teaching, for
-human and machine intelligence alike.
-
-**SSTorytime is an independent knowledge graph based on Semantic Spacetime.** It is
-not a Topic Map or RDF-based project. It aims to be both easier to use and more
-powerful than RDF.
+Most notes go flat. You jot something down, and a week later you can't find it
+because the thing you typed then is not the thing you are searching for now.
+SSTorytime lets you write the *connections* alongside the content — what a
+book is about, what it cites, what came before, who said what — and then asks
+the graph, not a search box, when you want an answer.
 
 ---
 
-## System at a glance
+## What you can do with it
 
-```mermaid
-flowchart LR
-    N4L["N4L notes<br/>(plain text)"]
-    Parser["N4L parser<br/>src/N4L/"]
-    PG[("PostgreSQL<br/>semantic cache")]
-    Lib["Go library<br/>pkg/SSTorytime"]
-    CLI["CLI tools<br/>searchN4L · pathsolve · notes · graph_report"]
-    Web["HTTPS :8443<br/>src/server/http_server"]
-    MCP["MCP-SST proxy<br/>(external repo)"]
-    LLM["AI / LLM clients"]
-
-    N4L --> Parser --> PG
-    Lib --> PG
-    CLI --> Lib
-    Web --> Lib
-    MCP --> Web
-    LLM --> MCP
-
-    click MCP "/SSTorytime/http-api/mcp-sst/" "MCP-SST integration page"
-
-    classDef code fill:#3949AB,stroke:#1a237e,color:#fff;
-    classDef store fill:#FBC02D,stroke:#b08600,color:#000;
-    class Parser,Lib,CLI,Web,MCP code;
-    class PG store;
-```
-
-Notes travel from plain-text N4L source → parser → PostgreSQL (the semantic
-cache). The Go library sits over the database; CLI tools, the HTTPS server,
-and — via the external [MCP-SST proxy](https://github.com/markburgess/MCP-SST) —
-LLM clients, all read and write through it.
+- **Capture what you know, with the connections.** Write notes in N4L, a plain
+  text notation for statements like "this book is about that topic", "this
+  decision came before that one", "this person said this". The graph comes
+  out of the text you wrote — no schema to design up front.
+- **Ask questions that follow the connections.** *What connects these two
+  papers? What have I read that is about decision-making? What did this
+  meeting lead to?* Questions that would be painful in SQL or a note-taking
+  app are one line here.
+- **Keep the shape of your thinking.** Your N4L files in version control are
+  the source of truth; the database is a cache that makes queries fast. Your
+  graph is yours, local, and visible.
 
 ---
 
-## Start here
+## Is this for you?
 
 <div class="grid cards" markdown>
 
--   :material-download:{ .lg .middle } **Install**
+-   :material-pencil:{ .lg .middle } **You want to capture something**
 
     ---
 
-    Spin up PostgreSQL, build the binaries, load your first `.n4l` file, then
-    work through the [Tutorial](Tutorial.md).
+    A research trail, a decision log, a reading list, a family tree, a set of
+    meeting notes. You have the material in your head; you want it in a shape
+    you can ask questions of.
 
-    [:octicons-arrow-right-24: Getting Started](GettingStarted.md)
+    [:octicons-arrow-right-24: Your first story](Tutorial.md)
 
--   :material-lightbulb-on:{ .lg .middle } **Why Semantic Spacetime?**
-
-    ---
-
-    Four universal arrow types, open-world, context-first — and what that buys
-    you over RDF / OWL / property graphs.
-
-    [:octicons-arrow-right-24: Why Semantic Spacetime](concepts/why-semantic-spacetime.md)
-
--   :material-school:{ .lg .middle } **Learn the concepts**
+-   :material-magnify:{ .lg .middle } **You have a corpus already**
 
     ---
 
-    Knowledge, learning, context, and why Semantic Spacetime is different.
+    Notes, papers, transcripts. You want to explore the relationships, find
+    paths between things, pull out what is near a given idea.
 
-    [:octicons-arrow-right-24: Storytelling](Storytelling.md) ·
-    [Knowledge & Learning](KnowledgeAndLearning.md)
+    [:octicons-arrow-right-24: Finding things](searchN4L.md)
 
--   :material-code-braces:{ .lg .middle } **Write N4L**
-
-    ---
-
-    The notation for capturing notes as a graph — chapters, contexts, arrows.
-
-    [:octicons-arrow-right-24: N4L Reference](N4L.md) ·
-    [Arrows](arrows.md)
-
--   :material-magnify:{ .lg .middle } **Search & path-solve**
+-   :material-lightbulb-on:{ .lg .middle } **You want the "why" first**
 
     ---
 
-    Query the graph from the CLI or the web API.
+    Semantic spacetime, context as a first-class citizen, and what this
+    approach buys you over the alternatives.
 
-    [:octicons-arrow-right-24: searchN4L](searchN4L.md) ·
-    [pathsolve](pathsolve.md) ·
-    [Examples](search_examples.md)
+    [:octicons-arrow-right-24: Semantic spacetime in plain English](concepts/why-semantic-spacetime.md)
 
 </div>
 
 ---
 
-## Why Semantic Spacetime?
+## One concrete example
 
-Graphs are the language of spacetime process. They let us model:
+Here is a small reading list written in N4L:
 
-- Visualizations of processes.
-- Maps of space and time (Gantt charts, itineraries, path integrals).
-- Computational devices — a multi-matrix algebra.
-- Social networks with centralities and flow patterns.
-- Distributed indexes over semantic relationships.
+```n4l
+- reading list
 
-SSTorytime pins relationships to **four universal arrow types** —
-*near*, *leads-to*, *contains*, *expresses* — that align with how humans actually
-search. No formal ontologies to design upfront. No closed-world schema. Context
-and narrative are first-class citizens.
+ :: books, topics, reading history ::
 
-```mermaid
-flowchart TB
-    subgraph RDF["RDF / OWL / Topic Maps"]
-        R1["Fixed ontology<br/>Subject–Predicate–Object triples"]
-        R2["Schema-first<br/>Closed-world assumption"]
-        R3["Static classification"]
-    end
+ "Thinking Fast and Slow"   (is about) decision making
+       "                    (cites)    "Judgment under Uncertainty"
+       "                    (read on)  2024-03-15
 
-    subgraph SST["Semantic Spacetime"]
-        S1["4 universal arrow types<br/>+ context + narrative"]
-        S2["Notation-first (N4L)<br/>Open-world"]
-        S3["Process-centric"]
-    end
+ "Superforecasting"         (is about) decision making
+       "                    (cites)    "Thinking Fast and Slow"
+       "                    (read on)  2024-05-20
 
-    R1 -. rejected .-> S1
-    R2 -. rejected .-> S2
-    R3 -. rejected .-> S3
+ "Thinking in Systems"      (is about) decision making
+       "                    (read on)  2024-09-14
 ```
+
+Load it, then ask: **What connects "Thinking Fast and Slow" and "Superforecasting"?**
+
+```
+"Thinking Fast and Slow"  ← is cited by ←  "Superforecasting"
+"Thinking Fast and Slow"  → is about → decision making ← is about ←  "Superforecasting"
+```
+
+Two answers. One direct — Superforecasting cites the earlier book. One
+through a shared topic. You did not write either path; they are consequences
+of the connections you *did* write.
+
+The full version of this reading list is at
+[`examples/reading-list.n4l`](https://github.com/markburgess/SSTorytime/blob/main/examples/reading-list.n4l)
+and is the running example in [Your first story](Tutorial.md).
+
+---
+
+## Install
+
+About five minutes from a fresh checkout: [Install in 5 minutes](GettingStarted.md).
 
 ---
 
 ## Background reading
 
-A book on the conceptual background ("Smart Spacetime", Mark Burgess) is available.
-**It is conceptual background, not a tutorial or HOW-TO manual.**
+A book on the conceptual background (*Smart Spacetime*, Mark Burgess) is available.
+It is conceptual background, not a tutorial.
 
 Medium essays for deeper context:
 

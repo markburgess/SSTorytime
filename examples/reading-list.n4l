@@ -1,0 +1,62 @@
+
+- reading list
+
+// A small corpus tracking books I have read, what they are about,
+// which ones cite each other, and when I read each one.
+// Designed as the running example for the user-facing documentation:
+// small enough to reason about, rich enough to demonstrate connections.
+
+ :: books, topics, reading history ::
+
+ "Thinking Fast and Slow"   (is about) dual-process cognition
+       "                    (is about) decision making
+       "                    (is about) heuristics
+       "                    (cites)    "Judgment under Uncertainty"
+       "                    (read on)  2024-03-15
+       "                    (author)   Daniel Kahneman
+
+ "Judgment under Uncertainty" (is about) heuristics
+       "                     (is about) cognitive bias
+       "                     (read on)  2024-04-02
+       "                     (author)   Daniel Kahneman
+       "                     (author)   Amos Tversky
+
+ "Superforecasting"         (is about) decision making
+       "                    (is about) prediction
+       "                    (cites)    "Thinking Fast and Slow"
+       "                    (read on)  2024-05-20
+       "                    (author)   Philip Tetlock
+
+ "The Dictator's Handbook"  (is about) political coalitions
+       "                    (is about) incentive structures
+       "                    (read on)  2024-06-11
+       "                    (author)   Bruce Bueno de Mesquita
+
+ "Seeing Like a State"      (is about) central planning
+       "                    (is about) legibility
+       "                    (is about) incentive structures
+       "                    (read on)  2024-07-08
+       "                    (author)   James C. Scott
+
+ "The Origins of Political Order" (is about) state formation
+       "                    (is about) political coalitions
+       "                    (cites)    "Seeing Like a State"
+       "                    (read on)  2024-08-22
+       "                    (author)   Francis Fukuyama
+
+ "Thinking in Systems"      (is about) feedback loops
+       "                    (is about) complexity
+       "                    (is about) decision making
+       "                    (read on)  2024-09-14
+       "                    (author)   Donella Meadows
+
+
+ :: what I got out of each one ::
+
+ "Thinking Fast and Slow"   (one-line takeaway) two systems, one of them lazy, both of them you
+ "Judgment under Uncertainty" (one-line takeaway) the anchor is almost always the wrong number
+ "Superforecasting"         (one-line takeaway) calibration beats cleverness over long horizons
+ "The Dictator's Handbook"  (one-line takeaway) rulers survive by keeping a small coalition paid
+ "Seeing Like a State"      (one-line takeaway) what the centre can measure is not what the edge actually does
+ "The Origins of Political Order" (one-line takeaway) impersonal institutions are hard to build and easy to lose
+ "Thinking in Systems"      (one-line takeaway) most problems are the shape of a feedback loop

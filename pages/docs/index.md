@@ -104,27 +104,6 @@ LLM clients, all read and write through it.
     [pathsolve](pathsolve.md) ·
     [Examples](search_examples.md)
 
--   :material-api:{ .lg .middle } **Program against it**
-
-    ---
-
-    Build directly with the Go library, call the HTTP/JSON API, drive it from
-    Python, or expose the graph to LLMs through the MCP-SST proxy.
-
-    [:octicons-arrow-right-24: Go API](API.md) ·
-    [Web API](WebAPI.md) ·
-    [Python](cookbooks/python-integration.md) ·
-    [MCP-SST](http-api/mcp-sst.md)
-
--   :material-hand-heart:{ .lg .middle } **Contribute**
-
-    ---
-
-    Help shape the project — code, docs, examples, discussion.
-
-    [:octicons-arrow-right-24: How to Contribute](howtocontribute.md) ·
-    [To-Do](ToDo.md)
-
 </div>
 
 ---
@@ -162,12 +141,6 @@ flowchart TB
     R2 -. rejected .-> S2
     R3 -. rejected .-> S3
 ```
-
-> **Looking for an AI/LLM interface?** See the
-> [MCP-SST integration page](http-api/mcp-sst.md) for the hand-off between
-> SSTorytime and the external [MCP-SST proxy](https://github.com/markburgess/MCP-SST).
-> The server runs HTTPS on port 8443; start `http_server` from `src/bin/` so it
-> picks up the default TLS certificates.
 
 ---
 

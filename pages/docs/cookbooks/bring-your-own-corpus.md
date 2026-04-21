@@ -132,5 +132,5 @@ Full query grammar is in [searchN4L.md](../searchN4L.md#the-query-dsl). For more
 ## Next steps
 
 - When the structure feels right, commit the refined `.n4l` file to version control. That file — not the database — is your source of truth.
-- To delete a draft chapter cleanly: `../src/bin/removeN4L -force "chapter name"` (see [removeN4L.md](../removeN4L.md)).
+- To delete a draft chapter cleanly: `../src/bin/removeN4L -force "chapter name"`.
 - To see graph-level statistics: `../src/bin/graph_report -chapter mycorpus -sttype L,C`.

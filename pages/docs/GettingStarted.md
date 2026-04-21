@@ -256,12 +256,6 @@ setup you need — the project builds straight out of the source checkout via
 `make`, which uses the standard `go.mod` in the repo root. There is **no
 GOPATH symlink** required and no need to touch `~/go/src`.
 
-!!! info "Writing your own Go program against SSTorytime?"
-    See [Build your first SSTorytime program](cookbooks/first-go-program.md).
-    That cookbook uses a local `go.mod` with a `replace` directive pointing at
-    your checkout — the modern, Go-modules-native equivalent of the old GOPATH
-    trick some older docs still describe.
-
 ## Uploading the ready-made examples
 
 Now that everything is working, simply do the following to try out the examples in the documentation:

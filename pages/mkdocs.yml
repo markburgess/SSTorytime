@@ -14,9 +14,14 @@ exclude_docs: |
   /README.md
   requirements.txt
   plans/*
-  # NOTE (deferred): kebab-case file renames are intentionally out of scope for
-  # this PR. Renames cascade through every cross-link; handle in a follow-up
-  # where link updates can be verified in one pass.
+  developers/*
+  # NOTE: developers/* is kept in the repo for contributors but excluded
+  # from the published site per the 2026-04-21 restructure (see
+  # plans/2026-04-21-user-facing-restructure-design.md).
+  #
+  # NOTE (deferred): kebab-case file renames are intentionally out of scope
+  # for this PR. Renames cascade through every cross-link; handle in a
+  # follow-up where link updates can be verified in one pass.
 
 theme:
   name: material
@@ -102,66 +107,36 @@ extra:
 
 nav:
   - Home: index.md
-  - Getting Started:
-      - Installation: GettingStarted.md
-      - Tutorial: Tutorial.md
+
+  - Start Here:
+      - Install in 5 minutes: GettingStarted.md
+      - Your first story: Tutorial.md
+      - Try the examples: example.md
       - FAQ: FAQ.md
+
+  - Writing Stories:
+      - Thinking in arrows: arrows.md
+      - Writing N4L by hand: N4L.md
+      - Turning documents into stories: text2N4L.md
+      - Patterns — research notes: cookbooks/bring-your-own-corpus.md
+
+  - Asking Questions:
+      - Finding things: searchN4L.md
+      - Finding paths: pathsolve.md
+      - Context — asking the same question different ways: howdoescontextwork.md
+      - Patterns — search recipes: cookbooks/search-recipes.md
+
+  - Living With Your Graph:
+      - Backing up, restoring: cookbooks/backup-restore-delete.md
+
   - Concepts:
-      - Why Semantic Spacetime: concepts/why-semantic-spacetime.md
-      - Architecture: concepts/architecture.md
+      - Semantic spacetime in plain English: concepts/why-semantic-spacetime.md
       - Glossary: concepts/glossary.md
-      - Arrows (4 to 7 channels): arrows.md
-      - How Context Works: howdoescontextwork.md
-  - Background:
       - Storytelling: Storytelling.md
-      - Knowledge & Learning: KnowledgeAndLearning.md
+      - Knowledge and learning: KnowledgeAndLearning.md
       - Outreach: outreach.md
-  - N4L Language:
-      - N4L Reference: N4L.md
-      - Example Walkthrough: example.md
-      - Dynamic Functions: dynamic_functions.md
-  - Searching:
-      - searchN4L (CLI): searchN4L.md
-      - Search Examples: search_examples.md
-      - pathsolve (CLI): pathsolve.md
-  - Tools:
-      - text2N4L: text2N4L.md
-      - notes: notes.md
-      - graph_report: graph_report.md
-      - removeN4L: removeN4L.md
-  - APIs:
-      - Go API: API.md
-      - API walkthroughs: API_WALKTHROUGH.md
-      - Web JSON API: WebAPI.md
-      - MCP-SST integration: http-api/mcp-sst.md
-  - Operations:
-      - Setup: Database/Setup.md
-      - http_server (operator guide): http_server.md
-      - TLS & certificates: tls-certificates.md
-      - Build system: build-system.md
-      - Backup, restore, delete: cookbooks/backup-restore-delete.md
-      - Testing: testing.md
-      - Observability: operations/observability.md
-      # TODO (Birch): absorb the 20-line psql cheat sheet from docs/debug.md
-      # into Database/Setup.md (or a short Operations runbook), then delete
-      # debug.md. Left out of nav here on purpose.
-  - Reference:
-      - Concept to Code index: code-index.md
-      - Database:
-          - Schema: Database/Schema.md
-          - Stored functions: Database/Functions.md
-          - Indexes: Database/Indexes.md
-          - Performance: Database/Performance.md
-  - Cookbooks:
-      - Bring your own corpus: cookbooks/bring-your-own-corpus.md
-      - 10 search recipes: cookbooks/search-recipes.md
-      - Your first Go program: cookbooks/first-go-program.md
-      - Python integration: cookbooks/python-integration.md
-      - Connecting an LLM via MCP-SST: cookbooks/llm-via-mcp-sst.md
-  - Contributing:
-      - How to Contribute: howtocontribute.md
-      - Versioning: versioning.md
-  - Project:
-      - To-Do: ToDo.md
-      - Namespaces (planned): namespaces.md
-      - Project history: https://github.com/markburgess/SSTorytime/tree/main/docs/plans
+
+# Files under pages/docs/ not yet placed in nav (Phase C will absorb or move):
+#   search_examples.md  — Queryer agent consolidates into searchN4L.md
+# Files under pages/docs/developers/ are intentionally off-nav and
+# excluded from the site via exclude_docs above.

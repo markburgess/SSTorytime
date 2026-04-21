@@ -142,7 +142,6 @@ merely looked up — the SST model was built for it.
 - [Arrows & Relationships](../arrows.md) — the four types in detail, with
   the 7-channel storage encoding.
 - [N4L Reference](../N4L.md) — the authoring DSL.
-- [Architecture](architecture.md) — how the pieces fit together in code.
 - [Knowledge & Learning](../KnowledgeAndLearning.md) and
   [Storytelling](../Storytelling.md) — Mark's longer essays, for readers
   who want the full framing.

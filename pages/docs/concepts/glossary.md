@@ -52,7 +52,7 @@ and kept in the global `ARROW_DIRECTORY`
 
 A string label on a node that groups it with other nodes written together —
 usually a file, a topic, an essay. Chapter is a scoping filter on every search;
-it is *not* a namespace (see [Namespaces](../namespaces.md)). Field at
+it is *not* a namespace. Field at
 [`types_structures.go:39`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/types_structures.go#L39).
 
 ## Cone / cone search

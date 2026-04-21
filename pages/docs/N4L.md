@@ -103,7 +103,6 @@ usage: N4L [-v] [-d] [-s] [-u] [-force] [-wipe] [-adj "list"] file.n4l [...]
     The cleanest way to update a large, interlinked note set is `N4L -wipe -u *.n4l`.
     This wipes the database and reloads everything in one pass, which avoids
     fragmentation that accumulates when you delete and re-add chapters individually.
-    See [Removing notes](removeN4L.md) for the trade-offs.
 For example, to parse and validate a file of notes, one can simply type:
 <pre>
 $ N4L chinese.in

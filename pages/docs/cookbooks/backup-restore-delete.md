@@ -64,8 +64,7 @@ To delete a single [chapter](../concepts/glossary.md#chapter) without nuking the
 
 !!! warning "`-force` is required"
     Without `-force`, `removeN4L` exits immediately without doing anything. This is
-    intentional — deletion is irreversible. See [removeN4L.md](../removeN4L.md) for the
-    guard details.
+    intentional — deletion is irreversible.
 
 Behaviour:
 
@@ -89,7 +88,7 @@ SELECT DISTINCT Chap FROM Node ORDER BY Chap;
 
 !!! danger "Never run `pg_dump` during `N4L -u`"
     The bulk-load tables (`Node`, `PageMap`, `ArrowDirectory`,
-    `ArrowInverses`) are [`UNLOGGED` for the duration of an ingest](../Database/Performance.md#unlogged-logged-lifecycle).
+    `ArrowInverses`) are `UNLOGGED` for the duration of an ingest.
     A `pg_dump` taken mid-ingest captures a partial, inconsistent graph
     — and because UNLOGGED tables do not produce WAL, there is no
     transaction log you can recover the missing rows from. Dump only

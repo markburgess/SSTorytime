@@ -67,7 +67,7 @@ The `%%` is a wildcard name — match anything whose context includes `smalltalk
 ./src/bin/searchN4L "\\notes brain \\page 2"
 ```
 
-Output is a reflowed rendering of the chapter's `PageMap` rows. See [notes.md](../notes.md#pagination-semantics) for pagination behaviour. The standalone `notes` CLI is equivalent:
+Output is a reflowed rendering of the chapter's `PageMap` rows. The standalone `notes` CLI is equivalent:
 
 ```bash
 ./src/bin/notes -page 2 brain
@@ -143,7 +143,7 @@ A [NodePtr](../concepts/glossary.md#nodeptr) is a tuple `(Class, CPtr)` where `C
  11. (-2) is an emphatic proto-concept in -> is emph in
 ```
 
-The columns are `ArrPtr`, `(STtype)`, `short -> long`. STtype codes are explained in [graph_report.md](../graph_report.md#st-type-codes).
+The columns are `ArrPtr`, `(STtype)`, `short -> long`.
 
 ## 10. Accented/unaccented search with `"(parenthesized)"`
 
@@ -169,10 +169,9 @@ Or the dedicated CLI for richer analysis:
 ./src/bin/graph_report -chapter brain -sttype L,C -depth 6
 ```
 
-The `graph_report` tool reports loops, sources, sinks, supernodes, and eigenvector centrality — more expensive than `\\stats` but also more informative. See [graph_report.md](../graph_report.md) for the full interpretation.
+The `graph_report` tool reports loops, sources, sinks, supernodes, and eigenvector centrality — more expensive than `\\stats` but also more informative.
 
 ## Where to go next
 
 - The full command reference lives at [searchN4L.md#the-query-dsl](../searchN4L.md#the-query-dsl).
 - For path-specific work, `pathsolve` is the dedicated tool — see [pathsolve.md](../pathsolve.md).
-- Every recipe above also works through the HTTPS API at `:8443/searchN4L` — see [WebAPI.md](../WebAPI.md).

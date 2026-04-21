@@ -717,22 +717,6 @@ func AddArrowClosure(sequence []string,result string) {
 
 //**************************************************************
 
-func SummarizeAndTestConfig() {
-
-	Box("Raw Summary")
-	fmt.Println("..\n")
-	fmt.Println("ANNOTATION MARKS", ANNOTATION)
-	fmt.Println("..\n")
-	fmt.Println("DIRECTORY", SST.ARROW_DIRECTORY)
-	fmt.Println("..\n")
-	fmt.Println("SHORT",SST.ARROW_SHORT_DIR)
-	fmt.Println("..\n")
-	fmt.Println("LONG",SST.ARROW_LONG_DIR)
-	fmt.Println("\nTEXT\n\n",SST.NODE_DIRECTORY)
-}
-
-//**************************************************************
-
 func CompleteInferences(sst SST.PoSST) {
 
 	Box("Completing node inferences and cliques.....")

@@ -78,7 +78,7 @@ func GetDBNodePtrMatchingNCCS(sst PoSST,nm,chap string,cn []string,arrow []Arrow
 	nm = SQLEscape(nm)
 	chap = SQLEscape(chap)
 
-	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L ASC,(CARDINALITY(Ie3)+CARDINALITY(Im3)+CARDINALITY(Il1)) DESC LIMIT %d",NodeWhereString(nm,chap,cn,arrow,seq),limit)
+	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L ASC,(CARDINALITY(Ie3)+CARDINALITY(Im3)+CARDINALITY(Il1)) DESC LIMIT %d",NodeWhereString(sst,nm,chap,cn,arrow,seq),limit)
 
 	row, err := sst.DB.Query(qstr)
 
@@ -105,7 +105,7 @@ func GetDBNodePtrMatchingNCCS(sst PoSST,nm,chap string,cn []string,arrow []Arrow
 
 // **************************************************************************
 
-func NodeWhereString(name,chap string,context []string,arrow []ArrowPtr,seq bool) string {
+func NodeWhereString(sst PoSST,name,chap string,context []string,arrow []ArrowPtr,seq bool) string {
 
 	var chap_col, nm_col string
 	var ctx_col string
@@ -180,7 +180,7 @@ func NodeWhereString(name,chap string,context []string,arrow []ArrowPtr,seq bool
 	ctx_col = FormatSQLStringArray(cn_stripped)
 
 	arrows := FormatSQLIntArray(Arrow2Int(arrow))
-	sttypes := FormatSQLIntArray(GetSTtypesFromArrows(arrow))
+	sttypes := FormatSQLIntArray(GetSTtypesFromArrows(sst,arrow))
 
 	dbcols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
 
@@ -309,7 +309,7 @@ func GetDBContextByPtr(sst PoSST,ptr ContextPtr) (string,ContextPtr) {
 
 // **************************************************************************
 
-func GetSTtypesFromArrows(arrows []ArrowPtr) []int {
+func GetSTtypesFromArrows(sst PoSST,arrows []ArrowPtr) []int {
 
 	var sttypes []int
 

@@ -1,199 +1,226 @@
+# Thinking in arrows
 
-# How to use arrows
+![A 2x2 pen-and-ink grid showing the four arrow personalities — near as mirror twins, leads to as a runner mid-stride, contains as a parent's embrace, expresses as an open mouth mid-word.](figs/four_arrows.jpg){ align=center }
 
-Getting to grips with notes can feel like a challenge, so don't try to do too much.
-It's a simple knowledge management lesson: start with fundamentals and turn them into habits,
-then you can build on that.
-The important thing is to write things down quickly, before you forget or lose the will.
-So it's better to write this:
-<pre>
+> **The shape of the connection is half of what you know. N4L asks you to pick the
+> shape — from a small catalogue — every time you write a relationship down.**
 
-  I saw three ships (blah) it's a song we used to sing
-        "           (something) primary school song
-        "           (tbd) get the lyrics 
-</pre>
-than to stop and try to write a perfect documentation, with correct labels.
-Later, when you look at it again, you can start changing "blah", "something", and "tbd"
-into more useful arrow names that will mean something when you want to search for them later.
+Most notes apps let you write arbitrary text between things and call that
+a link. SSTorytime asks for a little more: when you connect two things,
+say what *kind* of connection it is. That choice — same target, same
+source, four flavours — is what lets the graph walk sensibly across
+your notes later, instead of tripping over every string it sees.
 
-For example, later when you are calm, you might want to change this to something like this:
-<pre>
-  I saw three ships (note) it's a song we used to sing
-        "           (first heard) in primary school
-        "           (wiki) "https://en.wikipedia.org/wiki/I_Saw_Three_Ships"
-        "           (has lyrics) "I saw three ships come sailing in
-On Christmas day, on Christmas day
-I saw three ships come sailing in
-On Christmas day in the morning
-And what was in those ships, all three
-On Christmas day, on Christmas day?
-And what was in those ships, all three
-On Christmas day in the morning?
-..."
+There are only four flavours. The rest of this page is one short
+section on each, then a note about where they come from (you don't
+invent them; the project ships a catalogue and you pick).
 
-</pre>
-To do that, you would have to define the arrows in parentheses. But you can also 
-get quite far with just a few that are already defined.
+---
 
-## Starting with a few ...
+## Four kinds of arrow
 
-![A 2x2 grid illustrating the four arrow personalities — NEAR as mirror twins, LEADSTO as a runner mid-stride, CONTAINS as a parent's embrace, EXPRESSES as an open mouth mid-word.](figs/four_arrows.jpg){ align=center }
+Everything you write in N4L falls into one of four shapes. When you
+find yourself reaching for a new arrow, ask which shape it is and
+you will usually already know which short-name to pick.
 
-Try starting with these basic arrows:
+### Near — "these belong beside each other"
 
-* `(then)` - a LEADSTO arrow. You can always join up subsequent events `a (then) b (then) c` etc.
-Even if this isn't very specific, you will understand what it means, and you can always go back and change it.
+Two things that are alike, adjacent, or easily confused. Not one
+leading to the other, not one containing the other — just side by
+side. Aliases, synonyms, things-you-often-see-together, two names for
+the same thing.
 
-* `(contains)` - a CONTAINS arrows, pretty obvious, though not as common as we might think.
-
-* `(see)` - a NEAR of SIMILAR arrow, useful for just adding a kind of footnote.
-
-Then the most common kind of arrow is EXPRESS PROPERTY, so we add a few that are in common
-usage:
-
-* `(e.g.)` - for example, add an example of the thing before the arrow
-* `(note)` - add a note about the thing before the arrow
-* `(tbd)` - "to be discussed/decided" no idea how to label this, will come back to it! 
-
-??? example "In code: 4 conceptual types, 7 storage channels"
-    When you write `(then)` or `(contains)` in N4L, the compiler classifies the
-    arrow into one of **4 conceptual types** — `NEAR`, `LEADSTO`, `CONTAINS`, or
-    `EXPRESS` — defined as integer constants in
-    [`pkg/SSTorytime/globals.go:23-26`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/globals.go#L23-L26).
-
-    The database, however, stores **7 signed channels** per node: `NEAR` is
-    symmetric (1 channel), and each directional type (`LEADSTO`, `CONTAINS`,
-    `EXPRESS`) exists in forward (`+`) and backward (`-`) form, giving
-    3 × 2 + 1 = 7. Each channel is a `Link[]` column on the `Node` table:
-
-    | Column | Constant | Meaning |
-    |---|---|---|
-    | `Im3` | `-EXPRESS` | expressed-by (inverse of EXPRESS) |
-    | `Im2` | `-CONTAINS` | part-of (inverse of CONTAINS) |
-    | `Im1` | `-LEADSTO` | arriving-from (inverse of LEADSTO) |
-    | `In0` | `NEAR` | symmetric similarity |
-    | `Il1` | `+LEADSTO` | leads-to |
-    | `Ic2` | `+CONTAINS` | contains |
-    | `Ie3` | `+EXPRESS` | expresses |
-
-    The offset `ST_ZERO = 3` ([`globals.go:33`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/globals.go#L33))
-    lets library code index `Node.I[]` via `I[ST_ZERO + STtype]` regardless of sign.
-    The mapping between STtype values and column names lives in
-    [`STtype.go:82-109`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/STtype.go#L82-L109)
-    as `STTypeDBChannel`.
-
-### 4 types, 7 channels — visually
-
-```mermaid
-graph TB
-    subgraph types["4 conceptual types"]
-        NEAR["NEAR<br/>similarity · symmetric"]
-        LEADSTO["LEADSTO<br/>causal / sequential"]
-        CONTAINS["CONTAINS<br/>membership / composition"]
-        EXPRESS["EXPRESSES<br/>property / attribute"]
-    end
-
-    subgraph channels["7 storage channels (Node.Im3..Ie3)"]
-        direction LR
-        Im3["Im3<br/>-EXPRESS"]
-        Im2["Im2<br/>-CONTAINS"]
-        Im1["Im1<br/>-LEADSTO"]
-        In0["In0<br/>NEAR"]
-        Il1["Il1<br/>+LEADSTO"]
-        Ic2["Ic2<br/>+CONTAINS"]
-        Ie3["Ie3<br/>+EXPRESS"]
-    end
-
-    NEAR --> In0
-    LEADSTO --> Il1
-    LEADSTO -.-> Im1
-    CONTAINS --> Ic2
-    CONTAINS -.-> Im2
-    EXPRESS --> Ie3
-    EXPRESS -.-> Im3
+```n4l
+ hokey cokey (see also) hokey pokey
+ sense-making (same as) sense making
+ Bīngxiāng   (sl)       Wéibōlú   // sounds like
 ```
 
-Solid arrows = forward direction; dotted = backward (inverse) direction.
-`NEAR` has no inverse because it's symmetric.
+Reach for `near` when you want to say *"if you're thinking about one,
+think about the other."* In the reading list, two books about
+`decision making` don't need a direct `near` arrow — they're already
+connected through the shared topic. But if you had two slightly
+different names for the same book, `(=)` or `(also called)` would be
+the right arrow.
 
-This is enough. Now make notes!
+### Leads to — "first this, then that"
 
-<pre>
+One thing follows from another. Sequence. Cause and effect. What
+happened next. Who replied to whom.
 
--some notes
+```n4l
+ first draft   (then)    peer review
+ peer review   (leads to) revision
+ revision      (then)    publication
+```
 
-  # basic sequence
+`leads to` is how you write down stories, processes, decision trails.
+If you find yourself narrating events in order — *first X, then Y,
+then Z* — every arrow between them is a `leads to` arrow. N4L has a
+shortcut for long chains of these: put them inside a `_sequence_`
+context and consecutive lines auto-link with `(then)`.
 
-  You put your left leg in (then) you put your left leg out (then) you do the hokey cokey and you turn about
+### Contains — "this is part of that"
 
-  # We can add a note
+Whole-and-part. Membership. One thing sits inside another. The book
+contains the chapter; the chapter contains the paragraph; the
+paragraph contains the quote. Or: the team contains the person; the
+team is part of the company.
 
-  $PREV.3 (note) In the US, they say hokey pokey, not hokey cokey
+```n4l
+ human brain (consists of) forebrain
+    "        (consists of) midbrain
+    "        (consists of) hindbrain
 
-  :: instructions , destructions ::
+ neocortex   (has-pt)   modular repeating columns in 6 layers
+ column      (pt-of)    neocortex
+```
 
+Reach for `contains` when the question *"is X inside Y?"* has a
+sensible answer. Chapters contain notes. Topics contain subtopics.
+Courses contain lectures. Anything you'd draw as boxes-inside-boxes
+is a `contains` arrow.
 
-  +:: _sequence_ ::   # short cut to using (then)
-  
-You put ONE HAND in    (e.g.) like Napoleon
-One hand out           (e.g.) like Oliver Twist
-In, out, in out, shake it all about
-You do the Hokey Cokey
-And you turn around
-That’s what it’s all about.
+### Expresses — "this has that property"
 
-Whoa-o the Hokey Cokey [1st]  (note) how does this change in America? Nothing to do with Cola.
-Whoa-o the Hokey Cokey [2nd]
-Whoa-o the Hokey Cokey [3rd]
-Knees bend, arms stretch rah, rah, rah!  (tbd) this is a kind of yoga for hokey people
+Attributes. Descriptions. What something is called, what it's about,
+who made it, what note you stuck on it. The most common arrow type
+by a wide margin, because most of what you write about things are
+properties *of* things.
 
-  -:: _sequence_ ::  # end auto (then)
+```n4l
+ Thinking Fast and Slow   (about)    decision making
+        "                 (by)       Daniel Kahneman
+        "                 (bib-cite) Judgment under Uncertainty
+        "                 (note)     two systems, one of them lazy, both of them you
+```
 
-Hokey Cokey (see also) Hokey Pokey
+Reach for `expresses` when you're describing a thing rather than
+connecting it to another thing. `(about)`, `(by)`, `(note)`,
+`(e.g.)`, `(i.e.)`, `(NB)`, `(description)`, `(has title)` — all
+`expresses`. The family is large because *properties* is where
+notes spend most of their time.
 
-</pre>
+---
 
-Then searching try it:
+## Where arrows come from
 
-<pre>
-\notes "some notes"
-</pre>
+The four shapes are fixed. The individual short-names — `(about)`,
+`(by)`, `(bib-cite)`, `(then)`, `(consists of)` and so on — are
+**declared** in a set of files that ships with the project. You
+don't invent arrow names at write time; you pick from the
+catalogue.
 
-## Editing your own arrows
+This matters because of what happens when you type `(frobulates)`
+into an N4L file that doesn't know about it: the ingest refuses the
+arrow, because it doesn't know which of the four shapes you meant.
+Better to look at the catalogue and find one that fits — usually one
+does.
 
-To create new arrows, you go to the `SST-config/` sub-directory, either in your current directory
-or the one above it. Each type of arrow has its own file. You can add as many lines as you like
-in the form:
+The catalogue lives under `SSTconfig/`:
 
-<pre>
- +  forward arrow meaning (short name) - backward arrow meaning (bwd alias)
-</pre>
+```
+SSTconfig/arrows-NR-0.sst   # near / similarity arrows
+SSTconfig/arrows-LT-1.sst   # leads to / causal arrows
+SSTconfig/arrows-CN-2.sst   # contains / membership arrows
+SSTconfig/arrows-EP-3.sst   # expresses / property arrows
+```
 
-## Advanced arrow features
+Open any of them in a text editor. You'll find entries like:
 
-The `N4L` compiler can reduce the pain of adding arrows where there are small clusters of
-arrows that form cliques.
+```
+ + has author (by) - is the author of (author-of)
+ + is about topic/them (about) - is the topic/theme of (theme-of)
+ + has bibtex citation (bib-cite) - is a bibtex citation label for (bibtex-for)
+```
 
-* `NEAR/SIMILAR` arrows (which do not start with ! in their short name) are completed.
-If A is NEAR B and B is NEAR C, then A is NEAR C, as long as the arrow is not a negative.
-This is computed and completed without further ado.
+The short name in parentheses is what you type in N4L. The long
+form on each side is how the graph reads it back to you — first
+forward (what you wrote), then backward (what the other node
+sees). So when you write `Thinking Fast and Slow (about) decision
+making`, a query on `decision making` reports *"is the topic/theme
+of Thinking Fast and Slow."* Same fact, other direction.
 
-* Arrows forming polygon sequences can be closed automatically from end to start, e.g.
-the path sequence in `chinese.n4l` from Pinyin to Hanzi to English
-<pre>
- qǐng (ph) 请 (he) please
-</pre>
-also needs an arrow `please (ep) qǐng`, but this is a pain to add manually.
-By defining a rule in `SSTconfig/closures.sst`, this can be made automatically, by adding rules
-to complete sequences of the relevant arrows:
-<pre>
-- closures
+!!! tip "Fifty-plus arrows ship by default"
+    You rarely need to add new ones. Skim the catalogue once and
+    you'll recognise the right arrow for almost anything you want to
+    say. The reading list in the tutorial uses four — `(about)`,
+    `(by)`, `(bib-cite)`, `(note)` — and those four carry most of
+    what you'd want to note about a book.
 
- (ph) + (he) => (ep)
- (eh) + (hp) => (pe)
- (he) + (ep) => (ph)
- (pe) + (eh) => (hp)
+---
 
-</pre>
+## Adding a new arrow
 
+If the catalogue really is missing a concept you need, add it. Pick
+the file for the shape your new arrow belongs to, add one line, and
+it becomes available to every N4L file.
 
+For example, to add `has ISBN` as an `expresses` arrow, open
+`SSTconfig/arrows-EP-3.sst` and add a line in the right section:
+
+```
+ + has ISBN  (isbn)  - is the ISBN of  (isbn-of)
+```
+
+Now `book (isbn) "978-0-374-27563-1"` parses without complaint, and
+a query on the ISBN string reports *"is the ISBN of book."*
+
+Two small habits that pay off later:
+
+1. **Keep tense consistent.** Use present tense on both sides.
+   *"has author"* / *"is the author of"*, not *"had an author"* /
+   *"is the author of"*.
+2. **Pick short names you'll remember.** `(by)` reads well; `(ap5)`
+   doesn't. The short name is what you'll type a hundred times.
+
+---
+
+## A few habits worth picking up
+
+**Start rough.** When you don't know the right arrow, write `(tbd)`
+or `(note)` and come back later. Getting the note down matters more
+than finding the perfect label.
+
+**Pick the shape, then pick the name.** If you can answer *"is this
+a near / leads to / contains / expresses kind of thing?"* the
+catalogue's four files narrow themselves down immediately.
+
+**Re-use arrows across files.** If you already write `(about)` for
+topics of books, use the same arrow for topics of papers, topics of
+meetings, topics of anything. A query on the topic then pulls all
+of them together.
+
+---
+
+## Where to go next
+
+<div class="grid cards" markdown>
+
+-   :material-pencil:{ .lg .middle } **Write more**
+
+    ---
+
+    Chapters, contexts, sequences, ditto marks — the rest of what
+    N4L gives you for shaping notes.
+
+    [:octicons-arrow-right-24: Writing N4L by hand](N4L.md)
+
+-   :material-magnify:{ .lg .middle } **Ask questions**
+
+    ---
+
+    Now that you've got arrows, how do you query across them?
+
+    [:octicons-arrow-right-24: Finding things](searchN4L.md)
+
+-   :material-lightbulb-on:{ .lg .middle } **Understand why**
+
+    ---
+
+    Why four, why these four, and what they buy you over a free-form
+    graph.
+
+    [:octicons-arrow-right-24: Semantic spacetime in plain English](concepts/why-semantic-spacetime.md)
+
+</div>

@@ -329,7 +329,7 @@ func GetDBNodeByNodePtr(sst PoSST,db_nptr NodePtr) Node {
 	im_nptr,cached := NODE_CACHE[db_nptr]
 
 	if cached {
-		return GetMemoryNodeFromPtr(im_nptr)
+		return GetMemoryNodeFromPtr(sst,im_nptr)
 	}
 
 	// This ony works if we insert non-null arrays like '[]' during initialization
@@ -375,7 +375,7 @@ func GetDBNodeByNodePtr(sst PoSST,db_nptr NodePtr) Node {
 		row.Close()
 
 		if !cached {
-			CacheNode(n)
+			CacheNode(sst,n)
 		}
 	}
 

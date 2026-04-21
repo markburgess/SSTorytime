@@ -206,15 +206,15 @@ func main() {
 	// Outputs
 
 	if SUMMARIZE {
-		SummarizeGraph()
+		SummarizeGraph(sst)
 	}
 
 	if CREATE_ADJACENCY {
-		dim, key, d_adj, u_adj := CreateAdjacencyMatrix(ADJ_LIST)
-		PrintMatrix("directed adjacency sub-matrix",dim,key,d_adj)
-		PrintMatrix("undirected adjacency sub-matrix",dim,key,u_adj)
+		dim, key, d_adj, u_adj := CreateAdjacencyMatrix(sst,ADJ_LIST)
+		PrintMatrix(sst,"directed adjacency sub-matrix",dim,key,d_adj)
+		PrintMatrix(sst,"undirected adjacency sub-matrix",dim,key,u_adj)
 		evc := ComputeEVC(dim,u_adj)
-		PrintNZVector("Eigenvector centrality (EVC) score for symmetrized graph",dim,key,evc)
+		PrintNZVector(sst,"Eigenvector centrality (EVC) score for symmetrized graph",dim,key,evc)
 	}
 
 	if UPLOAD {
@@ -823,8 +823,8 @@ func CompleteCloseness(sst SST.PoSST,node SST.Node) {
 					var link SST.Link
 					link.Arr = arrow
 
-					t1 := SST.GetNodeTxtFromPtr(neighbours[n])
-					t2 := SST.GetNodeTxtFromPtr(neighbours[o])
+					t1 := SST.GetNodeTxtFromPtr(sst,neighbours[n])
+					t2 := SST.GetNodeTxtFromPtr(sst,neighbours[o])
 					arrname := SST.ARROW_DIRECTORY[arrow].Short
 
 					// NOTs are not close
@@ -846,13 +846,13 @@ func CompleteSequences(sst SST.PoSST,node SST.Node) {
 
 	for _,cl := range ARROW_CLOSURES {
 
-		nptr,found := GetNodePointedTo(node,cl.Sequence)
+		nptr,found := GetNodePointedTo(sst,node,cl.Sequence)
 
 		if found {
 			// Link nptr to node.NPtr with cl.Result arrow
 
 			t2 := node.S
-			t1 := SST.GetNodeTxtFromPtr(nptr)
+			t1 := SST.GetNodeTxtFromPtr(sst,nptr)
 
 			var link SST.Link
 			link.Arr = cl.Result
@@ -867,7 +867,7 @@ func CompleteSequences(sst SST.PoSST,node SST.Node) {
 
 //**************************************************************
 
-func SummarizeGraph() {
+func SummarizeGraph(sst SST.PoSST) {
 
 	Box("Summarizing Graph.....\n")
 
@@ -880,32 +880,32 @@ func SummarizeGraph() {
 		case SST.N1GRAM:
 			for n,org := range SST.NODE_DIRECTORY.N1directory {
 				count_nodes++
-				PrintNodeSystem(n,org,&count_links)
+				PrintNodeSystem(sst,n,org,&count_links)
 			}
 		case SST.N2GRAM:
 			for n,org := range SST.NODE_DIRECTORY.N2directory {
 				count_nodes++
-				PrintNodeSystem(n,org,&count_links)
+				PrintNodeSystem(sst,n,org,&count_links)
 			}
 		case SST.N3GRAM:
 			for n,org := range SST.NODE_DIRECTORY.N3directory {
 				count_nodes++
-				PrintNodeSystem(n,org,&count_links)
+				PrintNodeSystem(sst,n,org,&count_links)
 			}
 		case SST.LT128:
 			for n,org := range SST.NODE_DIRECTORY.LT128 {
 				count_nodes++
-				PrintNodeSystem(n,org,&count_links)
+				PrintNodeSystem(sst,n,org,&count_links)
 			}
 		case SST.LT1024:
 			for n,org := range SST.NODE_DIRECTORY.LT1024 {
 				count_nodes++
-				PrintNodeSystem(n,org,&count_links)
+				PrintNodeSystem(sst,n,org,&count_links)
 			}
 		case SST.GT1024:
 			for n,org := range SST.NODE_DIRECTORY.GT1024 {
 				count_nodes++
-				PrintNodeSystem(n,org,&count_links)
+				PrintNodeSystem(sst,n,org,&count_links)
 			}
 		}
 	}
@@ -927,7 +927,7 @@ func SummarizeGraph() {
 
 //**************************************************************
 
-func CreateAdjacencyMatrix(searchlist string) (int,[]SST.NodePtr,[][]float32,[][]float32) {
+func CreateAdjacencyMatrix(sst SST.PoSST,searchlist string) (int,[]SST.NodePtr,[][]float32,[][]float32) {
 
 	search_list := ValidateLinkArgs(searchlist)
 
@@ -938,7 +938,7 @@ func CreateAdjacencyMatrix(searchlist string) (int,[]SST.NodePtr,[][]float32,[][
 	dim := len(filtered_node_list)
 
 	for f := 0; f < len(filtered_node_list); f++ {
-		Verbose("    - row/col key [",f,"/",dim,"]",SST.GetNodeTxtFromPtr(filtered_node_list[f]))
+		Verbose("    - row/col key [",f,"/",dim,"]",SST.GetNodeTxtFromPtr(sst,filtered_node_list[f]))
 	}
 
 	var subadj_matrix [][]float32 = make([][]float32,dim)
@@ -971,7 +971,7 @@ func CreateAdjacencyMatrix(searchlist string) (int,[]SST.NodePtr,[][]float32,[][
 
 //**************************************************************
 
-func PrintMatrix(name string, dim int, key []SST.NodePtr, matrix [][]float32) {
+func PrintMatrix(sst SST.PoSST,name string, dim int, key []SST.NodePtr, matrix [][]float32) {
 
 
 	s := fmt.Sprintln("\n",name,"...\n")
@@ -979,7 +979,7 @@ func PrintMatrix(name string, dim int, key []SST.NodePtr, matrix [][]float32) {
 
 	for row := 0; row < dim; row++ {
 
-		s = fmt.Sprintf("%20.15s ..\r\t\t\t(",SST.GetNodeTxtFromPtr(key[row]))
+		s = fmt.Sprintf("%20.15s ..\r\t\t\t(",SST.GetNodeTxtFromPtr(sst,key[row]))
 
 		for col := 0; col < dim; col++ {
 
@@ -1000,7 +1000,7 @@ func PrintMatrix(name string, dim int, key []SST.NodePtr, matrix [][]float32) {
 
 //**************************************************************
 
-func PrintNZVector(name string, dim int, key []SST.NodePtr, vector[]float32) {
+func PrintNZVector(sst SST.PoSST,name string, dim int, key []SST.NodePtr, vector[]float32) {
 
 	s := fmt.Sprintln("\n",name,"...\n")
 
@@ -1014,7 +1014,7 @@ func PrintNZVector(name string, dim int, key []SST.NodePtr, vector[]float32) {
 	var vec []KV = make([]KV,dim)
 
 	for row := 0; row < dim; row++ {
-		vec[row].Key = SST.GetNodeTxtFromPtr(key[row])
+		vec[row].Key = SST.GetNodeTxtFromPtr(sst,key[row])
 		vec[row].Value = vector[row]
 	}
 
@@ -2404,7 +2404,7 @@ func GetMemChapters() []string {
 
 //**************************************************************
 
-func GetNodePointedTo(node SST.Node,sequence []SST.ArrowPtr) (SST.NodePtr,bool) {
+func GetNodePointedTo(sst SST.PoSST,node SST.Node,sequence []SST.ArrowPtr) (SST.NodePtr,bool) {
 
 	for _,s_arr := range sequence {
 
@@ -2415,7 +2415,7 @@ func GetNodePointedTo(node SST.Node,sequence []SST.ArrowPtr) (SST.NodePtr,bool) 
 		for _,lnk := range node.I[stindex] {
 			if lnk.Arr == s_arr {
 				found = true
-				node = SST.GetMemoryNodeFromPtr(lnk.Dst)
+				node = SST.GetMemoryNodeFromPtr(sst,lnk.Dst)
 			}
 		}
 
@@ -2687,14 +2687,14 @@ func StripParen(token string) string {
 // Tools
 //**************************************************************
 
-func PrintNodeSystem(n int,org SST.Node, count_links *[4]int) {
+func PrintNodeSystem(sst SST.PoSST,n int,org SST.Node, count_links *[4]int) {
 
 	fmt.Println(n,"\t",org.S)
 
 	for sttype := range org.I {
 		for lnk := range org.I[sttype] {
 			count_links[FlatSTType(sttype)]++
-			PrintLink(org.I[sttype][lnk])
+			PrintLink(sst,org.I[sttype][lnk])
 		}
 	}
 	fmt.Println()
@@ -2702,9 +2702,9 @@ func PrintNodeSystem(n int,org SST.Node, count_links *[4]int) {
 
 //**************************************************************
 
-func PrintLink(l SST.Link) {
+func PrintLink(sst SST.PoSST,l SST.Link) {
 
-	to := SST.GetNodeTxtFromPtr(l.Dst)
+	to := SST.GetNodeTxtFromPtr(sst,l.Dst)
 	arrow := SST.ARROW_DIRECTORY[l.Arr]
 	Verbose("\t ... --(",arrow.Long,",",l.Wgt,")->",to,l.Ctx," \t . . .",SST.PrintSTAIndex(arrow.STAindex))
 }

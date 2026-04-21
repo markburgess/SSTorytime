@@ -22,7 +22,7 @@ var MUTEX sync.Mutex
 //  Node registration and memory management
 // **************************************************************************
 
-func GetNodeTxtFromPtr(frptr NodePtr) string {
+func GetNodeTxtFromPtr(sst PoSST,frptr NodePtr) string {
 
 	class := frptr.Class
 	index := frptr.CPtr
@@ -49,7 +49,7 @@ func GetNodeTxtFromPtr(frptr NodePtr) string {
 
 // **************************************************************************
 
-func GetMemoryNodeFromPtr(frptr NodePtr) Node {
+func GetMemoryNodeFromPtr(sst PoSST,frptr NodePtr) Node {
 
 	class := frptr.Class
 	index := frptr.CPtr
@@ -76,7 +76,7 @@ func GetMemoryNodeFromPtr(frptr NodePtr) Node {
 
 // **************************************************************************
 
-func CacheNode(n Node) {
+func CacheNode(sst PoSST,n Node) {
 
 	_,already := NODE_CACHE[n.NPtr]
 

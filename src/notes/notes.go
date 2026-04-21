@@ -50,8 +50,7 @@ func Usage() {
 
 	fmt.Printf("usage: Notes [chapter or section]\n")
 	flag.PrintDefaults()
-
-	os.Exit(2)
+	os.Exit(0)
 }
 
 //**************************************************************

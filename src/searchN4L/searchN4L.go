@@ -131,8 +131,7 @@ func Usage() {
 	fmt.Println("searchN4L <b5|a2> distance 10")
 
 	flag.PrintDefaults()
-
-	os.Exit(2)
+	os.Exit(0)
 }
 
 //**************************************************************

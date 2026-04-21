@@ -16,13 +16,29 @@ OUT="test_output"
 
 rm -f test_outputs/*
 
+
+echo ""
+echo "Testing build artifacts"
+echo ""
+
+
+BINARIES="N4L searchN4L notes pathsolve graph_report API_EXAMPLE_1  API_EXAMPLE_2 API_EXAMPLE_3 API_EXAMPLE_4"
+
+for prog in $BINARIES; do
+   if ../src/bin/$prog -h > /dev/null 2>&1; then 
+       echo -e "Testing $prog ${GREEN} ok ${END}"
+   else 
+       echo -e "Testing $prog ${RED} NOT ok ${END}"
+   fi
+done
+
 #
 #  Name tests to pass pass_1.in etc - the output matters here
 #  Name tests to fail fail_1.in etc - the error message matters here
 #
 
 echo ""
-echo "Testing standalone version"
+echo "Testing N4L syntax"
 echo ""
 
 for f in pass_*.in; do

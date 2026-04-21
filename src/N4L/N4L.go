@@ -2761,7 +2761,7 @@ func Usage() {
 
 	fmt.Printf("usage: N4L [-v] [-u] [-s] [file].dat\n")
 	flag.PrintDefaults()
-	os.Exit(2)
+	os.Exit(0)
 }
 
 //**************************************************************

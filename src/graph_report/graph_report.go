@@ -49,8 +49,7 @@ func Usage() {
 
 	fmt.Printf("usage: graph_report [-sttype comma separated L,C,P,N] [-depth integer] [-chapter comma separated string] [context]\n")
 	flag.PrintDefaults()
-
-	os.Exit(2)
+	os.Exit(0)
 }
 
 //**************************************************************

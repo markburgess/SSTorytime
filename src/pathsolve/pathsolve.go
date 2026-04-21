@@ -46,8 +46,7 @@ func Usage() {
 
 	fmt.Printf("usage: PathSolve [-v] -begin <string> -end <string> [-chapter string] subject [context]\n")
 	flag.PrintDefaults()
-
-	os.Exit(2)
+	os.Exit(0)
 }
 
 //**************************************************************

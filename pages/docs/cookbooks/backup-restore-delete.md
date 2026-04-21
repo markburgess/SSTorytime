@@ -1,28 +1,32 @@
-# Backup, restore, chapter deletion
+# Backing up and restoring
 
-The SSTorytime graph is a projection of your N4L source files. That framing — **N4L is the source of truth, PostgreSQL is a fast cache** — makes backup and disaster recovery almost trivial, and shapes every tradeoff discussed here.
+> **Your N4L files are the backup. The database is a cache you can rebuild from
+> them in seconds.** This page makes that framing concrete — what to keep, what
+> to throw away, and the one timing rule to remember if you reach for `pg_dump`.
 
-!!! info "Prerequisites"
-    - `src/bin/N4L`, `src/bin/removeN4L` compiled (`make` from repo root).
-    - A PostgreSQL client (`psql`, `pg_dump`) in `$PATH`.
-    - A location to store backups (filesystem directory or version-control remote).
+The graph you query is a projection of the `.n4l` files you wrote. If the
+database goes away, the text files on disk are enough to put it back. That
+shapes every decision below.
 
-## Backup strategy: version-control your N4L
+---
 
-The recommended backup strategy is:
+## The shape of a backup
+
+A folder of notes under version control:
 
 ```
 your-notes/
 ├── .git/
-├── brain.n4l
-├── chinese.n4l
-├── reminders.n4l
+├── reading-list.n4l
+├── decisions.n4l
+├── meetings.n4l
 └── README.md
 ```
 
-Keep your `.n4l` files in a git repository. Every edit is a commit. Every commit is a backup. Every diff is a meaningful history of how your thinking evolved.
+Every edit is a commit. Every commit is a backup. Every diff is a readable
+record of how your thinking changed.
 
-```bash
+```
 cd your-notes
 git init
 git add *.n4l README.md
@@ -31,190 +35,145 @@ git remote add origin git@github.com:you/your-notes.git
 git push -u origin main
 ```
 
-This handles the **90% case**: if your laptop dies, you clone the repo and re-upload. No database snapshot required.
+If your laptop dies, you clone the repo on a new one, load the files, and
+you are back where you were. There is nothing else to restore.
 
-## Restore from N4L sources
+---
 
-Re-upload everything atomically:
+## Restoring from your sources
 
-```bash
-cd your-notes
-../src/bin/N4L -wipe -u *.n4l
+One command from the notes directory rebuilds the whole graph:
+
+```
+./src/bin/N4L -wipe -u *.n4l
 ```
 
-- `-wipe` drops and recreates all SSTorytime tables before loading.
-- `-u` triggers the upload.
-- Passing every `.n4l` file at once means cross-file references resolve consistently in a single pass.
+`-wipe` drops the SSTorytime tables before loading; `-u` is the upload.
+Passing every file at once means cross-file references resolve in one pass.
 
-On a laptop with a few thousand nodes this takes seconds. On a large corpus (book-sized) it can take minutes to an hour; the upload is dominated by PL/pgSQL stored-function calls per link.
+On a laptop with a few thousand nodes this takes seconds. On a book-sized
+corpus it can take several minutes — the ingest does a lot of per-link
+bookkeeping — but it is always a re-run, never a reconstruction.
 
-!!! tip "RAM-disk option for repeated wipes"
-    If you iterate frequently, set PostgreSQL to use a tmpfs for its data directory
-    (`contrib/ramify.sh`). The wipe-and-reload cycle becomes dramatically faster at the
-    cost of losing everything on reboot — which is fine, because your source of truth
-    is the git repo.
+---
 
-## Chapter-level removal
+## Removing one chapter
 
-To delete a single [chapter](../concepts/glossary.md#chapter) without nuking the whole graph:
+Sometimes you want to drop one chapter and re-ingest just that one, not the
+whole graph. The tool for that is `removeN4L`:
 
-```bash
-../src/bin/removeN4L -force "chapter name"
+```
+./src/bin/removeN4L -force "chapter name"
 ```
 
-!!! warning "`-force` is required"
-    Without `-force`, `removeN4L` exits immediately without doing anything. This is
-    intentional — deletion is irreversible.
+The `-force` flag is required. Without it, `removeN4L` exits without doing
+anything — deletion is irreversible and the tool refuses to guess.
 
-Behaviour:
+`removeN4L` takes out every node and link tagged with that chapter name.
+It leaves the arrow vocabulary alone — arrows you declared in that chapter
+may be used by other chapters, and the safe default is to keep them.
 
-- Calls the `DeleteChapter` PL/pgSQL stored procedure.
-- Removes all nodes, links, and `PageMap` rows whose `Chap` matches the string.
-- Does **not** touch the arrow directory or context directory, so arrows you defined inline in that chapter linger in `ArrowDirectory`. This is usually what you want (other chapters may reuse them), but it means "clean re-upload" is better achieved with `N4L -wipe -u`.
+To see what chapters exist before you delete one, query the graph itself:
 
-To list chapters before you delete:
-
-```bash
-../src/bin/searchN4L "\\chapter any"
+```
+./src/bin/searchN4L "\\chapter any"
 ```
 
-or in psql:
+---
 
-```sql
-SELECT DISTINCT Chap FROM Node ORDER BY Chap;
+## When a Postgres snapshot is the right tool
+
+For most people it isn't. Your N4L files already capture everything;
+`pg_dump` produces a bigger, more fragile artefact of the same information.
+
+There are two situations where a Postgres-level snapshot earns its keep:
+
+- **Before a risky experiment.** You want a fallback you can restore into a
+  scratch database while you try something drastic. Take the dump, do the
+  experiment, throw the dump away when you are happy with the result.
+- **On a machine without the Go toolchain.** Restoring a `pg_dump` does not
+  require `N4L` or a Go compiler; a plain PostgreSQL install is enough.
+
+The command is standard PostgreSQL:
+
 ```
-
-## Full-database snapshot with `pg_dump`
-
-!!! danger "Never run `pg_dump` during `N4L -u`"
-    The bulk-load tables (`Node`, `PageMap`, `ArrowDirectory`,
-    `ArrowInverses`) are `UNLOGGED` for the duration of an ingest.
-    A `pg_dump` taken mid-ingest captures a partial, inconsistent graph
-    — and because UNLOGGED tables do not produce WAL, there is no
-    transaction log you can recover the missing rows from. Dump only
-    when the database is in its `LOGGED` steady state: after `N4L -u`
-    has exited cleanly, or when you are certain no upload is in flight.
-    If you automate snapshots, gate them on an "ingest lock" your
-    operator owns, or on a timer that cannot overlap with your upload
-    window.
-
-When you want a point-in-time image of the whole graph — not just the sources — use PostgreSQL's native tooling:
-
-```bash
-# Compressed custom format, restorable with pg_restore
 pg_dump \
   --host=localhost \
   --username=sstoryline \
   --format=custom \
   --file=sstorytime-$(date +%Y%m%d).dump \
   sstoryline
-
-# Plain SQL, restorable with psql
-pg_dump \
-  --host=localhost \
-  --username=sstoryline \
-  --format=plain \
-  --file=sstorytime-$(date +%Y%m%d).sql \
-  sstoryline
 ```
 
-Restore:
+And restore:
 
-```bash
-# Custom format
-pg_restore --clean --if-exists --dbname=sstoryline sstorytime-20260420.dump
-
-# Plain SQL
-psql --username=sstoryline --dbname=sstoryline --file=sstorytime-20260420.sql
+```
+pg_restore --clean --if-exists --dbname=sstoryline sstorytime-YYYYMMDD.dump
 ```
 
-**Pros:**
+!!! danger "Never run `pg_dump` during an ingest"
+    While `N4L -u` is running, the bulk-load tables are held in an unlogged
+    state — fast to write to, invisible to the replication log. A `pg_dump`
+    taken at that moment captures a partial, inconsistent graph, and there
+    is no transaction log to recover the missing rows from. Only take a
+    snapshot after `N4L -u` has exited cleanly. If you automate snapshots,
+    gate them on a lock your operator owns, or on a timer that cannot
+    overlap with an upload.
 
-- Captures schema, data, indexes, and stored functions in one file.
-- Restore does not require running `N4L`, which is useful on machines that don't have the Go toolchain.
-- Binary-exact restore: node `NPtr`s are preserved.
+Relatedly: if PostgreSQL crashes or is killed during `N4L -u`, the bulk-load
+tables are lost. This sounds alarming and is not: your `.n4l` file is still
+on disk, and re-running `N4L -u` rebuilds what was lost. The unlogged state
+buys speed and trades it for the cheap-to-recover failure mode of
+*re-run the command*.
 
-**Cons:**
+---
 
-- Snapshot-size grows with graph size; can be many multiples of the N4L source.
-- Restores the exact state including any drift from your sources; if you have un-committed experiments in the DB you restore those too.
-- PostgreSQL version coupling — a dump from 17 may not load cleanly into 15.
-
-## Trade-offs: N4L sources vs DB snapshot
+## N4L files vs Postgres snapshots — what to reach for
 
 | Question | N4L sources in git | `pg_dump` snapshot |
 |---|---|---|
-| Human-readable? | Yes (plain text) | No (or verbose SQL) |
-| Diff-friendly? | Yes, line-level | No |
-| Captures manual DB edits? | No | Yes |
-| Captures index statistics? | No (rebuilt on upload) | Yes |
+| Human-readable? | Yes, plain text | No, or verbose SQL |
+| Diff-friendly? | Yes, line by line | No |
+| Captures hand-edited rows in the DB? | No | Yes |
 | Fast to restore on a fresh host? | Seconds to minutes | Seconds |
-| Cross-version safe? | Yes (text is text) | PostgreSQL-version-dependent |
-| Fits on a flash drive? | Yes (KB-MB) | Often MB-GB |
-| Preserves node `NPtr` addresses? | No (reassigned on upload) | Yes |
+| Travels across PostgreSQL versions? | Yes — text is text | Not always |
+| Fits on a flash drive? | Yes (KB–MB) | Often MB–GB |
 
-**Recommendation:** keep the N4L sources in version control as the primary backup. Take a `pg_dump` before large risky experiments (as a throwaway fallback), and delete those dumps when the experiment succeeds. Resist the urge to treat the dump as authoritative — as soon as you do, the sources drift and the abstraction leaks.
+The recommendation is simple: keep N4L sources in version control as the
+primary backup. Take a `pg_dump` only when you need the fallback for a
+specific experiment, and delete the dump when you don't. As soon as you
+start treating the dump as authoritative, the sources drift and the whole
+point of the abstraction leaks.
 
-!!! tip "`pg_basebackup` as a physical-backup alternative"
-    Operators running Postgres as a shared cluster (several application
-    databases on the same server) may prefer a physical base backup over
-    a per-database `pg_dump`. One `pg_basebackup -D /path/to/backup -X
-    stream -P` captures the entire cluster — including `sstoryline`,
-    other databases, roles, and WAL — in one image. This is the right
-    tool for site-wide disaster recovery; it is overkill for a laptop
-    that only hosts SSTorytime.
+---
 
-### `pg_restore -t` filters by **table**, not chapter
+## Corruption is not the same as loss
 
-A common misconception: `pg_restore --table=Node` or similar flags do
-**not** let you restore a single chapter. `-t/--table` selects a
-PostgreSQL table object (e.g. `Node`, `PageMap`) from the dump; there is
-no `pg_restore` equivalent to `removeN4L`'s per-chapter scoping. If you
-need a subset restore, the pattern is:
+The source-of-truth pattern protects against *loss* — a dead disk, a
+stray `-wipe`, a vanished laptop. Clone the repo, re-ingest, done.
 
-1. Restore the full dump into a scratch database
-   (`pg_restore --clean --if-exists -d sstoryline_scratch
-    sstorytime-YYYYMMDD.dump`).
-2. Use `removeN4L -force` or SQL (`DELETE FROM Node WHERE Chap = 'X'`)
-   in the scratch database to keep only what you want.
-3. `pg_dump` the scratch, then restore into production — or use `COPY`
-   to shuttle the desired rows.
+It does not protect against *corruption at the source*. If a `.n4l` file
+was edited with wrong facts six weeks ago and committed, re-ingesting
+reinstates the wrong facts. The defence there is the one you would use
+for code: review the commits, keep the history, know how to run `git
+blame` and `git bisect` on your notes the way you would on source.
 
-There is no "restore chapter X as-of last Tuesday" workflow built in.
-That property, if you need it, lives in your N4L git history.
+This is also why SSTorytime does not ship a point-in-time-recovery story
+against the database. "The moment I want to roll back to" belongs in
+your N4L git history, not in the Postgres write-ahead log.
 
-### Corruption vs data loss — the distinction that matters
+---
 
-The N4L-as-source-of-truth pattern protects against **data loss**
-(host fails, disk dies, you ran `N4L -wipe -u` unintentionally): you
-clone the repo, re-upload, done. It does **not** protect against
-**corruption at the source** — if one of your `.n4l` files got
-poisoned with wrong facts and committed six weeks ago, re-uploading
-re-introduces the poison. The only defence is the history in the
-`.n4l` repository itself (`git log -p`, `git bisect`, peer review of
-edits). Treat N4L sources the way you treat application code: review
-changes, keep history, know how to blame.
+## Checklist for after a disaster
 
-Relatedly: **SSTorytime does not support point-in-time recovery (PITR)**
-in the sense of continuous WAL-archiving-plus-restore-to-a-moment.
-The database is a derived artefact. The "recovery point" concept
-belongs in your N4L source repo's commit history, not in Postgres WAL.
-Do not set up `archive_command` expecting cross-`wipe -u` replay to
-work — `N4L -wipe` drops and recreates the tables, which is not a
-traditional transactional rollback.
+1. Install PostgreSQL and start it.
+2. Create the role and database (`make db` from the repo root is the
+   shortcut if you have the code checked out).
+3. Clone your N4L source repo.
+4. From the source directory: `./src/bin/N4L -wipe -u *.n4l`.
+5. Smoke-test with a query you remember: `./src/bin/searchN4L "decision
+   making"` (or whatever topic you know is there).
 
-## Restore checklist after a disaster
-
-1. Ensure PostgreSQL 17 is installed and running.
-2. Run `make db` from the repo root to create the role and database.
-3. `git clone` your N4L source repo.
-4. From the source directory: `../src/bin/N4L -wipe -u *.n4l`.
-5. Smoke-test: `../src/bin/searchN4L "%%" \\limit 5` — expect five random hits.
-6. If you kept a `pg_dump` for pre-experiment state, restore it into a
-   **separate** scratch database (`pg_restore -d sstoryline_scratch
-   …`), not on top of the freshly-loaded production DB. From there,
-   `COPY` or `SELECT INTO` the rows you need back into production —
-   remembering that `NPtr` addresses in the dump are scoped to the old
-   graph and may collide with the new one.
-
-That's it. A complete knowledge graph from source, end to end, in under five minutes for modest corpora.
+The whole graph, rebuilt from source, in under five minutes for a corpus
+of reasonable size. That is the payoff for treating your files as the
+thing that matters.

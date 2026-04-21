@@ -89,4 +89,5 @@ conceptualize
 **/tmp
 
 # mkdocs build output
+/pages/site/
 /site/

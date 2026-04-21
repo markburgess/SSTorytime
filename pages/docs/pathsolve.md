@@ -1,236 +1,195 @@
-
-# pathsolve
+# Finding paths
 
 ![Aerial view of a foggy bay at dusk where two lighthouse beams sweep toward each other through the mist, creating interference where they meet, with a graph network faintly visible beneath — a visual metaphor for bidirectional wave-front path solving.](figs/pathsolve_beams.jpg){ align=center }
 
-`pathsolve` is an experimental tool for finding contiguous paths between sets of [NodePtr](concepts/glossary.md#nodeptr)-labelled nodes.
-It can also be accessed through the web browser.
+> **When you want to know not just that two things are connected, but
+> how — the specific chain of arrows that runs between them — that is
+> what `pathsolve` is for.**
 
-<!-- TODO(visuals): Before/after diagram of path expansion — left side shows two boundary sets (begin / end) as dotted outlines; right side shows the converged wave-fronts meeting in the middle, with the winning path highlighted. Style A (pen-and-ink). Place after the intro, before the Flags section. -->
+A regular search gives you a neighbourhood: the thing you named and a
+step or two outward from it. A path is different. You name a start and
+an end, and the tool returns every chain of arrows that leads from one
+to the other — the specific route, hop by hop.
 
+This is most useful when your notes record sequence. A decision that
+led to another decision. An event that triggered the next event. A step
+in a recipe that must follow another step. If your notes have that
+shape, `pathsolve` will trace it.
 
-`pathsolve` also reports about two deeper analyses of the paths:
+---
 
-* *Betweenness centrality*:  a score for how many times each path passes through each node in the path sets.
-The hiighest scoring nodes are 'most central' in the sense of flow throughput.
+## What pathsolve follows
 
-* *Supernodes*: these are nodes that form equivalence sets. The members of a supernode are interchangeable as far
-as the path process is concerned. The map to and from the same locations, so they are symmetrical.
+`pathsolve` walks only one kind of arrow — the **leads-to** kind.
+Arrows like `(then)`, `(leads to)`, `(next)`, `(=>)`, `(prec)` — the
+ones that record *this happened, and then that happened*. Arrows that
+express other relationships — `(about)`, `(by)`, `(bib-cite)`, `(note)`
+— are ignored by the path search, even though they are perfectly
+happy in an ordinary `searchN4L` query.
 
-## Flags
+That is a deliberate choice, not a bug. A path along mixed arrow types
+rarely means anything. "Kahneman wrote a book that is about decision
+making that is the topic of another book" is three arrows in a row, but
+they don't compose into a story. `pathsolve` is the tool for when you
+want a story — a chain where each step actually leads to the next.
+
+The upshot for your corpus: if your notes track causality, sequence, or
+process (meeting notes, decision logs, recipes, routes, branching
+stories), `pathsolve` will trace it. If they mostly record topic and
+authorship (a reading list, a glossary), the tool will return "no paths
+available" and you should reach for `searchN4L` instead.
+
+---
+
+## A worked example
+
+The repo ships an example corpus built specifically to have paths. Open
+[`examples/branches.n4l`](https://github.com/markburgess/SSTorytime/blob/main/examples/branches.n4l)
+and you will see nodes like *once upon*, *a time*, *there lay*,
+*a princess*, strung together with `(then)` and `(=>)` arrows. A small
+branching story with several routes through it.
+
+Load it and ask for a path:
 
 ```
-pathsolve [-v] -begin <string> -end <string> [-chapter string] [-bwd] [subject] [context]
+N4L -u examples/branches.n4l
+pathsolve -begin "once upon" -end "a little prince"
 ```
 
-Flag declarations live at [`src/pathsolve/pathsolve.go:59-63`](https://github.com/markburgess/SSTorytime/blob/main/src/pathsolve/pathsolve.go#L59-L63).
-
-- `-v` — verbose mode. Prints the boundary condition match sets and internal wave-front state.
-- `-begin <string>` — text for the **start** set. Matches by substring via `GetDBNodePtrMatchingName`.
-- `-end <string>` — text for the **end** set.
-- `-chapter <string>` — **optional** substring filter. Restricts the start/end node lookups and the path search to nodes tagged with this chapter. Default: empty (search the whole graph).
-- `-bwd` — **reverse** the search direction. Internally swaps the forward/backward wave-front labels (`FWD` and `BWD` in the source). Use this when you want paths from `end` to `begin` along reverse-arrow semantics.
-
-The single positional argument, if present, is checked against `DiracNotation` (see below). If it is a Dirac-form string, the boundary conditions parsed from it override `-begin` / `-end`.
-
-## Hardcoded search depth
-
-`pathsolve` searches paths of length **2 to 20** hops. These are `const` values in the source:
-
-```go
-const mindepth = 2
-const maxdepth = 20
-```
-
-See [`src/pathsolve/pathsolve.go:121-122`](https://github.com/markburgess/SSTorytime/blob/main/src/pathsolve/pathsolve.go#L121-L122).
-
-- **`mindepth = 2`** — skips the trivial "start and end are the same node" result. If your search is entirely scoped to one node (common when the start/end strings overlap), you need at least 2 hops for the result to be a genuine path.
-- **`maxdepth = 20`** — caps the wave-front expansion. Graphs with very long paths may exceed this; paths longer than 20 hops simply will not be found. Edit the source and rebuild if your use case needs a larger horizon.
-
-## Dirac `<end|start>` notation
-
-`pathsolve` accepts a single positional argument in Dirac bra-ket form:
+You get back the chain the tool walked — every hop, in order, with the
+arrow that took each step:
 
 ```
-pathsolve "<end|start>"
-pathsolve "<B6|A1>"
-pathsolve "<target|start>"
+ Paths < end_set= {a little prince, } | {once upon, } = start set>
+
+     - story path: 1 * once upon  -(then)->  a time  -(then)->  there was
+      -(=>)->  a princess  -(=>)->  mischief!  -(=>)->  a little prince
+
+    Linkage process: -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)-> .
 ```
 
-The **end set comes first** (the bra `<end|`) and the **start set comes second** (the ket `|start>`). This mirrors quantum-mechanical transition-matrix notation: you read `<end|start>` as "amplitude for the system to evolve into `end`, given it starts in `start`."
+Six hops from start to end, through the branch that actually reaches
+*a little prince*. `(then)` and `(=>)` are both leads-to arrows — the
+tool treats them as the same kind of step and reports the underlying
+family at the bottom (`+leads to`).
 
-Parsing is dispatched from `DecodeSearchField` at [`pkg/SSTorytime/service_search_cmd.go:180`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go#L180) (the call site of `DiracNotation`); the `DiracNotation` function itself is defined in [`pkg/SSTorytime/tools.go:523`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/tools.go#L523). `pathsolve` wires it into its own argument loop at [`src/pathsolve/pathsolve.go:102-110`](https://github.com/markburgess/SSTorytime/blob/main/src/pathsolve/pathsolve.go#L102-L110). The parser also extracts an optional trailing context string.
+### The reverse direction
 
-When Dirac notation is used, the `-begin`/`-end` flags are overridden.
+If your question is the other way round — *what leads to this end
+state, and from where* — flip it:
 
-## Command line
+```
+pathsolve -begin "a little prince" -end "once upon" -bwd
+```
 
-For now, you can get started by trying the examples, e.g.
-<pre>
-$ cd examples
-$ make
-$ pathsolve -begin A1 -end B6 
+`-bwd` runs the search along reverse arrows. Same paths, asked from the
+other end.
 
-mark% pathsolve -begin a1 -end b6 
+### Scoping to one chapter
 
- Paths < end_set= {B6, b6, } | {A1, } = start set>
+When your graph has several chapters and you want paths that live inside
+one of them:
 
-     - story path: 1 * A1  -(forwards)->  A3  -(forwards)->  A5  -(forwards)->  S1
-      -(forwards)->  B1  -(forwards)->  B4  -(forwards)->  B6
+```
+pathsolve -begin "once upon" -end "a little prince" -chapter "branching test"
+```
 
-    Linkage process: -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)-> . 
+The chapter scope restricts both the start/end lookup and the walk. It
+stops the tool from finding cross-chapter routes you didn't mean to ask
+about.
 
+---
 
-     - story path: 2 * A1  -(forwards)->  A3  -(forwards)->  A5  -(forwards)->  S2
-      -(forwards)->  B2  -(forwards)->  B4  -(forwards)->  B6
+## What comes after the path
 
-    Linkage process: -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)-> . 
+`pathsolve` also prints two summaries below the paths themselves — for
+when there is more than one route and you want to know their shape.
 
+**Supernodes.** When several paths run through equivalent nodes — two
+parallel branches that land you in the same place — the tool groups
+those nodes as a *supernode*. The members are interchangeable from the
+path's point of view: any of them gets you through. Useful when you
+want to see where your graph offers real alternatives versus where
+every path passes through the same choke point.
 
-     - story path: 3 * A1  -(forwards)->  A3  -(forwards)->  A6  -(forwards)->  S2
-      -(forwards)->  B2  -(forwards)->  B4  -(forwards)->  B6
+**Flow importance.** A ranking of nodes by how many of the paths pass
+through them. The nodes at the top are the choke points — the things
+every route visits. The nodes at the bottom appear on only one or two
+routes. When you want to understand the *shape* of the path space, not
+just one path in particular, this is the view.
 
-    Linkage process: -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)-> . 
+Both appear at the bottom of the `pathsolve` output whenever there is
+more than one path. On a single-path result they are uninformative and
+you can ignore them.
 
+---
 
-     - story path: 4 * A1  -(forwards)->  A2  -(forwards)->  A5  -(forwards)->  S1
-      -(forwards)->  B1  -(forwards)->  B4  -(forwards)->  B6
+## When pathsolve returns nothing
 
-    Linkage process: -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)-> . 
+- **"No paths available."** Most common cause: the corpus has no
+  `(then)`/`(leads to)`/`(=>)`-style arrows between your start and end.
+  A reading list is all `(about)` and `(by)` — those are not paths.
+  Write some leads-to arrows, or switch to `searchN4L` and ask about
+  orbits instead.
+- **Start or end string matches nothing.** Check the spelling; the
+  tool is matching your string as a substring of node names. `-v`
+  prints the boundary sets it found, which is the fastest way to see
+  whether your start and end actually resolved.
+- **The start and end are the same node.** A substring can match the
+  same node at both ends; the tool requires a path of at least two
+  hops to avoid the trivial "you're already there" answer. Use more
+  specific strings for start and end.
+- **The path is longer than twenty hops.** The default search depth
+  is bounded. If you suspect a real but long path, narrow the corpus
+  with `-chapter` and try again.
 
+---
 
-     - story path: 5 * A1  -(forwards)->  A2  -(forwards)->  A5  -(forwards)->  S2
-      -(forwards)->  B2  -(forwards)->  B4  -(forwards)->  B6
+## One notation quirk worth knowing
 
-    Linkage process: -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)->  -(+leads to)-> . 
+`pathsolve` accepts a shorthand borrowed from physics — *Dirac
+notation* — where you write start and end together in one string:
 
- *
- *
- * PATH ANALYSIS: into node flow equivalence groups
- *
- *
+```
+pathsolve "<a little prince|once upon>"
+```
 
-    - Super node 0 = {A1,}
+The **end** comes first (inside `<...|`), the **start** comes second
+(inside `|...>`). This reads as "the amplitude to arrive at *a little
+prince* given we start from *once upon*." If you think in those terms,
+it's a compact notation. If you don't, `-begin` and `-end` are clearer.
 
-    - Super node 1 = {A3,A2,}
+---
 
-    - Super node 2 = {A5,A6,}
+## Where to go next
 
-    - Super node 3 = {S1,}
+<div class="grid cards" markdown>
 
-    - Super node 4 = {S2,}
+-   :material-magnify:{ .lg .middle } **Orbits, not paths**
 
-    - Super node 5 = {B1,}
+    ---
 
-    - Super node 6 = {B2,}
+    For neighbourhoods and topic queries — the shape of a single
+    question rather than a chain.
 
-    - Super node 7 = {B4,}
+    [:octicons-arrow-right-24: Finding things](searchN4L.md)
 
-    - Super node 8 = {B6,}
- *
- *
- * FLOW IMPORTANCE:
- *
- *
+-   :material-tag-outline:{ .lg .middle } **Context**
 
-    -Rank (betweenness centrality): 1.00 - B4,A1,B6,
+    ---
 
-    -Rank (betweenness centrality): 0.80 - A5,
+    When the same word means different things in different parts
+    of your graph.
 
-    -Rank (betweenness centrality): 0.60 - S2,B2,A3,
+    [:octicons-arrow-right-24: Context](howdoescontextwork.md)
 
-    -Rank (betweenness centrality): 0.40 - A2,B1,S1,
+-   :material-format-list-bulleted:{ .lg .middle } **Search recipes**
 
-    -Rank (betweenness centrality): 0.20 - A6,
+    ---
 
-</pre>
+    Ten query shapes, copy-pasteable, with the reading-list corpus
+    as the running example.
 
-Or the adjoint path search:
+    [:octicons-arrow-right-24: Search recipes](cookbooks/search-recipes.md)
 
-<pre>
-
-$ pathsolve -begin B6 -end A1 -bwd
-
-</pre>
-You can also use Dirac transition matrix notation like this:
-<pre>
-
-$ pathsolve "<B6|A1>"
-$ pathsolve "<end|start>"
-$ pathsolve "<target|start>"
-
-</pre>
-Notice the order of the start and end sets.
-
-## Using in the web browser
-
-In the search field, enter the Dirac notation, e.g. `<target|start>` and relevant chapter `interference`, then click on `geometry`.
-
-![Alpha interface](figs/pathsolve1.png 'pathsolving in a web interface')
-![Alpha interface](figs/pathsolve2.png 'pathsolving in a web interface')
-
-
-Notice the reporting about supernodes and betweenness centrality scores. 
-
-## Notes about path searching
-
-When we search for a path, we have to supply boundary conditions for the start and the end of a path.
-Obviously if we reverse start and end (the adjoint path), the direction of arrows along the path will
-also bve reverse, but we should be able to find a meaningful solution in both directions.
-
-The way we select boundary conditions on semantic data may lead to side-effects that we don't expect.
-From the history of computing, the "shortest path" problem has become the "go to" answer for many,
-but we need to be careful. It assumes that the boundary conditions are already chosen to lead to meaningful
-paths  of a certain length.
-
-Paths need to be bounded by minimum and maximum lengths:
-- Maximum because we don't know whether there is actually a meaningful solution linked start and end, so we have to give up searching at some point, assuming that the search doesn't end because we've already reached the end of the graph.
-- Minimum because there might be cases in which our start and end criteria contain the same nodes (so a single node already satisfies the path criteria), e.g. in the default data there is a "door.n4l" example of paths from a node called "start" to nodes "target 1", "target 2", and "target 3", so we might search:
-<pre>
-\from start \to target
-</pre>
-However, in another chapter part of the graph, there are other nodes in which the strings "start" and "target" are partial matches, including the very example text of this search. Since the search itself is featured as a node, it represents a single node that matches the search criteria, so the shortest path is a single node. By  specifying a minimum length of 2, we skip that premature end condition.
-
-In other cases, we might simply be interested in paths that are non-trivial. However, now we have a new issue. Longer (non-trivial) paths might also contain arrows of mixed causality (i.e. nodes that go forwards and backwards along arrows).
-In a "quantum style mixed boundary condition" view of the graph, it's possible to find paths that actually embrace
-steps backwards. These correspond to "higher perturbations" is the quantum loop expansion (see the article [Searching in Graphs, Artificial Reasoning, and Quantum Loop Corrections with Semantics Spacetime](https://medium.com/@mark-burgess-oslo-mb/searching-in-graphs-artificial-reasoning-and-quantum-loop-corrections-with-semantics-spacetime-ea8df54ba1c5)).
-
-
-
-## Speeding up path searches with restricted arrows
-
-When searching for paths, the most powerful searches involve free association. However, searching with few constraints
-is expensive, because the graph branches at every step, and therefore the number of possible paths grows exponentially.
-One way to reduce this complexity is to specify the kinds of arrrows that are allowed. 
-Arrows complicate searches, without necessarily offering much value, but--if your graph has consistent and simple link
-types--this can greatly reduce the complexity of searches.
-
-The directed nature of arrows makes this complicated too. When specifying arrows, you need to give both the forward and backwards arrows, because the search is made from start and end. The start sees outgoing forward links and the end sees outgoing backwards links. The general tool for path searching is the `GetConstraintConePathsAsLinks()` function, with or without arrows. This will, no doubt. improve with future versions, as there is still a lot to do to make graph searches smarter, but for now this is the most powerful approach.
-
-Remember: the power of SST becomes more apparent when using the STTypes 0,1,2,3 for matching arrows by general type rather than by specific name.
-
-### How?
-
-Path searches grow exponentially with the length of the path, so they get slower and slower as the distance between nodes
-increases. If you know the type of arrow along the whole path, you can speed up the search by specifying the arrow types, or the sttypes, e.g. using the STtypes:
-<pre>
-searchN4L -v \\from \!gun\! \\to scarlet \\arrow +3,-3,0
-</pre>
-And using the arrows:
-<pre>
-searchN4L -v \\from \!a1\! \\to b6 \\arrow 20,21
-</pre>
-Remember to always give pairs of arrow,inverse since the FROM and the TO match opposite arrow directions.
-
-## Exit codes & environment
-
-- **Exit `0`** — at least one path found and printed.
-- **Exit `-1`** — no paths satisfy the constraints, or any library/DB error (see [`src/pathsolve/pathsolve.go:164-167`](https://github.com/markburgess/SSTorytime/blob/main/src/pathsolve/pathsolve.go#L164-L167)).
-- **Exit `2`** — invalid flag.
-
-Environment variables:
-
-- `POSTGRESQL_URI` — overrides the hardcoded DSN in [`pkg/SSTorytime/session.go:41`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/session.go#L41).
-- `SST_CONFIG_PATH` — location of `SSTconfig/`. Arrows are actually loaded from the DB via `Open(true)`, so this is usually not needed.
-
-If the database is unreachable, `pathsolve` prints a connection error and exits `-1` before any wave-front work runs.
+</div>

@@ -46,9 +46,8 @@ Writing stuff down is useless if no one reads it. This is why Wikis,
 knowledge bases, and expert systems often fail. Most Wikis are
 intended as 1:N communication.  Wikipedia can succeed due to scale:
 it's N:N for large N, which means the information is passed through a
-human brain frequently.
-
-https://medium.com/@mark-burgess-oslo-mb/the-failure-of-knowledge-management-5d97bb748fc3
+human brain frequently. See [The failure of knowledge management](https://medium.com/@mark-burgess-oslo-mb/the-failure-of-knowledge-management-5d97bb748fc3)
+for the longer argument.
 
 This is one reason why current AI language models that seem to `know things'
 are in fact as clueless about their subject matter as you are the day after reading

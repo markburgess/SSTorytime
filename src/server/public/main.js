@@ -921,11 +921,11 @@ box.id = "radius-" + radius;
 
 // any arrow comes first
 let spacer = "║";
-let prefix = "╠═▹  ";
+let prefix = "...╠═▹  ";
 
 if (stindex < ST_ZERO)
    {
-   prefix = "◃╣";
+   prefix = "◃╣...";
    }
     
 if (radius == 2)

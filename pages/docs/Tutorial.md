@@ -1,439 +1,285 @@
+# Your first story
 
-# Tutorial on N4L and SSTorytime
+> **In fifteen minutes you will have a queryable graph of your own reading list — and a feel for how N4L thinks.**
 
-!!! tip "Keep the glossary open"
-    We'll use *arrow*, *orbit*, *chapter*, *context*, *NodePtr*, *PoSST* without re-defining them here.  
-    See the [Glossary](concepts/glossary.md) for quick reference.
+You will write a small reading list by hand, load it, and ask it three
+questions. The last question's answer is the point of the whole page:
+connections you never explicitly wrote become paths the tool walks for you.
 
-!!! info "We assume `src/bin/` is on your `$PATH`"
-    This page uses bare tool names (`N4L`, `searchN4L`, `notes`, `http_server`).
-    If you haven't exported `PATH=$PWD/src/bin:$PATH` yet, see the
-    [Getting Started](GettingStarted.md) walk-through, or substitute
-    `src/bin/<tool>` from the repo root wherever you see a bare name.
+This page assumes you have built the binaries and loaded the database per
+[Install in 5 minutes](GettingStarted.md). If `./src/bin/N4L` exists and
+`./src/bin/searchN4L` runs without a connection error, you are ready.
 
-This is a project in the age of so-called Artificial Intelligence. But
-it's not about machines.  It's a project about knowledge--*your*
-knowledge, human knowledge, but not the abstract knowledge of Mankind
-that people talk about for AI. Learning is difficult, and remembering
-is difficult, but we can make tools that help. That's what this is
-about.
+---
 
-SSTorytime takes information that you enter in the form of
+## What we're going to build
 
-* Personal notes (written in a simple format called N4L).
-* Data entered by a computer program (using the API for creating Nodes and Links).
+A short file in N4L — roughly seven books, a handful of topics they are
+about, a few citations between them, and the date I read each one. Small
+enough to keep in your head, rich enough to ask real questions of:
 
-It turns these data into a graph, which you can then browse and query
-with the ready-made tools here, or by writing your own programs using
-the API.
+- *What have I read about decision making?*
+- *What was I reading in spring of 2024?*
+- *What connects these two books?*
 
+You will type ~20 lines, run one ingest command, and run three queries.
+Total time: fifteen minutes, give or take however long you spend squinting
+at your first query result.
 
-## Five steps to heaven
+---
 
-```mermaid
-flowchart LR
-    JOT["1. Jot<br/>capture the thought"]
-    TYPE["2. Structure<br/>write it in N4L"]
-    ORG["3. Organize<br/>revise &amp; refine"]
-    UPLOAD["4. Upload<br/>N4L -u your.n4l"]
-    KNOW["5. Know<br/>browse · search ·<br/>path-solve"]
+## Writing it down
 
-    JOT --> TYPE --> ORG --> UPLOAD --> KNOW
+We are going to build the file up in pieces, not dump it all at once.
+Each piece adds one more thing the graph can answer. Open an empty file
+called `my-reading.n4l` in your editor.
+
+### Your first book
+
+Start with a title line and one book:
+
+```n4l
+- my reading list
+
+ :: books, topics, reading history ::
+
+ "Thinking Fast and Slow"   (is about) decision making
+       "                    (read on)  2024-03-15
 ```
 
-* JOT IT DOWN WHEN YOU THINK OF IT. . .
-* TYPE IT INTO N4L AS SOON AS YOU CAN. . .
-* ORGANIZE AND TIDY YOUR N4L NOTES EVERY DAY. . .
-* UPLOAD AND BROWSE THEM ONLINE. . .
-* REMEMBER, IT ISN'T KNOWLEDGE IF YOU DON'T ACTUALLY KNOW IT !!
+Three things to notice.
 
+The line starting with `-` names the chapter. Everything else is inside it.
+The line starting with `::` is a context — a set of tags that frame the
+section. You can ignore both of these for now; they matter when your graph
+gets big enough that you want to scope searches.
 
-## The tools
+The things in double quotes — `"Thinking Fast and Slow"` — are nodes.
+The things in parentheses — `(is about)`, `(read on)` — are arrows. An
+arrow goes from the thing on its left to the thing on its right. So that
+second line says: *this book is about decision making.* Third line: *I read
+it on 2024-03-15.*
 
-Once you've got a bunch of notes, you can upload them into a
-searchable format and analyze them for patterns and hidden
-connections. Alternatively, you can upload structured data from some
-source to form a graph, using the API. This requires programming
-knowledge, and a clear idea about how to use a graph in the first
-place.  Many articles and books about graph data give bad modelling
-advice, so read on first!
+The big quote on the second and third lines (`"`) is a ditto mark. It means
+"the node from the line above." You do not have to retype the book's
+title.
 
-You can use the note taking language for writing reports (incident reports, forensic details, patient plans, or just notes about your favourite movies.)
+Your graph now contains one book, one topic, one date, and two arrows
+connecting them.
 
-* You can use tools like `graph_report` to study large data. For small data, *you* are the
-most important part of the model.
+### A second book, and a shared topic
 
-* You can use `searchN4L` to query the graph database.
+Add a second book that happens to be about the same thing:
 
-* Use `pathsolve` to find possible paths between certain items.
+```n4l
+ "Superforecasting"         (is about) decision making
+       "                    (read on)  2024-05-20
+```
 
-* Use `notes` to read back the notes in the page order in which you wrote them.
+You did not tell the graph that *Thinking Fast and Slow* and
+*Superforecasting* have anything to do with each other. You just said each
+of them points at `decision making`. But they do now: two arrows,
+same target. A query that starts at one and follows "is about" then
+follows "is about" backwards lands at the other.
 
-There are also tools for helping you to get started making notes about a text document.
+This is the core of it. You do not model relationships directly. You write
+down what each thing points at, and the relationships fall out.
 
-* Use `text2N4L` to read a text file and select parts to produce an editable file in N4L that you can use as a starting point for your own notes.
+### A citation
 
-<!-- TODO(visuals): N4L syntax legend — a one-glance cheat sheet mapping the punctuation marks to their roles: "-" chapter, "::" context, "(rel)" arrow relation, "@alias"/"$alias.N" aliases, "+/-" context stack. Target Style A (pen-and-ink). Add under a "Syntax at a glance" heading near the top of this section. -->
+Add one more arrow:
 
-## The idea
+```n4l
+ "Superforecasting"         (cites)    "Thinking Fast and Slow"
+```
 
-The knowledge database is divided into
+`(cites)` is just another arrow. The tool does not know what "cites" means
+— you defined it by using it — but it will treat it as a first-class
+connection. Your graph now has *two* paths from one book to the other: the
+shared-topic path we already had, and the direct citation you just added.
 
-* [**Chapter**](concepts/glossary.md#chapter)s: each file starting or section with a ` - ` mark is a chapter section. There should only be one
-section per file, at the start of the file.
-* [**Context**](concepts/glossary.md#context)s: inside each chapter, you can tag subsections with ` :: context, tags, words...` that may be used to limit or enable search criteria.
-* **Nodes** and **Links**: each item is a node, and each connection between items is a link. Links have types (called [arrows](concepts/glossary.md#arrow-sttype)) that you define for yourself, but they must all belong to one of the four meta-types: `leads to`, `contains`, `expresses property`, or `is near or similar to`.
+### Dates, and a couple more books
 
-The purpose of chapters and contexts is to enable a separation of
-concerns. You could throw everything into one giant chapter with no contexts, e.g. if
-you have a single homogeneous graph like a social network, but for most semantic graphs you
-will want to separate your notes. e.g. you might have chapters on learning French or Chinese, and you could have contexts like "at the bank" or "ordering at the restaurant".
+Add three more books so we have something to query:
 
-## Some terminology
+```n4l
+ "Thinking Fast and Slow"   (cites)    "Judgment under Uncertainty"
 
-When you search for a topic you will match a node in the graph. Relating to that starting point, there are different views:
+ "Judgment under Uncertainty" (is about) heuristics
+       "                     (read on)  2024-04-02
 
-* The [**orbit**](concepts/glossary.md#orbit) of a node is all the nodes connected to it, to some depth or radius (number of link hops).
-When you search, you typically get to see matching nodes and their orbits up to **radius** 2 hops.
+ "Thinking in Systems"      (is about) decision making
+       "                    (read on)  2024-09-14
+       "                    (author)   Donella Meadows
+```
 
-* A set of **path**s is set of connected links starting from a set of FROM nodes and ending with a set of TO nodes.
+Dates are just strings — nothing parses them as dates — but you can still
+search for them, and you can still read them off an orbit. The
+`(author)` arrow is new; you made it up by writing it. N4L accepts new
+arrow types as you need them.
 
-* A **pagemap** is a rendering of a page of notes that you typed as N4L, in the same order.
+### The full corpus
 
-## What use is this?
+What you have is a decent start. The complete version of this reading list
+is already in the repo at `examples/reading-list.n4l` — seven books, more
+topics, more citations, one-line takeaways. Same shape as what you just
+wrote; more of it.
 
-How how can you compete with AI and with other people in the information age?
-It's a bit like going to the gym to get fit. No one can do it for you, but there
-are tools to help you. So here is a methodology with tools, to improve the user experience 
-of learning.
+For the rest of this page we will use the full file. Either keep editing
+your own, or switch to the canonical one.
 
-If you're here, you're likely a programmer or an IT person, so you're looking
-for simple answers in code, as software. Software is much more than code, of course.
-On one level, there is a graph database here, but that's missing the point.
-There are plenty of graph databases, but people use them poorly. This is not that.
+---
 
-## The thinking behind it...
+## Loading it
 
-It's the usual story: garbage in, garbage out. Putting data and
-information into boxes is easy, but knowing how to find it again is
-hard.  But, surely that's why we have databases!? Before search
-engines studied search more carefully, people thought they could just
-use logic to find data by Random Access. That only works when you know
-what you're looking for, but we're become stuck with that model.
-That's partly because we are cavalier about stuffing things into data
-models we feel are orderly and logical. Yet our thinking is far from
-orderly and logical later on when we're trying to find things again.
+One command from the repo root:
 
-To make a good way of encapsulating stuff, we need to understand the
-process of thinking. Instead of trying to order information (with
-hopelessly ambitious ontologies), we need to think about how to
-connect the dots of our thinking for later retrieval. This is what
-authors and teachers have to think about when producing
-material. Everyone knows the difference between a good and a bad
-teacher.
+```
+./src/bin/N4L -u examples/reading-list.n4l
+```
 
-* How we think is quite personal. If we try to make the ultimate
-database of knowledge, it won't suit everyone. No one can feed
-knowledge into you. It's more like tending a garden of your own
-thinking.
+`-u` means *upload to the database*. You will see a brief summary —
+something in the shape of:
 
-The usual way of working is this: stuff everything into a database as
-quickly as possible and then search everything from the database. The
-source data are quickly thrown away, and we rely on an often hastily
-thrown together archive. We even call these data warehouses or
-lakes--landfill.  The user has to know what field to search in the database, an
-often how to write queries in a special language. It's quite far from how
-we think in the moment.
+```
+Uploading nodes..
 
-All this commodity thinking leads to a canned soup knowledge
-cuisine. No wonder we end up with a culture of soundbites and
-hearsay. If you want fresh organic knowledge, served up just as you like it, you have to put in the
-work of tending your crop yourself. Knowledge, after all, isn't knowledge if you don't know it.
-No one can know it for you, so it's up to you to curate it and organize it to suit yourself--perhaps
-collaborating with friends or colleagues (but only in small groups).
+-------------------------------------
+Incidence summary of raw declarations
+-------------------------------------
+Total nodes ...
+Total directed links of type LeadsTo ...
+Total directed links of type Contains ...
+Total directed links of type Express ...
+Total links ... sparseness (fraction of completeness) ...
+```
 
-*If you subscribe to the vision of replacing humans with "AGI" (Artificially Gathered Information),
-you'll be shocked and disappointed by this project. If you're a teacher or a writer, you might
-quite like it.*
+If you see that summary and no red error lines, the corpus is in. If you
+see a connection error instead, your database is not running — back to
+[Install in 5 minutes](GettingStarted.md).
 
+---
 
-## Go for it!
-
-With SSTorytime, the source files are your main focus, and the database is just a convenient
-aid to remembering, because retrieval sometimes needs help. You will spend most of your time
-writing and editing your notes, written in N4L. You adapt the language to suit yourself, with
-a couple of simple principles to follow. Then you regularly upload your notes into the database
-and see how it looks when it comes out.
-
-You start with a simple text file, in your favourite editor. Somewhere you like to jot down notes, but
-as plain text (not a special format like Word or Open Office).
-<pre>
-
-- my notes     # you give it a title
-               # and you can leave comments to yourself.
-
-IF YOU WRITE IN ALL CAPS, YOU WILL BE REMINDED OF THE NOTE LATER!
-
-
- Mostly you just write notes
-
-    "  (e.g.)  This is a simple example that illustrates the line above
-
- The >ditto symbol of inverted commas has a special meaning
-
- Other symbols can be defined with your own meanings, like >"special meanings"
-
-</pre>
-You can also refer to the previous line
-<pre>
-
-@mylabel foot (note) important concept!  # will refer to this label below, defined with @
+## Asking questions
 
-  # english  to  hanzi   to   pinyin  & back to (english)
+Three queries. Each one is a sentence in English, a command, and a reading
+of the answer.
 
-    hand    (eh)   手    (hp)  shǒu     (pe)     $THIS.1  
+### What is about decision making?
 
-  # references are referred to with $name.position
+```
+./src/bin/searchN4L "decision making"
+```
 
-  $PREV.3 (e.g.) nǐ de zuǒ shǒu  (hp) 你的左手 (he) your left hand
+You will see matches whose text contains `decision making`, each with the
+nodes that point at it. Something like:
 
-  $mylabel.1  (eh) 脚 (hp) jiǎo (e.g.) nǐ de yòu jiǎo  (ph) 你的右脚 (he) your right foot 
-</pre>
-You can save this as a text file. It's helpful, but not necessary, to use a suffix `.n4l`.
-This file is already available in the distribution:
-<pre>
-$ cd SSTorytime
-$ make
-$ cd examples
-$ N4L tutorial.n4l
-</pre>
-When you run this, you'll see something like this:
+```
+0: decision making
+      -    (is about) - Thinking Fast and Slow
+      -    (is about) - Superforecasting
+      -    (is about) - Thinking in Systems
+```
 
-![A Flow Chart is a knowledge representation](figs/nooptions.png 'Without options, you only see your note to self.')
+Three books, all reachable because each wrote an `(is about)` arrow at the
+same target. You did not build an index. You did not write a join. The
+graph answered it because that is how you wrote it down.
 
-If you choose verbose output, you see more of what's going on:
+### What was I reading around spring of 2024?
 
-![A Flow Chart is a knowledge representation](figs/verbose.png 'Verbose output')
+```
+./src/bin/searchN4L "2024-03"
+```
 
-* First N4L reads a number of configuration files in `SSTconfig/*`. These contain arrow definitions.
-* Then it reads your file and chops it into parts that are related.
-* N4L thinks that each line is an event, or an item.
-* If you out something in parentheses, it treats it as a relationship or an "arrow" that points from one item to another. You can define your own arrows, and the idea is to use them to find things more easily.
-* If you use the "ditto" inverted commas under an item, you don't have to type it again.
-* You can define special symbols like = >, etc in the configuration to automatically annotate words inside a longer piece of text.
+Date strings are just text, so a substring search finds them. The orbit
+around a match pulls in whatever points at it:
 
-That already covers a lot of possibilities!
+```
+0: 2024-03-15
+      -    (read on) - Thinking Fast and Slow
+```
 
-## Uploading to the database
+Swap `2024-03` for `2024-04` or any other month and you will see what
+landed in that window. This is the temporal dimension you get for free:
+you wrote the dates in the same notation as everything else, so they are
+queryable in the same way.
 
-To upload notes to the database, you use the `N4L` version of the tool. To get
-started, you can try some of the examples:
-<pre>
-$ cd examples
-$ make 
-</pre>
-You see this runs the following command:
-<pre>
-N4L -u -wipe doors.n4l Mary.n4l chinese*n4l branches.n4l doubleslit.n4l ConstructionProcesses.n4l wardleymap.n4l 
-brains.n4l kubernetes.n4l SSTorytime.n4l integral.n4l reasoning.n4l
-</pre>
-The `-u` option tells the program to upload to the database. The `-wipe` option, tells it to override
-whatever is already in the database and start again. If you want to append new data, you can simply
-omit the `-wipe` option:
-<pre>
-$ N4L -u LoopyLoo.n4l
-</pre>
-The examples in the documentation assume you set up from the start with these uploads:
-<pre>
-$ cd examples
-$ make 
-$ N4L -u LoopyLoo.n4l
-</pre>
+### What connects Thinking Fast and Slow and Superforecasting?
 
-## Searching
+This is the one.
 
-You can search the SSTorytime knowledge graph with (hopefully intuitive) phrases like these:
-<pre>
-from a1
-notes about chinese context restaurant
-notes chapter brain
-please in chinese
-paths from a1 to s1
-</pre>
-You can either use the `searchN4L` tool, or the web browser by running the web server `http_server` and connecting to `https://localhost:8443` (the plaintext port `:8080` redirects to HTTPS) or an address, e.g. `https://192.168.0.5:8443`.
+```
+./src/bin/searchN4L "\\from \"Thinking Fast and Slow\" \\to Superforecasting"
+```
 
-On the command line:
-<pre>
+You are asking for paths from the first book to the second. You get
+something in the shape of:
 
-$ searchN4L please in chinese
-$ searchN4L "(zai chengshi)"
-$ searchN4L from a1
-$ searchN4L notes about chinese context restaurant
-$ searchN4L notes about brain context waves
-$ searchN4L chapter brain
-$ searchN4L from a1
-$ searchN4L from a1 to b5
-$ searchN4L to "target 3"
-</pre>
-Notice that, if you want to match accented characters using unaccented substitutes (like 'o' for 'ø'), then you write the word in parentheses).
+```
+     - story path:  Thinking Fast and Slow  -(is cited by)->  Superforecasting
 
-You can also types these directly into the web browser:
+     - story path:  Thinking Fast and Slow  -(is about)-> decision making  -(is about ←)-> Superforecasting
+```
 
-![Alpha interface](figs/webapp11.png 'Testing a web interface')
-![Alpha interface](figs/webapp12.png 'Testing a web interface')
-![Alpha interface](figs/webapp13.png 'Testing a web interface')
+Two answers. One direct — *Superforecasting* cites the earlier book, so
+there is a one-hop path from one to the other through `cites`. One
+through a shared topic — both books point at `decision making`, so
+there is a two-hop path through the topic.
 
+You wrote neither of these paths. You wrote that *Superforecasting* cites
+*Thinking Fast and Slow*. You wrote that each of them is about decision
+making. The tool composed those facts into paths when you asked.
 
-![Alpha interface](figs/webapp2.png 'Testing a web interface')
+That is the whole idea.
 
+---
 
-![Alpha interface](figs/webapp3.png 'Testing a web interface')
+## What just happened
 
-![Alpha interface](figs/webapp4.png 'Testing a web interface')
+- **You wrote it.** Twenty lines of plain text. No schema designed in
+  advance. No code. New arrow types as you needed them.
+- **You loaded it.** One command. The database is a cache; your N4L file
+  is still the source of truth and lives in your editor and your version
+  control.
+- **You asked it.** Three questions in English-shaped commands. The hard
+  one — "what connects these two?" — was answered with connections you
+  did not explicitly write.
 
-![Alpha interface](figs/webapp5.png 'Testing a web interface')
+You just built a knowledge graph. If you extend the file and run the
+upload again, it grows. If you throw the database away, `N4L -u` rebuilds
+it from your file in seconds.
 
-![Alpha interface](figs/webapp6.png 'Testing a web interface')
+---
 
+## Where to go next
 
+<div class="grid cards" markdown>
 
-## Browsing the results
+-   :material-pencil:{ .lg .middle } **Keep writing**
 
-Eventually, there will be tools for scripting the search in simple
-ways, because the most powerful ways to search any structure are to
-use a programming language that allows you to express your own
-intent. You can see examples in the demos and proof of concept
-directory under `src/demo_pocs/`.  But as the project progresses, you can
-use the `notes` and `searchN4L` tool to play around with the result.
-The simplest way to see what you entered (which is like a cleaned up version of `more`)
-is to use:
-<pre>
-$ notes fox and crow
+    ---
 
+    The arrow types, the chapters, the contexts — more on what they are
+    for and when to reach for each.
 
-Title: chinese story about fox and crow
-Context: 
+    [:octicons-arrow-right-24: Thinking in arrows](arrows.md)
 
-Wūyā Hé Húli (pinyin for hanzi) 乌鸦和狐狸 (hanzi for english) The Crow and the Fox 
+-   :material-magnify:{ .lg .middle } **Ask bigger questions**
 
-Title: chinese story about fox and crow
-Context: _sequence_ 
+    ---
 
-Húli zài shùlín lĭ zhăo chī de.  Tā lái dào yì kē dà shù xià, 
-狐狸   在   树林   里  找   吃  的。  他  来  到  一 棵 大  树  下, (pinyin for english) The fox was in the woods looking for food. He came to a tree, 
+    Orbits, paths, context-scoped searches, sequences. The shape of a
+    question, not the flags.
 
-...
+    [:octicons-arrow-right-24: Finding things](searchN4L.md)
 
-</pre>
-This take only a page number as an argument for controlling long note sets:
-<pre>
-$ notes -page 2 brain
+-   :material-lightbulb-on:{ .lg .middle } **Understand why it works**
 
-</pre>
+    ---
 
+    Semantic spacetime in plain English. Why connections are written the
+    way they are, and what that buys you.
 
+    [:octicons-arrow-right-24: Concepts](concepts/why-semantic-spacetime.md)
 
-## What's the point?
-
-When you make notes, you should think about what you want to see when you look back at your notes.
-For example, suppose you are learning French. 
-
-<pre>
-- French phrases
-
- petit-déjeuner (means) breakfast
-
-    "  (e.g.) Je voudrais commander le petit-déjeuner (means) I would like to order breakfast
-    "  (note) Don't forget to say please!
-</pre>
-
-* Notice that you can use accents and Unicode characters freely. 
-* Notice that you can make intuitive short names for arrows like (e.g.). You can define what these mean in the configuration. More on that later.
-* Notice you can define many different kind of arrows with different meanings, e.g. (e.g.), (note).
-
-You start to see a pattern in the notes: usually, if you're trying to
-remember something, you want to see the raw thing, like the word for
-breakfast. You also want to remember how to use it, so you naturally
-add a couple of examples just after the item. N4L will connect these
-dots to show you related things later. But, more importantly, you
-don't event have to do anything with N4L except write stuff
-down. These notes are already your potential knowledge in the
-making--and this simple structure helps you to be systematic in
-writing things down. You will spend a lot of time just curating these
-notes, altering, editing, improving, and most of the value is actually
-there.
-
-You don't learn French by putting it in a database. You learn by revisiting it, and by remembering
-relevance and context. Just writing the notes is 80 percent of the job.
-* The N4L compiler can help you to find errors and make a good structure.
-* When your notes become long, it's hard to keep an good overview.
-* Once inside the database, you can present the information in different ways.
-When you upload it to a database,
-you can still find things quickly, even when you're not sitting in front of your text editor--perhaps using your phone.
-
-From here, it's up to you how you want to proceed. If you're feeling perverse, you could add
-more languages:
-
-<pre>
-- French phrases, and other languages
-
- petit-déjeuner (means) breakfast
-
-    "  (e.g.) Je voudrais commander le petit-déjeuner (means) I would like to order breakfast
-    "  (note) Don't forget to say please!
-
- I would like to order breakfast
-      # let's add Norwegian..
-    "  (betyr på norsk) Jeg vil bestille frokost
-
-      # let's add Mandarin
-    "  (中文意思是) 我想订早餐 
-
-</pre>
-
-
-
-## It's not rocket science, unless ...
-
-Writing notes isn't all that easy. It takes a certain self-discipline, but it gets easier over time.
-Forcing yourself to start is often the biggest hurdle. The news is that you can drip new notes into your
-working files occasionally over a long time. You don't have to sit down and study for hours at a time.
-On the other hand, it's only when you do make time to sit and study that you actually learn.
-
-Once again, the message is: writing it down is nice, putting it into a database is cool, but it's all
-wasted effort if you don't look at it yourself regularly. No one learned French by writing in their school
-book, or even by cramming for the exam. You only learn by using knowledge. It isn't knowledge if you don't know it. 
-
-It's not rocket science, unless of course it is rocket science.
-<pre>
-
---rocket science
-
- rockets are powered projectiles
-
- Rocket science in finance (wikipedia) "https://en.wikipedia.org/wiki/Rocket_science_(finance)"
-
- HOW TO SPELL VONBRAUNS NAME???
-
- Werner Von Braun (developed) V2 aircraft
-         "        (developed) NASA early rockets  
-
- ASK FRIEND AT NASA...
-
- Apollo Program
- Mercury Program
- Gemini Program ...
-
- Space Camp movie ..
-
-</pre>
-
-## Tracking Your Progress
-
-Currently under development is a new feature.
-As you start to use the tool more, you can use the checkboxes to click and leave a trace of what you've worked
-on. This will be traced and give feedback on your learning goals.
-
-![Alpha interface](figs/progresstracker.png 'Testing a web interface')
-
-
+</div>

@@ -66,17 +66,19 @@ between things fall into four broad shapes.
 These are not *an ontology*. They are the semantics of spacetime — the four
 patterns a physicist would need to describe any set of events and their
 connections. Every relation you might write down ("is the capital of",
-"rhymes with", "was painted by") is a flavour of one of the four. The
-vocabulary on top is yours; the physics underneath is shared. The ontology
-trap tells you *what things are*; Semantic Spacetime asks only *how they
-relate*, and leaves the naming to the author.
+"rhymes with", "was painted by") is a flavour of one of the four. You
+compose named arrows — `about`, `by`, `bib-cite`, `is-the-capital-of` —
+and declare them in the project's `SSTconfig/` files against one of the
+four meta-types. The *names* are yours; the *physics* underneath is shared.
+The ontology trap tells you *what things are*; Semantic Spacetime asks
+only *how they relate*, and leaves the naming to the author.
 
 ## Context, and the role of intent
 
 Four kinds of link are not yet enough. The same relationship means different
 things in different settings: Alice trusts Bob on a rope pitch is not Alice
 trusts Bob with the company credit card. Every link therefore carries a
-pointer into a shared [context](../concepts/glossary.md#context) directory,
+pointer into a shared [context](glossary.md#context) directory,
 and context itself is split in two.
 
 *Ambient* context is the scene the note was written inside — chapter, place,
@@ -86,29 +88,29 @@ time the two are compared and the overlap is the answer.
 
 That split matters because **intent is where knowledge begins**. What we
 miss when we try to cram knowledge is a sense of intent — of connecting
-what we are actually trying to do to what we can remember
-([`KnowledgeAndLearning.md`, around line 424-430](../KnowledgeAndLearning.md)).
-`text2N4L` can generate ambient context automatically from the source, but
-it cannot guess intent; only you know what you are looking for
-([`howdoescontextwork.md`, around line 92](../howdoescontextwork.md)).
+what we are actually trying to do to what we can remember (see
+[Knowledge and learning](../KnowledgeAndLearning.md) for the longer
+argument). `text2N4L` can generate ambient context automatically from the
+source, but it cannot guess intent; only you know what you are looking
+for. [How does context work?](../howdoescontextwork.md) walks this through
+in examples.
 
 ## Stories are the whole point
 
 Knowledge is not a bag of facts; it is the walk that leads from one
 understanding to the next. A fact is recalled; a story is *told*.
 SSTorytime preserves narrative order explicitly — through
-[PageMap](../concepts/glossary.md#pagemap) and
-[Sequence mode](../concepts/glossary.md#sequence-mode) — so a concept comes
-back to you as a route rather than a flat list of attributes. If your notes
-do not form an obvious story, they are incomplete, and the hunt for what is
-missing is itself the learning
-([`Storytelling.md`, around line 68-72](../Storytelling.md)).
+[PageMap](glossary.md#pagemap) and
+[sequence mode](glossary.md#sequence-mode) — so a concept comes back to
+you as a route rather than a flat list of attributes. If your notes do
+not form an obvious story, they are incomplete, and the hunt for what is
+missing is itself the learning. Mark's essay
+[Storytelling](../Storytelling.md) makes the case in full.
 
 ## Knowing as a relationship, not a fetch
 
-You know something when you know it like a friend
-([`KnowledgeAndLearning.md`, around line 35-43](../KnowledgeAndLearning.md)).
-You tip your hat, then say good morning, then stop for a chat. Only after
+You know something when you know it like a friend. You tip your hat,
+then say good morning, then stop for a chat. Only after
 long familiarity can you claim to know. The machine can make the revisiting
 cheap; it cannot do the revisiting for you. You write the notes. You decide
 the arrows. The system remembers, relates, and surfaces; it does not invent.
@@ -137,11 +139,11 @@ merely looked up — the SST model was built for it.
 
 ## Where to go next
 
-- [How Context Works](../howdoescontextwork.md) — the ambient-vs-intentional
-  split, worked through examples.
-- [Arrows & Relationships](../arrows.md) — the four types in detail, with
-  the 7-channel storage encoding.
-- [N4L Reference](../N4L.md) — the authoring DSL.
-- [Knowledge & Learning](../KnowledgeAndLearning.md) and
+- [How does context work?](../howdoescontextwork.md) — the
+  ambient-vs-intentional split, worked through examples.
+- [Thinking in arrows](../arrows.md) — the four types in detail, with
+  worked examples of when each is the right choice.
+- [Writing N4L by hand](../N4L.md) — the notation itself.
+- [Knowledge and learning](../KnowledgeAndLearning.md) and
   [Storytelling](../Storytelling.md) — Mark's longer essays, for readers
   who want the full framing.

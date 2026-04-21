@@ -461,19 +461,19 @@ func GetHillTop(index int,sadj [][]float32,evc []float32) (int,[]int) {
 // Matrix/Path tools
 // **************************************************************************
 
-func AdjointLinkPath(LL []Link) []Link {
+func AdjointLinkPath(sst *PoSST,LL []Link) []Link {
 
 	var adjoint []Link
 
 	// len(seq)-1 matches the last node of right join
 	// when we invert, links and destinations are shifted
 
-	var prevarrow ArrowPtr = INVERSE_ARROWS[0]
+	var prevarrow ArrowPtr = sst.INVERSE_ARROWS[0]
 
 	for j := len(LL)-1; j >= 0; j-- {
 
 		var lnk Link = LL[j]
-		lnk.Arr = INVERSE_ARROWS[prevarrow]
+		lnk.Arr = sst.INVERSE_ARROWS[prevarrow]
 		adjoint = append(adjoint,lnk)
 		prevarrow = LL[j].Arr
 	}
@@ -483,7 +483,7 @@ func AdjointLinkPath(LL []Link) []Link {
 
 // **************************************************************************
 
-func NextLinkArrow(sst PoSST,path []Link,arrows []ArrowPtr) string {
+func NextLinkArrow(sst *PoSST,path []Link,arrows []ArrowPtr) string {
 
 	var rstring string
 

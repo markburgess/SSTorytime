@@ -22,7 +22,7 @@ var MUTEX sync.Mutex
 //  Node registration and memory management
 // **************************************************************************
 
-func GetNodeTxtFromPtr(sst PoSST,frptr NodePtr) string {
+func GetNodeTxtFromPtr(sst *PoSST,frptr NodePtr) string {
 
 	class := frptr.Class
 	index := frptr.CPtr
@@ -31,17 +31,17 @@ func GetNodeTxtFromPtr(sst PoSST,frptr NodePtr) string {
 
 	switch class {
 	case N1GRAM:
-		node = NODE_DIRECTORY.N1directory[index]
+		node = sst.NODE_DIRECTORY.N1directory[index]
 	case N2GRAM:
-		node = NODE_DIRECTORY.N2directory[index]
+		node = sst.NODE_DIRECTORY.N2directory[index]
 	case N3GRAM:
-		node = NODE_DIRECTORY.N3directory[index]
+		node = sst.NODE_DIRECTORY.N3directory[index]
 	case LT128:
-		node = NODE_DIRECTORY.LT128[index]
+		node = sst.NODE_DIRECTORY.LT128[index]
 	case LT1024:
-		node = NODE_DIRECTORY.LT1024[index]
+		node = sst.NODE_DIRECTORY.LT1024[index]
 	case GT1024:
-		node = NODE_DIRECTORY.GT1024[index]
+		node = sst.NODE_DIRECTORY.GT1024[index]
 	}
 
 	return node.S
@@ -49,7 +49,7 @@ func GetNodeTxtFromPtr(sst PoSST,frptr NodePtr) string {
 
 // **************************************************************************
 
-func GetMemoryNodeFromPtr(sst PoSST,frptr NodePtr) Node {
+func GetMemoryNodeFromPtr(sst *PoSST,frptr NodePtr) Node {
 
 	class := frptr.Class
 	index := frptr.CPtr
@@ -58,17 +58,17 @@ func GetMemoryNodeFromPtr(sst PoSST,frptr NodePtr) Node {
 
 	switch class {
 	case N1GRAM:
-		node = NODE_DIRECTORY.N1directory[index]
+		node = sst.NODE_DIRECTORY.N1directory[index]
 	case N2GRAM:
-		node = NODE_DIRECTORY.N2directory[index]
+		node = sst.NODE_DIRECTORY.N2directory[index]
 	case N3GRAM:
-		node = NODE_DIRECTORY.N3directory[index]
+		node = sst.NODE_DIRECTORY.N3directory[index]
 	case LT128:
-		node = NODE_DIRECTORY.LT128[index]
+		node = sst.NODE_DIRECTORY.LT128[index]
 	case LT1024:
-		node = NODE_DIRECTORY.LT1024[index]
+		node = sst.NODE_DIRECTORY.LT1024[index]
 	case GT1024:
-		node = NODE_DIRECTORY.GT1024[index]
+		node = sst.NODE_DIRECTORY.GT1024[index]
 	}
 
 	return node
@@ -76,20 +76,20 @@ func GetMemoryNodeFromPtr(sst PoSST,frptr NodePtr) Node {
 
 // **************************************************************************
 
-func CacheNode(sst PoSST,n Node) {
+func CacheNode(sst *PoSST,n Node) {
 
-	_,already := NODE_CACHE[n.NPtr]
+	_,already := sst.NODE_CACHE[n.NPtr]
 
 	if !already {
 		MUTEX.Lock()
 		defer MUTEX.Unlock()
-		NODE_CACHE[n.NPtr] = AppendTextToDirectory(n,RunErr)
+		sst.NODE_CACHE[n.NPtr] = AppendTextToDirectory(sst,n,RunErr)
 	}
 }
 
 // **************************************************************************
 
-func DownloadArrowsFromDB(sst PoSST) {
+func DownloadArrowsFromDB(sst *PoSST) {
 
 	// These must be ordered to match in-memory array
 
@@ -101,8 +101,8 @@ func DownloadArrowsFromDB(sst PoSST) {
 		fmt.Println("QUERY Download Arrows Failed",err)
 	}
 
-	ARROW_DIRECTORY = nil
-	ARROW_DIRECTORY_TOP = 0
+	sst.ARROW_DIRECTORY = nil
+	sst.ARROW_DIRECTORY_TOP = 0
 
 	var staidx int
 	var long string
@@ -118,16 +118,16 @@ func DownloadArrowsFromDB(sst PoSST) {
 			ad.Short = short
 			ad.Ptr = ptr
 
-			ARROW_DIRECTORY = append(ARROW_DIRECTORY,ad)
-			ARROW_SHORT_DIR[short] = ARROW_DIRECTORY_TOP
-			ARROW_LONG_DIR[long] = ARROW_DIRECTORY_TOP
+			sst.ARROW_DIRECTORY = append(sst.ARROW_DIRECTORY,ad)
+			sst.ARROW_SHORT_DIR[short] = sst.ARROW_DIRECTORY_TOP
+			sst.ARROW_LONG_DIR[long] = sst.ARROW_DIRECTORY_TOP
 
-			if ad.Ptr != ARROW_DIRECTORY_TOP {
-				fmt.Println(ERR_MEMORY_DB_ARROW_MISMATCH,ad,ad.Ptr,ARROW_DIRECTORY_TOP)
+			if ad.Ptr != sst.ARROW_DIRECTORY_TOP {
+				fmt.Println(ERR_MEMORY_DB_ARROW_MISMATCH,ad,ad.Ptr,sst.ARROW_DIRECTORY_TOP)
 				os.Exit(-1)
 			}
 
-			ARROW_DIRECTORY_TOP++
+			sst.ARROW_DIRECTORY_TOP++
 		}
 
 		row.Close()
@@ -154,7 +154,7 @@ func DownloadArrowsFromDB(sst PoSST) {
 				fmt.Println("QUERY Download Arrows Failed",err)
 			}
 
-			INVERSE_ARROWS[plus] = minus
+			sst.INVERSE_ARROWS[plus] = minus
 		}
 		row.Close()
 	}
@@ -162,7 +162,7 @@ func DownloadArrowsFromDB(sst PoSST) {
 
 // **************************************************************************
 
-func DownloadContextsFromDB(sst PoSST) {
+func DownloadContextsFromDB(sst *PoSST) {
 
 	qstr := fmt.Sprintf("SELECT Context,CtxPtr FROM ContextDirectory ORDER BY CtxPtr")
 
@@ -172,8 +172,8 @@ func DownloadContextsFromDB(sst PoSST) {
 		fmt.Println("QUERY Download Arrows Failed",err)
 	}
 
-	CONTEXT_DIRECTORY = nil
-	CONTEXT_TOP = 0
+	sst.CONTEXT_DIRECTORY = nil
+	sst.CONTEXT_TOP = 0
 
 	var context string
 	var ptr ContextPtr
@@ -187,14 +187,14 @@ func DownloadContextsFromDB(sst PoSST) {
 			c.Context = context
 			c.Ptr = ptr
 
-			if c.Ptr != CONTEXT_TOP {
-				fmt.Println(ERR_MEMORY_DB_CONTEXT_MISMATCH,c,CONTEXT_TOP)
+			if c.Ptr != sst.CONTEXT_TOP {
+				fmt.Println(ERR_MEMORY_DB_CONTEXT_MISMATCH,c,sst.CONTEXT_TOP)
 				os.Exit(-1)
 			}
 
-			CONTEXT_DIRECTORY = append(CONTEXT_DIRECTORY,c)
-			CONTEXT_DIR[context] = CONTEXT_TOP
-			CONTEXT_TOP++
+			sst.CONTEXT_DIRECTORY = append(sst.CONTEXT_DIRECTORY,c)
+			sst.CONTEXT_DIR[context] = sst.CONTEXT_TOP
+			sst.CONTEXT_TOP++
 		}
 
 		row.Close()
@@ -203,7 +203,7 @@ func DownloadContextsFromDB(sst PoSST) {
 
 // **************************************************************************
 
-func SynchronizeNPtrs(sst PoSST) {
+func SynchronizeNPtrs(sst *PoSST) {
 
 	// If we're merging (not recommended) N4L into an existing db, we need to synch
 
@@ -232,29 +232,29 @@ func SynchronizeNPtrs(sst PoSST) {
 					var empty Node
 
 					// Remember this for uploading later ..
-					BASE_DB_CHANNEL_STATE[channel] = ClassedNodePtr(cptr)
+					sst.BASE_DB_CHANNEL_STATE[channel] = ClassedNodePtr(cptr)
 
 					for n := 0; n <= cptr; n++ {
 
 						switch channel {
 						case N1GRAM:
-							NODE_DIRECTORY.N1_top++
-							NODE_DIRECTORY.N1directory = append(NODE_DIRECTORY.N1directory,empty)
+							sst.NODE_DIRECTORY.N1_top++
+							sst.NODE_DIRECTORY.N1directory = append(sst.NODE_DIRECTORY.N1directory,empty)
 						case N2GRAM:
-							NODE_DIRECTORY.N2directory = append(NODE_DIRECTORY.N2directory,empty)
-							NODE_DIRECTORY.N2_top++
+							sst.NODE_DIRECTORY.N2directory = append(sst.NODE_DIRECTORY.N2directory,empty)
+							sst.NODE_DIRECTORY.N2_top++
 						case N3GRAM:
-							NODE_DIRECTORY.N3directory = append(NODE_DIRECTORY.N3directory,empty)
-							NODE_DIRECTORY.N3_top++
+							sst.NODE_DIRECTORY.N3directory = append(sst.NODE_DIRECTORY.N3directory,empty)
+							sst.NODE_DIRECTORY.N3_top++
 						case LT128:
-							NODE_DIRECTORY.LT128 = append(NODE_DIRECTORY.LT128,empty)
-							NODE_DIRECTORY.LT128_top++
+							sst.NODE_DIRECTORY.LT128 = append(sst.NODE_DIRECTORY.LT128,empty)
+							sst.NODE_DIRECTORY.LT128_top++
 						case LT1024:
-							NODE_DIRECTORY.LT1024 = append(NODE_DIRECTORY.LT1024,empty)
-							NODE_DIRECTORY.LT1024_top++
+							sst.NODE_DIRECTORY.LT1024 = append(sst.NODE_DIRECTORY.LT1024,empty)
+							sst.NODE_DIRECTORY.LT1024_top++
 						case GT1024:
-							NODE_DIRECTORY.GT1024 = append(NODE_DIRECTORY.GT1024,empty)
-							NODE_DIRECTORY.GT1024_top++
+							sst.NODE_DIRECTORY.GT1024 = append(sst.NODE_DIRECTORY.GT1024,empty)
+							sst.NODE_DIRECTORY.GT1024_top++
 						}
 					}
 				}

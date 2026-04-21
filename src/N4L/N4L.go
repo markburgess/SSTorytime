@@ -161,21 +161,19 @@ var (
 
 func main() {
 
-	var sst SST.PoSST
-
+	load_arrows := false
 	args := Init()
-
+	
 	if UPLOAD {
-		load_arrows := true
+		load_arrows = true
 
 		if SST.WIPE_DB {
 			load_arrows = false
 		}
-
-		sst = SST.Open(load_arrows)
 	}
 
-	AddMandatory(sst)
+	sst := SST.Open(load_arrows)
+	AddMandatory(&sst)
 
 	// Load arrow configurations
 
@@ -186,7 +184,7 @@ func main() {
 	for input := 0; input < len(config); input++ {
 		NewFile(config[input])
 		con := ReadFile(CURRENT_FILE)
-		ParseConfig(sst,con)
+		ParseConfig(&sst,con)
 	}
 
 	CONFIGURING = false
@@ -196,12 +194,12 @@ func main() {
 	for input := 0; input < len(args); input++ {
 		NewFile(args[input])
 		input := ReadFile(CURRENT_FILE)
-		ParseN4L(sst,input)
+		ParseN4L(&sst,input)
 	}
 
 	// Post process, complete NEAR cliques
 
-	CompleteInferences(sst)
+	CompleteInferences(&sst)
 
 	// Outputs
 
@@ -219,8 +217,9 @@ func main() {
 
 	if UPLOAD {
 		Upload(sst)
-		SST.Close(sst)
 	}
+	
+	SST.Close(sst)
 }
 
 //**************************************************************
@@ -274,8 +273,6 @@ func Init() []string {
 		ADJ_LIST = *adjacencyPtr
 	}
 
-	SST.MemoryInit()
-
 	return args
 }
 
@@ -284,7 +281,7 @@ func Init() []string {
 func Upload(sst SST.PoSST) {
 
 	dbchapters := SST.GetDBChaptersMatchingName(sst,"")
-	memchapters := GetMemChapters()
+	memchapters := GetMemChapters(sst)
 
 	conflict := false
 
@@ -357,7 +354,7 @@ func NewFile(filename string) {
 // N4L configuration
 //**************************************************************
 
-func ParseConfig(sst SST.PoSST,src []rune) {
+func ParseConfig(sst *SST.PoSST,src []rune) {
 
 	var token string
 
@@ -411,7 +408,7 @@ func GetConfigToken(src []rune, pos int) (string,int) {
 
 //**************************************************************
 
-func ClassifyConfigRole(sst SST.PoSST,token string) {
+func ClassifyConfigRole(sst *SST.PoSST,token string) {
 
 	if len(token) == 0 {
 		return
@@ -447,12 +444,12 @@ func ClassifyConfigRole(sst SST.PoSST,token string) {
 			reln = strings.TrimSpace(reln)
 
 			if LINE_ITEM_STATE == HAVE_MINUS {
-				BWD_INDEX = SST.InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"-")
+				BWD_INDEX = SST.InsertArrowDirectory(sst,SECTION_STATE,reln,BWD_ARROW,"-")
 				ArrowCollision(BWD_INDEX,reln,BWD_ARROW)
-				SST.InsertInverseArrowDirectory(FWD_INDEX,BWD_INDEX)
+				SST.InsertInverseArrowDirectory(sst,FWD_INDEX,BWD_INDEX)
 				PVerbose("In",SECTION_STATE,"short name",reln,"for",BWD_ARROW,", direction","-")
 			} else if LINE_ITEM_STATE == HAVE_PLUS {
-				FWD_INDEX = SST.InsertArrowDirectory(SECTION_STATE,reln,FWD_ARROW,"+")
+				FWD_INDEX = SST.InsertArrowDirectory(sst,SECTION_STATE,reln,FWD_ARROW,"+")
 				ArrowCollision(FWD_INDEX,reln,FWD_ARROW)
 				PVerbose("In",SECTION_STATE,"short name",reln,"for",FWD_ARROW,", direction","+")
 			} else {
@@ -470,8 +467,8 @@ func ClassifyConfigRole(sst SST.PoSST,token string) {
 			reln = strings.TrimSpace(reln)
 
 			if LINE_ITEM_STATE == HAVE_MINUS {
-				index := SST.InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"both")
-				SST.InsertInverseArrowDirectory(index,index)
+				index := SST.InsertArrowDirectory(sst,SECTION_STATE,reln,BWD_ARROW,"both")
+				SST.InsertInverseArrowDirectory(sst,index,index)
 				PVerbose("In",SECTION_STATE,reln,"for",BWD_ARROW,", direction","both")
 			} else {
 				PVerbose(SECTION_STATE,"abbreviation out of place")
@@ -573,7 +570,7 @@ func ArrowCollision(arr SST.ArrowPtr,short,long string) {
 
 //**************************************************************
 
-func GetLinkArrowByName(sst SST.PoSST,token string) SST.Link {
+func GetLinkArrowByName(sst *SST.PoSST,token string) SST.Link {
 
 	// Return a preregistered link/arrow ptr bythe name of a link
 
@@ -619,12 +616,12 @@ func GetLinkArrowByName(sst SST.PoSST,token string) SST.Link {
 
 	// First check if this is an alias/short name
 
-	ptr, ok := SST.ARROW_SHORT_DIR[name]
+	ptr, ok := sst.ARROW_SHORT_DIR[name]
 
 	// If not, then check longname
 
 	if !ok {
-		ptr, ok = SST.ARROW_LONG_DIR[name]
+		ptr, ok = sst.ARROW_LONG_DIR[name]
 
 		if !ok {
 			ParseError(SST.ERR_NO_SUCH_ARROW+"("+name+")")
@@ -698,7 +695,7 @@ func ResolveAliasedItem(token string) string {
 
 //**************************************************************
 
-func AddArrowClosure(sst SST.PoSST,sequence []string,result string) {
+func AddArrowClosure(sst *SST.PoSST,sequence []string,result string) {
 
 	var closure Closure
 
@@ -717,7 +714,7 @@ func AddArrowClosure(sst SST.PoSST,sequence []string,result string) {
 
 //**************************************************************
 
-func CompleteInferences(sst SST.PoSST) {
+func CompleteInferences(sst *SST.PoSST) {
 
 	Box("Completing node inferences and cliques.....")
 
@@ -726,27 +723,27 @@ func CompleteInferences(sst SST.PoSST) {
 		switch class {
 
 		case SST.N1GRAM:
-			for _,node := range SST.NODE_DIRECTORY.N1directory {
+			for _,node := range sst.NODE_DIRECTORY.N1directory {
 				CompleteNode(sst,node)
 			}
 		case SST.N2GRAM:
-			for _,node := range SST.NODE_DIRECTORY.N2directory {
+			for _,node := range sst.NODE_DIRECTORY.N2directory {
 				CompleteNode(sst,node)
 			}
 		case SST.N3GRAM:
-			for _,node := range SST.NODE_DIRECTORY.N3directory {
+			for _,node := range sst.NODE_DIRECTORY.N3directory {
 				CompleteNode(sst,node)
 			}
 		case SST.LT128:
-			for _,node := range SST.NODE_DIRECTORY.LT128 {
+			for _,node := range sst.NODE_DIRECTORY.LT128 {
 				CompleteNode(sst,node)
 			}
 		case SST.LT1024:
-			for _,node := range SST.NODE_DIRECTORY.LT1024 {
+			for _,node := range sst.NODE_DIRECTORY.LT1024 {
 				CompleteNode(sst,node)
 			}
 		case SST.GT1024:
-			for _,node := range SST.NODE_DIRECTORY.GT1024 {
+			for _,node := range sst.NODE_DIRECTORY.GT1024 {
 				CompleteNode(sst,node)
 			}
 		}
@@ -755,7 +752,7 @@ func CompleteInferences(sst SST.PoSST) {
 
 //**************************************************************
 
-func CompleteNode(sst SST.PoSST,node SST.Node) {
+func CompleteNode(sst *SST.PoSST,node SST.Node) {
 
 	CompleteCloseness(sst,node)
 	CompleteSequences(sst,node)
@@ -769,7 +766,7 @@ func CompleteNode(sst SST.PoSST,node SST.Node) {
 
 //**************************************************************
 
-func CompleteCloseness(sst SST.PoSST,node SST.Node) {
+func CompleteCloseness(sst *SST.PoSST,node SST.Node) {
 
 	var equivalences = make(map[SST.ArrowPtr]int)
 
@@ -809,7 +806,7 @@ func CompleteCloseness(sst SST.PoSST,node SST.Node) {
 
 					t1 := SST.GetNodeTxtFromPtr(sst,neighbours[n])
 					t2 := SST.GetNodeTxtFromPtr(sst,neighbours[o])
-					arrname := SST.ARROW_DIRECTORY[arrow].Short
+					arrname := sst.ARROW_DIRECTORY[arrow].Short
 
 					// NOTs are not close
 
@@ -826,7 +823,7 @@ func CompleteCloseness(sst SST.PoSST,node SST.Node) {
 
 //**************************************************************
 
-func CompleteSequences(sst SST.PoSST,node SST.Node) {
+func CompleteSequences(sst *SST.PoSST,node SST.Node) {
 
 	for _,cl := range ARROW_CLOSURES {
 
@@ -840,7 +837,7 @@ func CompleteSequences(sst SST.PoSST,node SST.Node) {
 
 			var link SST.Link
 			link.Arr = cl.Result
-			arrname := SST.ARROW_DIRECTORY[link.Arr].Short
+			arrname := sst.ARROW_DIRECTORY[link.Arr].Short
 
 			m := fmt.Sprintf("   Complete: %s -(%s)-> %s",t1,arrname,t2)
 			Verbose(m)
@@ -862,32 +859,32 @@ func SummarizeGraph(sst SST.PoSST) {
 	for class := SST.N1GRAM; class <= SST.GT1024; class++ {
 		switch class {
 		case SST.N1GRAM:
-			for n,org := range SST.NODE_DIRECTORY.N1directory {
+			for n,org := range sst.NODE_DIRECTORY.N1directory {
 				count_nodes++
 				PrintNodeSystem(sst,n,org,&count_links)
 			}
 		case SST.N2GRAM:
-			for n,org := range SST.NODE_DIRECTORY.N2directory {
+			for n,org := range sst.NODE_DIRECTORY.N2directory {
 				count_nodes++
 				PrintNodeSystem(sst,n,org,&count_links)
 			}
 		case SST.N3GRAM:
-			for n,org := range SST.NODE_DIRECTORY.N3directory {
+			for n,org := range sst.NODE_DIRECTORY.N3directory {
 				count_nodes++
 				PrintNodeSystem(sst,n,org,&count_links)
 			}
 		case SST.LT128:
-			for n,org := range SST.NODE_DIRECTORY.LT128 {
+			for n,org := range sst.NODE_DIRECTORY.LT128 {
 				count_nodes++
 				PrintNodeSystem(sst,n,org,&count_links)
 			}
 		case SST.LT1024:
-			for n,org := range SST.NODE_DIRECTORY.LT1024 {
+			for n,org := range sst.NODE_DIRECTORY.LT1024 {
 				count_nodes++
 				PrintNodeSystem(sst,n,org,&count_links)
 			}
 		case SST.GT1024:
-			for n,org := range SST.NODE_DIRECTORY.GT1024 {
+			for n,org := range sst.NODE_DIRECTORY.GT1024 {
 				count_nodes++
 				PrintNodeSystem(sst,n,org,&count_links)
 			}
@@ -913,16 +910,16 @@ func SummarizeGraph(sst SST.PoSST) {
 
 func CreateAdjacencyMatrix(sst SST.PoSST,searchlist string) (int,[]SST.NodePtr,[][]float32,[][]float32) {
 
-	search_list := ValidateLinkArgs(searchlist)
+	search_list := ValidateLinkArgs(sst,searchlist)
 
 	// the matrix is dim x dim
 
-	filtered_node_list,path_weights := AssembleInvolvedNodes(search_list)
+	filtered_node_list,path_weights := AssembleInvolvedNodes(sst,search_list)
 
 	dim := len(filtered_node_list)
 
 	for f := 0; f < len(filtered_node_list); f++ {
-		Verbose("    - row/col key [",f,"/",dim,"]",SST.GetNodeTxtFromPtr(sst,filtered_node_list[f]))
+		Verbose("    - row/col key [",f,"/",dim,"]",SST.GetNodeTxtFromPtr(&sst,filtered_node_list[f]))
 	}
 
 	var subadj_matrix [][]float32 = make([][]float32,dim)
@@ -963,7 +960,7 @@ func PrintMatrix(sst SST.PoSST,name string, dim int, key []SST.NodePtr, matrix [
 
 	for row := 0; row < dim; row++ {
 
-		s = fmt.Sprintf("%20.15s ..\r\t\t\t(",SST.GetNodeTxtFromPtr(sst,key[row]))
+		s = fmt.Sprintf("%20.15s ..\r\t\t\t(",SST.GetNodeTxtFromPtr(&sst,key[row]))
 
 		for col := 0; col < dim; col++ {
 
@@ -998,7 +995,7 @@ func PrintNZVector(sst SST.PoSST,name string, dim int, key []SST.NodePtr, vector
 	var vec []KV = make([]KV,dim)
 
 	for row := 0; row < dim; row++ {
-		vec[row].Key = SST.GetNodeTxtFromPtr(sst,key[row])
+		vec[row].Key = SST.GetNodeTxtFromPtr(&sst,key[row])
 		vec[row].Value = vector[row]
 	}
 
@@ -1130,7 +1127,7 @@ func FlatSTType(i int) int {
 
 //**************************************************************
 
-func ValidateLinkArgs(s string) []SST.ArrowPtr {
+func ValidateLinkArgs(sst SST.PoSST,s string) []SST.ArrowPtr {
 
 	list := strings.Split(s,",")
 	var search_list []SST.ArrowPtr
@@ -1140,23 +1137,23 @@ func ValidateLinkArgs(s string) []SST.ArrowPtr {
 	}
 
 	for i := range list {
-		v,ok := SST.ARROW_SHORT_DIR[list[i]]
+		v,ok := sst.ARROW_SHORT_DIR[list[i]]
 
 		if ok {
-			typ := SST.ARROW_DIRECTORY[v].STAindex - SST.ST_ZERO
+			typ := sst.ARROW_DIRECTORY[v].STAindex - SST.ST_ZERO
 			if typ < 0 {
 				typ = -typ
 			}
 
-			name := SST.ARROW_DIRECTORY[v].Long
-			ptr := SST.ARROW_DIRECTORY[v].Ptr
+			name := sst.ARROW_DIRECTORY[v].Long
+			ptr := sst.ARROW_DIRECTORY[v].Ptr
 
 			fmt.Println(" - including search pathway STtype",SST.STTypeName(typ),"->",name)
 			search_list = append(search_list,ptr)
 
 			if typ != SST.NEAR {
-				inverse := SST.INVERSE_ARROWS[ptr]
-				fmt.Println("   including inverse meaning",SST.ARROW_DIRECTORY[inverse].Long)
+				inverse := sst.INVERSE_ARROWS[ptr]
+				fmt.Println("   including inverse meaning",sst.ARROW_DIRECTORY[inverse].Long)
 				search_list = append(search_list,inverse)
 			}
 		} else {
@@ -1170,7 +1167,7 @@ func ValidateLinkArgs(s string) []SST.ArrowPtr {
 
 //**************************************************************
 
-func AssembleInvolvedNodes(search_list []SST.ArrowPtr) ([]SST.NodePtr,map[RCtype]float32) {
+func AssembleInvolvedNodes(sst SST.PoSST,search_list []SST.ArrowPtr) ([]SST.NodePtr,map[RCtype]float32) {
 
 	var node_list []SST.NodePtr
 	var weights = make(map[RCtype]float32)
@@ -1179,28 +1176,28 @@ func AssembleInvolvedNodes(search_list []SST.ArrowPtr) ([]SST.NodePtr,map[RCtype
 
 		switch class {
 		case SST.N1GRAM:
-			for n := range SST.NODE_DIRECTORY.N1directory {
-				node_list = SearchIncidentRowClass(SST.NODE_DIRECTORY.N1directory[n],search_list,node_list,weights)
+			for n := range sst.NODE_DIRECTORY.N1directory {
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.N1directory[n],search_list,node_list,weights)
 			}
 		case SST.N2GRAM:
-			for n := range SST.NODE_DIRECTORY.N2directory {
-				node_list = SearchIncidentRowClass(SST.NODE_DIRECTORY.N2directory[n],search_list,node_list,weights)
+			for n := range sst.NODE_DIRECTORY.N2directory {
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.N2directory[n],search_list,node_list,weights)
 			}
 		case SST.N3GRAM:
-			for n := range SST.NODE_DIRECTORY.N3directory {
-				node_list = SearchIncidentRowClass(SST.NODE_DIRECTORY.N3directory[n],search_list,node_list,weights)
+			for n := range sst.NODE_DIRECTORY.N3directory {
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.N3directory[n],search_list,node_list,weights)
 			}
 		case SST.LT128:
-			for n := range SST.NODE_DIRECTORY.LT128 {
-				node_list = SearchIncidentRowClass(SST.NODE_DIRECTORY.LT128[n],search_list,node_list,weights)
+			for n := range sst.NODE_DIRECTORY.LT128 {
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.LT128[n],search_list,node_list,weights)
 			}
 		case SST.LT1024:
-			for n := range SST.NODE_DIRECTORY.LT1024 {
-				node_list = SearchIncidentRowClass(SST.NODE_DIRECTORY.LT1024[n],search_list,node_list,weights)
+			for n := range sst.NODE_DIRECTORY.LT1024 {
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.LT1024[n],search_list,node_list,weights)
 			}
 		case SST.GT1024:
-			for n := range SST.NODE_DIRECTORY.GT1024 {
-				node_list = SearchIncidentRowClass(SST.NODE_DIRECTORY.GT1024[n],search_list,node_list,weights)
+			for n := range sst.NODE_DIRECTORY.GT1024 {
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.GT1024[n],search_list,node_list,weights)
 			}
 		}
 	}
@@ -1281,7 +1278,7 @@ func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr,node_list
 // N4L language
 //**************************************************************
 
-func ParseN4L(sst SST.PoSST,src []rune) {
+func ParseN4L(sst *SST.PoSST,src []rune) {
 
 	var token string
 
@@ -1300,7 +1297,7 @@ func ParseN4L(sst SST.PoSST,src []rune) {
 
 //**************************************************************
 
-func SkipWhiteSpace(sst SST.PoSST,src []rune, pos int) int {
+func SkipWhiteSpace(sst *SST.PoSST,src []rune, pos int) int {
 
 	for ; pos < len(src) && IsWhiteSpace(src[pos],src[pos]); pos++ {
 
@@ -1323,47 +1320,47 @@ func SkipWhiteSpace(sst SST.PoSST,src []rune, pos int) int {
 
 //**************************************************************
 
-func AddMandatory(sst SST.PoSST) {
+func AddMandatory(sst *SST.PoSST) {
 
 	SST.RegisterContext(sst,nil,[]string{"any"})
 
 	// empty link for orphans to retain context - NB, this convention is used a lot in context handling EMPTY == LEADSTO
 
-	arr := SST.InsertArrowDirectory("leadsto","empty","debug","+")
-	inv := SST.InsertArrowDirectory("leadsto","void","unbug","-")
-	SST.InsertInverseArrowDirectory(arr,inv)
+	arr := SST.InsertArrowDirectory(sst,"leadsto","empty","debug","+")
+	inv := SST.InsertArrowDirectory(sst,"leadsto","void","unbug","-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
 	// reserved for text2N4L
 
-	arr = SST.InsertArrowDirectory("contains",SST.CONT_FINDS_S,SST.CONT_FINDS_L,"+")
-        inv = SST.InsertArrowDirectory("contains",SST.INV_CONT_FOUND_IN_S,SST.INV_CONT_FOUND_IN_L,"-")
-	SST.InsertInverseArrowDirectory(arr,inv)
+	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_FINDS_S,SST.CONT_FINDS_L,"+")
+        inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_FOUND_IN_S,SST.INV_CONT_FOUND_IN_L,"-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
-	arr = SST.InsertArrowDirectory("contains",SST.CONT_FRAG_S,SST.CONT_FRAG_L,"+")
-        inv = SST.InsertArrowDirectory("contains",SST.INV_CONT_FRAG_IN_S,SST.INV_CONT_FRAG_IN_L,"-")
-	SST.InsertInverseArrowDirectory(arr,inv)
+	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_FRAG_S,SST.CONT_FRAG_L,"+")
+        inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_FRAG_IN_S,SST.INV_CONT_FRAG_IN_L,"-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
-	arr = SST.InsertArrowDirectory("properties",SST.EXPR_INTENT_S,SST.EXPR_INTENT_L,"+")
-        inv = SST.InsertArrowDirectory("properties",SST.INV_EXPR_INTENT_S,SST.INV_EXPR_INTENT_L,"-")
-	SST.InsertInverseArrowDirectory(arr,inv)
+	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_INTENT_S,SST.EXPR_INTENT_L,"+")
+        inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_INTENT_S,SST.INV_EXPR_INTENT_L,"-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
-	arr = SST.InsertArrowDirectory("properties",SST.EXPR_AMBIENT_S,SST.EXPR_AMBIENT_L,"+")
-        inv = SST.InsertArrowDirectory("properties",SST.INV_EXPR_AMBIENT_S,SST.INV_EXPR_AMBIENT_L,"-")
-	SST.InsertInverseArrowDirectory(arr,inv)
+	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_AMBIENT_S,SST.EXPR_AMBIENT_L,"+")
+        inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_AMBIENT_S,SST.INV_EXPR_AMBIENT_L,"-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
 	// Reserved for special UX handling
 
-	arr = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN_LONG,"+")
-	inv = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN_INV,SEQUENCE_RELN_INV_LONG,"-")
-	SST.InsertInverseArrowDirectory(arr,inv)
+	arr = SST.InsertArrowDirectory(sst,"leadsto",SEQUENCE_RELN,SEQUENCE_RELN_LONG,"+")
+	inv = SST.InsertArrowDirectory(sst,"leadsto",SEQUENCE_RELN_INV,SEQUENCE_RELN_INV_LONG,"-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
-	arr = SST.InsertArrowDirectory("properties","url","has URL","+")
-	inv = SST.InsertArrowDirectory("properties","isurl","is a URL for","-")
-	SST.InsertInverseArrowDirectory(arr,inv)
+	arr = SST.InsertArrowDirectory(sst,"properties","url","has URL","+")
+	inv = SST.InsertArrowDirectory(sst,"properties","isurl","is a URL for","-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
-	arr = SST.InsertArrowDirectory("properties","img","has image","+")
-	inv = SST.InsertArrowDirectory("properties","isimg","is an image for","-")
-	SST.InsertInverseArrowDirectory(arr,inv)
+	arr = SST.InsertArrowDirectory(sst,"properties","img","has image","+")
+	inv = SST.InsertArrowDirectory(sst,"properties","isimg","is an image for","-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
 }
 
@@ -1405,7 +1402,7 @@ func ReadConfig() []string {
 
 //**************************************************************
 
-func GetToken(sst SST.PoSST,src []rune, pos int) (string,int) {
+func GetToken(sst *SST.PoSST,src []rune, pos int) (string,int) {
 
 	// Handle concatenation of words/lines and separation of types
 
@@ -1481,7 +1478,7 @@ func GetToken(sst SST.PoSST,src []rune, pos int) (string,int) {
 
 //**************************************************************
 
-func ClassifyTokenRole(sst SST.PoSST,token string) {
+func ClassifyTokenRole(sst *SST.PoSST,token string) {
 
 	if len(token) == 0 {
 		return
@@ -1568,7 +1565,7 @@ func ClassifyTokenRole(sst SST.PoSST,token string) {
 
 //**************************************************************
 
-func AssessGrammarCompletions(sst SST.PoSST,token string, prior_state int) {
+func AssessGrammarCompletions(sst *SST.PoSST,token string, prior_state int) {
 
 	if len(token) == 0 {
 		return
@@ -1675,7 +1672,7 @@ func StoreAlias(name string) {
 // Memory representation
 //**************************************************************
 
-func IdempAddLink(sst SST.PoSST,from string, frptr SST.NodePtr, link SST.Link,to string, toptr SST.NodePtr, is_annotation bool) {
+func IdempAddLink(sst *SST.PoSST,from string, frptr SST.NodePtr, link SST.Link,to string, toptr SST.NodePtr, is_annotation bool) {
 
 	// Add a link index cache pointer directly to a from node
 
@@ -1685,9 +1682,9 @@ func IdempAddLink(sst SST.PoSST,from string, frptr SST.NodePtr, link SST.Link,to
 	}
 
 	if link.Wgt != 1 {
-		PVerbose("... Relation:",from,"--(",SST.ARROW_DIRECTORY[link.Arr].Long,",",link.Wgt,")->",to,SST.CONTEXT_DIRECTORY[link.Ctx])
+		PVerbose("... Relation:",from,"--(",sst.ARROW_DIRECTORY[link.Arr].Long,",",link.Wgt,")->",to,sst.CONTEXT_DIRECTORY[link.Ctx])
 	} else {
-		PVerbose("... Relation:",from,"--",SST.ARROW_DIRECTORY[link.Arr].Long,"->",to,SST.CONTEXT_DIRECTORY[link.Ctx])
+		PVerbose("... Relation:",from,"--",sst.ARROW_DIRECTORY[link.Arr].Long,"->",to,sst.CONTEXT_DIRECTORY[link.Ctx])
 	}
 
         // Build PageMap
@@ -1708,7 +1705,7 @@ func IdempAddLink(sst SST.PoSST,from string, frptr SST.NodePtr, link SST.Link,to
 	// Double up the reverse definition for easy indexing of both in/out arrows
 	// But be careful not the make the graph undirected by mistake
 
-	invlink := GetLinkArrowByName(sst,SST.ARROW_DIRECTORY[SST.INVERSE_ARROWS[link.Arr]].Short)
+	invlink := GetLinkArrowByName(sst,sst.ARROW_DIRECTORY[sst.INVERSE_ARROWS[link.Arr]].Short)
 
 	SST.AppendLinkToNode(sst,toptr,invlink,frptr)
 
@@ -1716,9 +1713,9 @@ func IdempAddLink(sst SST.PoSST,from string, frptr SST.NodePtr, link SST.Link,to
 
 //**************************************************************
 
-func HandleNode(sst SST.PoSST,annotated string) SST.NodePtr {
+func HandleNode(sst *SST.PoSST,annotated string) SST.NodePtr {
 
-	clean_ptr,clean_version := IdempAddNode(annotated,SEQ_UNKNOWN)
+	clean_ptr,clean_version := IdempAddNode(sst,annotated,SEQ_UNKNOWN)
 
 	PVerbose("Event/item/node: \"",clean_version,"\" in chapter",SECTION_STATE)
 
@@ -1735,7 +1732,7 @@ func HandleNode(sst SST.PoSST,annotated string) SST.NodePtr {
 
 //**************************************************************
 
-func IdempAddNode(s string,intended_sequence bool) (SST.NodePtr,string) {
+func IdempAddNode(sst *SST.PoSST,s string,intended_sequence bool) (SST.NodePtr,string) {
 
 	clean_version := StripAnnotations(s)
 
@@ -1748,7 +1745,7 @@ func IdempAddNode(s string,intended_sequence bool) (SST.NodePtr,string) {
 	new_nodetext.Chap = SECTION_STATE
 	new_nodetext.NPtr.Class = c
 
-	iptr := SST.AppendTextToDirectory(new_nodetext,ParseError)
+	iptr := SST.AppendTextToDirectory(sst,new_nodetext,ParseError)
 
 	// Build page map
 
@@ -1763,7 +1760,7 @@ func IdempAddNode(s string,intended_sequence bool) (SST.NodePtr,string) {
 
 //**************************************************************
 
-func IdempAddContextToNode(sst SST.PoSST,nptr SST.NodePtr) {
+func IdempAddContextToNode(sst *SST.PoSST,nptr SST.NodePtr) {
 
 	// add a nullpotent link containing root node for
 	// context membership, in case it's a singleton
@@ -1989,7 +1986,7 @@ func LastSpecialChar(src []rune,pos int, stop rune) bool {
 
 //**************************************************************
 
-func UpdateLastLineCache(sst SST.PoSST,) {
+func UpdateLastLineCache(sst *SST.PoSST,) {
 
 	if Dangler() {
 		ParseError(ERR_MISSING_EVENT)
@@ -2027,7 +2024,7 @@ func UpdateLastLineCache(sst SST.PoSST,) {
 
 //**************************************************************
 
-func PageMap(sst SST.PoSST,chapter string,ctxmap map[string]bool,path []SST.Link,line int,alias string) {
+func PageMap(sst *SST.PoSST,chapter string,ctxmap map[string]bool,path []SST.Link,line int,alias string) {
 
 	if len(path) == 0 {
 		return
@@ -2056,7 +2053,7 @@ func PageMap(sst SST.PoSST,chapter string,ctxmap map[string]bool,path []SST.Link
 	page_event.Line = line
 	page_event.Path = path
 
-	SST.PAGE_MAP = append(SST.PAGE_MAP,page_event)
+	sst.PAGE_MAP = append(sst.PAGE_MAP,page_event)
 }
 
 //**************************************************************
@@ -2157,7 +2154,7 @@ func CheckSequenceMode(context string, mode rune) {
 
 //**************************************************************
 
-func LinkUpStorySequence(sst SST.PoSST,this string) {
+func LinkUpStorySequence(sst *SST.PoSST,this string) {
 
 	// Join together a sequence of nodes using default "(then)"
 
@@ -2170,17 +2167,17 @@ func LinkUpStorySequence(sst SST.PoSST,this string) {
 			var last_iptr SST.NodePtr
 
 			if SEQUENCE_START {
-				last_iptr,_ = IdempAddNode(LAST_IN_SEQUENCE,SEQ_START)
+				last_iptr,_ = IdempAddNode(sst,LAST_IN_SEQUENCE,SEQ_START)
 				SEQUENCE_START = false
 			} else {
-				last_iptr,_ = IdempAddNode(LAST_IN_SEQUENCE,SEQ_UNKNOWN)
+				last_iptr,_ = IdempAddNode(sst,LAST_IN_SEQUENCE,SEQ_UNKNOWN)
 			}
 
-			this_iptr,_ := IdempAddNode(this,SEQ_UNKNOWN)
+			this_iptr,_ := IdempAddNode(sst,this,SEQ_UNKNOWN)
 			link := GetLinkArrowByName(sst,"(then)")
 			SST.AppendLinkToNode(sst,last_iptr,link,this_iptr)
 
-			invlink := GetLinkArrowByName(sst,SST.ARROW_DIRECTORY[SST.INVERSE_ARROWS[link.Arr]].Short)
+			invlink := GetLinkArrowByName(sst,sst.ARROW_DIRECTORY[sst.INVERSE_ARROWS[link.Arr]].Short)
 			SST.AppendLinkToNode(sst,this_iptr,invlink,last_iptr)
 
 		}
@@ -2223,7 +2220,7 @@ func StripAnnotations(fulltext string) string {
 
 //**************************************************************
 
-func AddBackAnnotations(sst SST.PoSST,cleantext string,cleanptr SST.NodePtr,annotated string) {
+func AddBackAnnotations(sst *SST.PoSST,cleantext string,cleanptr SST.NodePtr,annotated string) {
 
 	var protected bool = false
 
@@ -2247,7 +2244,7 @@ func AddBackAnnotations(sst SST.PoSST,cleantext string,cleanptr SST.NodePtr,anno
 						ParseError(err)
 					}
 
-					this_iptr,_ := IdempAddNode(this_item,SEQ_UNKNOWN)
+					this_iptr,_ := IdempAddNode(sst,this_item,SEQ_UNKNOWN)
 					const is_annotation = true
 					IdempAddLink(sst,reminder,cleanptr,link,this_item,this_iptr,is_annotation)
 					r += skip-1
@@ -2349,37 +2346,37 @@ func ExtractWord(fulltext string,offset int) string {
 
 //**************************************************************
 
-func GetMemChapters() []string {
+func GetMemChapters(sst SST.PoSST) []string {
 
 	var chapters = make(map[string]int)
 
-	for index := range SST.NODE_DIRECTORY.N1directory {
-		chap := SST.NODE_DIRECTORY.N1directory[index].Chap
+	for index := range sst.NODE_DIRECTORY.N1directory {
+		chap := sst.NODE_DIRECTORY.N1directory[index].Chap
 		chapters[chap]++
 	}
 
-	for index := range SST.NODE_DIRECTORY.N2directory {
-		chap := SST.NODE_DIRECTORY.N2directory[index].Chap
+	for index := range sst.NODE_DIRECTORY.N2directory {
+		chap := sst.NODE_DIRECTORY.N2directory[index].Chap
 		chapters[chap]++
 	}
 
-	for index := range SST.NODE_DIRECTORY.N3directory {
-		chap := SST.NODE_DIRECTORY.N3directory[index].Chap
+	for index := range sst.NODE_DIRECTORY.N3directory {
+		chap := sst.NODE_DIRECTORY.N3directory[index].Chap
 		chapters[chap]++
 	}
 
-	for index := range SST.NODE_DIRECTORY.LT128 {
-		chap := SST.NODE_DIRECTORY.LT128[index].Chap
+	for index := range sst.NODE_DIRECTORY.LT128 {
+		chap := sst.NODE_DIRECTORY.LT128[index].Chap
 		chapters[chap]++
 	}
 
-	for index := range SST.NODE_DIRECTORY.LT1024 {
-		chap := SST.NODE_DIRECTORY.LT1024[index].Chap
+	for index := range sst.NODE_DIRECTORY.LT1024 {
+		chap := sst.NODE_DIRECTORY.LT1024[index].Chap
 		chapters[chap]++
 	}
 
-	for index := range SST.NODE_DIRECTORY.GT1024 {
-		chap := SST.NODE_DIRECTORY.GT1024[index].Chap
+	for index := range sst.NODE_DIRECTORY.GT1024 {
+		chap := sst.NODE_DIRECTORY.GT1024[index].Chap
 		chapters[chap]++
 	}
 
@@ -2388,12 +2385,12 @@ func GetMemChapters() []string {
 
 //**************************************************************
 
-func GetNodePointedTo(sst SST.PoSST,node SST.Node,sequence []SST.ArrowPtr) (SST.NodePtr,bool) {
+func GetNodePointedTo(sst *SST.PoSST,node SST.Node,sequence []SST.ArrowPtr) (SST.NodePtr,bool) {
 
 	for _,s_arr := range sequence {
 
 		found := false
-		arrow := SST.ARROW_DIRECTORY[s_arr]
+		arrow := sst.ARROW_DIRECTORY[s_arr]
 		stindex := arrow.STAindex
 
 		for _,lnk := range node.I[stindex] {
@@ -2688,8 +2685,8 @@ func PrintNodeSystem(sst SST.PoSST,n int,org SST.Node, count_links *[4]int) {
 
 func PrintLink(sst SST.PoSST,l SST.Link) {
 
-	to := SST.GetNodeTxtFromPtr(sst,l.Dst)
-	arrow := SST.ARROW_DIRECTORY[l.Arr]
+	to := SST.GetNodeTxtFromPtr(&sst,l.Dst)
+	arrow := sst.ARROW_DIRECTORY[l.Arr]
 	Verbose("\t ... --(",arrow.Long,",",l.Wgt,")->",to,l.Ctx," \t . . .",SST.PrintSTAIndex(arrow.STAindex))
 }
 

@@ -68,8 +68,6 @@ func main() {
 
 	args := GetArgs()
 
-	SST.MemoryInit()
-
 	load_arrows := false
 	sst := SST.Open(load_arrows)
 
@@ -168,7 +166,7 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 
 	// Now convert strings into NodePointers
 
-	arrowptrs,sttype := SST.ArrowPtrFromArrowsNames(sst,search.Arrows)
+	arrowptrs,sttype := SST.ArrowPtrFromArrowsNames(&sst,search.Arrows)
 
 	arrows := arrowptrs != nil
 	sttypes := sttype != nil
@@ -352,7 +350,7 @@ func FindOrbits(sst SST.PoSST, nptrs []SST.NodePtr, limit int) {
 			return
 		}
 		fmt.Print("\n",nptr,": ")
-		SST.PrintNodeOrbit(sst,nptrs[nptr],limit)
+		SST.PrintNodeOrbit(&sst,nptrs[nptr],limit)
 	}
 }
 
@@ -374,7 +372,7 @@ func CausalCones(sst SST.PoSST,nptrs []SST.NodePtr, chap string, context []strin
 		for st := range sttype {
 
 			const maxlimit = SST.CAUSAL_CONE_MAXLIMIT
-			fcone,_ := SST.GetFwdPathsAsLinks(sst,nptrs[n],sttype[st],limit, maxlimit)
+			fcone,_ := SST.GetFwdPathsAsLinks(&sst,nptrs[n],sttype[st],limit, maxlimit)
 
 			if fcone != nil {
 				fmt.Printf("%d. ",total)
@@ -386,7 +384,7 @@ func CausalCones(sst SST.PoSST,nptrs []SST.NodePtr, chap string, context []strin
 			}
 
 			if sttype[st] != 0 {
-				bcone,_ := SST.GetFwdPathsAsLinks(sst,nptrs[n],-sttype[st],limit, maxlimit)
+				bcone,_ := SST.GetFwdPathsAsLinks(&sst,nptrs[n],-sttype[st],limit, maxlimit)
 
 				if bcone != nil {
 					fmt.Printf("%d. ",total)
@@ -417,7 +415,7 @@ func PathSolve(sst SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,con
 		fmt.Println("Solver/handler: PathSolve()")
 	}
 
-	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
+	solutions := SST.GetPathsAndSymmetries(&sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
 
 	if len(solutions) > 0 {
 
@@ -438,15 +436,15 @@ func ShowMatchingArrows(sst SST.PoSST,arrowptrs []SST.ArrowPtr,sttype []int) {
 	}
 
 	for a := range arrowptrs {
-		adir := SST.GetDBArrowByPtr(sst,arrowptrs[a])
-		inv := SST.GetDBArrowByPtr(sst,SST.INVERSE_ARROWS[arrowptrs[a]])
+		adir := SST.GetDBArrowByPtr(&sst,arrowptrs[a])
+		inv := SST.GetDBArrowByPtr(&sst,sst.INVERSE_ARROWS[arrowptrs[a]])
 		fmt.Printf("%3d. (st %d) %s -> %s,  with inverse = %3d. (st %d) %s -> %s\n",arrowptrs[a],SST.STIndexToSTType(adir.STAindex),adir.Short,adir.Long,inv.Ptr,SST.STIndexToSTType(inv.STAindex),inv.Short,inv.Long)
 	}
 
 	for st := range sttype {
 		adirs := SST.GetDBArrowBySTType(sst,sttype[st])
 		for adir := range adirs {
-			inv := SST.GetDBArrowByPtr(sst,SST.INVERSE_ARROWS[adirs[adir].Ptr])
+			inv := SST.GetDBArrowByPtr(&sst,sst.INVERSE_ARROWS[adirs[adir].Ptr])
 			fmt.Printf("%3d. (st %d) %s -> %s,  with inverse = %3d. (st %d) %s -> %s\n",adirs[adir].Ptr,SST.STIndexToSTType(adirs[adir].STAindex),adirs[adir].Short,adirs[adir].Long,inv.Ptr,SST.STIndexToSTType(inv.STAindex),inv.Short,inv.Long)
 		}
 	}
@@ -565,10 +563,10 @@ func ShowStories(sst SST.PoSST,nodeptrs []SST.NodePtr,arrowptrs []SST.ArrowPtr,s
 	fmt.Println("Solver/handler: HandleStories()")
 
 	if arrowptrs == nil {
-		arrowptrs,sttypes = SST.ArrowPtrFromArrowsNames(sst,[]string{"!then!"})
+		arrowptrs,sttypes = SST.ArrowPtrFromArrowsNames(&sst,[]string{"!then!"})
 	}
 
-	stories := SST.GetSequenceContainers(sst,nodeptrs,arrowptrs,sttypes,limit)
+	stories := SST.GetSequenceContainers(&sst,nodeptrs,arrowptrs,sttypes,limit)
 
 	for s := range stories {
 		// if there is no unique match, the data contain a list of alternatives
@@ -607,7 +605,7 @@ func ShowCone(sst SST.PoSST,cone [][]SST.Link,chap string,context []string,limit
 	count := 0
 
 	for s := 0; s < len(cone) && s < limit; s++ {
-		SST.PrintSomeLinkPath(sst,cone,s," - ",chap,context,limit)
+		SST.PrintSomeLinkPath(&sst,cone,s," - ",chap,context,limit)
 		count++
 	}
 
@@ -621,7 +619,7 @@ func ShowNode(sst SST.PoSST,nptr []SST.NodePtr) string {
 	var ret string
 
 	for n := range nptr {
-		node := SST.GetDBNodeByNodePtr(sst,nptr[n])
+		node := SST.GetDBNodeByNodePtr(&sst,nptr[n])
 		ret += fmt.Sprintf("\n    %.30s, ",node.S)
 	}
 
@@ -640,7 +638,7 @@ func PrintConstrainedLinkPath(sst SST.PoSST, cone [][]SST.Link, p int, prefix st
 		}
 	}
 
-	SST.PrintLinkPath(sst,cone,p,prefix,chapter,context)
+	SST.PrintLinkPath(&sst,cone,p,prefix,chapter,context)
 }
 
 // **********************************************************
@@ -650,7 +648,7 @@ func ArrowAllowed(sst SST.PoSST,arr SST.ArrowPtr, arrlist []SST.ArrowPtr, stlist
 	st_ok := false
 	arr_ok := false
 
-	staidx := SST.GetDBArrowByPtr(sst,arr).STAindex
+	staidx := SST.GetDBArrowByPtr(&sst,arr).STAindex
 	st := SST.STIndexToSTType(staidx)
 
 	if arrlist != nil {
@@ -691,7 +689,7 @@ func ShowNotes(sst SST.PoSST,notes []SST.PageMap) {
 
 	for n := 0; n < len(notes); n++ {
 
-		txtctx := SST.CONTEXT_DIRECTORY[notes[n].Context].Context
+		txtctx := sst.CONTEXT_DIRECTORY[notes[n].Context].Context
 
 		if last != notes[n].Chapter || lastc != txtctx {
 
@@ -706,13 +704,13 @@ func ShowNotes(sst SST.PoSST,notes []SST.PageMap) {
 
 		for lnk := 0; lnk < len(notes[n].Path); lnk++ {
 
-			text := SST.GetDBNodeByNodePtr(sst,notes[n].Path[lnk].Dst)
+			text := SST.GetDBNodeByNodePtr(&sst,notes[n].Path[lnk].Dst)
 
 			if lnk == 0 {
 				fmt.Printf("\n [line %d]: ",notes[n].Line)
 				fmt.Print(text.S," ")
 			} else {
-				arr := SST.GetDBArrowByPtr(sst,notes[n].Path[lnk].Arr)
+				arr := SST.GetDBArrowByPtr(&sst,notes[n].Path[lnk].Arr)
 				fmt.Printf("(%s) %s ",arr.Long,text.S)
 			}
 		}
@@ -724,7 +722,7 @@ func ShowNotes(sst SST.PoSST,notes []SST.PageMap) {
 func ShowTime(sst SST.PoSST,search SST.SearchParameters) {
 
 	ambient,key,now := SST.GetTimeContext()
-	now_ctx := SST.UpdateSTMContext(sst,ambient,key,now,search)
+	now_ctx := SST.UpdateSTMContext(&sst,ambient,key,now,search)
 	SST.ShowContext(ambient,now_ctx,key)
 
 }

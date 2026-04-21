@@ -22,10 +22,10 @@ var PAGENR int = 1
 
 func main() {
 
-	args := Init()
-
 	load_arrows := true
 	sst := SST.Open(load_arrows)
+
+	args := Init()
 
 	chapter := ""
 
@@ -72,8 +72,6 @@ func Init() []string {
 		os.Exit(-1)
 	}
 
-	SST.MemoryInit()
-
 	return args
 }
 
@@ -88,7 +86,7 @@ func Page(sst SST.PoSST,chapter string,context []string,page int) {
 
 	for n := 0; n < len(notes); n++ {
 
-		txtctx := SST.CONTEXT_DIRECTORY[notes[n].Context].Context
+		txtctx := sst.CONTEXT_DIRECTORY[notes[n].Context].Context
 
 		if last != notes[n].Chapter || lastc != txtctx {
 			fmt.Println("\n---------------------------------------------")
@@ -101,12 +99,12 @@ func Page(sst SST.PoSST,chapter string,context []string,page int) {
 
 		for lnk := 0; lnk < len(notes[n].Path); lnk++ {
 
-			text := SST.GetDBNodeByNodePtr(sst,notes[n].Path[lnk].Dst)
+			text := SST.GetDBNodeByNodePtr(&sst,notes[n].Path[lnk].Dst)
 
 			if lnk == 0 {
 				fmt.Print("\n",text.S," ")
 			} else {
-				arr := SST.GetDBArrowByPtr(sst,notes[n].Path[lnk].Arr)
+				arr := SST.GetDBArrowByPtr(&sst,notes[n].Path[lnk].Arr)
 				fmt.Printf("(%s) %s ",arr.Long,text.S)
 			}
 		}

@@ -21,8 +21,8 @@ func Open(load_arrows bool) PoSST {
 
 	var sst PoSST
 	var err error
-
-	// Replace this with a private file
+	
+	// Replace credentials with a private file
 
 	var (
 		user     = "sstoryline"
@@ -57,9 +57,13 @@ func Open(load_arrows bool) PoSST {
 		os.Exit(-1)
 	}
 
-	MemoryInit()
+	MemoryInit(&sst)
 	Configure(sst,load_arrows)
 
+	DownloadArrowsFromDB(&sst)
+	DownloadContextsFromDB(&sst)
+	SynchronizeNPtrs(&sst)
+	
 	NO_NODE_PTR.Class = 0
 	NO_NODE_PTR.CPtr =  -1
 	NONODE.Class = 0
@@ -156,28 +160,28 @@ func GetLine(s []byte,i int) (string,int) {
 
 // **************************************************************************
 
-func MemoryInit() {
+func MemoryInit(sst *PoSST) {
 
 //  When opening a connection, restore config and allocate maps
 
-        if NODE_DIRECTORY.N1grams == nil {
-		NODE_DIRECTORY.N1grams = make(map[string]ClassedNodePtr)
+        if sst.NODE_DIRECTORY.N1grams == nil {
+		sst.NODE_DIRECTORY.N1grams = make(map[string]ClassedNodePtr)
 	}
 
-	if NODE_DIRECTORY.N2grams == nil {
-		NODE_DIRECTORY.N2grams = make(map[string]ClassedNodePtr)
+	if sst.NODE_DIRECTORY.N2grams == nil {
+		sst.NODE_DIRECTORY.N2grams = make(map[string]ClassedNodePtr)
 	}
 
-	if NODE_DIRECTORY.N3grams == nil {
-		NODE_DIRECTORY.N3grams = make(map[string]ClassedNodePtr)
+	if sst.NODE_DIRECTORY.N3grams == nil {
+		sst.NODE_DIRECTORY.N3grams = make(map[string]ClassedNodePtr)
 	}
 
-	for i := 1; i < N_GRAM_MAX; i++ {
-
-		STM_NGRAM_FREQ[i] = make(map[string]float64)
-		STM_NGRAM_LOCA[i] = make(map[string][]int)
-		STM_NGRAM_LAST[i] = make(map[string]int)
-	}
+	sst.NODE_CACHE = make(map[NodePtr]NodePtr)
+	sst.INVERSE_ARROWS = make(map[ArrowPtr]ArrowPtr)
+	sst.ARROW_SHORT_DIR = make(map[string]ArrowPtr)
+	sst.ARROW_LONG_DIR = make(map[string]ArrowPtr)
+	sst.ARROW_DIRECTORY_TOP = 0
+	sst.CONTEXT_DIR = make(map[string]ContextPtr)
 }
 
 // **************************************************************************
@@ -293,10 +297,6 @@ func Configure(sst PoSST,load_arrows bool) {
 		fmt.Println("Unable to create table as, ",LASTSEEN_TABLE)
 		os.Exit(-1)
 	}
-
-	DownloadArrowsFromDB(sst)
-	DownloadContextsFromDB(sst)
-	SynchronizeNPtrs(sst)
 
 	// Find ignorable arrows
 }

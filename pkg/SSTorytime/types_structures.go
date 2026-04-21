@@ -16,7 +16,29 @@ import (
 
 type PoSST struct {
 
-   DB *sql.DB
+	DB *sql.DB
+	// Session globals
+	
+	NODE_DIRECTORY NodeDirectory  // Internal histo-representations
+	NODE_CACHE map[NodePtr]NodePtr
+        BASE_DB_CHANNEL_STATE[7] ClassedNodePtr
+
+	ARROW_DIRECTORY []ArrowDirectory
+	ARROW_SHORT_DIR map[string]ArrowPtr
+	ARROW_LONG_DIR map[string]ArrowPtr
+	ARROW_DIRECTORY_TOP ArrowPtr
+	INVERSE_ARROWS map[ArrowPtr]ArrowPtr
+
+	// Context array factorization
+
+	CONTEXT_DIRECTORY []ContextDirectory
+	CONTEXT_DIR map[string]ContextPtr
+	CONTEXT_TOP ContextPtr
+
+	// Page layout
+	
+	PAGE_MAP []PageMap
+
 }
 
 //******************************************************************

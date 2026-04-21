@@ -17,7 +17,7 @@ import (
 
 // *********************************************************************
 
-func UpdateSTMContext(sst PoSST,ambient,key string,now int64,params SearchParameters) string {
+func UpdateSTMContext(sst *PoSST,ambient,key string,now int64,params SearchParameters) string {
 
 	var context []string
 
@@ -49,7 +49,7 @@ func UpdateSTMContext(sst PoSST,ambient,key string,now int64,params SearchParame
 
 // *********************************************************************
 
-func AddContext(sst PoSST,ambient,key string,now int64,tokens []string) string {
+func AddContext(sst *PoSST,ambient,key string,now int64,tokens []string) string {
 
 	for t := range tokens {
 

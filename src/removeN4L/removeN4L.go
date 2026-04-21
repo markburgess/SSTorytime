@@ -65,8 +65,6 @@ func Init() []string {
 		os.Exit(1);
 	}
 
-	SST.MemoryInit()
-
 	return args
 }
 

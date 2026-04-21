@@ -31,10 +31,10 @@ var (
 
 func main() {
 
-	Init()
-
 	load_arrows := true
 	sst := SST.Open(load_arrows)
+
+	Init()
 
 	PathSolve(sst,CHAPTER,CONTEXT,BEGIN,END)
 
@@ -109,8 +109,6 @@ func Init() []string {
 		}
 	}
 
-	SST.MemoryInit()
-
 	return args
 }
 
@@ -143,9 +141,9 @@ func PathSolve(sst SST.PoSST, chapter,cntext,begin, end string) {
 		return
 	}
 
-	fmt.Printf("\n\n Paths < end_set= {%s} | {%s} = start set>\n\n",ShowNode(sst,rightptrs),ShowNode(sst,leftptrs))
+	fmt.Printf("\n\n Paths < end_set= {%s} | {%s} = start set>\n\n",ShowNode(&sst,rightptrs),ShowNode(&sst,leftptrs))
 
-	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
+	solutions := SST.GetPathsAndSymmetries(&sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
 
 	// Find the path matrix
 
@@ -155,8 +153,8 @@ func PathSolve(sst SST.PoSST, chapter,cntext,begin, end string) {
 
 		for s := 0; s < len(solutions); s++ {
 			prefix := fmt.Sprintf(" - story path: ")
-			SST.PrintLinkPath(sst,solutions,s,prefix,"",nil)
-			betweenness = TallyPath(sst,solutions[s],betweenness)
+			SST.PrintLinkPath(&sst,solutions,s,prefix,"",nil)
+			betweenness = TallyPath(&sst,solutions[s],betweenness)
 		}
 		count++
 	}
@@ -193,7 +191,7 @@ func PathSolve(sst SST.PoSST, chapter,cntext,begin, end string) {
 
 // **********************************************************
 
-func TallyPath(sst SST.PoSST,path []SST.Link,between map[string]int) map[string]int {
+func TallyPath(sst *SST.PoSST,path []SST.Link,between map[string]int) map[string]int {
 
 	// count how often each node appears in the different path solutions
 
@@ -207,7 +205,7 @@ func TallyPath(sst SST.PoSST,path []SST.Link,between map[string]int) map[string]
 
 // **********************************************************
 
-func ShowNode(sst SST.PoSST,nptr []SST.NodePtr) string {
+func ShowNode(sst *SST.PoSST,nptr []SST.NodePtr) string {
 
 	var ret string
 

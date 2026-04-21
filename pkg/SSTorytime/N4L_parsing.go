@@ -18,67 +18,67 @@ import (
 
 //**************************************************************
 
-func AppendTextToDirectory(event Node,ErrFunc func(string)) NodePtr {
+func AppendTextToDirectory(sst *PoSST,event Node,ErrFunc func(string)) NodePtr {
 
 	var cnode_slot ClassedNodePtr = -1
 	var ok bool = false
 	var node_alloc_ptr NodePtr
 
-	cnode_slot,ok = CheckExistingOrAltCaps(event,ErrFunc)
+	cnode_slot,ok = CheckExistingOrAltCaps(sst,event,ErrFunc)
 
 	node_alloc_ptr.Class = event.NPtr.Class
 
 	if ok {
 		node_alloc_ptr.CPtr = cnode_slot
-		IdempAddChapterSeqToNode(node_alloc_ptr.Class,node_alloc_ptr.CPtr,event.Chap,event.Seq)
+		IdempAddChapterSeqToNode(sst,node_alloc_ptr.Class,node_alloc_ptr.CPtr,event.Chap,event.Seq)
 		return node_alloc_ptr
 	}
 
 	switch event.NPtr.Class {
 	case N1GRAM:
-		cnode_slot = NODE_DIRECTORY.N1_top
+		cnode_slot = sst.NODE_DIRECTORY.N1_top
 		node_alloc_ptr.CPtr = cnode_slot
 		event.NPtr = node_alloc_ptr
-		NODE_DIRECTORY.N1directory = append(NODE_DIRECTORY.N1directory,event)
-		NODE_DIRECTORY.N1grams[event.S] = cnode_slot
-		NODE_DIRECTORY.N1_top++ 
+		sst.NODE_DIRECTORY.N1directory = append(sst.NODE_DIRECTORY.N1directory,event)
+		sst.NODE_DIRECTORY.N1grams[event.S] = cnode_slot
+		sst.NODE_DIRECTORY.N1_top++ 
 		return node_alloc_ptr
 	case N2GRAM:
-		cnode_slot = NODE_DIRECTORY.N2_top
+		cnode_slot = sst.NODE_DIRECTORY.N2_top
 		node_alloc_ptr.CPtr = cnode_slot
 		event.NPtr = node_alloc_ptr
-		NODE_DIRECTORY.N2directory = append(NODE_DIRECTORY.N2directory,event)
-		NODE_DIRECTORY.N2grams[event.S] = cnode_slot
-		NODE_DIRECTORY.N2_top++
+		sst.NODE_DIRECTORY.N2directory = append(sst.NODE_DIRECTORY.N2directory,event)
+		sst.NODE_DIRECTORY.N2grams[event.S] = cnode_slot
+		sst.NODE_DIRECTORY.N2_top++
 		return node_alloc_ptr
 	case N3GRAM:
-		cnode_slot = NODE_DIRECTORY.N3_top
+		cnode_slot = sst.NODE_DIRECTORY.N3_top
 		node_alloc_ptr.CPtr = cnode_slot
 		event.NPtr = node_alloc_ptr
-		NODE_DIRECTORY.N3directory = append(NODE_DIRECTORY.N3directory,event)
-		NODE_DIRECTORY.N3grams[event.S] = cnode_slot
-		NODE_DIRECTORY.N3_top++
+		sst.NODE_DIRECTORY.N3directory = append(sst.NODE_DIRECTORY.N3directory,event)
+		sst.NODE_DIRECTORY.N3grams[event.S] = cnode_slot
+		sst.NODE_DIRECTORY.N3_top++
 		return node_alloc_ptr
 	case LT128:
-		cnode_slot = NODE_DIRECTORY.LT128_top
+		cnode_slot = sst.NODE_DIRECTORY.LT128_top
 		node_alloc_ptr.CPtr = cnode_slot
 		event.NPtr = node_alloc_ptr
-		NODE_DIRECTORY.LT128 = append(NODE_DIRECTORY.LT128,event)
-		NODE_DIRECTORY.LT128_top++
+		sst.NODE_DIRECTORY.LT128 = append(sst.NODE_DIRECTORY.LT128,event)
+		sst.NODE_DIRECTORY.LT128_top++
 		return node_alloc_ptr
 	case LT1024:
-		cnode_slot = NODE_DIRECTORY.LT1024_top
+		cnode_slot = sst.NODE_DIRECTORY.LT1024_top
 		node_alloc_ptr.CPtr = cnode_slot
 		event.NPtr = node_alloc_ptr
-		NODE_DIRECTORY.LT1024 = append(NODE_DIRECTORY.LT1024,event)
-		NODE_DIRECTORY.LT1024_top++
+		sst.NODE_DIRECTORY.LT1024 = append(sst.NODE_DIRECTORY.LT1024,event)
+		sst.NODE_DIRECTORY.LT1024_top++
 		return node_alloc_ptr
 	case GT1024:
-		cnode_slot = NODE_DIRECTORY.GT1024_top
+		cnode_slot = sst.NODE_DIRECTORY.GT1024_top
 		node_alloc_ptr.CPtr = cnode_slot
 		event.NPtr = node_alloc_ptr
-		NODE_DIRECTORY.GT1024 = append(NODE_DIRECTORY.GT1024,event)
-		NODE_DIRECTORY.GT1024_top++
+		sst.NODE_DIRECTORY.GT1024 = append(sst.NODE_DIRECTORY.GT1024,event)
+		sst.NODE_DIRECTORY.GT1024_top++
 		return node_alloc_ptr
 	}
 
@@ -87,7 +87,7 @@ func AppendTextToDirectory(event Node,ErrFunc func(string)) NodePtr {
 
 //**************************************************************
 
-func CheckExistingOrAltCaps(event Node,ErrFunc func(string)) (ClassedNodePtr,bool) {
+func CheckExistingOrAltCaps(sst *PoSST,event Node,ErrFunc func(string)) (ClassedNodePtr,bool) {
 
 	var cnode_slot ClassedNodePtr = -1
 	var ok bool = false
@@ -95,17 +95,17 @@ func CheckExistingOrAltCaps(event Node,ErrFunc func(string)) (ClassedNodePtr,boo
 
 	switch event.NPtr.Class {
 	case N1GRAM:
-		cnode_slot,ok = NODE_DIRECTORY.N1grams[event.S]
+		cnode_slot,ok = sst.NODE_DIRECTORY.N1grams[event.S]
 	case N2GRAM:
-		cnode_slot,ok = NODE_DIRECTORY.N2grams[event.S]
+		cnode_slot,ok = sst.NODE_DIRECTORY.N2grams[event.S]
 	case N3GRAM:
-		cnode_slot,ok = NODE_DIRECTORY.N3grams[event.S]
+		cnode_slot,ok = sst.NODE_DIRECTORY.N3grams[event.S]
 	case LT128:
-		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.LT128,event,ignore_caps)
+		cnode_slot,ok = LinearFindText(sst.NODE_DIRECTORY.LT128,event,ignore_caps)
 	case LT1024:
-		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.LT1024,event,ignore_caps)
+		cnode_slot,ok = LinearFindText(sst.NODE_DIRECTORY.LT1024,event,ignore_caps)
 	case GT1024:
-		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.GT1024,event,ignore_caps)
+		cnode_slot,ok = LinearFindText(sst.NODE_DIRECTORY.GT1024,event,ignore_caps)
 	}
 
 	if ok {
@@ -118,30 +118,30 @@ func CheckExistingOrAltCaps(event Node,ErrFunc func(string)) (ClassedNodePtr,boo
 		
 		switch event.NPtr.Class {
 		case N1GRAM:
-			for key := range NODE_DIRECTORY.N1grams {
+			for key := range sst.NODE_DIRECTORY.N1grams {
 				if strings.ToLower(key) == strings.ToLower(event.S) {
 					alternative_caps = true
 				}
 			}
 		case N2GRAM:
-			for key := range NODE_DIRECTORY.N2grams {
+			for key := range sst.NODE_DIRECTORY.N2grams {
 				if strings.ToLower(key) == strings.ToLower(event.S) {
 					alternative_caps = true
 				}
 			}
 		case N3GRAM:
-			for key := range NODE_DIRECTORY.N3grams {
+			for key := range sst.NODE_DIRECTORY.N3grams {
 				if strings.ToLower(key) == strings.ToLower(event.S) {
 					alternative_caps = true
 				}
 			}
 
 		case LT128:
-			_,alternative_caps = LinearFindText(NODE_DIRECTORY.LT128,event,ignore_caps)
+			_,alternative_caps = LinearFindText(sst.NODE_DIRECTORY.LT128,event,ignore_caps)
 		case LT1024:
-			_,alternative_caps = LinearFindText(NODE_DIRECTORY.LT1024,event,ignore_caps)
+			_,alternative_caps = LinearFindText(sst.NODE_DIRECTORY.LT1024,event,ignore_caps)
 		case GT1024:
-			_,alternative_caps = LinearFindText(NODE_DIRECTORY.GT1024,event,ignore_caps)
+			_,alternative_caps = LinearFindText(sst.NODE_DIRECTORY.GT1024,event,ignore_caps)
 		}
 
 		if alternative_caps {
@@ -154,7 +154,7 @@ func CheckExistingOrAltCaps(event Node,ErrFunc func(string)) (ClassedNodePtr,boo
 
 //**************************************************************
 
-func IdempAddChapterSeqToNode(class int,cptr ClassedNodePtr,chap string,seq bool) {
+func IdempAddChapterSeqToNode(sst *PoSST,class int,cptr ClassedNodePtr,chap string,seq bool) {
 
 	/* In the DB version, we have handle chapter collisions
            we want all similar names to have a single node for lateral
@@ -163,7 +163,7 @@ func IdempAddChapterSeqToNode(class int,cptr ClassedNodePtr,chap string,seq bool
 
 	var node Node
 
-	node = UpdateSeqStatus(class,cptr,seq)
+	node = UpdateSeqStatus(sst,class,cptr,seq)
 
 	if strings.Contains(node.Chap,chap) {
 		return
@@ -173,43 +173,43 @@ func IdempAddChapterSeqToNode(class int,cptr ClassedNodePtr,chap string,seq bool
 
 	switch class {
 	case N1GRAM:
-		NODE_DIRECTORY.N1directory[cptr].Chap = newchap
+		sst.NODE_DIRECTORY.N1directory[cptr].Chap = newchap
 	case N2GRAM:
-		NODE_DIRECTORY.N2directory[cptr].Chap = newchap
+		sst.NODE_DIRECTORY.N2directory[cptr].Chap = newchap
 	case N3GRAM:
-		NODE_DIRECTORY.N3directory[cptr].Chap = newchap
+		sst.NODE_DIRECTORY.N3directory[cptr].Chap = newchap
 	case LT128:
-		NODE_DIRECTORY.LT128[cptr].Chap = newchap
+		sst.NODE_DIRECTORY.LT128[cptr].Chap = newchap
 	case LT1024:
-		NODE_DIRECTORY.LT1024[cptr].Chap = newchap
+		sst.NODE_DIRECTORY.LT1024[cptr].Chap = newchap
 	case GT1024:
-		NODE_DIRECTORY.GT1024[cptr].Chap = newchap
+		sst.NODE_DIRECTORY.GT1024[cptr].Chap = newchap
 	}
 }
 
 //**************************************************************
 
-func UpdateSeqStatus(class int,cptr ClassedNodePtr,seq bool) Node {
+func UpdateSeqStatus(sst *PoSST,class int,cptr ClassedNodePtr,seq bool) Node {
 
 	switch class {
 	case N1GRAM:
-		NODE_DIRECTORY.N1directory[cptr].Seq = NODE_DIRECTORY.N1directory[cptr].Seq || seq
-		return NODE_DIRECTORY.N1directory[cptr]
+		sst.NODE_DIRECTORY.N1directory[cptr].Seq = sst.NODE_DIRECTORY.N1directory[cptr].Seq || seq
+		return sst.NODE_DIRECTORY.N1directory[cptr]
 	case N2GRAM:
-		NODE_DIRECTORY.N2directory[cptr].Seq = NODE_DIRECTORY.N2directory[cptr].Seq || seq
-		return NODE_DIRECTORY.N2directory[cptr]
+		sst.NODE_DIRECTORY.N2directory[cptr].Seq = sst.NODE_DIRECTORY.N2directory[cptr].Seq || seq
+		return sst.NODE_DIRECTORY.N2directory[cptr]
 	case N3GRAM:
-		NODE_DIRECTORY.N3directory[cptr].Seq = NODE_DIRECTORY.N3directory[cptr].Seq || seq
-		return NODE_DIRECTORY.N3directory[cptr]
+		sst.NODE_DIRECTORY.N3directory[cptr].Seq = sst.NODE_DIRECTORY.N3directory[cptr].Seq || seq
+		return sst.NODE_DIRECTORY.N3directory[cptr]
 	case LT128:
-		NODE_DIRECTORY.LT128[cptr].Seq = NODE_DIRECTORY.LT128[cptr].Seq || seq
-		return NODE_DIRECTORY.LT128[cptr]
+		sst.NODE_DIRECTORY.LT128[cptr].Seq = sst.NODE_DIRECTORY.LT128[cptr].Seq || seq
+		return sst.NODE_DIRECTORY.LT128[cptr]
 	case LT1024:
-		NODE_DIRECTORY.LT1024[cptr].Seq = NODE_DIRECTORY.LT1024[cptr].Seq || seq
-		return NODE_DIRECTORY.LT1024[cptr]
+		sst.NODE_DIRECTORY.LT1024[cptr].Seq = sst.NODE_DIRECTORY.LT1024[cptr].Seq || seq
+		return sst.NODE_DIRECTORY.LT1024[cptr]
 	case GT1024:
-		NODE_DIRECTORY.GT1024[cptr].Seq = NODE_DIRECTORY.GT1024[cptr].Seq || seq
-		return NODE_DIRECTORY.GT1024[cptr]
+		sst.NODE_DIRECTORY.GT1024[cptr].Seq = sst.NODE_DIRECTORY.GT1024[cptr].Seq || seq
+		return sst.NODE_DIRECTORY.GT1024[cptr]
 	}
 
 	fmt.Println("Non existent node class (shouldn't happen)")
@@ -220,7 +220,7 @@ func UpdateSeqStatus(class int,cptr ClassedNodePtr,seq bool) Node {
 
 //**************************************************************
 
-func InsertArrowDirectory(stname,alias,name,pm string) ArrowPtr {
+func InsertArrowDirectory(sst *PoSST,stname,alias,name,pm string) ArrowPtr {
 
 	// Insert an arrow into the forward/backward indices
 
@@ -228,8 +228,8 @@ func InsertArrowDirectory(stname,alias,name,pm string) ArrowPtr {
 
 	// Check is already exists - harmless
 
-	prev_alias,a_exists := ARROW_SHORT_DIR[alias]
-	prev_name,n_exists := ARROW_LONG_DIR[name]
+	prev_alias,a_exists := sst.ARROW_SHORT_DIR[alias]
+	prev_name,n_exists := sst.ARROW_LONG_DIR[name]
 
 	if a_exists && n_exists {
 		if prev_alias == prev_name {
@@ -237,8 +237,8 @@ func InsertArrowDirectory(stname,alias,name,pm string) ArrowPtr {
 		}
 	}
 
-	for a := range ARROW_DIRECTORY {
-		if ARROW_DIRECTORY[a].Long == name || ARROW_DIRECTORY[a].Short == alias {
+	for a := range sst.ARROW_DIRECTORY {
+		if sst.ARROW_DIRECTORY[a].Long == name || sst.ARROW_DIRECTORY[a].Short == alias {
 			return ArrowPtr(-1)
 		}
 	}
@@ -246,19 +246,19 @@ func InsertArrowDirectory(stname,alias,name,pm string) ArrowPtr {
 	newarrow.STAindex = GetSTIndexByName(stname,pm)
 	newarrow.Long = name
 	newarrow.Short = alias
-	newarrow.Ptr = ARROW_DIRECTORY_TOP
+	newarrow.Ptr = sst.ARROW_DIRECTORY_TOP
 
-	ARROW_DIRECTORY = append(ARROW_DIRECTORY,newarrow)
-	ARROW_SHORT_DIR[alias] = ARROW_DIRECTORY_TOP
-	ARROW_LONG_DIR[name] = ARROW_DIRECTORY_TOP
-	ARROW_DIRECTORY_TOP++
+	sst.ARROW_DIRECTORY = append(sst.ARROW_DIRECTORY,newarrow)
+	sst.ARROW_SHORT_DIR[alias] = sst.ARROW_DIRECTORY_TOP
+	sst.ARROW_LONG_DIR[name] = sst.ARROW_DIRECTORY_TOP
+	sst.ARROW_DIRECTORY_TOP++
 
-	return ARROW_DIRECTORY_TOP-1
+	return sst.ARROW_DIRECTORY_TOP-1
 }
 
 //**************************************************************
 
-func InsertInverseArrowDirectory(fwd,bwd ArrowPtr) {
+func InsertInverseArrowDirectory(sst *PoSST,fwd,bwd ArrowPtr) {
 
 	if fwd == ArrowPtr(-1) || bwd == ArrowPtr(-1) {
 		return
@@ -266,17 +266,17 @@ func InsertInverseArrowDirectory(fwd,bwd ArrowPtr) {
 
 	// Lookup inverse by long name, only need this in search presentation
 
-	INVERSE_ARROWS[fwd] = bwd
-	INVERSE_ARROWS[bwd] = fwd
+	sst.INVERSE_ARROWS[fwd] = bwd
+	sst.INVERSE_ARROWS[bwd] = fwd
 }
 
 //**************************************************************
 
-func AppendLinkToNode(sst PoSST,frptr NodePtr,link Link,toptr NodePtr) {
+func AppendLinkToNode(sst *PoSST,frptr NodePtr,link Link,toptr NodePtr) {
 
 	frclass := frptr.Class
 	frm := frptr.CPtr
-	stindex := ARROW_DIRECTORY[link.Arr].STAindex
+	stindex := sst.ARROW_DIRECTORY[link.Arr].STAindex
 
 	link.Dst = toptr // fill in the last part of the reference
 
@@ -287,23 +287,23 @@ func AppendLinkToNode(sst PoSST,frptr NodePtr,link Link,toptr NodePtr) {
 	switch frclass {
 
 	case N1GRAM:
-		NODE_DIRECTORY.N1directory[frm].I[stindex] = MergeLinkLists(sst,NODE_DIRECTORY.N1directory[frm].I[stindex],link)
+		sst.NODE_DIRECTORY.N1directory[frm].I[stindex] = MergeLinkLists(sst,sst.NODE_DIRECTORY.N1directory[frm].I[stindex],link)
 	case N2GRAM:
-		NODE_DIRECTORY.N2directory[frm].I[stindex] = MergeLinkLists(sst,NODE_DIRECTORY.N2directory[frm].I[stindex],link)
+		sst.NODE_DIRECTORY.N2directory[frm].I[stindex] = MergeLinkLists(sst,sst.NODE_DIRECTORY.N2directory[frm].I[stindex],link)
 	case N3GRAM:
-		NODE_DIRECTORY.N3directory[frm].I[stindex] = MergeLinkLists(sst,NODE_DIRECTORY.N3directory[frm].I[stindex],link)
+		sst.NODE_DIRECTORY.N3directory[frm].I[stindex] = MergeLinkLists(sst,sst.NODE_DIRECTORY.N3directory[frm].I[stindex],link)
 	case LT128:
-		NODE_DIRECTORY.LT128[frm].I[stindex] = MergeLinkLists(sst,NODE_DIRECTORY.LT128[frm].I[stindex],link)
+		sst.NODE_DIRECTORY.LT128[frm].I[stindex] = MergeLinkLists(sst,sst.NODE_DIRECTORY.LT128[frm].I[stindex],link)
 	case LT1024:
-		NODE_DIRECTORY.LT1024[frm].I[stindex] = MergeLinkLists(sst,NODE_DIRECTORY.LT1024[frm].I[stindex],link)
+		sst.NODE_DIRECTORY.LT1024[frm].I[stindex] = MergeLinkLists(sst,sst.NODE_DIRECTORY.LT1024[frm].I[stindex],link)
 	case GT1024:
-		NODE_DIRECTORY.GT1024[frm].I[stindex] = MergeLinkLists(sst,NODE_DIRECTORY.GT1024[frm].I[stindex],link)
+		sst.NODE_DIRECTORY.GT1024[frm].I[stindex] = MergeLinkLists(sst,sst.NODE_DIRECTORY.GT1024[frm].I[stindex],link)
 	}
 }
 
 //**************************************************************
 
-func MergeLinkLists(sst PoSST,linklist []Link,lnk Link) []Link {
+func MergeLinkLists(sst *PoSST,linklist []Link,lnk Link) []Link {
 
 	// Ensure all arrows and contexts in lnk are in list for the appropriate arrows
 
@@ -332,7 +332,7 @@ func MergeLinkLists(sst PoSST,linklist []Link,lnk Link) []Link {
 
 //**************************************************************
 
-func MergeContextLists(sst PoSST,one,two []string) ContextPtr {
+func MergeContextLists(sst *PoSST,one,two []string) ContextPtr {
 
 	var merging = make(map[string]bool)
 	var merged []string
@@ -355,18 +355,18 @@ func MergeContextLists(sst PoSST,one,two []string) ContextPtr {
 
 	// Register the merger of contexts
 
-	ctxptr,ok := CONTEXT_DIR[ctxstr]
+	ctxptr,ok := sst.CONTEXT_DIR[ctxstr]
 
 	if ok {
 		return ctxptr
 	} else {
 		var cd ContextDirectory
 		cd.Context = ctxstr
-		cd.Ptr = CONTEXT_TOP
-		CONTEXT_DIRECTORY = append(CONTEXT_DIRECTORY,cd)
-		CONTEXT_DIR[ctxstr] = CONTEXT_TOP
-		ctxptr = CONTEXT_TOP
-		CONTEXT_TOP++
+		cd.Ptr = sst.CONTEXT_TOP
+		sst.CONTEXT_DIRECTORY = append(sst.CONTEXT_DIRECTORY,cd)
+		sst.CONTEXT_DIR[ctxstr] = sst.CONTEXT_TOP
+		ctxptr = sst.CONTEXT_TOP
+		sst.CONTEXT_TOP++
 	}
 
 	return ctxptr

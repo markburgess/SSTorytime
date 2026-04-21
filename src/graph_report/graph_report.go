@@ -29,10 +29,10 @@ var CLASS_CHANNEL_DESCRIPTION = []string{"","single word ngram","two word ngram"
 
 func main() {
 
-	Init()
-
 	load_arrows := true
 	sst := SST.Open(load_arrows)
+
+	Init()
 
 	chaps := SST.GetDBChaptersMatchingName(sst,CHAPTER)
 
@@ -109,15 +109,12 @@ func Init() []string {
 
 	DEPTH = *depthPtr
 
-	SST.MemoryInit()
-
 	return args
 }
 
 //******************************************************************
 
 func AnalyzeGraph(sst SST.PoSST,chapter string,context []string,sttypes []int,depth int) {
-
 
 	adj,nodekey := SST.GetDBAdjacentNodePtrBySTType(sst,sttypes,chapter,context,false)
 	symb := SST.SymbolMatrix(adj)
@@ -149,7 +146,7 @@ func AnalyzeGraph(sst SST.PoSST,chapter string,context []string,sttypes []int,de
 	fmt.Println(") in",chapter)
 	fmt.Println("")
 
-	PrintNodes(sst,sources)
+	PrintNodes(&sst,sources)
 
 	fmt.Println("")
 	fmt.Print("\n\n* FINAL END-STATES / PATH SINK NODES for (")
@@ -159,7 +156,7 @@ func AnalyzeGraph(sst SST.PoSST,chapter string,context []string,sttypes []int,de
 	fmt.Println(") in",chapter)
 	fmt.Println("")
 
-	PrintNodes(sst,sinks)
+	PrintNodes(&sst,sinks)
 
 	fmt.Println("")
 	fmt.Println("* DIRECTED LOOPS AND CYCLES (max depth < ",depth,"):\n")
@@ -202,24 +199,24 @@ func AnalyzeGraph(sst SST.PoSST,chapter string,context []string,sttypes []int,de
 	for st := range sttypes {
 		var ama map[SST.ArrowPtr][]SST.Appointment
 
-		ama = SST.GetAppointedNodesBySTType(sst,sttypes[st],context,chapter,2)
+		ama = SST.GetAppointedNodesBySTType(&sst,sttypes[st],context,chapter,2)
 
 		for arrowptr := range ama {
 
-			arr_dir := SST.GetDBArrowByPtr(sst,arrowptr)
+			arr_dir := SST.GetDBArrowByPtr(&sst,arrowptr)
 
 			// Appointment list
 			for n := 0; n < len(ama[arrowptr]); n++ {
 
 				appointed_nptr := ama[arrowptr][n].NTo
-				appointed := SST.GetDBNodeByNodePtr(sst,appointed_nptr)
+				appointed := SST.GetDBNodeByNodePtr(&sst,appointed_nptr)
 				dim := len(ama[arrowptr][n].NFrom)
 
 				fmt.Printf("\n   Appointer correlates -> %d appointed nodes (%s ...) in chapter \"%s\"\n\n",dim,appointed.S,chapter)
 
 				// Appointers list
 				for m := range ama[arrowptr][n].NFrom {
-					node := SST.GetDBNodeByNodePtr(sst,ama[arrowptr][n].NFrom[m])
+					node := SST.GetDBNodeByNodePtr(&sst,ama[arrowptr][n].NFrom[m])
 					stname := SST.STTypeName(SST.STIndexToSTType(arr_dir.STAindex))
 					fmt.Printf("     %.40s --(%s : %s)--> %.40s...   - in context %v\n",node.S,arr_dir.Long,stname,appointed.S,context)
 				}
@@ -236,7 +233,7 @@ func AnalyzeGraph(sst SST.PoSST,chapter string,context []string,sttypes []int,de
 
 	fmt.Println("* SYMMETRIZED EIGENVECTOR CENTRALITY = FLOW RESERVOIR CAPACITANCE AT EQUILIBRIUM = \n")
 
-	PrintVector(sst,evc,nodekey)
+	PrintVector(&sst,evc,nodekey)
 
 	regions,evctop,path := SST.FindGradientFieldTop(sadj,evc)
 
@@ -249,7 +246,7 @@ func AnalyzeGraph(sst SST.PoSST,chapter string,context []string,sttypes []int,de
 
 	for reg := range regions {
 		fmt.Println("  - subregion of maximum",reg,"consisting of nodes",regions[reg])
-		PrintKeyNodes(sst,regions[reg],nodekey)
+		PrintKeyNodes(&sst,regions[reg],nodekey)
 	}
 
 	fmt.Println("\n* HILL-CLIMBING EVC-LAMDSCAPE GRADIENT PATHS:\n")
@@ -343,7 +340,7 @@ func AnalyzePowerMatrix(sst SST.PoSST,symbolic [][]string) (map[string]int,map[s
 
 //**************************************************************
 
-func PrintNodes(sst SST.PoSST,nptrs []SST.NodePtr) {
+func PrintNodes(sst *SST.PoSST,nptrs []SST.NodePtr) {
 
 	for n := range nptrs {
 		node := SST.GetDBNodeByNodePtr(sst,nptrs[n])
@@ -353,7 +350,7 @@ func PrintNodes(sst SST.PoSST,nptrs []SST.NodePtr) {
 
 //**************************************************************
 
-func PrintKeyNodes(sst SST.PoSST,m []int,nodekey []SST.NodePtr) {
+func PrintKeyNodes(sst *SST.PoSST,m []int,nodekey []SST.NodePtr) {
 
 	for member := range m {
 		nptr := nodekey[m[member]]
@@ -364,7 +361,7 @@ func PrintKeyNodes(sst SST.PoSST,m []int,nodekey []SST.NodePtr) {
 
 //**************************************************************
 
-func PrintVector(sst SST.PoSST,vector []float32,nodekey []SST.NodePtr) {
+func PrintVector(sst *SST.PoSST,vector []float32,nodekey []SST.NodePtr) {
 
 	for row := 0; row < len(vector); row++ {
 		nptr := nodekey[row]

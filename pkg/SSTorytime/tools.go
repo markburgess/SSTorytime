@@ -806,7 +806,7 @@ func Arrow2Int(arr []ArrowPtr) []int {
 
 //****************************************************************************
 
-func MatchContexts(sst PoSST,context1 []string,context2ptr ContextPtr) bool {
+func MatchContexts(sst *PoSST,context1 []string,context2ptr ContextPtr) bool {
 
 	if context1 == nil || context2ptr == 0 {
 		return true

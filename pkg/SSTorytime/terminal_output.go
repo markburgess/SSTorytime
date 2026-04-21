@@ -15,7 +15,6 @@ import (
 
 //****************************************************************************
 
-
 func ShowText(s string, width int) {
 
 	var spacecounter int
@@ -164,7 +163,7 @@ func Waiting(output bool,total int) {
 
 // **************************************************************************
 
-func PrintNodeOrbit(sst PoSST, nptr NodePtr,limit int) {
+func PrintNodeOrbit(sst *PoSST, nptr NodePtr,limit int) {
 
 	node := GetDBNodeByNodePtr(sst,nptr)		
 	fmt.Print("\"")
@@ -211,14 +210,14 @@ func PrintLinkOrbit(satellites [ST_TOP][]Orbit,sttype int,indent_level int) {
 
 // **************************************************************************
 
-func PrintLinkPath(sst PoSST, cone [][]Link, p int, prefix string,chapter string,context []string) {
+func PrintLinkPath(sst *PoSST, cone [][]Link, p int, prefix string,chapter string,context []string) {
 
 	PrintSomeLinkPath(sst,cone, p,prefix,chapter,context,10000)
 }
 
 // **************************************************************************
 
-func PrintSomeLinkPath(sst PoSST, cone [][]Link, p int, prefix string,chapter string,context []string,limit int) {
+func PrintSomeLinkPath(sst *PoSST, cone [][]Link, p int, prefix string,chapter string,context []string,limit int) {
 
 	count := 0
 

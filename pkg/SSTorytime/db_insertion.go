@@ -16,7 +16,7 @@ import (
 
 //**************************************************************
 
-func FormDBNode(sst PoSST, n Node) string {
+func FormDBNode(sst *PoSST, n Node) string {
 
 	// Add node version setting explicit CPtr value, note different function call
 	// We use this function when we ARE managing/counting CPtr values ourselves
@@ -44,7 +44,7 @@ func FormDBNode(sst PoSST, n Node) string {
 
 // **************************************************************************
 
-func IdempDBAddNode(sst PoSST,n Node) Node {
+func IdempDBAddNode(sst *PoSST,n Node) Node {
 
 	// We use this function when we aren't counting CPtr values
 	// This functon may be deprecated in future
@@ -94,7 +94,7 @@ func IdempDBAddNode(sst PoSST,n Node) Node {
 
 // **************************************************************************
 
-func IdempDBAddLink(sst PoSST,from Node,link Link,to Node) {
+func IdempDBAddLink(sst *PoSST,from Node,link Link,to Node) {
 
 	// API Entry point for registering links
 
@@ -108,7 +108,7 @@ func IdempDBAddLink(sst PoSST,from Node,link Link,to Node) {
 		os.Exit(-1)
 	}
 
-	if link.Arr < 0 || len(ARROW_DIRECTORY) == 0 {
+	if link.Arr < 0 || len(sst.ARROW_DIRECTORY) == 0 {
 		fmt.Println("No arrows have yet been defined, so you can't rely on the arrow names")
 		os.Exit(-1)
 	}
@@ -118,7 +118,7 @@ func IdempDBAddLink(sst PoSST,from Node,link Link,to Node) {
 		os.Exit(-1)
 	}
 
-	sttype := STIndexToSTType(ARROW_DIRECTORY[link.Arr].STAindex)
+	sttype := STIndexToSTType(sst.ARROW_DIRECTORY[link.Arr].STAindex)
 
 	AppendDBLinkToNode(sst,frptr,link,sttype)
 
@@ -126,7 +126,7 @@ func IdempDBAddLink(sst PoSST,from Node,link Link,to Node) {
 	// But be careful not the make the graph undirected by mistake
 
 	var invlink Link
-	invlink.Arr = INVERSE_ARROWS[link.Arr]
+	invlink.Arr = sst.INVERSE_ARROWS[link.Arr]
 	invlink.Wgt = link.Wgt
 	invlink.Dst = frptr
 	AppendDBLinkToNode(sst,toptr,invlink,-sttype)
@@ -134,7 +134,7 @@ func IdempDBAddLink(sst PoSST,from Node,link Link,to Node) {
 
 // **************************************************************************
 
-func AppendDBLinkToNode(sst PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
+func AppendDBLinkToNode(sst *PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 
 	qstr := AppendDBLinkToNodeCommand(sst,n1ptr,lnk,sttype)
 
@@ -151,7 +151,7 @@ func AppendDBLinkToNode(sst PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 
 // **************************************************************************
 
-func AppendDBLinkToNodeCommand(sst PoSST, n1ptr NodePtr, lnk Link, sttype int) string {
+func AppendDBLinkToNodeCommand(sst *PoSST, n1ptr NodePtr, lnk Link, sttype int) string {
 
 	// Want to make this idempotent, because SQL is not (and not clause)
 
@@ -186,7 +186,7 @@ func AppendDBLinkToNodeCommand(sst PoSST, n1ptr NodePtr, lnk Link, sttype int) s
 
 // **************************************************************************
 
-func AppendDBLinkArrayToNode(sst PoSST, nptr NodePtr, array string, sttype int) string {
+func AppendDBLinkArrayToNode(sst *PoSST, nptr NodePtr, array string, sttype int) string {
 
 	// Want to make this idempotent, because SQL is not (and not clause)
 

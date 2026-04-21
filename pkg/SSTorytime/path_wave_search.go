@@ -15,7 +15,7 @@ import (
 
 // **************************************************************************
 
-func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,context []string,arrowptrs []ArrowPtr,sttypes []int,mindepth,maxdepth int) [][]Link {
+func GetPathsAndSymmetries(sst *PoSST,start_set,end_set []NodePtr,chapter string,context []string,arrowptrs []ArrowPtr,sttypes []int,mindepth,maxdepth int) [][]Link {
 
 	var left_paths, right_paths [][]Link
 	var ldepth,rdepth int = 1,1
@@ -33,7 +33,7 @@ func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,
 
 	// Complete Adjoint types for inverse/acceptor wave
 
-	adj_arrowptrs := AdjointArrows(arrowptrs)
+	adj_arrowptrs := AdjointArrows(sst,arrowptrs)
 	adj_sttypes := AdjointSTtype(sttypes)
 
 	// Prime paths - the different starting points could be parallelized in principle, but we might not win much
@@ -76,7 +76,7 @@ func GetPathsAndSymmetries(sst PoSST,start_set,end_set []NodePtr,chapter string,
 
 // **************************************************************************
 
-func IncConstraintConeLinks(sst PoSST,cone [][]Link,chapter string ,context []string,arrowptrs []ArrowPtr,sttypes []int,maxdepth int) [][]Link {
+func IncConstraintConeLinks(sst *PoSST,cone [][]Link,chapter string ,context []string,arrowptrs []ArrowPtr,sttypes []int,maxdepth int) [][]Link {
 
 	// Provide an incremental cone expander, so we can preserve state to avoid recomputation
 	// This will be increasingly effective as path length increases
@@ -118,7 +118,7 @@ func IncConstraintConeLinks(sst PoSST,cone [][]Link,chapter string ,context []st
 
 // **************************************************************************
 
-func GetConstrainedFwdLinks(sst PoSST,start []NodePtr,chapter string,context []string,sttypes []int,arrows []ArrowPtr,maxlimit int) []Link {
+func GetConstrainedFwdLinks(sst *PoSST,start []NodePtr,chapter string,context []string,sttypes []int,arrows []ArrowPtr,maxlimit int) []Link {
 
 	var ret []Link
 
@@ -167,7 +167,7 @@ func GetConstrainedFwdLinks(sst PoSST,start []NodePtr,chapter string,context []s
 
 // **************************************************************************
 
-func GetPathsAndSymmetries_legacy(sst PoSST,start_set,end_set []NodePtr,chapter string,context []string,arrowptrs []ArrowPtr,sttypes []int,mindepth,maxdepth int) [][]Link {
+func GetPathsAndSymmetries_legacy(sst *PoSST,start_set,end_set []NodePtr,chapter string,context []string,arrowptrs []ArrowPtr,sttypes []int,mindepth,maxdepth int) [][]Link {
 
 	var left_paths, right_paths [][]Link
 	var ldepth,rdepth int = 1,1
@@ -181,7 +181,7 @@ func GetPathsAndSymmetries_legacy(sst PoSST,start_set,end_set []NodePtr,chapter 
 
 	// Complete Adjoint types for inverse/acceptor wave
 
-	adj_arrowptrs := AdjointArrows(arrowptrs)
+	adj_arrowptrs := AdjointArrows(sst,arrowptrs)
 	adj_sttypes := AdjointSTtype(sttypes)
 
 	// Expand waves
@@ -238,13 +238,13 @@ func GetPathsAndSymmetries_legacy(sst PoSST,start_set,end_set []NodePtr,chapter 
 
 // **************************************************************************
 
-func AdjointArrows(arrowptrs []ArrowPtr) []ArrowPtr {
+func AdjointArrows(sst *PoSST,arrowptrs []ArrowPtr) []ArrowPtr {
 
 	var idemp = make(map[ArrowPtr]bool)
 	var result []ArrowPtr
 
 	for _,a := range arrowptrs {
-		idemp[INVERSE_ARROWS[a]] = true
+		idemp[sst.INVERSE_ARROWS[a]] = true
 	}
 
 	for a := range idemp {
@@ -269,7 +269,7 @@ func AdjointSTtype(sttypes []int) []int {
 
 // **************************************************************************
 
-func GetPathTransverseSuperNodes(sst PoSST,solutions [][]Link,maxdepth int) [][]NodePtr {
+func GetPathTransverseSuperNodes(sst *PoSST,solutions [][]Link,maxdepth int) [][]NodePtr {
 
 	var supernodes [][]NodePtr
 
@@ -306,7 +306,7 @@ func GetPathTransverseSuperNodes(sst PoSST,solutions [][]Link,maxdepth int) [][]
 
 // **********************************************************
 
-func WaveFrontsOverlap(sst PoSST,left_paths,right_paths [][]Link,Lnum,Rnum,ldepth,rdepth int) ([][]Link,[][]Link) {
+func WaveFrontsOverlap(sst *PoSST,left_paths,right_paths [][]Link,Lnum,Rnum,ldepth,rdepth int) ([][]Link,[][]Link) {
 
 	// The wave front consists of Lnum and Rnum points left_paths[len()-1].
 	// Any of the
@@ -329,7 +329,7 @@ func WaveFrontsOverlap(sst PoSST,left_paths,right_paths [][]Link,Lnum,Rnum,ldept
 			var LRsplice []Link		
 			
 			LRsplice = LeftJoin(LRsplice,left_paths[lp])
-			adjoint := AdjointLinkPath(right_paths[rp])
+			adjoint := AdjointLinkPath(sst,right_paths[rp])
 			LRsplice = RightComplementJoin(LRsplice,adjoint)
 
 			if IsDAG(LRsplice) {
@@ -360,7 +360,7 @@ func WaveFront(path [][]Link,num int) []NodePtr {
 
 // **********************************************************
 
-func NodesOverlap(sst PoSST,left,right []NodePtr) map[int][]int {
+func NodesOverlap(sst *PoSST,left,right []NodePtr) map[int][]int {
 
 	var LRsplice = make(map[int][]int)
 

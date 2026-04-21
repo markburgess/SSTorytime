@@ -18,50 +18,50 @@ import (
 
 func GraphToDB(sst PoSST,wait_counter bool) {
 
-	total := len(NODE_DIRECTORY.N1directory) + len(NODE_DIRECTORY.N2directory) + len(NODE_DIRECTORY.N3directory) + len(NODE_DIRECTORY.LT128) + len(NODE_DIRECTORY.LT1024) + len(NODE_DIRECTORY.GT1024) + len(PAGE_MAP)
+	total := len(sst.NODE_DIRECTORY.N1directory) + len(sst.NODE_DIRECTORY.N2directory) + len(sst.NODE_DIRECTORY.N3directory) + len(sst.NODE_DIRECTORY.LT128) + len(sst.NODE_DIRECTORY.LT1024) + len(sst.NODE_DIRECTORY.GT1024) + len(sst.PAGE_MAP)
 
 	fmt.Println("\nStoring primary nodes ...\n")
 
 	for class := N1GRAM; class <= GT1024; class++ {
 
-		offset := int(BASE_DB_CHANNEL_STATE[class])
+		offset := int(sst.BASE_DB_CHANNEL_STATE[class])
 
 		switch class {
 		case N1GRAM:
-			for n := offset; n < len(NODE_DIRECTORY.N1directory); n++ {
-				org := NODE_DIRECTORY.N1directory[n]
-				UploadNodeToDB(sst,org)
+			for n := offset; n < len(sst.NODE_DIRECTORY.N1directory); n++ {
+				org := sst.NODE_DIRECTORY.N1directory[n]
+				UploadNodeToDB(&sst,org)
 				Waiting(wait_counter,total)
 			}
 		case N2GRAM:
-			for n := offset; n < len(NODE_DIRECTORY.N2directory); n++ {
-				org := NODE_DIRECTORY.N2directory[n]
-				UploadNodeToDB(sst,org)
+			for n := offset; n < len(sst.NODE_DIRECTORY.N2directory); n++ {
+				org := sst.NODE_DIRECTORY.N2directory[n]
+				UploadNodeToDB(&sst,org)
 				Waiting(wait_counter,total)
 			}
 		case N3GRAM:
-			for n := offset; n < len(NODE_DIRECTORY.N3directory); n++ {
-				org := NODE_DIRECTORY.N3directory[n]
-				UploadNodeToDB(sst,org)
+			for n := offset; n < len(sst.NODE_DIRECTORY.N3directory); n++ {
+				org := sst.NODE_DIRECTORY.N3directory[n]
+				UploadNodeToDB(&sst,org)
 				Waiting(wait_counter,total)
 			}
 		case LT128:
-			for n := offset; n < len(NODE_DIRECTORY.LT128); n++ {
-				org := NODE_DIRECTORY.LT128[n]
-				UploadNodeToDB(sst,org)
+			for n := offset; n < len(sst.NODE_DIRECTORY.LT128); n++ {
+				org := sst.NODE_DIRECTORY.LT128[n]
+				UploadNodeToDB(&sst,org)
 				Waiting(wait_counter,total)
 			}
 		case LT1024:
-			for n := offset; n < len(NODE_DIRECTORY.LT1024); n++ {
-				org := NODE_DIRECTORY.LT1024[n]
-				UploadNodeToDB(sst,org)
+			for n := offset; n < len(sst.NODE_DIRECTORY.LT1024); n++ {
+				org := sst.NODE_DIRECTORY.LT1024[n]
+				UploadNodeToDB(&sst,org)
 				Waiting(wait_counter,total)
 			}
 
 		case GT1024:
-			for n := offset; n < len(NODE_DIRECTORY.GT1024); n++ {
-				org := NODE_DIRECTORY.GT1024[n]
-				UploadNodeToDB(sst,org)
+			for n := offset; n < len(sst.NODE_DIRECTORY.GT1024); n++ {
+				org := sst.NODE_DIRECTORY.GT1024[n]
+				UploadNodeToDB(&sst,org)
 				Waiting(wait_counter,total)
 			}
 		}
@@ -83,26 +83,26 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 		os.Exit(-1)
 	}
 
-	for arrow := range ARROW_DIRECTORY {
+	for arrow := range sst.ARROW_DIRECTORY {
 
 		UploadArrowToDB(sst,ArrowPtr(arrow))
 	}
 
 	fmt.Println("Storing inverse Arrows...")
 
-	for arrow := range INVERSE_ARROWS {
+	for arrow := range sst.INVERSE_ARROWS {
 
 		UploadInverseArrowToDB(sst,ArrowPtr(arrow))
 	}
 
 	fmt.Println("Storing contexts...")
 
-	UploadContextsToDB(sst)
+	UploadContextsToDB(&sst)
 
 	fmt.Println("Storing page map...")
 
-	for line := 0; line < len(PAGE_MAP); line ++ {
-		UploadPageMapEvent(sst,PAGE_MAP[line])
+	for line := 0; line < len(sst.PAGE_MAP); line ++ {
+		UploadPageMapEvent(sst,sst.PAGE_MAP[line])
 		Waiting(wait_counter,total)
 	}
 
@@ -126,7 +126,7 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 //  Uploading memory cache to database
 // **************************************************************************
 
-func UploadNodeToDB(sst PoSST, org Node) {
+func UploadNodeToDB(sst *PoSST, org Node) {
 
 	const nolink = 999
 
@@ -160,9 +160,9 @@ func UploadNodeToDB(sst PoSST, org Node) {
 
 func UploadArrowToDB(sst PoSST,arrow ArrowPtr) {
 
-	staidx := ARROW_DIRECTORY[arrow].STAindex
-	long := SQLEscape(ARROW_DIRECTORY[arrow].Long)
-	short := SQLEscape(ARROW_DIRECTORY[arrow].Short)
+	staidx := sst.ARROW_DIRECTORY[arrow].STAindex
+	long := SQLEscape(sst.ARROW_DIRECTORY[arrow].Long)
+	short := SQLEscape(sst.ARROW_DIRECTORY[arrow].Short)
 
 	qstr := fmt.Sprintf("INSERT INTO ArrowDirectory (STAindex,Long,Short,ArrPtr) SELECT %d,'%s','%s',%d WHERE NOT EXISTS (SELECT Long,Short,ArrPtr FROM ArrowDirectory WHERE lower(Long) = lower('%s') OR lower(Short) = lower('%s') OR ArrPtr = %d)",staidx,long,short,arrow,long,short,arrow)
 
@@ -186,7 +186,7 @@ func UploadArrowToDB(sst PoSST,arrow ArrowPtr) {
 func UploadInverseArrowToDB(sst PoSST,arrow ArrowPtr) {
 
 	plus := arrow
-	minus := INVERSE_ARROWS[arrow]
+	minus := sst.INVERSE_ARROWS[arrow]
 
 	qstr := fmt.Sprintf("INSERT INTO ArrowInverses (Plus,Minus) SELECT %d,%d WHERE NOT EXISTS (SELECT Plus,Minus FROM ArrowInverses WHERE Plus = %d OR minus = %d)",plus,minus,plus,minus)
 
@@ -206,16 +206,16 @@ func UploadInverseArrowToDB(sst PoSST,arrow ArrowPtr) {
 
 // **************************************************************************
 
-func UploadContextsToDB(sst PoSST) {
+func UploadContextsToDB(sst *PoSST) {
 
-	for ctxdir := range CONTEXT_DIRECTORY {
-		UploadContextToDB(sst,CONTEXT_DIRECTORY[ctxdir].Context,CONTEXT_DIRECTORY[ctxdir].Ptr)
+	for ctxdir := range sst.CONTEXT_DIRECTORY {
+		UploadContextToDB(sst,sst.CONTEXT_DIRECTORY[ctxdir].Context,sst.CONTEXT_DIRECTORY[ctxdir].Ptr)
 	}
 }
 
 // **************************************************************************
 
-func UploadContextToDB(sst PoSST,contextstring string,ptr ContextPtr) ContextPtr {
+func UploadContextToDB(sst *PoSST,contextstring string,ptr ContextPtr) ContextPtr {
 
 	a := SQLEscape(contextstring)
 	b := ptr

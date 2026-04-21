@@ -12,14 +12,14 @@ import (
 
 //**************************************************************
 
-func CompleteETCTypes(sst PoSST,node Node) string {
+func CompleteETCTypes(sst *PoSST,node Node) string {
 
 	message := ""
 
 	for st := 0; st < ST_TOP; st++ {
 
 		if len(node.I[st]) > 0 {
-			node.Psi,message = CollapsePsi(node,st)
+			node.Psi,message = CollapsePsi(sst,node,st)
 		}
 	}
 
@@ -28,7 +28,7 @@ func CompleteETCTypes(sst PoSST,node Node) string {
 
 //**************************************************************
 
-func CollapsePsi(node Node,stindex int) (Etc, string) {
+func CollapsePsi(sst *PoSST,node Node,stindex int) (Etc, string) {
 
 	// Follow the rules of SST Gamma(3,4) inference
 	// convergent search to fixed point, ultimately event
@@ -39,7 +39,7 @@ func CollapsePsi(node Node,stindex int) (Etc, string) {
 
 	message := ""
 
-	arrow := ARROW_DIRECTORY[node.I[stindex][0].Arr].Long
+	arrow := sst.ARROW_DIRECTORY[node.I[stindex][0].Arr].Long
 
 	switch sttype {
 		
@@ -51,7 +51,7 @@ func CollapsePsi(node Node,stindex int) (Etc, string) {
 		// skip bogus empty links
 		for l := 0; l < len(node.I[stindex]); l++ {
 
-			arrow = ARROW_DIRECTORY[node.I[stindex][l].Arr].Long
+			arrow = sst.ARROW_DIRECTORY[node.I[stindex][l].Arr].Long
 
 			if arrow == "empty" || arrow == "debug" {
 				continue

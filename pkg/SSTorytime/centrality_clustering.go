@@ -13,7 +13,6 @@ import (
 
 )
 
-
 // **************************************************************************
 
 func TallyPath(sst PoSST,path []Link,between map[string]int) map[string]int {
@@ -21,7 +20,7 @@ func TallyPath(sst PoSST,path []Link,between map[string]int) map[string]int {
 	// count how often each node appears in the different path solutions
 
 	for leg := range path {
-		n := GetDBNodeByNodePtr(sst,path[leg].Dst)
+		n := GetDBNodeByNodePtr(&sst,path[leg].Dst)
 		between[n.S]++
 	}
 
@@ -121,7 +120,7 @@ func SuperNodes(sst PoSST,solutions [][]Link, maxdepth int) []string {
 		super := ""
 
 		for n := range supernodes[g] {
-			node := GetDBNodeByNodePtr(sst,supernodes[g][n])
+			node := GetDBNodeByNodePtr(&sst,supernodes[g][n])
 			super += fmt.Sprintf("%s",node.S)
 			if n < len(supernodes[g])-1 {
 				super += ", "

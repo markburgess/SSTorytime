@@ -243,7 +243,7 @@ func GetDBChaptersMatchingName(sst PoSST,src string) []string {
 
 // **************************************************************************
 
-func GetDBContextByName(sst PoSST,src string) (string,ContextPtr) {
+func GetDBContextByName(sst *PoSST,src string) (string,ContextPtr) {
 
 	var qstr string
 
@@ -281,7 +281,7 @@ func GetDBContextByName(sst PoSST,src string) (string,ContextPtr) {
 
 // **************************************************************************
 
-func GetDBContextByPtr(sst PoSST,ptr ContextPtr) (string,ContextPtr) {
+func GetDBContextByPtr(sst *PoSST,ptr ContextPtr) (string,ContextPtr) {
 
 	qstr := fmt.Sprintf("SELECT DISTINCT Context,CtxPtr FROM ContextDirectory WHERE CtxPtr=%d",ptr)
 
@@ -314,7 +314,7 @@ func GetSTtypesFromArrows(sst PoSST,arrows []ArrowPtr) []int {
 	var sttypes []int
 
 	for a := range arrows {
-		sta := ARROW_DIRECTORY[arrows[a]].STAindex
+		sta := sst.ARROW_DIRECTORY[arrows[a]].STAindex
 		st := STIndexToSTType(sta)
 		sttypes = append(sttypes,st)
 	}
@@ -324,9 +324,9 @@ func GetSTtypesFromArrows(sst PoSST,arrows []ArrowPtr) []int {
 
 // **************************************************************************
 
-func GetDBNodeByNodePtr(sst PoSST,db_nptr NodePtr) Node {
+func GetDBNodeByNodePtr(sst *PoSST,db_nptr NodePtr) Node {
 
-	im_nptr,cached := NODE_CACHE[db_nptr]
+	im_nptr,cached := sst.NODE_CACHE[db_nptr]
 
 	if cached {
 		return GetMemoryNodeFromPtr(sst,im_nptr)
@@ -499,7 +499,7 @@ func GetDBSingletonBySTType(sst PoSST,sttypes []int,chap string,cn []string) ([]
 
 // **************************************************************************
 
-func SelectStoriesByArrow(sst PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []NodePtr {
+func SelectStoriesByArrow(sst *PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []NodePtr {
 
 	var matches []NodePtr
 
@@ -526,7 +526,7 @@ func SelectStoriesByArrow(sst PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, st
 
 // **************************************************************************
 
-func GetSequenceContainers(sst PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []Story {
+func GetSequenceContainers(sst *PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []Story {
 
 	// Story search
 
@@ -593,9 +593,9 @@ func GetSequenceContainers(sst PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, s
 
 // **************************************************************************
 
-func GetDBArrowsWithArrowName(sst PoSST,s string) (ArrowPtr,int) {
+func GetDBArrowsWithArrowName(sst *PoSST,s string) (ArrowPtr,int) {
 
-	if ARROW_DIRECTORY_TOP == 0 {
+	if sst.ARROW_DIRECTORY_TOP == 0 {
 		DownloadArrowsFromDB(sst)
 	}
 
@@ -606,10 +606,10 @@ func GetDBArrowsWithArrowName(sst PoSST,s string) (ArrowPtr,int) {
 		return 0,0
 	}
 
-	for a := range ARROW_DIRECTORY {
-		if s == ARROW_DIRECTORY[a].Long || s == ARROW_DIRECTORY[a].Short {
-			sttype := STIndexToSTType(ARROW_DIRECTORY[a].STAindex)
-			return ARROW_DIRECTORY[a].Ptr,sttype
+	for a := range sst.ARROW_DIRECTORY {
+		if s == sst.ARROW_DIRECTORY[a].Long || s == sst.ARROW_DIRECTORY[a].Short {
+			sttype := STIndexToSTType(sst.ARROW_DIRECTORY[a].STAindex)
+			return sst.ARROW_DIRECTORY[a].Ptr,sttype
 		}
 	}
 
@@ -619,11 +619,11 @@ func GetDBArrowsWithArrowName(sst PoSST,s string) (ArrowPtr,int) {
 
 // **************************************************************************
 
-func GetDBArrowsMatchingArrowName(sst PoSST,s string) []ArrowPtr {
+func GetDBArrowsMatchingArrowName(sst *PoSST,s string) []ArrowPtr {
 
 	var list []ArrowPtr
 
-	if ARROW_DIRECTORY_TOP == 0 {
+	if sst.ARROW_DIRECTORY_TOP == 0 {
 		DownloadArrowsFromDB(sst)
 	}
 
@@ -634,15 +634,15 @@ func GetDBArrowsMatchingArrowName(sst PoSST,s string) []ArrowPtr {
 	}
 
 	if trimmed != s {
-		for a := range ARROW_DIRECTORY {
-			if ARROW_DIRECTORY[a].Long==trimmed || ARROW_DIRECTORY[a].Short==trimmed {
-				list = append(list,ARROW_DIRECTORY[a].Ptr)
+		for a := range sst.ARROW_DIRECTORY {
+			if sst.ARROW_DIRECTORY[a].Long==trimmed || sst.ARROW_DIRECTORY[a].Short==trimmed {
+				list = append(list,sst.ARROW_DIRECTORY[a].Ptr)
 			}
 		}
 	} else {
-		for a := range ARROW_DIRECTORY {
-			if SimilarString(ARROW_DIRECTORY[a].Long,s) || SimilarString(ARROW_DIRECTORY[a].Short,s) {
-				list = append(list,ARROW_DIRECTORY[a].Ptr)
+		for a := range sst.ARROW_DIRECTORY {
+			if SimilarString(sst.ARROW_DIRECTORY[a].Long,s) || SimilarString(sst.ARROW_DIRECTORY[a].Short,s) {
+				list = append(list,sst.ARROW_DIRECTORY[a].Ptr)
 			}
 		}
 	}
@@ -652,9 +652,9 @@ func GetDBArrowsMatchingArrowName(sst PoSST,s string) []ArrowPtr {
 
 // **************************************************************************
 
-func GetDBArrowByName(sst PoSST,name string) ArrowPtr {
+func GetDBArrowByName(sst *PoSST,name string) ArrowPtr {
 
-	if ARROW_DIRECTORY_TOP == 0 {
+	if sst.ARROW_DIRECTORY_TOP == 0 {
 		DownloadArrowsFromDB(sst)
 	}
 
@@ -664,20 +664,20 @@ func GetDBArrowByName(sst PoSST,name string) ArrowPtr {
 		return 0
 	}
 
-	ptr, ok := ARROW_SHORT_DIR[name]
+	ptr, ok := sst.ARROW_SHORT_DIR[name]
 	
 	// If not, then check longname
 	
 	if !ok {
-		ptr, ok = ARROW_LONG_DIR[name]
+		ptr, ok = sst.ARROW_LONG_DIR[name]
 		
 		if !ok {
-			ptr, ok = ARROW_SHORT_DIR[name]
+			ptr, ok = sst.ARROW_SHORT_DIR[name]
 			
 			// If not, then check longname
 			
 			if !ok {
-				ptr, ok = ARROW_LONG_DIR[name]
+				ptr, ok = sst.ARROW_LONG_DIR[name]
 				fmt.Println(ERR_NO_SUCH_ARROW,"("+name+") - no arrows defined in database yet?")
 				return 0
 			}
@@ -689,20 +689,20 @@ func GetDBArrowByName(sst PoSST,name string) ArrowPtr {
 
 // **************************************************************************
 
-func GetDBArrowByPtr(sst PoSST,arrowptr ArrowPtr) ArrowDirectory {
+func GetDBArrowByPtr(sst *PoSST,arrowptr ArrowPtr) ArrowDirectory {
 
-	if int(arrowptr) > len(ARROW_DIRECTORY) {
+	if int(arrowptr) > len(sst.ARROW_DIRECTORY) {
 		DownloadArrowsFromDB(sst)
 	}
 
-	if int(arrowptr) < len(ARROW_DIRECTORY) {
-		a := ARROW_DIRECTORY[arrowptr]
+	if int(arrowptr) < len(sst.ARROW_DIRECTORY) {
+		a := sst.ARROW_DIRECTORY[arrowptr]
 		return a
 	} else {
-		return ARROW_DIRECTORY[0]
+		return sst.ARROW_DIRECTORY[0]
 	}
 		
-	return ARROW_DIRECTORY[arrowptr]
+	return sst.ARROW_DIRECTORY[arrowptr]
 
 }
 
@@ -712,12 +712,12 @@ func GetDBArrowBySTType(sst PoSST,sttype int) []ArrowDirectory {
 
 	var retval []ArrowDirectory
 
-	DownloadArrowsFromDB(sst)
+	DownloadArrowsFromDB(&sst)
 
-	for a := range ARROW_DIRECTORY {
-		sta := ARROW_DIRECTORY[a].STAindex
+	for a := range sst.ARROW_DIRECTORY {
+		sta := sst.ARROW_DIRECTORY[a].STAindex
 		if STIndexToSTType(sta) == sttype {
-			retval = append(retval,ARROW_DIRECTORY[a])
+			retval = append(retval,sst.ARROW_DIRECTORY[a])
 		}
 	}
 
@@ -726,7 +726,7 @@ func GetDBArrowBySTType(sst PoSST,sttype int) []ArrowDirectory {
 
 //******************************************************************
 
-func ArrowPtrFromArrowsNames(sst PoSST,arrows []string) ([]ArrowPtr,[]int) {
+func ArrowPtrFromArrowsNames(sst *PoSST,arrows []string) ([]ArrowPtr,[]int) {
 
 	// Parse input and discern arrow types, best guess
 
@@ -769,12 +769,12 @@ func ArrowPtrFromArrowsNames(sst PoSST,arrows []string) ([]ArrowPtr,[]int) {
 
 // **************************************************************************
 
-func GetAppointedNodesByArrow(sst PoSST,arrow ArrowPtr,cn []string,chap string,size int) map[ArrowPtr][]Appointment {
+func GetAppointedNodesByArrow(sst *PoSST,arrow ArrowPtr,cn []string,chap string,size int) map[ArrowPtr][]Appointment {
 
 	// return a map of all the nodes in chap,context that are pointed to by the same type of arrow
         // grouped by arrow
 
-	reverse_arrow := INVERSE_ARROWS[arrow]
+	reverse_arrow := sst.INVERSE_ARROWS[arrow]
 	arr := GetDBArrowByPtr(sst,reverse_arrow)
 	sttype := STIndexToSTType(arr.STAindex)
 
@@ -810,7 +810,7 @@ func GetAppointedNodesByArrow(sst PoSST,arrow ArrowPtr,cn []string,chap string,s
 		for row.Next() {
 			err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
 
-			next := ParseAppointedNodeCluster(whole)
+			next := ParseAppointedNodeCluster(sst,whole)
 			retval[next.Arr] = append(retval[next.Arr],next)
 		}
 	
@@ -822,7 +822,7 @@ func GetAppointedNodesByArrow(sst PoSST,arrow ArrowPtr,cn []string,chap string,s
 
 // **************************************************************************
 
-func GetAppointedNodesBySTType(sst PoSST,sttype int,cn []string,chap string,size int) map[ArrowPtr][]Appointment {
+func GetAppointedNodesBySTType(sst *PoSST,sttype int,cn []string,chap string,size int) map[ArrowPtr][]Appointment {
 
 	// return a map of all the nodes in chap,context that are pointed to by the same type of arrow
         // grouped by arrow
@@ -859,7 +859,7 @@ func GetAppointedNodesBySTType(sst PoSST,sttype int,cn []string,chap string,size
 		for row.Next() {
 			err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
 
-			next := ParseAppointedNodeCluster(whole)
+			next := ParseAppointedNodeCluster(sst,whole)
 			retval[next.Arr] = append(retval[next.Arr],next)
 		}	
 		row.Close()
@@ -870,7 +870,7 @@ func GetAppointedNodesBySTType(sst PoSST,sttype int,cn []string,chap string,size
 
 // **************************************************************************
 
-func ParseAppointedNodeCluster(whole string) Appointment {
+func ParseAppointedNodeCluster(sst *PoSST,whole string) Appointment {
 
     //  (13,-1,maze,{},"(1,3122)","{""(1,3121)"",""(1,3138)""}")
 
@@ -918,7 +918,7 @@ func ParseAppointedNodeCluster(whole string) Appointment {
 	fmt.Sscanf(l[1],"%d",&next.STType)
 
 	// invert arrow
-	next.Arr = INVERSE_ARROWS[ArrowPtr(arrp)]
+	next.Arr = sst.INVERSE_ARROWS[ArrowPtr(arrp)]
 	next.STType = -next.STType
 
 	next.Chap = l[2]
@@ -1000,7 +1000,7 @@ func GetDBPageMap(sst PoSST,chap string,cn []string,page int) []PageMap {
 
 // **************************************************************************
 
-func GetFwdConeAsNodes(sst PoSST, start NodePtr, sttype,depth int,limit int) []NodePtr {
+func GetFwdConeAsNodes(sst *PoSST, start NodePtr, sttype,depth int,limit int) []NodePtr {
 
 	qstr := fmt.Sprintf("select unnest(fwdconeasnodes) from FwdConeAsNodes('(%d,%d)',%d,%d,%d);",start.Class,start.CPtr,sttype,depth,limit)
 
@@ -1029,7 +1029,7 @@ func GetFwdConeAsNodes(sst PoSST, start NodePtr, sttype,depth int,limit int) []N
 
 // **************************************************************************
 
-func GetFwdConeAsLinks(sst PoSST, start NodePtr, sttype,depth int) []Link {
+func GetFwdConeAsLinks(sst *PoSST, start NodePtr, sttype,depth int) []Link {
 
 	// This function may be misleading as it doesn't respect paths, may be deprecated in future
 
@@ -1059,7 +1059,7 @@ func GetFwdConeAsLinks(sst PoSST, start NodePtr, sttype,depth int) []Link {
 
 // **************************************************************************
 
-func GetFwdPathsAsLinks(sst PoSST, start NodePtr, sttype,depth int, maxlimit int) ([][]Link,int) {
+func GetFwdPathsAsLinks(sst *PoSST, start NodePtr, sttype,depth int, maxlimit int) ([][]Link,int) {
 
 	qstr := fmt.Sprintf("SELECT FwdPathsAsLinks from FwdPathsAsLinks('(%d,%d)',%d,%d,%d);",start.Class,start.CPtr,sttype,depth,maxlimit)
 
@@ -1086,7 +1086,7 @@ func GetFwdPathsAsLinks(sst PoSST, start NodePtr, sttype,depth int, maxlimit int
 
 // **************************************************************************
 
-func GetEntireConePathsAsLinks(sst PoSST,orientation string,start NodePtr,depth int,limit int) ([][]Link,int) {
+func GetEntireConePathsAsLinks(sst *PoSST,orientation string,start NodePtr,depth int,limit int) ([][]Link,int) {
 
 	// orientation should be "fwd" or "bwd" else "both"
 
@@ -1122,7 +1122,7 @@ func GetEntireConePathsAsLinks(sst PoSST,orientation string,start NodePtr,depth 
 
 // **************************************************************************
 
-func GetEntireNCConePathsAsLinks(sst PoSST,orientation string,start []NodePtr,depth int,chapter string,context []string,limit int) ([][]Link,int) {
+func GetEntireNCConePathsAsLinks(sst *PoSST,orientation string,start []NodePtr,depth int,chapter string,context []string,limit int) ([][]Link,int) {
 
 	// See also GetConstraintConePathsAsLinks for an interface with arrow matching
 	// orientation should be "fwd" or "bwd" else "both"
@@ -1161,7 +1161,7 @@ func GetEntireNCConePathsAsLinks(sst PoSST,orientation string,start []NodePtr,de
 
 // **************************************************************************
 
-func GetConstraintConePathsAsLinks(sst PoSST,start []NodePtr,depth int,chapter string,context []string,arrowptrs []ArrowPtr,sttypes []int,limit int) ([][]Link,int) {
+func GetConstraintConePathsAsLinks(sst *PoSST,start []NodePtr,depth int,chapter string,context []string,arrowptrs []ArrowPtr,sttypes []int,limit int) ([][]Link,int) {
 
 	// See also GetEntireNCConePathsAsLinks() for a differently optimized interface
 	// orientation should be "fwd" or "bwd" else "both"

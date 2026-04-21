@@ -44,10 +44,10 @@ func main() {
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		left_paths,Lnum = SST.GetEntireConePathsAsLinks(sst,"any",leftptrs[0],ldepth,branching_limit)
-		right_paths,Rnum = SST.GetEntireConePathsAsLinks(sst,"any",rightptrs[0],rdepth,branching_limit)
+		left_paths,Lnum = SST.GetEntireConePathsAsLinks(&sst,"any",leftptrs[0],ldepth,branching_limit)
+		right_paths,Rnum = SST.GetEntireConePathsAsLinks(&sst,"any",rightptrs[0],rdepth,branching_limit)
 
-		solutions,loop_corrections := SST.WaveFrontsOverlap(sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
+		solutions,loop_corrections := SST.WaveFrontsOverlap(&sst,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
 		if len(solutions) > 0 {
 			fmt.Println("-- T R E E ----------------------------------")
@@ -55,7 +55,7 @@ func main() {
 
 			for s := 0; s < len(solutions); s++ {
 				prefix := fmt.Sprintf(" - story %d: ",s)
-				SST.PrintLinkPath(sst,solutions,s,prefix,"",nil)
+				SST.PrintLinkPath(&sst,solutions,s,prefix,"",nil)
 			}
 			count++
 			fmt.Println("-------------------------------------------")
@@ -67,7 +67,7 @@ func main() {
 
 			for s := 0; s < len(loop_corrections); s++ {
 				prefix := fmt.Sprintf(" - story %d: ",s)
-				SST.PrintLinkPath(sst,loop_corrections,s,prefix,"",nil)
+				SST.PrintLinkPath(&sst,loop_corrections,s,prefix,"",nil)
 			}
 			count++
 			fmt.Println("+++++++++++++++++++++++++++++++++++++++++++")

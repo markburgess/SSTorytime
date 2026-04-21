@@ -40,10 +40,10 @@ func main() {
 			context := []string{""}
 			var w float32 = 1.0
 
-			nfrom := SST.Vertex(sst,path[p][leg-1],chap)
-			nto := SST.Vertex(sst,path[p][leg],chap)
+			nfrom := SST.Vertex(&sst,path[p][leg-1],chap)
+			nto := SST.Vertex(&sst,path[p][leg],chap)
 
-			SST.Edge(sst,nfrom,"fwd",nto,context,w)
+			SST.Edge(&sst,nfrom,"fwd",nto,context,w)
 		}
 	}
 
@@ -78,43 +78,15 @@ func Solve(sst SST.PoSST) {
 		return
 	}
 
-	solutions := SST.GetPathsAndSymmetries(sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
+	solutions := SST.GetPathsAndSymmetries(&sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
 
 	if len(solutions) > 0 {
 		for s := 0; s < len(solutions); s++ {
 			prefix := fmt.Sprintf(" - story %d: ",s)
-			SST.PrintLinkPath(sst,solutions,s,prefix,"",nil)
+			SST.PrintLinkPath(&sst,solutions,s,prefix,"",nil)
 		}
 		count++
 	}
 
 }
 
-// **********************************************************
-
-func ShowNode(sst SST.PoSST,nptr []SST.NodePtr) string {
-
-	var ret string
-
-	for n := range nptr {
-		node := SST.GetDBNodeByNodePtr(sst,nptr[n])
-		ret += node.S + ","
-	}
-
-	return ret
-}
-
-// **********************************************************
-
-func ShowNodePath(sst SST.PoSST,lnk []SST.Link) string {
-
-	var ret string
-
-	for n := range lnk {
-		node := SST.GetDBNodeByNodePtr(sst,lnk[n].Dst)
-		arrs := SST.GetDBArrowByPtr(sst,lnk[n].Arr).Long
-		ret += fmt.Sprintf("(%s) -> %s ",arrs,node.S)
-	}
-
-	return ret
-}

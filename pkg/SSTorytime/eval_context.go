@@ -17,12 +17,12 @@ import (
 
 // **************************************************************************
 
-func GetContext(sst PoSST,contextptr ContextPtr) string {
+func GetContext(sst *PoSST,contextptr ContextPtr) string {
 
-	exists := int(contextptr) < len(CONTEXT_DIRECTORY)
+	exists := int(contextptr) < len(sst.CONTEXT_DIRECTORY)
 
 	if exists {
-		return CONTEXT_DIRECTORY[contextptr].Context
+		return sst.CONTEXT_DIRECTORY[contextptr].Context
 	}
 
 	return "unknown context"
@@ -30,7 +30,7 @@ func GetContext(sst PoSST,contextptr ContextPtr) string {
 
 // ****************************************************************************
 
-func RegisterContext(sst PoSST,parse_state map[string]bool,context []string) ContextPtr {
+func RegisterContext(sst *PoSST,parse_state map[string]bool,context []string) ContextPtr {
 
 	ctxstr := NormalizeContextString(parse_state,context)
 
@@ -38,16 +38,16 @@ func RegisterContext(sst PoSST,parse_state map[string]bool,context []string) Con
 		return 0
 	}
 
-	ctxptr,exists := CONTEXT_DIR[ctxstr] 
+	ctxptr,exists := sst.CONTEXT_DIR[ctxstr] 
 
 	if !exists {
 		var cd ContextDirectory
 		cd.Context = ctxstr
-		cd.Ptr = CONTEXT_TOP
-		CONTEXT_DIRECTORY = append(CONTEXT_DIRECTORY,cd)
-		CONTEXT_DIR[ctxstr] = CONTEXT_TOP
-		ctxptr = CONTEXT_TOP
-		CONTEXT_TOP++
+		cd.Ptr = sst.CONTEXT_TOP
+		sst.CONTEXT_DIRECTORY = append(sst.CONTEXT_DIRECTORY,cd)
+		sst.CONTEXT_DIR[ctxstr] = sst.CONTEXT_TOP
+		ctxptr = sst.CONTEXT_TOP
+		sst.CONTEXT_TOP++
 	}
 
 	return ctxptr
@@ -55,12 +55,13 @@ func RegisterContext(sst PoSST,parse_state map[string]bool,context []string) Con
 
 // **************************************************************************
 
-func TryContext(sst PoSST,context []string) ContextPtr {
+func TryContext(sst *PoSST,context []string) ContextPtr {
 
 	ctxstr := CompileContextString(context)
 	str,ctxptr := GetDBContextByName(sst,ctxstr)
-
+		fmt.Println("HERE")
 	if ctxptr == -1 || str != ctxstr {
+				fmt.Println("HERE3")
 		ctxptr = UploadContextToDB(sst,ctxstr,-1)
 		RegisterContext(sst,nil,context)
 	}
@@ -119,7 +120,7 @@ func NormalizeContextString(contextmap map[string]bool,ctx []string) string {
 
 // **************************************************************************
 
-func GetNodeContext(sst PoSST,node Node) []string {
+func GetNodeContext(sst *PoSST,node Node) []string {
 
 	str := GetNodeContextString(sst,node)
 
@@ -132,7 +133,7 @@ func GetNodeContext(sst PoSST,node Node) []string {
 
 // **************************************************************************
 
-func GetNodeContextString(sst PoSST,node Node) string {
+func GetNodeContextString(sst *PoSST,node Node) string {
 
 	// This reads the ghost link planted for the purpose of attaching
 	// a context to floating nodes

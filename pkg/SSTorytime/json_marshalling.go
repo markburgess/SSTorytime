@@ -20,13 +20,13 @@ import (
 
 func JSONNodeEvent(sst PoSST, nptr NodePtr,xyz Coords,orbits [ST_TOP][]Orbit) NodeEvent {
 
-	node := GetDBNodeByNodePtr(sst,nptr)
+	node := GetDBNodeByNodePtr(&sst,nptr)
 
 	var event NodeEvent
 	event.Text = node.S
 	event.L = node.L
 	event.Chap = node.Chap
-	event.Context = GetNodeContextString(sst,node)
+	event.Context = GetNodeContextString(&sst,node)
 	event.NPtr = nptr
 	event.XYZ = xyz
 	event.Orbits = orbits
@@ -35,7 +35,7 @@ func JSONNodeEvent(sst PoSST, nptr NodePtr,xyz Coords,orbits [ST_TOP][]Orbit) No
 
 // **************************************************************************
 
-func LinkWebPaths(sst PoSST,cone [][]Link,nth int,chapter string,context []string,swimlanes,limit int) [][]WebPath {
+func LinkWebPaths(sst *PoSST,cone [][]Link,nth int,chapter string,context []string,swimlanes,limit int) [][]WebPath {
 
 	// This is dealing in good faith with one of swimlanes cones, assigning equal width to all
 	// The cone is a flattened array, we can assign spatial coordinates for visualization
@@ -161,7 +161,7 @@ func GetChaptersByChapContext(sst PoSST,chap string,cn []string,limit int) map[s
 
 				rc := chps[c]
 
-				cn := strings.Split(GetContext(sst,rcontext),",")
+				cn := strings.Split(GetContext(&sst,rcontext),",")
 				ctx_grp := ""
 
 				for s := 0; s < len(cn); s++ {
@@ -198,7 +198,7 @@ func JSONPage(sst PoSST, maplines []PageMap) string {
 
 		var path []WebPath
 
-		txtctx := GetContext(sst,maplines[n].Context)
+		txtctx := GetContext(&sst,maplines[n].Context)
 
 		// Format superheader aggregate summary
 
@@ -228,7 +228,7 @@ func JSONPage(sst PoSST, maplines []PageMap) string {
 
 		for lnk := 0; lnk < len(maplines[n].Path); lnk++ {
 			
-			text := GetDBNodeByNodePtr(sst,maplines[n].Path[lnk].Dst)
+			text := GetDBNodeByNodePtr(&sst,maplines[n].Path[lnk].Dst)
 			
 			if lnk == 0 {
 				var ws WebPath
@@ -237,11 +237,11 @@ func JSONPage(sst PoSST, maplines []PageMap) string {
 				ws.XYZ = directory[ws.NPtr]
 				ws.Chp = maplines[n].Chapter
 				ws.Line = maplines[n].Line
-				ws.Ctx = GetContext(sst,maplines[n].Context)
+				ws.Ctx = GetContext(&sst,maplines[n].Context)
 				path = append(path,ws)
 				
 			} else {// ARROW
-				arr := GetDBArrowByPtr(sst,maplines[n].Path[lnk].Arr)
+				arr := GetDBArrowByPtr(&sst,maplines[n].Path[lnk].Arr)
 				var wl WebPath
 				wl.Name = arr.Long
 				wl.Arr = maplines[n].Path[lnk].Arr
@@ -270,7 +270,7 @@ func JSONPage(sst PoSST, maplines []PageMap) string {
 
 // **************************************************************************
 
-func GetNodeOrbit(sst PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TOP][]Orbit {
+func GetNodeOrbit(sst *PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TOP][]Orbit {
 
 	// radius = 0 is the starting node
 
@@ -303,7 +303,7 @@ func GetNodeOrbit(sst PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TO
 
 // **************************************************************************
 
-func AssembleSatellitesBySTtype(sst PoSST,stindex int,satellite []Orbit,sweep [][]Link,exclude_vector string,probe_radius int,limit int) []Orbit {
+func AssembleSatellitesBySTtype(sst *PoSST,stindex int,satellite []Orbit,sweep [][]Link,exclude_vector string,probe_radius int,limit int) []Orbit {
 
 	var already = make(map[string]bool)
 
@@ -391,13 +391,13 @@ func IdempAddSatellite(list []Orbit, item Orbit,already map[string]bool) []Orbit
 
 // **************************************************************************
 
-func GetLongestAxialPath(sst PoSST,nptr NodePtr,arrowptr ArrowPtr,limit int) []Link {
+func GetLongestAxialPath(sst *PoSST,nptr NodePtr,arrowptr ArrowPtr,limit int) []Link {
 
 	// Used in story search along extended STtype paths
 
 	var max int = 1
 
-	sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
+	sttype := STIndexToSTType(sst.ARROW_DIRECTORY[arrowptr].STAindex)
 
 	paths,dim := GetFwdPathsAsLinks(sst,nptr,sttype,limit,limit)
 

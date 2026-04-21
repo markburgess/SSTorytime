@@ -67,7 +67,12 @@ func Usage() {
 
 func RipFile2File(filename string,percentage float64){
 
-	SST.MemoryInit()
+	for i := 1; i < SST.N_GRAM_MAX; i++ {
+		
+		SST.STM_NGRAM_FREQ[i] = make(map[string]float64)
+		SST.STM_NGRAM_LOCA[i] = make(map[string][]int)
+		SST.STM_NGRAM_LAST[i] = make(map[string]int)
+	}
 
 	fmt.Println("Fractionating file...",filename)
 	psf,L := SST.FractionateTextFile(filename)

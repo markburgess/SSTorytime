@@ -15,7 +15,7 @@ import (
 
 //**************************************************************
 
-func Vertex(sst PoSST,name,chap string) Node {
+func Vertex(sst *PoSST,name,chap string) Node {
 
         // Automatic NPtr numbering
 
@@ -29,7 +29,7 @@ func Vertex(sst PoSST,name,chap string) Node {
 
 // **************************************************************************
 
-func Edge(sst PoSST,from Node,arrow string,to Node,context []string,weight float32) (ArrowPtr,int) {
+func Edge(sst *PoSST,from Node,arrow string,to Node,context []string,weight float32) (ArrowPtr,int) {
 
 	arrowptr,sttype := GetDBArrowsWithArrowName(sst,arrow)
 
@@ -47,7 +47,7 @@ func Edge(sst PoSST,from Node,arrow string,to Node,context []string,weight float
 
 // **************************************************************************
 
-func HubJoin(sst PoSST,name,chap string,nptrs []NodePtr,arrow string,context []string,weight []float32) Node {
+func HubJoin(sst *PoSST,name,chap string,nptrs []NodePtr,arrow string,context []string,weight []float32) Node {
 
 	// Create a container node joining several other nodes in a list, like a hyperlink
 

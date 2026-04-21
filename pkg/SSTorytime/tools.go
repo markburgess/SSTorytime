@@ -806,13 +806,13 @@ func Arrow2Int(arr []ArrowPtr) []int {
 
 //****************************************************************************
 
-func MatchContexts(context1 []string,context2ptr ContextPtr) bool {
+func MatchContexts(sst PoSST,context1 []string,context2ptr ContextPtr) bool {
 
 	if context1 == nil || context2ptr == 0 {
 		return true
 	}
 
-	context2 := strings.Split(GetContext(context2ptr),",")
+	context2 := strings.Split(GetContext(sst,context2ptr),",")
 
 	for c := range context1 {
 

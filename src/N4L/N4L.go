@@ -175,7 +175,7 @@ func main() {
 		sst = SST.Open(load_arrows)
 	}
 
-	AddMandatory()
+	AddMandatory(sst)
 
 	// Load arrow configurations
 
@@ -186,7 +186,7 @@ func main() {
 	for input := 0; input < len(config); input++ {
 		NewFile(config[input])
 		con := ReadFile(CURRENT_FILE)
-		ParseConfig(con)
+		ParseConfig(sst,con)
 	}
 
 	CONFIGURING = false
@@ -196,7 +196,7 @@ func main() {
 	for input := 0; input < len(args); input++ {
 		NewFile(args[input])
 		input := ReadFile(CURRENT_FILE)
-		ParseN4L(input)
+		ParseN4L(sst,input)
 	}
 
 	// Post process, complete NEAR cliques
@@ -357,16 +357,16 @@ func NewFile(filename string) {
 // N4L configuration
 //**************************************************************
 
-func ParseConfig(src []rune) {
+func ParseConfig(sst SST.PoSST,src []rune) {
 
 	var token string
 
 	for pos := 0; pos < len(src); {
 
-		pos = SkipWhiteSpace(src,pos)
+		pos = SkipWhiteSpace(sst,src,pos)
 		token,pos = GetConfigToken(src,pos)
 
-		ClassifyConfigRole(token)
+		ClassifyConfigRole(sst,token)
 	}
 }
 
@@ -411,7 +411,7 @@ func GetConfigToken(src []rune, pos int) (string,int) {
 
 //**************************************************************
 
-func ClassifyConfigRole(token string) {
+func ClassifyConfigRole(sst SST.PoSST,token string) {
 
 	if len(token) == 0 {
 		return
@@ -537,7 +537,7 @@ func ClassifyConfigRole(token string) {
 
 			if LINE_ITEM_STATE == ROLE_RESULT {
 
-				AddArrowClosure(LINE_ITEM_CACHE["THIS"],token)
+				AddArrowClosure(sst,LINE_ITEM_CACHE["THIS"],token)
 			} else {
 				LINE_ITEM_COUNTER++
 				LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
@@ -573,7 +573,7 @@ func ArrowCollision(arr SST.ArrowPtr,short,long string) {
 
 //**************************************************************
 
-func GetLinkArrowByName(token string) SST.Link {
+func GetLinkArrowByName(sst SST.PoSST,token string) SST.Link {
 
 	// Return a preregistered link/arrow ptr bythe name of a link
 
@@ -635,7 +635,7 @@ func GetLinkArrowByName(token string) SST.Link {
 	var link SST.Link
 	link.Arr = ptr
 	link.Wgt = weight
-	link.Ctx = SST.RegisterContext(CONTEXT_STATE,ctx)
+	link.Ctx = SST.RegisterContext(sst,CONTEXT_STATE,ctx)
 	return link
 }
 
@@ -698,17 +698,17 @@ func ResolveAliasedItem(token string) string {
 
 //**************************************************************
 
-func AddArrowClosure(sequence []string,result string) {
+func AddArrowClosure(sst SST.PoSST,sequence []string,result string) {
 
 	var closure Closure
 
 	for _,arrow := range sequence {
-		arr := GetLinkArrowByName(arrow).Arr
+		arr := GetLinkArrowByName(sst,arrow).Arr
 		closure.Sum += int(arr)
 		closure.Sequence = append(closure.Sequence,arr)
 	}
 
-	closure.Result = GetLinkArrowByName(result).Arr
+	closure.Result = GetLinkArrowByName(sst,result).Arr
 
 	ARROW_CLOSURES = append(ARROW_CLOSURES,closure)
 
@@ -816,7 +816,7 @@ func CompleteCloseness(sst SST.PoSST,node SST.Node) {
 					if !strings.HasPrefix(arrname,"!") {
 						m := fmt.Sprintf("   Complete: %s -(%s)-> %s",t1,arrname,t2)
 						Verbose(m)
-						SST.AppendLinkToNode(neighbours[n],link,neighbours[o])
+						SST.AppendLinkToNode(sst,neighbours[n],link,neighbours[o])
 					}
 				}
 			}
@@ -844,7 +844,7 @@ func CompleteSequences(sst SST.PoSST,node SST.Node) {
 
 			m := fmt.Sprintf("   Complete: %s -(%s)-> %s",t1,arrname,t2)
 			Verbose(m)
-			SST.AppendLinkToNode(nptr,link,node.NPtr)
+			SST.AppendLinkToNode(sst,nptr,link,node.NPtr)
 		}
 	}
 }
@@ -1281,16 +1281,16 @@ func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr,node_list
 // N4L language
 //**************************************************************
 
-func ParseN4L(src []rune) {
+func ParseN4L(sst SST.PoSST,src []rune) {
 
 	var token string
 
 	for pos := 0; pos < len(src); {
 
-		pos = SkipWhiteSpace(src,pos)
-		token,pos = GetToken(src,pos)
+		pos = SkipWhiteSpace(sst,src,pos)
+		token,pos = GetToken(sst,src,pos)
 
-		ClassifyTokenRole(token)
+		ClassifyTokenRole(sst,token)
 	}
 
 	if Dangler() {
@@ -1300,12 +1300,12 @@ func ParseN4L(src []rune) {
 
 //**************************************************************
 
-func SkipWhiteSpace(src []rune, pos int) int {
+func SkipWhiteSpace(sst SST.PoSST,src []rune, pos int) int {
 
 	for ; pos < len(src) && IsWhiteSpace(src[pos],src[pos]); pos++ {
 
 		if src[pos] == '\n' {
-			UpdateLastLineCache()
+			UpdateLastLineCache(sst)
 		} else {
 
 			if src[pos] == '#' || (src[pos] == '/' && src[pos+1] == '/') {
@@ -1313,7 +1313,7 @@ func SkipWhiteSpace(src []rune, pos int) int {
 				for ; pos < len(src) && src[pos] != '\n'; pos++ {
 				}
 
-				UpdateLastLineCache()
+				UpdateLastLineCache(sst)
 			}
 		}
 	}
@@ -1323,9 +1323,9 @@ func SkipWhiteSpace(src []rune, pos int) int {
 
 //**************************************************************
 
-func AddMandatory() {
+func AddMandatory(sst SST.PoSST) {
 
-	SST.RegisterContext(nil,[]string{"any"})
+	SST.RegisterContext(sst,nil,[]string{"any"})
 
 	// empty link for orphans to retain context - NB, this convention is used a lot in context handling EMPTY == LEADSTO
 
@@ -1405,14 +1405,14 @@ func ReadConfig() []string {
 
 //**************************************************************
 
-func GetToken(src []rune, pos int) (string,int) {
+func GetToken(sst SST.PoSST,src []rune, pos int) (string,int) {
 
 	// Handle concatenation of words/lines and separation of types
 
 	var token string
 
 	if pos >= len(src) {	    // end of file
-		UpdateLastLineCache()
+		UpdateLastLineCache(sst)
 		return "", pos
 	}
 
@@ -1481,7 +1481,7 @@ func GetToken(src []rune, pos int) (string,int) {
 
 //**************************************************************
 
-func ClassifyTokenRole(token string) {
+func ClassifyTokenRole(sst SST.PoSST,token string) {
 
 	if len(token) == 0 {
 		return
@@ -1493,29 +1493,29 @@ func ClassifyTokenRole(token string) {
 		expression := ExtractContextExpression(token)
 		CheckSequenceMode(expression,'+')
 		LINE_ITEM_STATE = ROLE_CONTEXT
-		AssessGrammarCompletions(expression,LINE_ITEM_STATE)
+		AssessGrammarCompletions(sst,expression,LINE_ITEM_STATE)
 
 	case '+':
 		expression := ExtractContextExpression(token)
 		CheckSequenceMode(expression,'+')
 		LINE_ITEM_STATE = ROLE_CONTEXT_ADD
-		AssessGrammarCompletions(expression,LINE_ITEM_STATE)
+		AssessGrammarCompletions(sst,expression,LINE_ITEM_STATE)
 
 	case '-':
 		if token[len(token)-1:] == string(':') {
 			expression := ExtractContextExpression(token)
 			CheckSequenceMode(expression,'-')
 			LINE_ITEM_STATE = ROLE_CONTEXT_SUBTRACT
-			AssessGrammarCompletions(expression,LINE_ITEM_STATE)
+			AssessGrammarCompletions(sst,expression,LINE_ITEM_STATE)
 		} else if len(SECTION_STATE) == 0 {
 			section := strings.TrimSpace(token[1:])
 			LINE_ITEM_STATE = ROLE_SECTION
-			AssessGrammarCompletions(section,LINE_ITEM_STATE)
+			AssessGrammarCompletions(sst,section,LINE_ITEM_STATE)
 		} else {
 			// The line starts with a -, but it's not a new chapter
 			LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
 			StoreAlias(token)
-			AssessGrammarCompletions(token,LINE_ITEM_STATE)
+			AssessGrammarCompletions(sst,token,LINE_ITEM_STATE)
 
 			LINE_ITEM_STATE = ROLE_EVENT
 			LINE_ITEM_COUNTER++
@@ -1528,7 +1528,7 @@ func ClassifyTokenRole(token string) {
 			ParseError(ERR_MISSING_ITEM_RELN)
 			os.Exit(-1)
 		}
-		link := GetLinkArrowByName(token)
+		link := GetLinkArrowByName(sst,token)
 		LINE_ITEM_STATE = ROLE_RELATION
 		LINE_RELN_CACHE["THIS"] = append(LINE_RELN_CACHE["THIS"],link)
 		LINE_RELN_COUNTER++
@@ -1537,7 +1537,7 @@ func ClassifyTokenRole(token string) {
 		result := LookupAlias("PREV",LINE_ITEM_COUNTER)
 		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],result)
 		StoreAlias(result)
-		AssessGrammarCompletions(result,LINE_ITEM_STATE)
+		AssessGrammarCompletions(sst,result,LINE_ITEM_STATE)
 		LINE_ITEM_STATE = ROLE_EVENT
 		LINE_ITEM_COUNTER++
 
@@ -1552,14 +1552,14 @@ func ClassifyTokenRole(token string) {
 		actual := ResolveAliasedItem(token)
 		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],actual)
 		PVerbose("fyi, line reference",token,"resolved to",actual)
-		AssessGrammarCompletions(actual,LINE_ITEM_STATE)
+		AssessGrammarCompletions(sst,actual,LINE_ITEM_STATE)
 		LINE_ITEM_STATE = ROLE_LOOKUP
 		LINE_ITEM_COUNTER++
 
 	default:
 		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
 		StoreAlias(token)
-		AssessGrammarCompletions(token,LINE_ITEM_STATE)
+		AssessGrammarCompletions(sst,token,LINE_ITEM_STATE)
 
 		LINE_ITEM_STATE = ROLE_EVENT
 		LINE_ITEM_COUNTER++
@@ -1568,7 +1568,7 @@ func ClassifyTokenRole(token string) {
 
 //**************************************************************
 
-func AssessGrammarCompletions(token string, prior_state int) {
+func AssessGrammarCompletions(sst SST.PoSST,token string, prior_state int) {
 
 	if len(token) == 0 {
 		return
@@ -1592,9 +1592,9 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
 		last_iptr := LINE_ITEM_REFS[LINE_ITEM_COUNTER-2]
-		this_iptr := HandleNode(this_item)
+		this_iptr := HandleNode(sst,this_item)
 		const annotation = false
-		IdempAddLink(last_item,last_iptr,last_reln,this_item,this_iptr,annotation)
+		IdempAddLink(sst,last_item,last_iptr,last_reln,this_item,this_iptr,annotation)
 		CheckSection(this_item)
 
 	case ROLE_CONTEXT:
@@ -1624,8 +1624,8 @@ func AssessGrammarCompletions(token string, prior_state int) {
 			ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
 		}
 
-		HandleNode(this_item)
-		LinkUpStorySequence(this_item)
+		HandleNode(sst,this_item)
+		LinkUpStorySequence(sst,this_item)
 	}
 }
 
@@ -1675,7 +1675,7 @@ func StoreAlias(name string) {
 // Memory representation
 //**************************************************************
 
-func IdempAddLink(from string, frptr SST.NodePtr, link SST.Link,to string, toptr SST.NodePtr, is_annotation bool) {
+func IdempAddLink(sst SST.PoSST,from string, frptr SST.NodePtr, link SST.Link,to string, toptr SST.NodePtr, is_annotation bool) {
 
 	// Add a link index cache pointer directly to a from node
 
@@ -1703,20 +1703,20 @@ func IdempAddLink(from string, frptr SST.NodePtr, link SST.Link,to string, toptr
 		os.Exit(-1)
 	}
 
-	SST.AppendLinkToNode(frptr,link,toptr)
+	SST.AppendLinkToNode(sst,frptr,link,toptr)
 
 	// Double up the reverse definition for easy indexing of both in/out arrows
 	// But be careful not the make the graph undirected by mistake
 
-	invlink := GetLinkArrowByName(SST.ARROW_DIRECTORY[SST.INVERSE_ARROWS[link.Arr]].Short)
+	invlink := GetLinkArrowByName(sst,SST.ARROW_DIRECTORY[SST.INVERSE_ARROWS[link.Arr]].Short)
 
-	SST.AppendLinkToNode(toptr,invlink,frptr)
+	SST.AppendLinkToNode(sst,toptr,invlink,frptr)
 
 }
 
 //**************************************************************
 
-func HandleNode(annotated string) SST.NodePtr {
+func HandleNode(sst SST.PoSST,annotated string) SST.NodePtr {
 
 	clean_ptr,clean_version := IdempAddNode(annotated,SEQ_UNKNOWN)
 
@@ -1725,10 +1725,10 @@ func HandleNode(annotated string) SST.NodePtr {
 	LINE_ITEM_REFS = append(LINE_ITEM_REFS,clean_ptr)
 
 	if len(clean_version) != len(annotated) {
-		AddBackAnnotations(clean_version,clean_ptr,annotated)
+		AddBackAnnotations(sst,clean_version,clean_ptr,annotated)
 	}
 
-	IdempAddContextToNode(clean_ptr)
+	IdempAddContextToNode(sst,clean_ptr)
 
 	return clean_ptr
 }
@@ -1763,18 +1763,18 @@ func IdempAddNode(s string,intended_sequence bool) (SST.NodePtr,string) {
 
 //**************************************************************
 
-func IdempAddContextToNode(nptr SST.NodePtr) {
+func IdempAddContextToNode(sst SST.PoSST,nptr SST.NodePtr) {
 
 	// add a nullpotent link containing root node for
 	// context membership, in case it's a singleton
 
 	var nowhere SST.NodePtr
 	var empty SST.Link
-	empty.Ctx = SST.RegisterContext(CONTEXT_STATE,nil)
+	empty.Ctx = SST.RegisterContext(sst,CONTEXT_STATE,nil)
 	empty.Arr = 0
 	empty.Wgt = 1
 
-	SST.AppendLinkToNode(nptr,empty,nowhere)
+	SST.AppendLinkToNode(sst,nptr,empty,nowhere)
 }
 
 //**************************************************************
@@ -1989,14 +1989,14 @@ func LastSpecialChar(src []rune,pos int, stop rune) bool {
 
 //**************************************************************
 
-func UpdateLastLineCache() {
+func UpdateLastLineCache(sst SST.PoSST,) {
 
 	if Dangler() {
 		ParseError(ERR_MISSING_EVENT)
 	}
 
 	if !CONFIGURING {
-		PageMap(SECTION_STATE,CONTEXT_STATE,LINE_PATH,LINE_NUM,LINE_ALIAS)
+		PageMap(sst,SECTION_STATE,CONTEXT_STATE,LINE_PATH,LINE_NUM,LINE_ALIAS)
 	}
 
 	LINE_NUM++
@@ -2027,7 +2027,7 @@ func UpdateLastLineCache() {
 
 //**************************************************************
 
-func PageMap(chapter string,ctxmap map[string]bool,path []SST.Link,line int,alias string) {
+func PageMap(sst SST.PoSST,chapter string,ctxmap map[string]bool,path []SST.Link,line int,alias string) {
 
 	if len(path) == 0 {
 		return
@@ -2052,7 +2052,7 @@ func PageMap(chapter string,ctxmap map[string]bool,path []SST.Link,line int,alia
 
 	page_event.Chapter = chapter
 	page_event.Alias = alias
-	page_event.Context = SST.RegisterContext(CONTEXT_STATE,nil)
+	page_event.Context = SST.RegisterContext(sst,CONTEXT_STATE,nil)
 	page_event.Line = line
 	page_event.Path = path
 
@@ -2157,7 +2157,7 @@ func CheckSequenceMode(context string, mode rune) {
 
 //**************************************************************
 
-func LinkUpStorySequence(this string) {
+func LinkUpStorySequence(sst SST.PoSST,this string) {
 
 	// Join together a sequence of nodes using default "(then)"
 
@@ -2177,11 +2177,11 @@ func LinkUpStorySequence(this string) {
 			}
 
 			this_iptr,_ := IdempAddNode(this,SEQ_UNKNOWN)
-			link := GetLinkArrowByName("(then)")
-			SST.AppendLinkToNode(last_iptr,link,this_iptr)
+			link := GetLinkArrowByName(sst,"(then)")
+			SST.AppendLinkToNode(sst,last_iptr,link,this_iptr)
 
-			invlink := GetLinkArrowByName(SST.ARROW_DIRECTORY[SST.INVERSE_ARROWS[link.Arr]].Short)
-			SST.AppendLinkToNode(this_iptr,invlink,last_iptr)
+			invlink := GetLinkArrowByName(sst,SST.ARROW_DIRECTORY[SST.INVERSE_ARROWS[link.Arr]].Short)
+			SST.AppendLinkToNode(sst,this_iptr,invlink,last_iptr)
 
 		}
 
@@ -2223,7 +2223,7 @@ func StripAnnotations(fulltext string) string {
 
 //**************************************************************
 
-func AddBackAnnotations(cleantext string,cleanptr SST.NodePtr,annotated string) {
+func AddBackAnnotations(sst SST.PoSST,cleantext string,cleanptr SST.NodePtr,annotated string) {
 
 	var protected bool = false
 
@@ -2239,7 +2239,7 @@ func AddBackAnnotations(cleantext string,cleanptr SST.NodePtr,annotated string) 
 				skip,symb := EmbeddedSymbol([]rune(annotated),r)
 
 				if skip > 0 {
-					link := GetLinkArrowByName(ANNOTATION[symb])
+					link := GetLinkArrowByName(sst,ANNOTATION[symb])
 					this_item := ExtractWord(annotated,r+skip)
 
 					if len(this_item) <= WORD_MISTAKE_LEN {
@@ -2249,7 +2249,7 @@ func AddBackAnnotations(cleantext string,cleanptr SST.NodePtr,annotated string) 
 
 					this_iptr,_ := IdempAddNode(this_item,SEQ_UNKNOWN)
 					const is_annotation = true
-					IdempAddLink(reminder,cleanptr,link,this_item,this_iptr,is_annotation)
+					IdempAddLink(sst,reminder,cleanptr,link,this_item,this_iptr,is_annotation)
 					r += skip-1
 					continue
 				}

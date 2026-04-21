@@ -90,24 +90,6 @@ const (
 
 var ( 
 
-        NODE_CACHE = make(map[NodePtr]NodePtr)
-        BASE_DB_CHANNEL_STATE[7] ClassedNodePtr
-
-	ARROW_DIRECTORY []ArrowDirectory
-	ARROW_SHORT_DIR = make(map[string]ArrowPtr) // Look up short name int referene
-	ARROW_LONG_DIR = make(map[string]ArrowPtr)  // Look up long name int referene
-	ARROW_DIRECTORY_TOP ArrowPtr = 0
-	INVERSE_ARROWS = make(map[ArrowPtr]ArrowPtr)
-
-	// Context array factorization
-
-	CONTEXT_DIRECTORY []ContextDirectory
-	CONTEXT_DIR = make(map[string]ContextPtr)   // Look up long name int referene
-	CONTEXT_TOP ContextPtr
-
-	PAGE_MAP []PageMap
-
-	NODE_DIRECTORY NodeDirectory  // Internal histo-representations
 	NO_NODE_PTR NodePtr // see Init()
 	NONODE NodePtr
 

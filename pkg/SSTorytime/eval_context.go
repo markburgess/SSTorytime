@@ -17,7 +17,7 @@ import (
 
 // **************************************************************************
 
-func GetContext(contextptr ContextPtr) string {
+func GetContext(sst PoSST,contextptr ContextPtr) string {
 
 	exists := int(contextptr) < len(CONTEXT_DIRECTORY)
 
@@ -30,7 +30,7 @@ func GetContext(contextptr ContextPtr) string {
 
 // ****************************************************************************
 
-func RegisterContext(parse_state map[string]bool,context []string) ContextPtr {
+func RegisterContext(sst PoSST,parse_state map[string]bool,context []string) ContextPtr {
 
 	ctxstr := NormalizeContextString(parse_state,context)
 
@@ -62,7 +62,7 @@ func TryContext(sst PoSST,context []string) ContextPtr {
 
 	if ctxptr == -1 || str != ctxstr {
 		ctxptr = UploadContextToDB(sst,ctxstr,-1)
-		RegisterContext(nil,context)
+		RegisterContext(sst,nil,context)
 	}
 
 	return ctxptr
@@ -142,7 +142,7 @@ func GetNodeContextString(sst PoSST,node Node) string {
 	for _,lnk := range node.I[ST_ZERO+LEADSTO] {
 
 		if lnk.Arr == empty {
-			return GetContext(lnk.Ctx)
+			return GetContext(sst,lnk.Ctx)
 		}
 	}
 

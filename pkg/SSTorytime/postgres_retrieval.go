@@ -562,7 +562,7 @@ func GetSequenceContainers(sst PoSST,nodeptrs []NodePtr, arrowptrs []ArrowPtr, s
 			ne.Text = nd.S
 			ne.L = nd.L
 			ne.Chap = nd.Chap
-			ne.Context = GetContext(axis[lnk].Ctx)
+			ne.Context = GetContext(sst,axis[lnk].Ctx)
 			ne.NPtr = axis[lnk].Dst
 			ne.XYZ = directory[ne.NPtr]
 			ne.Orbits = GetNodeOrbit(sst,axis[lnk].Dst,arrname,limit)

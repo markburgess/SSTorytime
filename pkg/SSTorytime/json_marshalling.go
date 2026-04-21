@@ -56,7 +56,7 @@ func LinkWebPaths(sst PoSST,cone [][]Link,nth int,chapter string,context []strin
 		
 		for l := 1; l < len(cone[p]); l++ {
 
-			if !MatchContexts(context,cone[p][l].Ctx) {
+			if !MatchContexts(sst,context,cone[p][l].Ctx) {
 				break
 			}
 
@@ -161,7 +161,7 @@ func GetChaptersByChapContext(sst PoSST,chap string,cn []string,limit int) map[s
 
 				rc := chps[c]
 
-				cn := strings.Split(GetContext(rcontext),",")
+				cn := strings.Split(GetContext(sst,rcontext),",")
 				ctx_grp := ""
 
 				for s := 0; s < len(cn); s++ {
@@ -198,7 +198,7 @@ func JSONPage(sst PoSST, maplines []PageMap) string {
 
 		var path []WebPath
 
-		txtctx := GetContext(maplines[n].Context)
+		txtctx := GetContext(sst,maplines[n].Context)
 
 		// Format superheader aggregate summary
 
@@ -237,7 +237,7 @@ func JSONPage(sst PoSST, maplines []PageMap) string {
 				ws.XYZ = directory[ws.NPtr]
 				ws.Chp = maplines[n].Chapter
 				ws.Line = maplines[n].Line
-				ws.Ctx = GetContext(maplines[n].Context)
+				ws.Ctx = GetContext(sst,maplines[n].Context)
 				path = append(path,ws)
 				
 			} else {// ARROW
@@ -330,7 +330,7 @@ func AssembleSatellitesBySTtype(sst PoSST,stindex int,satellite []Orbit,sweep []
 				nt.Dst = start.Dst
 				nt.Wgt = start.Wgt
 				nt.Text = txt.S
-				nt.Ctx = GetContext(start.Ctx)
+				nt.Ctx = GetContext(sst,start.Ctx)
 				nt.Radius = 1
 				if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
 					continue
@@ -355,7 +355,7 @@ func AssembleSatellitesBySTtype(sst PoSST,stindex int,satellite []Orbit,sweep []
 					nt.STindex = arrow.STAindex
 					nt.Dst = next.Dst
 					nt.Wgt = next.Wgt
-					nt.Ctx = GetContext(next.Ctx)
+					nt.Ctx = GetContext(sst,next.Ctx)
 					nt.Text = subtxt.S
 					nt.Radius = depth
 					

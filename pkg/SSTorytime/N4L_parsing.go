@@ -272,7 +272,7 @@ func InsertInverseArrowDirectory(fwd,bwd ArrowPtr) {
 
 //**************************************************************
 
-func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
+func AppendLinkToNode(sst PoSST,frptr NodePtr,link Link,toptr NodePtr) {
 
 	frclass := frptr.Class
 	frm := frptr.CPtr
@@ -287,27 +287,27 @@ func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
 	switch frclass {
 
 	case N1GRAM:
-		NODE_DIRECTORY.N1directory[frm].I[stindex] = MergeLinkLists(NODE_DIRECTORY.N1directory[frm].I[stindex],link)
+		NODE_DIRECTORY.N1directory[frm].I[stindex] = MergeLinkLists(sst,NODE_DIRECTORY.N1directory[frm].I[stindex],link)
 	case N2GRAM:
-		NODE_DIRECTORY.N2directory[frm].I[stindex] = MergeLinkLists(NODE_DIRECTORY.N2directory[frm].I[stindex],link)
+		NODE_DIRECTORY.N2directory[frm].I[stindex] = MergeLinkLists(sst,NODE_DIRECTORY.N2directory[frm].I[stindex],link)
 	case N3GRAM:
-		NODE_DIRECTORY.N3directory[frm].I[stindex] = MergeLinkLists(NODE_DIRECTORY.N3directory[frm].I[stindex],link)
+		NODE_DIRECTORY.N3directory[frm].I[stindex] = MergeLinkLists(sst,NODE_DIRECTORY.N3directory[frm].I[stindex],link)
 	case LT128:
-		NODE_DIRECTORY.LT128[frm].I[stindex] = MergeLinkLists(NODE_DIRECTORY.LT128[frm].I[stindex],link)
+		NODE_DIRECTORY.LT128[frm].I[stindex] = MergeLinkLists(sst,NODE_DIRECTORY.LT128[frm].I[stindex],link)
 	case LT1024:
-		NODE_DIRECTORY.LT1024[frm].I[stindex] = MergeLinkLists(NODE_DIRECTORY.LT1024[frm].I[stindex],link)
+		NODE_DIRECTORY.LT1024[frm].I[stindex] = MergeLinkLists(sst,NODE_DIRECTORY.LT1024[frm].I[stindex],link)
 	case GT1024:
-		NODE_DIRECTORY.GT1024[frm].I[stindex] = MergeLinkLists(NODE_DIRECTORY.GT1024[frm].I[stindex],link)
+		NODE_DIRECTORY.GT1024[frm].I[stindex] = MergeLinkLists(sst,NODE_DIRECTORY.GT1024[frm].I[stindex],link)
 	}
 }
 
 //**************************************************************
 
-func MergeLinkLists(linklist []Link,lnk Link) []Link {
+func MergeLinkLists(sst PoSST,linklist []Link,lnk Link) []Link {
 
 	// Ensure all arrows and contexts in lnk are in list for the appropriate arrows
 
-	new_ctxstr := GetContext(lnk.Ctx)
+	new_ctxstr := GetContext(sst,lnk.Ctx)
 	new_ctxlist := strings.Split(new_ctxstr,",")
 
 	// Check if the arrow is already there to add to its context
@@ -315,10 +315,10 @@ func MergeLinkLists(linklist []Link,lnk Link) []Link {
 	for l := range linklist {
 		if linklist[l].Arr == lnk.Arr && linklist[l].Dst == lnk.Dst {
 
-			already_ctxstr := GetContext(linklist[l].Ctx)
+			already_ctxstr := GetContext(sst,linklist[l].Ctx)
 			already_ctxlist := strings.Split(already_ctxstr,",")
 
-			linklist[l].Ctx = MergeContextLists(already_ctxlist,new_ctxlist)
+			linklist[l].Ctx = MergeContextLists(sst,already_ctxlist,new_ctxlist)
 
 			return linklist
 		}
@@ -332,7 +332,7 @@ func MergeLinkLists(linklist []Link,lnk Link) []Link {
 
 //**************************************************************
 
-func MergeContextLists(one,two []string) ContextPtr {
+func MergeContextLists(sst PoSST,one,two []string) ContextPtr {
 
 	var merging = make(map[string]bool)
 	var merged []string

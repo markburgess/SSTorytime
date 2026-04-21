@@ -233,7 +233,7 @@ func PrintSomeLinkPath(sst PoSST, cone [][]Link, p int, prefix string,chapter st
 		
 		for l := 1; l < len(cone[p]); l++ {
 
-			if !MatchContexts(context,cone[p][l].Ctx) {
+			if !MatchContexts(sst,context,cone[p][l].Ctx) {
 				return
 			}
 

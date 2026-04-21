@@ -1,269 +1,231 @@
-
-# How does context work?
+# Context: asking the same question different ways
 
 ![A cluttered desk seen from above with a translucent cloud of aroma, sound waves, and light rays hovering above it — the invisible context around every memory.](figs/context_cloud.jpg){ align=center }
 
-Context is the "hard problem" of knowledge management. In its simplest form, we use it
-as disambiguation, like the disambiguation pages in Wikipedia for a name like "queen". There
-are many possible things it could refer to, but only one of them is the one we are looking for.
-We need to be more specific.
+> **The same word means different things in different corners of your
+> notes. Context is how you tell the graph which one you meant.**
 
-We use the *context* in which we experienced something as a "lookup key"
-for memories. It's not like the primary keys we feed to a database,
-e.g.  something like a name, a phone or social security number,
-etc. Cognitive processes use sensory inputs to encode memory. How does
-one feed that into a directory listing to get an answer? And how do we
-list what was there?
+You wrote down *bias* once in a chapter on statistics and once in a
+chapter on cognition. You wrote *queen* when you meant the chess piece,
+and again when you meant the monarch, and again when you meant the
+Freddie Mercury kind. A search for *bias* or *queen* finds all of them.
+Usually you want one.
 
-The knowledge graph is a way of painting a picture of a scene, but we still need to find the right scene.
-Modern recognition methods can match sensory inputs like vision and sound as well as writing now, but
-they don't solve the problem of how to know which experience is the correct match given a generic
-sensory input. There was that one time at band camp....
+Context is the tag you attach to notes when you write them and the
+filter you attach to queries when you ask them. When the two overlap,
+the graph knows which sense of the word you meant. This page is about
+how you write those tags in and how you apply them when you search.
 
-```mermaid
-flowchart TB
-    SIGNAL["Original signal<br/>graph nodes &amp; links"]
-    AMBIENT["Ambient context<br/>reusable scene-level state<br/>(chapter · time · place)"]
-    INTENT["Intentional context<br/>per-query lookup tags<br/>(user's search intent)"]
-    RESULT["Filtered match<br/>overlap of signal + context"]
+---
 
-    SIGNAL --> RESULT
-    AMBIENT --> RESULT
-    INTENT --> RESULT
+## How context shows up in the notes you write
 
-    classDef note fill:#FBC02D,stroke:#b08600,color:#000;
-    note["Context is stored as a flat string→int<br/>pointer via CONTEXT_DIRECTORY<br/>(eval_context.go:33-54)"]
-    class note note;
-    RESULT -.- note
+You've already seen it, probably without noticing. In N4L, a line like
+
+```n4l
+ :: books, topics, authors ::
 ```
 
-Ambient and intentional context are *not* a precedence-ordered pair. Both
-streams are folded into the same scoring pass — the ranking of candidate
-matches is decided by the `ScoreContext` comparator at
-[`postgres_retrieval.go:940`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_retrieval.go#L940),
-which `sort.Slice` uses to order the result set. There is no "ambient wins
-if present, otherwise intentional" rule; the two contribute to overlap
-additively.
+is a context line. Everything written below it — until the next `::`
+line or the end of the chapter — is tagged with `books`, `topics`, and
+`authors`. When you later ask a question scoped to one of those tags,
+only the notes that carry the tag come back.
 
-!!! info "Precedence"
-    Ambient context (`::` tags inherited from the scene) and intentional
-    context (the user's per-query `in context …` clause) are **combined via
-    scoring**, not precedence-ordered. Neither stream short-circuits the
-    other. The `ScoreContext` comparator
-    ([`postgres_retrieval.go:940`](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/postgres_retrieval.go#L940))
-    is what decides which candidate wins when both match.
+You can have several context lines in a single chapter, and you should.
+A long chapter with one context tag at the top is under-tagged; a short
+chapter with a context line every few blocks is exactly right. Tags are
+cheap. You want enough of them that when you come back in six months,
+the ones you chose act like signposts back to what you were doing when
+you wrote the note.
 
-## The technical challenge of context
+---
 
-Adding context through N4L is straightforwardish, and we can let the compiler ensure consistency.
-Adding Nodes ad hoc with `Vertex() / Edge()` etc is risky and context will cease to work in detail.
-We can simplify this too by factoring away context, forcing API users to select an already an defined
-context.
+## Two kinds of context, and how they combine
 
-The technical challenge of context is that the amount of context in a sensory stream is usually
-much greater than the part you actually want to remember, so knowledge data may quickly become
-dominated by context. We don't want to store intentionally selected items together with ambient
-keys and other "noise", so we need to be careful about how to structure a graph.
+Context comes from two places at once.
 
-The choice to limit context to links rather than nodes causes problems for NodeArrowNode caching.
-Bare nodes without links can be represented with context 'any' by always registering an 'empty' link
-(which has no inverse). This ensures that even linkless nodes will appear in the NodeArrowNode cache.
+**Ambient context** is the `:: tags ::` line you wrote when you took the
+notes. It is the context the notes carry with them — the chapter and
+scene they were captured in. You do not restate it at query time; it is
+along for the ride.
 
-Computing the NodeArrowNode cache naively by going through the nodes leads to a huge scaling and fragmentation
-problem, which has led to two revisions of the algorithm. 
-Taking nodes one by one and intervleaving entries for Node and NodeArrowNode leads to back and forth fragmentation and
-memory inefficiency. A 10x increase in performance is achieved just by doing all Nodes first and then NodeArrowNode.
-Adding all the NodeArrowNodes in one go is easy because 
-there is no need to check for idempotent entry. However, allowing appending chapters later does require to ensure
-idempotence, so this remains an issue. The solution is to regenerate the entire list as a single large transaction
-after all nodes are added. This also solves the fragmentation issue.
+**Intentional context** is the `\context tag` clause you add to a
+specific query. It is the context you bring to the question — what you
+are looking for *right now*, not what the notes originally remembered.
 
-Originally context was stored as an array of strings for each node, but this eventually scales poorly--eating
-up memory and taking time during idempotence updates. 
+When you search, both streams feed into the same ranking. Neither wins
+by rule of precedence; they both contribute to how well a candidate
+matches. In practice this means you can rely on the ambient tags your
+notes already carry — you do not have to restate them in every query —
+but you can also narrow a specific question with `\context` when the
+ambient tags aren't enough.
 
-## Role
+!!! info "Ambient and intentional context both count"
+    Ambient context (the `::` tags inherited from where a note was
+    written) and intentional context (the `\context …` clause on a
+    query) are combined by the scoring pass, not precedence-ordered.
+    Neither stream short-circuits the other. When both are present, a
+    candidate that matches both ranks higher than one that matches just
+    one.
 
-Context plays two roles. We know from Promise Thory that each fragment of
-potential "donor" knowledge promises certain information (+), but that a receiver may promise
-to listen only to another set of "receptor" information (-). The overlap between what is offered (donation)
-and what is accepted (reception) is the result of a lookup. Recptor information is usually quite small
-and narrow compared to the entirety of the original context signal. So we split these representations
-into two parts:
+---
 
-* Original signal is encoded as graph nodes that annotate captured events.
-* Query context is encoded in the `:: tags ::` that break up notes into sections.
+## Asking the same question two different ways
 
-When we are searching, we primarily use the original signal nodes. When we are filtering
-or narrowing a search, we use the `:: tags ::`.
+Write down one topic under two different contexts. Suppose a chapter on
+cluedo:
 
-*Note that although context fragments interact in a graph, it is more in the manner of an ad hoc network.
-Context fragments are like "free radicals" in the chemistry of semantics.
-Trying to form a fixed graph of context fragments is a fools errand that would be extremely constly
-in memory and would quickly become outdated. It is constantly reshaping itself for the user.*
-
-We always divide context into:
-
-- ambient (overlap) cases and 
-- the rest (which are specially intended parts)
-
-and record these separately. Intentional parts become irrelevant after a short time because they are not reused.
-But ambient parts are reused for longer (although their specific intentionality is becoming
-diluted by repeated use in different contexts), so we keep mainly ambient context as clusters to tell the user
-the previous contexts in which something occurred.
-Additionally, we keep path search cases separate from ad hoc lookups, and these have different intentionality.
-
-Context is still expensive to store without an explicit graph, because we need to remember each combination
-as well as the individual fragments. The fractions can be kept in two maps: for ambient and intentional, each for
-path and ad hoc look ups. Then we also recall an ordered log (like a moving window) of combinations (get one, drop one).
-
-We use a `CONTEXT_WINDOW_DURATION` of 3 hours for tracking related queries, which is probably longer than human attention, to give
-some superpowers, but not so long that it is incomprehensible.
-
-## Context in the `text2N4L` tool
-
-When we are scanning raw text using the helper tool, we can generate the (+) donor
-context fragments automatically, but we can't generate acceptor context tags automatically.
-Only you can do that, because only you know what you might be looking for in the information.
-It isn't universal and automatic--it's based in your intent.
-
-Intent and intentionality play a large role in understanding context: [The Role of Intent and Context Knowledge Graphs With Cognitive Agents](https://medium.com/@mark-burgess-oslo-mb/the-role-of-intent-and-context-knowledge-graphs-with-cognitive-agents-fb45d8dfb34d)
-
-Note that, when scanning a long document, resulting in a large N4L
-file, loading of data becomes very slow. This is because Unicode
-parsing efficiency is low, and because the time grows easily like the
-square of the length of the file--so we need to be cautious is dumping large amounts of data
-into a knowledge store without good reason. You might need to set aside a morning to upload
-an example like Moby Dick.
-
-## An idealized approximation
-
-The way we refer to contexts has to be simple and easy to document,
-otherwise we won't capture it.  My experience with the CFEngine
-cognitive agent taught some valuable lessons here. CFEngine
-intuitively did several things right. What CFEngine did was to use
-"smart sensors" to characterize its environment every time is woke up:
-to ask, where am I, who am I? What am I supposed to be doing?
-
-Using this approach in as simple a way as possible, let's define context
-as a kind of *scope of experience*. Programmers understand scope as an
-bounded environment in which certain variables are available and others
-are hidden. It's like a chapter in a book, or a separate document.
-So, we can model as conext in two parts for simplicity: 
-
-<pre>
-  ( scene   , thoughts and sensory impressions ... )
-  ( chapter , environmental fragments   .... )
-</pre>
-
-Chapters or scenes are non-overlapping collections of information, events, etc, Christmas 2012.
-Sensory fragments are potentially shared or overlapping aspects on an experience, e.g.
-it was Monday, or the weather was hot. Other parts of our context come from our train of thought
-at the time of the event in question. When we're trying to recall something, e.g. the word in
-French for baguette, we want to label that knowledge with those  sensory cues: at the restaurant,
-in the supermarche, etc.
-
-* A chapter or scene is partitioned by the exterior physical world of space and time.
-* A train of thought is partitioned by the interior virtual world of our imagined or remembered space and time.
-
-## Labelling scenes
-
-* We use the ` - chapter name` syntax to name a chapter in N4L.
-* We use the `:: ... ::` syntax in N4L to label context.
-
-When we record information, we list the characters in the scene as "nodes" and their relationships
-and meanings through the "links" between them. But, we also collect several of those references under
-a subheading of the chapter that lists the fragments of thought we would want to use to remember
-that information: the where, when, what, how, and even why!
-
-<pre>
-
- :: random thoughts ::
-
-   We're using too much cloud CPU (example of) economic priorities
-
- :: Monday standup meeting, discussion about Easter holiday, urgent work ::
-
-   Sally reported a problem with ssh keys (possibly about)  security
-                                  "       (may cause bug)   can't access the dashboard
-
-
-</pre>
-In a more complex scenario, we might use context is a number of ways. What matters is that
-it is intuitive to us, because it represents the way we think. Context is very personal.
-What helps you to remember will not necessarily be what helps others to remember. This is
-why notes and knowledge are not easy to share. Take this example:
-<pre>
-
+```n4l
 - cluedo: Forensic map of a Murder Most Horrid
-
- // invariants and dependencies define first, as we may need to refer to them
-
- #######################
 
  :: Dramatis personae ::
 
  scarlett (id) Miss Scarlett, The Woman in Red, New York socialite.
- plumb    (id) Professor Plumb, University of Oxford, Lincoln College.
- dibbly   (id) Florist working at the Summertown flower shop
-          (also called) dibbly womble
- martin   (id) possible boyfriend, unknown
+ plumb    (id) Professor Plumb, University of Oxford.
 
- doorman (id) Fabian Merryweather, former Army officer, 24 Summertown Road
-
- car (id)   Black Ford Cortina 1972, vehicle number 1234
-  "  (role) the get away vehicle
-
- #######################
-
- :: locations, places :: 
+ :: locations, places ::
 
  library
  Covent Garden Pub
  24 Summertown Road
+```
 
+Now *scarlett* is tagged with *Dramatis personae* and the three
+locations are tagged with *locations, places*. A plain search for
+something that appears in both senses pulls both back. A context-scoped
+search pulls just one:
 
- #######################
+```
+searchN4L scarlet \context person
+searchN4L "summer" \context place
+searchN4L "some car" \chapter cluedo
+searchN4L "fork" \context restaurant \chapter chinese
+```
 
- :: key events ::
+The last query combines two scopes — a context *and* a chapter. You use
+whichever is the right lever. A chapter is a big filter; a context is a
+small one. A query with both is a narrow one.
 
-@party  party hosted by >scarlett in London flat, evening of the 23rd March
-    "   (note) This was a month before >scarlett dated >martin
+---
 
-@scarlettarrives  entering the library on Monday at 10am
-@doormanarrives   doorman arrived at library for work on Monday 7 am
+## Why tag at all
 
-@murder  Wednesday April 1st, around 11 am in the morning
-</pre>
+When you write notes, you are the only person who will search them.
+(If you are a team, each person still writes from their own
+perspective.) The context tags you leave behind are the signposts
+your future self will follow. They encode not *what* the note is about
+— that's the arrow — but *where you were* when you wrote it. Monday's
+standup. The restaurant. The chapter on cognition. The project code.
 
-## Looking it up later
+When you come back to a note a year later and can't remember why you
+wrote it, the context line is how you find your way. A search that
+matches on context does not just match fewer results; it matches the
+*right* results, because it matches the frame of mind the note was
+written in.
 
-When we come to look up these facts, we use context to disambiguate.
-What we remember may be limited, so we want to match the fragments we know:
-We don't want to look up a road, something to do with summer. A person, scarlet or something like that.
+---
 
-<pre>
-searchN4L  summer in context place
-searchN4L  scarlet in the context of person
-searchN4L  some car in chapter cluedo
-searchN4L  fork in context restaurant chapter chinese
-</pre>
+## Ambient context and attention
 
-## Socializing knowledge
+If you've queried the graph a few times in the last hour, recent query
+context carries forward automatically — the graph knows what you were
+looking at a few minutes ago, and uses it as a gentle prior. This is
+time-limited: after a few hours of inactivity the ambient prior decays
+and your next query starts fresh. It is not a search history; it is the
+equivalent of "you were just asking about this chapter, are you still
+in that headspace?"
 
-Wikis and databases are potentially places where knowledge goes to die. If we drop information
-into a dark place where no one goes, it won't be found intentionally. 
+You do not configure this. It is there if you want to lean on recent
+activity (`\remind` makes it explicit) or opt out of it (`\never`).
+Most of the time it does the right thing quietly.
 
-To make knowledge effective, we need to generate the intent to find it and to use it.
+---
 
-The way individual knowledge becomes shared knowledge is through socializing. We have to talk
-about it, repeat it, share it, and use it regularly. This is the opposite of thinking about
-search keys. What this should tell us is that databases and wikis are not places for
-shared knowledge. They are only usable by the particular group who happens to know the context
-for looking up the information.
+## Writing contexts that will still make sense later
 
-* We need to know that the information is in a datastore before trying to find it.
-* We need to have a good idea about what we should look for, i.e. the right context.
+A few practical rules, learned the hard way.
 
-Recall the project slogan:
+- **Tag in whole words, not abbreviations.** `:: standup monday ::`
+  beats `:: sm ::` — your future self may not remember what `sm`
+  stood for.
+- **Tag the frame, not the content.** `:: cognition ::` on a block
+  of notes about biases is better than `:: biases ::` — because
+  `biases` is the content of the notes, and the context should be
+  the frame *around* the content.
+- **Don't tag everything.** A chapter of notes all about the same
+  thing doesn't need twenty `::` lines; one or two is enough. The
+  point is to separate the subsections, not to label every line.
+- **Reuse tags across chapters.** If three different projects all
+  touch on *decision making*, tagging each of them `::
+  decision-making ::` lets a single context-scoped query pull them
+  together later. Tags are a soft index; reuse is what makes them
+  powerful.
+- **It's personal.** What reminds you may not remind anyone else.
+  That is fine. Your context tags are for your future self, not for
+  a general audience.
 
-"*It's not knowledge if you don't know it.*"
+---
+
+## A technical note about tagging nodes
+
+Context in SSTorytime tags the *arrows* in your notes — the links
+between nodes — rather than the nodes themselves. For most queries this
+is invisible; you tag a block of notes with `::`, and everything inside
+picks up the tag. It matters only in one case: if you create isolated
+nodes with no outgoing or incoming arrows (e.g. by pasting in a word
+list with no links), those nodes carry the tag `any` rather than the
+tag you intended. The fix is to add at least one arrow from each node.
+A one-word note with no arrows is a note with no context.
+
+---
+
+## Socialising knowledge
+
+A final, non-mechanical point. A wiki or a graph database is not a
+place for shared knowledge the way a conversation is. You cannot drop
+notes into a searchable store and expect others to find them; they have
+to know the store exists, and they have to have some idea what to look
+for. Context tags — the way you label your own notes — are the way you
+talk to your future self, but they are also the way you talk to anyone
+else who comes after you. Tags that make sense to you and also make
+sense to your colleagues are worth double.
+
+The project slogan goes:
+
+> *It's not knowledge if you don't know it.*
+
+Context is how you make sure you can still find it later.
+
+---
+
+## Where to go next
+
+<div class="grid cards" markdown>
+
+-   :material-magnify:{ .lg .middle } **Finding things**
+
+    ---
+
+    The shape of a question — topic, thing, person. With a half-dozen
+    queries against the reading list.
+
+    [:octicons-arrow-right-24: Finding things](searchN4L.md)
+
+-   :material-routes:{ .lg .middle } **Finding paths**
+
+    ---
+
+    When you want the chain of arrows between two things, not just
+    their neighbourhoods.
+
+    [:octicons-arrow-right-24: Finding paths](pathsolve.md)
+
+-   :material-format-list-bulleted:{ .lg .middle } **Search recipes**
+
+    ---
+
+    Ten copy-pasteable patterns, including context-scoped searches.
+
+    [:octicons-arrow-right-24: Search recipes](cookbooks/search-recipes.md)
+
+</div>

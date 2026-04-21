@@ -1,5 +1,7 @@
 # Backing up and restoring
 
+![Pen-and-ink drawing of a wooden filing cabinet labelled N4L FILES on the left — drawer half-open, stacks of papers inside — with a single arrow pointing to a small CRT computer terminal labelled CACHE on the right. The cabinet is heavily shaded and solid; the terminal is drawn with thinner lines, suggesting it could be replaced at any time.](../figs/source_of_truth.jpg){ align=center }
+
 > **Your N4L files are the backup. The database is a cache you can rebuild from
 > them in seconds.** This page makes that framing concrete — what to keep, what
 > to throw away, and the one timing rule to remember if you reach for `pg_dump`.

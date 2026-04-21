@@ -1,5 +1,7 @@
 # Why Semantic Spacetime?
 
+![Warm editorial illustration: a pair of gloved hands tending a garden bed — one holding a trowel, the other cradling a young plant — with raised beds and winding paths behind them in warm ochre light. The tending metaphor for knowledge work.](../figs/garden_tending.jpg){ align=center }
+
 Knowledge does not scale the way most tools pretend it does. A shoebox of
 notes is easy: you read it through in an evening and roughly remember what
 is in it. A filing cabinet already needs an index. A wiki needs a tended

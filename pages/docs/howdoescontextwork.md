@@ -16,6 +16,8 @@ filter you attach to queries when you ask them. When the two overlap,
 the graph knows which sense of the word you meant. This page is about
 how you write those tags in and how you apply them when you search.
 
+![Pen-and-ink Venn diagram: two large overlapping ellipses labelled AMBIENT — WHAT I WROTE on the left (with example tags 'chapter', 'time of day', 'book topic' inside) and INTENTIONAL — WHAT I AM ASKING on the right (tags 'looking for', 'current question' inside). The intersection is heavily cross-hatched and labelled RELEVANCE.](figs/context_overlap.jpg){ align=center }
+
 ---
 
 ## How context shows up in the notes you write

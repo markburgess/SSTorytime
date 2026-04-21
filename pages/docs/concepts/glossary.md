@@ -152,6 +152,8 @@ for spotting the hubs in a corpus you did not design.
 
 ## Wave-front (bidirectional search)
 
+![Pen-and-ink physics-style diagram: two points labelled START and END on a horizontal line, concentric ripple-arcs spreading outward from each, meeting in the middle; at the overlap a path of labelled nodes A through E emerges, drawn darker than the ripples.](../figs/wavefront_bidirectional.jpg){ align=center }
+
 The picture Mark uses for path-finding in the Smart Spacetime work:
 an influence spreading outward from a point the way a wave spreads
 across water, crossing one neighbourhood of significance after

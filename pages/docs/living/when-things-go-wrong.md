@@ -1,5 +1,7 @@
 # When things go wrong
 
+![Pen-and-ink drawing of a calm workbench: a partially disassembled mechanical device on the left, its parts laid out in an orderly exploded view to the right, a notebook with diagrams open, a tool tray, an overhead lamp. Diagnostic atmosphere, not panic.](../figs/when_things_go_wrong.jpg){ align=center }
+
 > **Most of what breaks breaks in one of a handful of ways. Here are the ones
 > that show up after the quick checks in [Install in 5 minutes](../GettingStarted.md) have already passed.**
 

@@ -1,5 +1,7 @@
 # Sharing a graph
 
+![Pen-and-ink drawing of a wooden filing cabinet labelled N4L FILES on the left — drawer half-open, stacks of papers inside — with a single arrow pointing to a small CRT computer terminal labelled CACHE on the right. The cabinet is heavily shaded and solid; the terminal is drawn with thinner lines, suggesting it could be replaced at any time.](../figs/source_of_truth.jpg){ align=center }
+
 > **Share the files, not the database. Your N4L files are the graph; the
 > database is a cache anyone can rebuild from them in seconds.**
 

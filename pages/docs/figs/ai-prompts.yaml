@@ -303,3 +303,153 @@ pending_visuals:
   - page: docs/searchN4L.md
     marker: inline TODO(visuals) comment under intro
     want: "Worked query example — three-panel walk-through: raw query string → parsed SearchParameters → result orbits on the graph."
+
+# ---------------------------------------------------------------------------
+# Round 2 additions — 2026-04-21 user-facing restructure (Phase C/D visuals)
+# All nine generated via nvidia-image-gen (Gemini 3 Pro image preview) with
+# the standard post-process pipeline (1200px long edge, JPEG q85, strip
+# metadata). Tier 1 = missing-hero pages; Tier 2 = concept diagrams.
+# ---------------------------------------------------------------------------
+
+  - id: I19
+    file: figs/concepts_overview.jpg
+    style: A
+    placement: docs/concepts/index.md (hero)
+    last_regenerated: 2026-04-21
+    alt: "Pen-and-ink diagram showing six labelled nodes — STORY, CONTEXT, CHAPTER, MEANING, NODE, ARROW — connected by labelled arrows reading ABOUT, CONTAINS, LEADS TO; the compact shape of semantic spacetime in one picture."
+    prompt: |
+      Pen-and-ink technical diagram, white background, thin black lines,
+      hand-drawn shading with cross-hatching. Academic journal style,
+      1970s-1980s scientific illustration. Slight paper texture, no color
+      except black and white. Composition: a small, orderly knowledge
+      network at the centre of the frame, showing six to eight labelled
+      nodes connected by arrows. The network is compact, readable, and
+      balanced. NODES ARE LABELED ONLY WITH THESE EXACT ENGLISH WORDS:
+      STORY, CONTEXT, NODE, ARROW, CHAPTER, MEANING. Arrow labels read:
+      about, leads to, contains. All labels spelled correctly in clean
+      all-caps serif. No caption or figure number.
+
+  - id: I20
+    file: figs/tutorial_hero.jpg
+    style: B
+    placement: docs/Tutorial.md (hero)
+    last_regenerated: 2026-04-21
+    alt: "Warm editorial illustration of a person at a wooden desk, notebook open and handwritten, a gentle network of nodes and arrows growing upward from the page like vines; books stacked beside; afternoon light. The moment of capture becoming structure."
+    prompt: |
+      Warm editorial illustration in ochre, rust, cream, warm grey.
+      1970s-80s science textbook style. Hand-stippling shading. A person
+      at a wooden desk seen from a three-quarter angle, a paper notebook
+      open in front of them, handwriting spreading across the page in
+      small neat script; from the page, a gentle network of nodes and
+      labelled arrows grows upward like vines, filling the upper half of
+      the frame. Small stacks of books on either side of the desk. Warm
+      afternoon light from the left. Focus on the moment of capture
+      becoming structure. No caption or figure number.
+    notes: |
+      Model produced readable-looking gibberish node labels on the upward
+      network; acceptable because the labels are peripheral, not central.
+
+  - id: I21
+    file: figs/garden_tending.jpg
+    style: B
+    placement: docs/concepts/why-semantic-spacetime.md (hero)
+    last_regenerated: 2026-04-21
+    alt: "Warm editorial illustration: a pair of gloved hands tending a garden bed — one holding a trowel, the other cradling a young plant — with raised beds and winding paths behind them in warm ochre light. The tending metaphor for knowledge work."
+    prompt: |
+      Warm editorial illustration in ochre, rust, cream, warm grey.
+      1970s-80s science textbook style. Hand-stippling shading. A pair of
+      hands in the foreground tending a garden bed: one hand holding a
+      small trowel, the other resting on a young plant. The garden extends
+      back from the hands, with winding paths between different beds of
+      plants, a watering can off to one side. Warm late-afternoon light.
+      Evokes discovery, patience, slow cultivation. No caption or figure
+      number.
+    notes: |
+      Re-encoded at JPEG quality 72 to fit under the 240 KB budget.
+
+  - id: I22
+    file: figs/source_of_truth.jpg
+    style: A
+    placement: docs/living/sharing-a-graph.md (hero) + docs/cookbooks/backup-restore-delete.md (hero, shared)
+    last_regenerated: 2026-04-21
+    alt: "Pen-and-ink drawing of a wooden filing cabinet labelled N4L FILES on the left — drawer half-open, stacks of papers inside — with a single arrow pointing to a small CRT computer terminal labelled CACHE on the right. The cabinet is heavily shaded and solid; the terminal is drawn with thinner lines, suggesting it could be replaced at any time."
+    prompt: |
+      Pen-and-ink technical diagram, white background, thin black lines,
+      hand-drawn shading with cross-hatching. Academic journal style,
+      1970s-1980s scientific illustration. Composition: on the left, a
+      large old-fashioned wooden filing cabinet labelled N4L FILES. One
+      drawer half-open showing neat stacks of paper. On the right, a
+      small, sparse desktop computer terminal labelled CACHE, drawn with
+      thinner lines and less shading to suggest impermanence. A single
+      arrow flows from cabinet to terminal.
+
+  - id: I23
+    file: figs/when_things_go_wrong.jpg
+    style: A
+    placement: docs/living/when-things-go-wrong.md (hero)
+    last_regenerated: 2026-04-21
+    alt: "Pen-and-ink drawing of a calm workbench: a partially disassembled mechanical device on the left, its parts laid out in an orderly exploded view to the right, a notebook with diagrams open, a tool tray, an overhead lamp. Diagnostic atmosphere, not panic."
+    prompt: |
+      Pen-and-ink technical diagram, white background, thin black lines,
+      hand-drawn shading with cross-hatching. Composition: a workbench
+      seen from above and slightly in front. On the bench, a partially
+      disassembled mechanical device, its parts laid out in an orderly
+      row to the right. A small notebook open next to it, an overhead
+      lamp. Calm diagnostic atmosphere, not panic. No person visible.
+      Tools laid out in sensible order.
+
+  - id: I24
+    file: figs/orbit_one_hop.jpg
+    style: A
+    placement: docs/Tutorial.md (inline at Q3 aha section)
+    last_regenerated: 2026-04-21
+    alt: "Pen-and-ink diagram: a bold central node labelled FOCUS, surrounded by an inner ring of nodes connected via solid arrows labelled ABOUT, BY, NOTE, CONTAINS, CITES; a second outer ring of nodes is linked to the inner ring via dashed arrows, with one dashed arrow drawn slightly heavier than the others — a surprising one-hop-further connection the query surfaces."
+    prompt: |
+      Pen-and-ink technical diagram. Central node labelled FOCUS with
+      heavy cross-hatching. Inner ring of five nodes connected by solid
+      arrows labelled ABOUT, BY, NOTE, CONTAINS, CITES. Outer ring of
+      three nodes connected to inner ring by DASHED arrows, one drawn
+      slightly heavier suggesting a surprising surfaced connection.
+      Clean all-caps serif labels.
+
+  - id: I25
+    file: figs/wavefront_bidirectional.jpg
+    style: A
+    placement: docs/concepts/glossary.md (inline under "Wave-front" entry)
+    last_regenerated: 2026-04-21
+    alt: "Pen-and-ink physics-style diagram: two points labelled START and END on a horizontal line, concentric ripple-arcs spreading outward from each, meeting in the middle; at the overlap a path of labelled nodes A through E emerges, drawn darker than the ripples."
+    prompt: |
+      Pen-and-ink technical diagram. Two points on a horizontal line at
+      left and right, labelled START and END. From each point, concentric
+      arcs spread outward like ripples. Waves meet in the middle; at the
+      meeting point a clear path of labelled nodes and arrows emerges,
+      drawn darker than the arcs. Stylised physics-diagram aesthetic
+      reminiscent of Feynman's lecture notes.
+
+  - id: I26
+    file: figs/n4l_at_a_glance.jpg
+    style: A
+    placement: docs/N4L.md (inline under "The shape of a line")
+    last_regenerated: 2026-04-21
+    alt: "Pen-and-ink specimen plate: a single exemplar line of N4L — 'Thinking Fast and Slow (about) Decision Making' — shown with callout labels pointing to SUBJECT, ARROW, and OBJECT; a context header 'books, topics' sits above the line, a chapter heading 'Reading List' above that; a second line below with a big quote mark demonstrates the DITTO MARK."
+    prompt: |
+      Pen-and-ink technical diagram. A single annotated specimen of N4L
+      notation displayed as if pinned to a lab-notebook page. Main line:
+      THINKING FAST AND SLOW (ABOUT) DECISION MAKING. Above it: chapter
+      heading "- READING LIST". Above that: context tag ":: BOOKS, TOPICS
+      ::". A second line with a big quote-mark for ditto: " (BY) DANIEL
+      KAHNEMAN. Callouts labelled SUBJECT, ARROW, OBJECT, DITTO MARK
+      point to the parts.
+
+  - id: I27
+    file: figs/context_overlap.jpg
+    style: A
+    placement: docs/howdoescontextwork.md (inline under intro)
+    last_regenerated: 2026-04-21
+    alt: "Pen-and-ink Venn diagram: two large overlapping ellipses labelled AMBIENT — WHAT I WROTE on the left (with example tags 'chapter', 'time of day', 'book topic' inside) and INTENTIONAL — WHAT I AM ASKING on the right (tags 'looking for', 'current question' inside). The intersection is heavily cross-hatched and labelled RELEVANCE."
+    prompt: |
+      Pen-and-ink technical diagram. Two large overlapping ellipses in a
+      Venn composition. Left: AMBIENT — WHAT I WROTE with example tags
+      'chapter', 'time of day', 'book topic' inside. Right: INTENTIONAL
+      — WHAT I AM ASKING with tags 'looking for', 'current question'.
+      The intersection densely cross-hatched and labelled RELEVANCE.

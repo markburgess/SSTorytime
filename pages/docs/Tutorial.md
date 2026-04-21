@@ -1,5 +1,7 @@
 # Your first story
 
+![Warm editorial illustration of a person at a wooden desk, notebook open and handwritten, a gentle network of nodes and arrows growing upward from the page like vines; books stacked beside; afternoon light. The moment of capture becoming structure.](figs/tutorial_hero.jpg){ align=center }
+
 > **In fifteen minutes you will have a queryable graph of your own reading list — and a feel for how N4L thinks.**
 
 You will write a small reading list by hand, load it, and ask it three
@@ -231,6 +233,8 @@ asked — that is the orbit.
 ### What does Daniel Kahneman connect to in my reading?
 
 This is the one.
+
+![Pen-and-ink diagram: a bold central node labelled FOCUS, surrounded by an inner ring of nodes connected via solid arrows labelled ABOUT, BY, NOTE, CONTAINS, CITES; a second outer ring of nodes is linked to the inner ring via dashed arrows, with one dashed arrow drawn slightly heavier than the others — a surprising one-hop-further connection the query surfaces.](figs/orbit_one_hop.jpg){ align=center }
 
 ```
 ./src/bin/searchN4L "Daniel Kahneman"

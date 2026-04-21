@@ -1,5 +1,7 @@
 # Concepts
 
+![Pen-and-ink diagram showing six labelled nodes — STORY, CONTEXT, CHAPTER, MEANING, NODE, ARROW — connected by labelled arrows reading ABOUT, CONTAINS, LEADS TO; the compact shape of semantic spacetime in one picture.](../figs/concepts_overview.jpg){ align=center }
+
 > **The "why" behind SSTorytime — short enough to read before you install, deep enough to come back to when a query surprises you.**
 
 Most knowledge tools ask you to decide what your data *is* before you can

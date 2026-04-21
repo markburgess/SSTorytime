@@ -20,6 +20,8 @@ site.
 
 ## The shape of a line
 
+![Pen-and-ink specimen plate: a single exemplar line of N4L — "Thinking Fast and Slow (about) Decision Making" — shown with callout labels pointing to SUBJECT, ARROW, and OBJECT; a context header "books, topics" sits above the line, a chapter heading "Reading List" above that; a second line below with a big quote mark demonstrates the DITTO MARK.](figs/n4l_at_a_glance.jpg){ align=center }
+
 Almost every line in an N4L file is one of three things:
 
 - **An item.** Any text that doesn't contain parentheses.

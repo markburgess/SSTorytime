@@ -127,16 +127,17 @@ nav:
       - Patterns — search recipes: cookbooks/search-recipes.md
 
   - Living With Your Graph:
-      - Backing up, restoring: cookbooks/backup-restore-delete.md
+      - Backing up and restoring: cookbooks/backup-restore-delete.md
+      - Sharing a graph: living/sharing-a-graph.md
+      - When things go wrong: living/when-things-go-wrong.md
 
   - Concepts:
+      - Concepts: concepts/index.md
       - Semantic spacetime in plain English: concepts/why-semantic-spacetime.md
       - Glossary: concepts/glossary.md
       - Storytelling: Storytelling.md
       - Knowledge and learning: KnowledgeAndLearning.md
       - Outreach: outreach.md
 
-# Files under pages/docs/ not yet placed in nav (Phase C will absorb or move):
-#   search_examples.md  — Queryer agent consolidates into searchN4L.md
 # Files under pages/docs/developers/ are intentionally off-nav and
 # excluded from the site via exclude_docs above.

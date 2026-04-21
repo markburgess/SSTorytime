@@ -1,84 +1,168 @@
-# 10 useful queries
+# Patterns: search recipes
 
-Ten ready-to-run `searchN4L` recipes, each with annotated expected output and a short note on when to reach for it. All examples assume you are in the repo root with `src/bin/searchN4L` compiled and data loaded (the built-in `examples/` corpora are used for several recipes).
+> **Ten query shapes you'll reach for more than once. Copy, paste, adapt.**
+
+The [Finding things](../searchN4L.md) page teaches the shape of a
+question. This page is the cheat sheet — ten recipes that cover most
+of what you'll want to do, each with a command, an expected-shape
+output, and a one-line note on when to reach for it. The running corpus
+is the reading list from [Your first story](../Tutorial.md); a couple of
+recipes use `branches.n4l` or the chinese-notes corpus where the shape
+of the example requires it.
 
 !!! info "Shell escaping"
-    `\` is an escape character in bash/zsh, so commands in this cookbook use double
-    backslashes (`\\notes`, `\\from`) or quote the command (`"\\notes brain"`). Both work.
+    `\` is an escape character in bash/zsh. Commands below use double
+    backslashes (`\\notes`, `\\from`) or quote the whole command
+    (`"\\notes brain"`). Both work.
 
 ## 1. Orbit around a topic
 
-**Use when**: you want to see everything linked to a concept, ranked by the graph's own sense of relevance.
-
-```bash
-./src/bin/searchN4L brain
-```
-
-Expected output: a list of nodes whose text contains `brain` as a substring, each followed by its immediate neighbours grouped by [arrow](../concepts/glossary.md#arrow-sttype) type.
+**When you want it:** you remember a topic and want to see everything
+that points at it.
 
 ```
-0: neuroscience brain
-      -    (has aspect) - waves
-      -    (is discussed in) - smalltalk chapter
-      -    (see also) - electroencephalogram
+searchN4L "decision making"
 ```
 
-Indentation encodes distance. Use `\\limit N` to cap the result count.
+```
+0: "decision making"	in chapter: reading list
 
-## 2. Path between two nodes
-
-**Use when**: you want to find *how* two concepts connect, not just that they do.
-
-```bash
-./src/bin/searchN4L "\\from start \\to \"target 1\""
+      -    (is the topic/theme of) - Thinking Fast and Slow
+           -    (is a bibtex citation label for) - Superforecasting
+      -    (is the topic/theme of) - Superforecasting
+      -    (is the topic/theme of) - Thinking in Systems
 ```
 
-Expected output:
+The topic is the match; every book that pointed `(about)` at it is
+listed below. Indented lines are one hop further out — the graph walks
+a step beyond the immediate neighbours. Cap the walk with `\\limit N`.
+
+## 2. Full orbit of one thing
+
+**When you want it:** you remember a title and want everything you
+ever wrote about it.
 
 ```
-     - story path:  start  -(leads to)->  door  -(leads to)->  passage  -(debug)->  target 1
-     -  [ Link STTypes: -(+leads to)->  -(+leads to)->  -(+leads to)-> . ]
+searchN4L notes about "Thinking Fast and Slow"
 ```
 
-Default path depth is `5`. Use `\\depth N` for longer searches and `\\min N` to skip trivial loops.
+```
+0: "Thinking Fast and Slow"	in chapter: reading list
 
-## 3. Context-scoped search
-
-**Use when**: the same word means different things in different chapters.
-
-```bash
-./src/bin/searchN4L "%%" "\\context smalltalk brain wave" "\\limit 3"
+      -    (is about topic/them) - decision making
+      -    (is about topic/them) - heuristics
+      -    (has author) - Daniel Kahneman
+      -    (has bibtex citation) - Judgment under Uncertainty
+           -    (has author) - Amos Tversky
+           -    (note/remark) - the anchor is almost always the wrong number
+      -    (note/remark) - two systems, one of them lazy, both of them you
+      -    (is a bibtex citation label for) - Superforecasting
 ```
 
-The `%%` is a wildcard name — match anything whose context includes `smalltalk`, `brain`, or `wave`. Context is a set, not a conjunction; any overlap counts.
+Every arrow in or out of the node, plus one hop further. When the node
+has a lot of connections, this is how you see them all at once.
+
+## 3. Author's footprint
+
+**When you want it:** you remember a person and want to see what they
+connect to across your notes.
 
 ```
-0: what's up?   in chapter: notes on chinese
-      -    (english has hanzi) - 什么事
-      -    (hanzi has pinyin) - shénme shì     .. smalltalk, questions
+searchN4L "Daniel Kahneman"
 ```
 
-## 4. Browse a chapter page by page
+```
+0: "Daniel Kahneman"	in chapter: reading list
 
-**Use when**: you want to read notes in the order you wrote them.
-
-```bash
-./src/bin/searchN4L "\\notes brain"
-./src/bin/searchN4L "\\notes brain \\page 2"
+      -    (is the author of) - Thinking Fast and Slow
+           -    (is a bibtex citation label for) - Superforecasting
+      -    (is the author of) - Judgment under Uncertainty
 ```
 
-Output is a reflowed rendering of the chapter's `PageMap` rows. The standalone `notes` CLI is equivalent:
+Two books by Kahneman you wrote down directly, plus the citation from
+*Superforecasting* one hop further — a relationship between two books
+that you never stated in a single note.
 
-```bash
-./src/bin/notes -page 2 brain
+## 4. Path between two things
+
+**When you want it:** you want the chain, not the neighbourhood. This
+needs `(then)` / `(leads to)`-style arrows in your corpus — see
+[Finding paths](../pathsolve.md) for why.
+
+```
+pathsolve -begin "once upon" -end "a little prince"
 ```
 
-## 5. Sequence browsing with `\seq`
+against `examples/branches.n4l`:
 
-**Use when**: chapters marked with `+:: _sequence_ ::` have narrative order you want to follow.
+```
+     - story path: 1 * once upon  -(then)->  a time  -(then)->  there was
+      -(=>)->  a princess  -(=>)->  mischief!  -(=>)->  a little prince
+```
 
-```bash
-./src/bin/searchN4L "\\seq \"Mary had\""
+The specific route through the branching story. On a reading-list-style
+corpus (`(about)`, `(by)`, `(bib-cite)`), this will return "no paths
+available" because those aren't the kind of arrows pathsolve follows.
+
+## 5. Scope to one chapter
+
+**When you want it:** the same word appears in several chapters and you
+only want one.
+
+```
+searchN4L "bias" \\chapter "reading list"
+```
+
+The chapter filter narrows both the match and the walk. A reading-list
+*bias* won't drag in a statistics-chapter *bias*.
+
+## 6. Scope to a context
+
+**When you want it:** the same word means different things in different
+contexts, and you tagged your notes.
+
+```
+searchN4L "%%" \\context smalltalk brain wave \\limit 3
+```
+
+The `%%` is a wildcard name — match anything whose context includes
+*smalltalk*, *brain*, or *wave*. Context is a set, not a conjunction:
+any overlap counts. See [Context](../howdoescontextwork.md) for why.
+
+## 7. Exact match for a short term
+
+**When you want it:** your search term is a substring of too many other
+nodes.
+
+```
+searchN4L "!A!"
+```
+
+`!A!` (or `|A|`) forces a whole-node match. Without the bangs, `A` is a
+substring of thousands of strings in a big corpus. With them, only the
+literal node named `A` comes back.
+
+## 8. Browse a chapter in order
+
+**When you want it:** you want to read your notes in the order you
+wrote them, not in the order the graph returns them.
+
+```
+searchN4L "\\notes brain"
+searchN4L "\\notes brain \\page 2"
+```
+
+This reflows the chapter from its original page order. Useful when the
+graph view scrambles the narrative and you want the authored sequence
+back.
+
+## 9. Sequence browsing
+
+**When you want it:** a chapter that was written as a sequence —
+tagged `:: _sequence_ ::` — and you want the items in story order.
+
+```
+searchN4L "\\seq \"Mary had\""
 ```
 
 ```
@@ -88,90 +172,52 @@ Output is a reflowed rendering of the chapter's `PageMap` rows. The standalone `
   3. She'd serve it on a tray
 ```
 
-The parser accepts `\seq`, `\sequence`, `\story`, or `\stories` interchangeably — all set the `param.Sequence` flag (see [service_search_cmd.go:407-409](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go#L407-L409)).
+`\seq`, `\sequence`, `\story`, and `\stories` are interchangeable
+spellings of the same command.
 
-## 6. Exact match with `!term!`
+## 10. Search without accents
 
-**Use when**: a short search term is a substring of many other strings and you want the literal.
-
-```bash
-./src/bin/searchN4L "!A!"
-```
-
-In a graph where `A`, `AB`, `ABC`, and many other strings exist, `!A!` matches only the literal `A`. Equivalent: `|A|`. This is a substitute for direct `NodePtr` lookup when you do not know the node's address.
-
-## 7. Chapter-scoped full-text
-
-**Use when**: you know the answer is in a specific chapter and want to reduce noise.
-
-```bash
-./src/bin/searchN4L "bjorvika" "\\chapter oslo"
-```
-
-The `\\chapter <string>` scope filters both the substring match and the neighbour traversal to nodes whose `Chap` column contains `oslo`. Use `\\chapter any` for an explicit wildcard.
-
-## 8. Direct NodePtr lookup
-
-**Use when**: you have a node address from an earlier search and want to jump straight there.
-
-```bash
-./src/bin/searchN4L "(1,1)"
-```
-
-A [NodePtr](../concepts/glossary.md#nodeptr) is a tuple `(Class, CPtr)` where `Class` is the size bucket (1 for single-word ngrams, 2 for two-word, … up to 6 for `>1KB`) and `CPtr` is the index within that bucket. See [service_search_cmd.go](https://github.com/markburgess/SSTorytime/blob/main/pkg/SSTorytime/service_search_cmd.go) and `IsLiteralNptr`. Output is the node's orbit at radius 1.
-
-## 9. Arrows introspection with `\arrow`
-
-**Use when**: you want to see which relationship short codes are defined, or look up an arrow by its STtype.
-
-```bash
-./src/bin/searchN4L "\\arrow ph,pe"
-./src/bin/searchN4L -- "\\arrow -2"
-```
-
-!!! note "Why `--` before `\arrow -2`"
-    Go's `flag` package reads any token starting with `-` as a potential flag, so
-    `./src/bin/searchN4L "\\arrow -2"` is rejected with "flag provided but not
-    defined: -2". The `--` sentinel tells the flag parser "positional arguments
-    only from here on" and the `-2` reaches the query DSL intact.
+**When you want it:** your keyboard can't produce the accented
+characters in the source, but you know the word.
 
 ```
-192. (3) ph -> pinyin has hanzi
-190. (3) pe -> pinyin has english
-
-  9. (-2) in -> is in
- 11. (-2) is an emphatic proto-concept in -> is emph in
+searchN4L "(fangzi)" \\chapter chinese
 ```
 
-The columns are `ArrPtr`, `(STtype)`, `short -> long`.
-
-## 10. Accented/unaccented search with `"(parenthesized)"`
-
-**Use when**: your keyboard cannot produce the accented characters in the source corpus.
-
-```bash
-./src/bin/searchN4L "(fangzi)" "\\chapter chinese"
+```
+0: fángzi
+      -    (pinyin has hanzi) - 房子
+           -    (hanzi has english) - house  .. at home, domestic
 ```
 
-Parenthesized strings match the **unaccented** tsvector column (`Node.UnSearch`). So `(fangzi)` finds `fángzi`, `fángzǐ`, etc. Without parentheses, the search is against the accent-preserving column.
+Parenthesised search terms hit the unaccented copy the graph keeps for
+exactly this purpose. `(fangzi)` finds `fángzǐ`, `fángzi`, and
+variations. Without the parentheses, `fangzi` matches the accented
+column and returns nothing.
 
-## Bonus: graph statistics per chapter
+## Bonus: chapter statistics
 
-**Use when**: you want a one-shot summary of a chapter's shape.
+**When you want it:** a quick summary of a chapter's shape — how many
+nodes, how many arrows, the dominant arrow types.
 
-```bash
-./src/bin/searchN4L "\\stats \\in brain"
+```
+searchN4L "\\stats \\in brain"
 ```
 
-Or the dedicated CLI for richer analysis:
+For a deeper analysis (loops, sources, sinks, supernodes, centrality),
+`graph_report` is the dedicated tool; see the developer docs for its
+flags.
 
-```bash
-./src/bin/graph_report -chapter brain -sttype L,C -depth 6
-```
-
-The `graph_report` tool reports loops, sources, sinks, supernodes, and eigenvector centrality — more expensive than `\\stats` but also more informative.
+---
 
 ## Where to go next
 
-- The full command reference lives at [searchN4L.md#the-query-dsl](../searchN4L.md#the-query-dsl).
-- For path-specific work, `pathsolve` is the dedicated tool — see [pathsolve.md](../pathsolve.md).
+- [Finding things](../searchN4L.md) — the shape of a question, in
+  longer form.
+- [Finding paths](../pathsolve.md) — when you want the chain, not
+  the neighbourhood.
+- [Context](../howdoescontextwork.md) — asking the same question
+  different ways.
+- The full query DSL lives in the repo at
+  [`pages/docs/developers/searchN4L-flags.md`](https://github.com/markburgess/SSTorytime/blob/main/pages/docs/developers/searchN4L-flags.md),
+  or try `searchN4L --help`.

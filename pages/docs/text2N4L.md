@@ -1,116 +1,183 @@
-
-# text2N4L
+# Turning documents into stories
 
 ![Six tools arranged on a worktable — sieve, builder's square, magnifying glass, open book, twin flashlights, microscope — representing the family of CLI utilities in the SSTorytime toolkit.](figs/tools_hero.jpg){ align=center }
 
-Sometimes you want to make notes on a text that's already written in natural language,
-and it might be quite long. Reworking the text in note form as N4L (producing [chapters](concepts/glossary.md#chapter) and [arrows](concepts/glossary.md#arrow-sttype)) would take a long time and might be difficult.
+> **`text2N4L` takes a plain-text document and writes a first-draft N4L file
+> from it — so you can start from something instead of from nothing.**
 
-The `text2N4L` command reads a plain text `filename.txt` like the examples in `examples/example_data`
-and turns it into a prototype N4Lfile automatically, based on a model of deconstructing narrative
-language (a Tiny Language Model). Nothing is uploaded into the database. You can use `N4L` to do that
-later. This give you the opportunity to edit and rework, add to and delete from the proposal.
+Sometimes the thing you want to put in the graph is already written:
+a book, a transcript, a set of meeting minutes, a long essay. Turning
+that by hand into N4L — splitting it into items, picking out the
+relationships, choosing arrows — would take hours you don't have.
 
-**Note**: while this sounds like a nice idea, it can be quite expensive in terms of memory. Scanning
-even a fraction of a book can produce a lot of text and cross referencing, so unicode encoding time combined
-with the the upload time to the database diverges quite quickly. A book, like *Moby Dick* or Darwin's *Origin of Species*
-will likely take several hours to upload.
+`text2N4L` gives you a head start. It reads the source file, picks
+out the sentences it thinks carry the most signal, and writes out an
+`.n4l` file with the skeleton of a graph inside it — one item per
+retained sentence, containment links back to the source, topic tags
+derived from the prose. Nothing is uploaded to the database; the
+output is a text file you open and argue with.
 
-By default, the tool selects only a 50% fraction of the sentences that have been measired for their
-significance or their level of `intent'. 
-<pre>
-$ text2N4L ../examples/example_data/promisetheory1.dat 
+That argument is the point. The draft is deliberately imperfect.
+A corpus you haven't edited is a corpus you don't know.
 
-Wrote file ../examples/example_data/promisetheory1.dat_edit_me.n4l
-Final fraction 62.18 of requested 50.00 sampled
+---
 
-</pre>
-You can change the fraction sampled
-<pre>
-$ text2N4L -% 77 ../examples/example_data/MobyDick.dat 
-</pre>
-Because there is uncertainty in how to select the relevant parts,
-`text2N4L` will oversample, especially for low percentages. As you reach
-100%, there is no ambiguity.
+## When to reach for it
 
-The generated file takes sentences from the source document and prefixes them with labels:
-<pre>
-@sen9471   Towards thee I roll, thou all-destroying but unconquering whale, to the last I grapple with thee, from hell’s heart I stab at thee, f
-or hate’s sake I spit my last breath at thee.
-              " (is in) part 210 of ../examples/example_data/MobyDick.dat
+**Reach for it when:**
 
-@sen9473   and since neither can be mine, let me then tow to pieces, while still chasing thee, though tied to thee, thou damned whale!
-              " (is in) part 210 of ../examples/example_data/MobyDick.dat
+- The source is already written down and you want to work *with* it,
+  not *rewrite* it.
+- You're exploring an unfamiliar text and want a scaffold to think
+  against — which sentences matter, which topics recur.
+- You're going to spend time editing regardless; starting from a
+  draft is faster than starting from blank.
 
-@sen9475   The harpoon was darted, the stricken whale flew forward, with igniting velocity the line ran through the grooves, ran foul.
-              " (is in) part 210 of ../examples/example_data/MobyDick.dat
+**Skip it when:**
 
-@sen9476   Ahab stooped to clear it, he did clear it, but the flying turn caught him round the neck, and voicelessly as Turkish mutes bowstring 
-their victim, he was shot out of the boat, ere the crew knew he was gone.
-              " (is in) part 210 of ../examples/example_data/MobyDick.dat
+- You're writing something new. Just write N4L directly — the
+  tutorial walks you through it in fifteen minutes.
+- The source is short (a paragraph, a page). Hand-writing the N4L
+  will be faster than running the tool and cleaning up its guesses.
+- The source is a table or a list with structure `text2N4L`
+  can't see. A spreadsheet export or a JSON file is a better
+  starting point via other tooling.
 
-</pre>
-You can add you own notes, say at the end of the file:
+---
 
-<pre>
+## The shape of the workflow
 
-$sen9471.1  (note) This line was immortalized in the movie Star Trek: Wrath of Khan by Khan himself.
+Four steps, not all at the keyboard:
 
-</pre>
+1. **Run the tool** against your `.txt` file. Get back an
+   `.n4l` file to edit.
+2. **Open the result in your editor.** Read what it picked up.
+   Delete the noise, rename the chapters, group things that belong
+   together.
+3. **Add arrows.** The generator only emits containment links —
+   "this sentence is part of the document." You add the
+   interesting ones: "this statement leads to that", "this thing is
+   a property of that".
+4. **Ingest the edited file** with `N4L -u`, and start asking
+   questions.
 
-## The `-%` flag in detail
+Budget real time for step 2. More than for step 1. Possibly more
+than steps 1, 3, and 4 put together. That's the design.
 
-`text2N4L` has exactly one flag:
+---
+
+## One run, end to end
+
+A full walkthrough of this — with a concrete example corpus, what
+the draft looks like, what to do with it — lives in the
+[Patterns — research notes](cookbooks/bring-your-own-corpus.md)
+cookbook. Read that if you have a document in mind; it's the same
+tool shown in action.
+
+If you just want to see it work, the project ships sample texts
+under `examples/example_data/`. Try one of the shorter pieces:
 
 ```
-text2N4L [-%  percent] filename
+text2N4L examples/example_data/promisetheory1.dat
 ```
 
-Declaration: [`src/text2N4L/text2N4L.go:41`](https://github.com/markburgess/SSTorytime/blob/main/src/text2N4L/text2N4L.go#L41).
+You'll get back a sibling `.n4l` file (`..._edit_me.n4l`) with
+roughly half the source's sentences retained, each one an item in
+a chapter, with n-gram topic tags derived from the prose. Open
+that file in an editor and you're at step 2.
 
-### Percentage semantics
+---
 
-The number you pass is the **approximate target fraction** of source sentences to keep in the generated `.n4l` file. The selection runs in two passes (`SelectByRunningIntent` and `SelectByStaticIntent`) and merges the results, so the actual output is usually **slightly higher** than requested:
+## What comes out
 
-| You ask for | You typically get |
-|---|---|
-| `-% 10` | 15–25 % (oversampling is worst at low percentages) |
-| `-% 30` | 40–50 % |
-| `-% 50` (default) | 60–65 % |
-| `-% 77` | 85–90 % |
-| `-% 100` | 100 % — **no selection ambiguity**; every sentence is kept |
+The generated file is a normal N4L file — the same format you'd
+write by hand. A typical entry looks like this (from a Moby-Dick
+sample):
 
-The skew toward oversampling is intentional: two heuristic rankings (intent-based and statistical) can each nominate a sentence, and the merged set is the union. At 100 % the ambiguity collapses and you get a faithful 1:1 conversion.
+```n4l
+@sen9471   Towards thee I roll, thou all-destroying but unconquering whale,
+              " (is in) part 210 of ../examples/example_data/MobyDick.dat
 
-### What happens at each boundary
+@sen9473   and since neither can be mine, let me then tow to pieces,
+              " (is in) part 210 of ../examples/example_data/MobyDick.dat
+```
 
-- `-% 0` or omitted — defaults to `50`. See the flag default.
-- `-% 100` — deterministic: every sentence is converted to a `@senN ... (is in) partN` line.
-- Negative or non-numeric values — Go's `flag` package rejects with a usage error; exit code `2`.
+Each retained sentence becomes an aliased item (`@senN`) with a
+containment link back to the source. Topic tags from n-gram
+analysis appear as contexts. Nothing else is linked yet — that's
+your job.
 
-### File-size considerations
+You can reference a generated item from your own additions using
+the alias:
 
-`text2N4L` loads the whole source file into memory, builds an `N-gram` frequency table (1- to 4-grams), and emits one `.n4l` sentence per selected input sentence **plus a context-dictionary** of intentional phrases.
+```n4l
+ $sen9471.1 (note) This line was made famous by Khan in Wrath of Khan.
+```
 
-Rough scaling, measured on a 2024-era laptop:
+---
 
-| Source size | RAM | Time | Output size |
-|---|---|---|---|
-| 100 KB (~1,000 sentences) | ~100 MB | seconds | ~200 KB at 50 % |
-| 1 MB (~10,000 sentences) | ~500 MB | minutes | ~2 MB at 50 % |
-| 10 MB (e.g. *Moby-Dick*) | multi-GB | hours | ~15–20 MB at 50 % |
+## Honest caveats
 
-!!! warning "Large documents are slow to upload, not just to fractionate"
-    The hard cost isn't `text2N4L` — it's the downstream `N4L -u` step. Once you have a
-    large `.n4l` file, every cross-reference becomes a Postgres round-trip. Budget hours
-    for book-sized corpora. Consider chunking the source text into chapters and running
-    `text2N4L` per chapter.
+The tool picks sentences using a heuristic for "intent" — how
+load-bearing the sentence looks. It oversamples on purpose: if two
+different heuristics both flag a sentence, it's kept. That means
+asking for 30% usually gets you more than 30%, which matters when
+your source is long.
 
-### Exit codes & environment
+Large sources are expensive. A book-sized text — *Moby Dick*,
+*Origin of Species* — will produce enough cross-referenced output
+that the downstream `N4L -u` ingest takes hours, not minutes. If
+that's your use case, split the source into chapters before running
+`text2N4L`, and ingest chapter-by-chapter.
 
-- **Exit `0`** — success (output file written).
-- **Exit `-1`** — file system error creating the output `.n4l` (see [`src/text2N4L/text2N4L.go:107-110`](https://github.com/markburgess/SSTorytime/blob/main/src/text2N4L/text2N4L.go#L107-L110)).
-- **Exit `-2`** — missing filename argument (see [`src/text2N4L/text2N4L.go:48-51`](https://github.com/markburgess/SSTorytime/blob/main/src/text2N4L/text2N4L.go#L48-L51)).
-- **Exit `2`** — invalid flag (Go `flag` package default).
+The tool is not a replacement for reading the text. It's a
+scaffold. The reading is yours.
 
-`text2N4L` does **not** connect to PostgreSQL — it produces a file and stops — so `POSTGRESQL_URI` is not consulted. `SST_CONFIG_PATH` is also unused.
+---
+
+## Adjusting the sample fraction
+
+One flag you'll reach for: the target fraction of sentences to
+keep.
+
+```
+text2N4L -% 30 mycorpus.txt
+```
+
+30% asks for fewer sentences, 77% asks for more, 100% is "every
+sentence, no selection". Run `text2N4L --help` for the full flag
+list; it's a short list.
+
+---
+
+## Where to go next
+
+<div class="grid cards" markdown>
+
+-   :material-notebook-edit:{ .lg .middle } **Walk through a real corpus**
+
+    ---
+
+    Full cookbook: drop in a `.txt`, fractionate, refine, upload,
+    search.
+
+    [:octicons-arrow-right-24: Patterns — research notes](cookbooks/bring-your-own-corpus.md)
+
+-   :material-pencil:{ .lg .middle } **Write the edited version**
+
+    ---
+
+    Chapters, contexts, arrows — the notation the tool's output is
+    in, so you can read and refine it.
+
+    [:octicons-arrow-right-24: Writing N4L by hand](N4L.md)
+
+-   :material-magnify:{ .lg .middle } **Query what you ingested**
+
+    ---
+
+    Once the corpus is in, ask it questions.
+
+    [:octicons-arrow-right-24: Finding things](searchN4L.md)
+
+</div>

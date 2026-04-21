@@ -99,8 +99,6 @@ var (
 	ARROW_DIRECTORY_TOP ArrowPtr = 0
 	INVERSE_ARROWS = make(map[ArrowPtr]ArrowPtr)
 
-	IGNORE_ARROWS []ArrowPtr
-
 	// Context array factorization
 
 	CONTEXT_DIRECTORY []ContextDirectory

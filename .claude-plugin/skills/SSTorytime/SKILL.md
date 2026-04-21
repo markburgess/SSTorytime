@@ -1,7 +1,7 @@
 ---
 name: SSTorytime
-description: read files of N4L notes and create a semantic knowledge store with graph methods based on semantic spacetime and promise theory
-allowed-tools: bash, read
+description: read files of N4L notes and create a semantic knowledge store with graph methods based on semantic spacetime and promise theory. TRIGGER when user asks about notes on a certain subject. SKIP when user asks RDF questions.
+allowed-tools: Bash, Read, Grep, Glob
 ---
 
 # SSTorytime
@@ -13,18 +13,34 @@ A semantic knowledge store for humans and AI -- compile notes and turn them into
 - go programming language
 - latest postgres
 - postgres contrib package
-- Full functionality requites the webserver http_server to be running
+- Full functionality requires the webserver http_server to be running
 
 ## Install
 
 If Linux
 - install postgres and postgres contrib packages
 - install go language
-- install SSTorytime respository
+- install SSTorytime repository
 ```bash
 git clone git@github.com:markburgess/SSTorytime.git
 cd SSTorytime
 make
+```
+- To initialize the database and schema:
+```
+make ramdb
+```
+
+- To install the example data provided with the project
+
+```
+ cd examples; make
+```
+
+- To add a single file of notes
+
+```
+ N4L -u MYFILE.N4L
 ```
 
 
@@ -32,27 +48,25 @@ make
 - A graph consists of nodes joined by arrows
 - Arrows are directed edges in the graph
 - Every arrow has an inverse, pointing in the opposite direction
-- There are four type of arrow:
+- There are four type of arrow which express different role relationships between the texts:
   - LT (leads to),
+    - Use "X (leads to) Y" when X and Y are events that are related by a causal arrow
   - CN (contains),
+    - Use "X (contains) Y" when X is a physical thing that contains another physical thing Y
   - EP (express property),
+      - Use "X (express property)" Y when X is a concept that contains another concept Y, or when X is a thing or event which has a concept attribute
   - NR (near to)
+      - Use "X (near) Y" when X seems similar to Y somehow, e.g. sounds like, is equal to
 - Each type of arrow may have many different names, which describe exact meaning
 - Search commands are denoted by \command, e.g. \path, \sequence, \chapter
 
 
 
 
-## Procedure
-- Step 1: A user writes notes in N4L. The compiler validates file.N4L based on arrows defined in SSTconfig/ directory
-- Step 2: User compiles notes with the bin/N4L tool and they become a graph.
-- Step 3: Search the graph, edit notes, and repeat
-- Step 4: Go back and edit notes regularly to add new knowledge, improve, and update.
-- Advanced: the user can define new arrows by editing files in SSTconfig/
 
 
 ## Tools
-- Tools are compiled into src/bin of the SSTorytime repositor
+- Tools are compiled into src/bin of the SSTorytime repository
 
 - To validate N4L file of notes
 ```bash
@@ -60,29 +74,29 @@ src/bin/N4L FILE.N4L
 ```
  - To upload N4L notes:
 ```bash
-- src/bin/N4L -u *.N4L
+ src/bin/N4L -u *.N4L
 ```
 
 - To wipe entire existing database:
 ```bash
-- src/bin/N4L -wipe
+ src/bin/N4L -wipe
 ```
 
 - To wipe all data and upload files to replace existing database:
 
 ```bash
-- src/bin/N4L -wipe -u *.N4L
+ src/bin/N4L -wipe -u *.N4L
 ```
 
 - To remove a single chapter from the database
 ```bash
-- src/bin/removeN4L
+ src/bin/removeN4L
 
 ```
 
 - To sample 50 percent of a long ASCII text file, like a book, into a single chapter file of notes:
 ```bash
-- src/bin/text2N4L -% 50 FILE.txt
+ src/bin/text2N4L -% 50 FILE.txt
 ```
 This produces FILE.txt_edit_me.n4l
 
@@ -93,38 +107,51 @@ This produces FILE.txt_edit_me.n4l
 
 - To obtain a command line text report about graph data.
 ```bash
-- src/bin/graph_report -chapter CHAPTER
+ src/bin/graph_report -chapter CHAPTER
 ```
 
 
+## Workflow
 
-## Usage
+- Step 1: A user writes notes in N4L. The compiler validates file.N4L based on arrows defined in SSTconfig/ directory
+- Step 2: User compiles notes with the src/bin/N4L tool and they become a graph.
+  - A user writes notes in files called SOMETHING.N4L
+  - Use the compiler src/bin/N4L SOMETHING.N4L to validate
+  - Upload data by adding flag N4L -u to search and visualize connections
+- Step 3: Search the graph, edit notes, and repeat
+- Step 4: Go back and edit notes regularly to add new knowledge, improve, and update.
 
-- A user writes notes in files called SOMETHING.N4L
-- Use the compiler src/bin/N4L SOMETHING.N4L to validate
-- Upload data to search and visualize connections
 
-## Example data
+## Defining arrows
 
-To start with example data from the package
-- cd examples; make
-
-To add a single file of notes
+- The user can define new arrows by editing files in SSTconfig/
+- the SSTconfig/directory should be readable in the directory where N4L is called or up to two directories above it
 
 ## N4L usage
 
 - Create or edit a text file containing lines with fields: first items (arrow) second item (arrow) third item, etc
 - Lines may be labelled with @token to refer later as $token.1, $token.2, etc
 - The ditto character " may be used to copy the previous line's field
-- The $PREV.1, $PREV.2 may also be used to refer to the previous line's fields
+- The $PREV.1, $PREV.2 may also be used to refer to the previous line's fields, as separated by arrows
 - Each file is a work in progress. Revisit it regularly to add new comments, relationships, and make edits.
+
+Example N4L for chinese with arrows called (eh), (ph), (he), and (hp) and (e.g.): 
+
+  # english (eh) hanzi (hp) pinyin
+  place/area/district  (eh) 地方 (hp) dìfāng 
+  around /nearby/surroundings (eh) 周围 (hp)  zhōuwéi (e.g.) wǒjiā zhōuwéi yǒu hěnduō chē (ph) 我家周围有很多车 (he) there are many cars around my house
+  # $PREV.3 is the third item on the previous line
+  $PREV.3 (e.g.) wǒjiā zhōuwéi yǒu hěnduō shāngdiàn (ph) 我家周围有很多商店 (he) there are many shops around my house
+
+
 
 ## Search Usage
 
-To search existing knowledge, post a string, with form key "name" to the /searchN4L endpoint of http_server
 
-A table of contents listing chapters and search contexts can be obtained with command:
-- \toc - list full contents
+To answer a question from the knowledge graph: call mcp__sstorytime__N4Lquery with the user's query. If the MCP server isn't available, fall back to curl -X POST .../searchN4L -d 'name=...'. Prefer \chapter scoping when the user has mentioned a topic area.
+
+To obtain a Table Of Contents listing chapters and search contexts use
+- \toc \limit 50 - for full list of chapters contents
 - \toc PATTERN - list chapters matching PATTERN
 
 
@@ -150,7 +177,7 @@ to skip 2 lexemes
        strange<2>woman
 ```
 
-- Use | character to delimint: e.g.
+- Use | character to delimit: e.g.
 
 ```
 |a1|, "|deep purple|"
@@ -194,12 +221,14 @@ PATTERN \chapter CHAPTER \context CONTEXT
 
 ## Special searches
 
-- To retrieve an arrow definition
+- To retrieve an arrow definition, use its long or short name, or its arrow number to explain:
 ```
-\arrow PATTERN/NUMBER
+\arrow "LONG NAME PATTERN"
+\arrow "SHORT NAME PATTERN"
+\arrow "ARROW NUMBER PATTERN"
 ```
 
-- To retried an exact node by its internal key value use (nclass,ncptr), e.g.
+- To retrieve an exact node by its internal key value use (nclass,ncptr), e.g.
 ```
 (1,14)
 ```

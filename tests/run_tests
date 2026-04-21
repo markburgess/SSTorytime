@@ -22,7 +22,7 @@ echo "Testing build artifacts"
 echo ""
 
 
-BINARIES="N4L searchN4L notes pathsolve graph_report API_EXAMPLE_1  API_EXAMPLE_2 API_EXAMPLE_3 API_EXAMPLE_4"
+BINARIES="N4L searchN4L notes pathsolve graph_report http_server API_EXAMPLE_1  API_EXAMPLE_2 API_EXAMPLE_3 API_EXAMPLE_4"
 
 for prog in $BINARIES; do
    if ../src/bin/$prog -h > /dev/null 2>&1; then 

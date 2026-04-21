@@ -75,7 +75,7 @@ func Usage() {
 
 	fmt.Printf("usage: http_server [-resources string]\n")
 	flag.PrintDefaults()
-	os.Exit(1)
+	os.Exit(0)
 }
 
 // *********************************************************************

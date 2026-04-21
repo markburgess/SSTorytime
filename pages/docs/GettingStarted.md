@@ -117,25 +117,22 @@ N4L -u examples/reading-list.n4l
 searchN4L "decision making"
 ```
 
-Expected output shape — three books, each annotated with the topics and
-takeaway you'd expect from the corpus:
+Expected output — the topic is the match, with the three books that
+point at it listed underneath as inbound arrows:
 
 ```
-"Thinking Fast and Slow"   (is about) decision making
-                           (is about) dual-process cognition
-                           (one-line takeaway) two systems, one of them lazy, both of them you
+0: "decision making"	in chapter: reading list
 
-"Superforecasting"         (is about) decision making
-                           (cites)    "Thinking Fast and Slow"
-                           (one-line takeaway) calibration beats cleverness over long horizons
-
-"Thinking in Systems"      (is about) decision making
-                           (is about) feedback loops
-                           (one-line takeaway) most problems are the shape of a feedback loop
+      -    (is the topic/theme of) - Thinking Fast and Slow
+           -    (is a bibtex citation label for) - Superforecasting
+      -    (is the topic/theme of) - Superforecasting
+      -    (is the topic/theme of) - Thinking in Systems
 ```
 
-Three books you wrote about a shared topic, pulled back together by asking
-the graph. That's the whole loop.
+Three books, pulled back together by asking the graph about the topic
+they share. As a bonus, the indented line notes that *Thinking Fast and
+Slow* is cited by *Superforecasting* — a relationship the graph
+surfaced without being asked. That is the whole loop.
 
 ---
 

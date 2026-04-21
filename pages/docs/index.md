@@ -73,30 +73,36 @@ Here is a small reading list written in N4L:
 ```n4l
 - reading list
 
- :: books, topics, reading history ::
+ :: books, topics, authors ::
 
- "Thinking Fast and Slow"   (is about) decision making
-       "                    (cites)    "Judgment under Uncertainty"
-       "                    (read on)  2024-03-15
+ Thinking Fast and Slow   (about)    decision making
+        "                 (by)       Daniel Kahneman
+        "                 (bib-cite) Judgment under Uncertainty
 
- "Superforecasting"         (is about) decision making
-       "                    (cites)    "Thinking Fast and Slow"
-       "                    (read on)  2024-05-20
+ Superforecasting         (about)    decision making
+        "                 (by)       Philip Tetlock
+        "                 (bib-cite) Thinking Fast and Slow
 
- "Thinking in Systems"      (is about) decision making
-       "                    (read on)  2024-09-14
+ Thinking in Systems      (about)    decision making
+        "                 (by)       Donella Meadows
 ```
 
-Load it, then ask: **What connects "Thinking Fast and Slow" and "Superforecasting"?**
+Load it, then ask: **what have I read about decision making?**
 
 ```
-"Thinking Fast and Slow"  ← is cited by ←  "Superforecasting"
-"Thinking Fast and Slow"  → is about → decision making ← is about ←  "Superforecasting"
+0: "decision making"	in chapter: reading list
+
+      -    (is the topic/theme of) - Thinking Fast and Slow
+           -    (is a bibtex citation label for) - Superforecasting
+      -    (is the topic/theme of) - Superforecasting
+      -    (is the topic/theme of) - Thinking in Systems
 ```
 
-Two answers. One direct — Superforecasting cites the earlier book. One
-through a shared topic. You did not write either path; they are consequences
-of the connections you *did* write.
+Three books. You asked about a topic; the graph also noted that
+*Superforecasting* cites *Thinking Fast and Slow* — surfaced by the
+same query, indented under the book it connects. You did not ask for
+the citation. It came along because it sits one hop away from something
+you did ask about.
 
 The full version of this reading list is at
 [`examples/reading-list.n4l`](https://github.com/markburgess/SSTorytime/blob/main/examples/reading-list.n4l)

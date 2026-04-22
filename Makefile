@@ -21,4 +21,4 @@ ramdb:
 	(cd contrib; sh makeramdb.sh)
 
 db:
-	(cd contrib/makedb.sh)
+	sh contrib/makedb.sh

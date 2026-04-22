@@ -1,0 +1,54 @@
+
+- reading list
+
+// A small corpus tracking books I have read, what each is about,
+// who wrote them, what they cite, and a one-line takeaway.
+// Uses only arrows that ship in the default SSTconfig:
+//   (about)     — the topic of
+//   (by)        — the author of
+//   (bib-cite)  — cites (as a bibtex-style citation)
+//   (note)      — a note or remark about
+
+ :: books, topics, authors ::
+
+ Thinking Fast and Slow     (about)    decision making
+        "                   (about)    dual-process cognition
+        "                   (about)    heuristics
+        "                   (by)       Daniel Kahneman
+        "                   (bib-cite) Judgment under Uncertainty
+        "                   (note)     two systems, one of them lazy, both of them you
+
+ Judgment under Uncertainty (about)    heuristics
+        "                   (about)    cognitive bias
+        "                   (by)       Daniel Kahneman
+        "                   (by)       Amos Tversky
+        "                   (note)     the anchor is almost always the wrong number
+
+ Superforecasting           (about)    decision making
+        "                   (about)    prediction
+        "                   (by)       Philip Tetlock
+        "                   (bib-cite) Thinking Fast and Slow
+        "                   (note)     calibration beats cleverness over long horizons
+
+ The Dictators Handbook     (about)    political coalitions
+        "                   (about)    incentive structures
+        "                   (by)       Bruce Bueno de Mesquita
+        "                   (note)     rulers survive by keeping a small coalition paid
+
+ Seeing Like a State        (about)    central planning
+        "                   (about)    legibility
+        "                   (about)    incentive structures
+        "                   (by)       James C. Scott
+        "                   (note)     what the centre can measure is not what the edge actually does
+
+ The Origins of Political Order (about) state formation
+        "                   (about)    political coalitions
+        "                   (by)       Francis Fukuyama
+        "                   (bib-cite) Seeing Like a State
+        "                   (note)     impersonal institutions are hard to build and easy to lose
+
+ Thinking in Systems        (about)    feedback loops
+        "                   (about)    complexity
+        "                   (about)    decision making
+        "                   (by)       Donella Meadows
+        "                   (note)     most problems are the shape of a feedback loop

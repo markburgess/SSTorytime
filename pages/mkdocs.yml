@@ -1,0 +1,143 @@
+site_name: SSTorytime
+site_description: Semantic Spacetime Story graph database over PostgreSQL
+site_author: Mark Burgess (ChiTek-i)
+site_url: https://markburgess.github.io/SSTorytime/
+repo_name: markburgess/SSTorytime
+repo_url: https://github.com/markburgess/SSTorytime
+edit_uri: edit/main/pages/docs/
+copyright: Copyright &copy; Mark Burgess / ChiTek-i — an NLnet sponsored project
+
+docs_dir: docs
+site_dir: site
+
+exclude_docs: |
+  /README.md
+  requirements.txt
+  plans/*
+  developers/*
+  # NOTE: developers/* is kept in the repo for contributors but excluded
+  # from the published site per the 2026-04-21 restructure (see
+  # plans/2026-04-21-user-facing-restructure-design.md).
+  #
+  # NOTE (deferred): kebab-case file renames are intentionally out of scope
+  # for this PR. Renames cascade through every cross-link; handle in a
+  # follow-up where link updates can be verified in one pass.
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.action.edit
+    - content.action.view
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+
+extra_css:
+  - css/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/markburgess/SSTorytime
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/groups/15875004/
+
+nav:
+  - Home: index.md
+
+  - Start Here:
+      - Install in 5 minutes: GettingStarted.md
+      - Your first story: Tutorial.md
+      - Try the examples: example.md
+      - FAQ: FAQ.md
+
+  - Writing Stories:
+      - Thinking in arrows: arrows.md
+      - Writing N4L by hand: N4L.md
+      - Turning documents into stories: text2N4L.md
+      - Patterns — research notes: cookbooks/bring-your-own-corpus.md
+
+  - Asking Questions:
+      - Finding things: searchN4L.md
+      - Finding paths: pathsolve.md
+      - Context — asking the same question different ways: howdoescontextwork.md
+      - Patterns — search recipes: cookbooks/search-recipes.md
+
+  - Living With Your Graph:
+      - Backing up and restoring: cookbooks/backup-restore-delete.md
+      - Sharing a graph: living/sharing-a-graph.md
+      - When things go wrong: living/when-things-go-wrong.md
+
+  - Concepts:
+      - Concepts: concepts/index.md
+      - Semantic spacetime in plain English: concepts/why-semantic-spacetime.md
+      - Glossary: concepts/glossary.md
+      - Storytelling: Storytelling.md
+      - Knowledge and learning: KnowledgeAndLearning.md
+      - Outreach: outreach.md
+
+# Files under pages/docs/developers/ are intentionally off-nav and
+# excluded from the site via exclude_docs above.

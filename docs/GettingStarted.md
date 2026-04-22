@@ -217,6 +217,25 @@ Note that, if you accidentally edit the file as root, the owner of the file will
 Notice that the `psql` is a tool that accepts commands of two kind: backslash commands, e.g. describe tables for the current database `\dt`,  `\d tablename`, and describing stored functions `\df`. Also note that direct SQL commands, which must end in a semi-colon `;`.
 
 
+## Hint: Debugging directly in postgres
+
+Start with a shell `psql` and switch to the postgres user
+
+<pre>
+$ sudo su
+$ su - postgres
+$ psql sstoryline
+
+\du  - list all databases
+\l   - liste databases and types
+
+\dt <type> show table type
+\df show functions
+
+select s from Node where s like '%fish%';
+
+</pre>
+
 
 ## 4. Installing the Go programming language for building and scripting
 

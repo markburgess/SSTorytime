@@ -44,12 +44,15 @@ func Open(load_arrows bool) PoSST {
 		sst.DB, err = sql.Open("postgres", connect_str)
 	} else {
 		sst.DB, err = sql.Open("postgres",env)
-		if err != nil {
-			fmt.Println("Error connecting to the database: ", err)
-			os.Exit(-1)
-		}
 	}
 
+	if err != nil {
+		fmt.Println("Error connecting to the database: ", err)
+		os.Exit(-1)
+	}
+
+	// Basic test
+	
 	err = sst.DB.Ping()
 	
 	if err != nil {

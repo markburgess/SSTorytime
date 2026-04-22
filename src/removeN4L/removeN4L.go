@@ -57,7 +57,7 @@ func Init() []string {
 
 	if len(args) < 1 {
 		Usage()
-		os.Exit(1);
+		os.Exit(0);
 	}
 
 	if !*forcePtr {
@@ -88,6 +88,7 @@ func DeleteChapter(sst SST.PoSST,chapter string) {
 
 	if err != nil {
 		fmt.Println("Error running deletechapter function:",qstr,err)
+		return
 	} else {
 		fmt.Println("Deleted",chapter)
 	}

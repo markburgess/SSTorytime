@@ -11,10 +11,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"regexp"
 	_ "github.com/lib/pq"
 
 )
-
 
 //**************************************************************
 
@@ -22,13 +22,14 @@ func AppendTextToDirectory(sst *PoSST,event Node,ErrFunc func(string)) NodePtr {
 
 	var cnode_slot ClassedNodePtr = -1
 	var ok bool = false
-	var node_alloc_ptr NodePtr
+	var node_alloc_ptr NodePtr = NO_NODE_PTR
 
-	cnode_slot,ok = CheckExistingOrAltCaps(sst,event,ErrFunc)
+	cnode_slot,ok = CheckExisting(sst,event)
 
 	node_alloc_ptr.Class = event.NPtr.Class
 
 	if ok {
+		// This node already exists
 		node_alloc_ptr.CPtr = cnode_slot
 		IdempAddChapterSeqToNode(sst,node_alloc_ptr.Class,node_alloc_ptr.CPtr,event.Chap,event.Seq)
 		return node_alloc_ptr
@@ -42,7 +43,6 @@ func AppendTextToDirectory(sst *PoSST,event Node,ErrFunc func(string)) NodePtr {
 		sst.NODE_DIRECTORY.N1directory = append(sst.NODE_DIRECTORY.N1directory,event)
 		sst.NODE_DIRECTORY.N1grams[event.S] = cnode_slot
 		sst.NODE_DIRECTORY.N1_top++ 
-		return node_alloc_ptr
 	case N2GRAM:
 		cnode_slot = sst.NODE_DIRECTORY.N2_top
 		node_alloc_ptr.CPtr = cnode_slot
@@ -50,7 +50,6 @@ func AppendTextToDirectory(sst *PoSST,event Node,ErrFunc func(string)) NodePtr {
 		sst.NODE_DIRECTORY.N2directory = append(sst.NODE_DIRECTORY.N2directory,event)
 		sst.NODE_DIRECTORY.N2grams[event.S] = cnode_slot
 		sst.NODE_DIRECTORY.N2_top++
-		return node_alloc_ptr
 	case N3GRAM:
 		cnode_slot = sst.NODE_DIRECTORY.N3_top
 		node_alloc_ptr.CPtr = cnode_slot
@@ -58,36 +57,35 @@ func AppendTextToDirectory(sst *PoSST,event Node,ErrFunc func(string)) NodePtr {
 		sst.NODE_DIRECTORY.N3directory = append(sst.NODE_DIRECTORY.N3directory,event)
 		sst.NODE_DIRECTORY.N3grams[event.S] = cnode_slot
 		sst.NODE_DIRECTORY.N3_top++
-		return node_alloc_ptr
 	case LT128:
 		cnode_slot = sst.NODE_DIRECTORY.LT128_top
 		node_alloc_ptr.CPtr = cnode_slot
 		event.NPtr = node_alloc_ptr
 		sst.NODE_DIRECTORY.LT128 = append(sst.NODE_DIRECTORY.LT128,event)
 		sst.NODE_DIRECTORY.LT128_top++
-		return node_alloc_ptr
 	case LT1024:
 		cnode_slot = sst.NODE_DIRECTORY.LT1024_top
 		node_alloc_ptr.CPtr = cnode_slot
 		event.NPtr = node_alloc_ptr
 		sst.NODE_DIRECTORY.LT1024 = append(sst.NODE_DIRECTORY.LT1024,event)
 		sst.NODE_DIRECTORY.LT1024_top++
-		return node_alloc_ptr
 	case GT1024:
 		cnode_slot = sst.NODE_DIRECTORY.GT1024_top
 		node_alloc_ptr.CPtr = cnode_slot
 		event.NPtr = node_alloc_ptr
 		sst.NODE_DIRECTORY.GT1024 = append(sst.NODE_DIRECTORY.GT1024,event)
 		sst.NODE_DIRECTORY.GT1024_top++
-		return node_alloc_ptr
 	}
 
-	return NO_NODE_PTR
+	event.NPtr = node_alloc_ptr
+	CheckAltCaps(sst,event,ErrFunc)
+	
+	return node_alloc_ptr
 }
 
 //**************************************************************
 
-func CheckExistingOrAltCaps(sst *PoSST,event Node,ErrFunc func(string)) (ClassedNodePtr,bool) {
+func CheckExisting(sst *PoSST,event Node) (ClassedNodePtr,bool) {
 
 	var cnode_slot ClassedNodePtr = -1
 	var ok bool = false
@@ -108,48 +106,76 @@ func CheckExistingOrAltCaps(sst *PoSST,event Node,ErrFunc func(string)) (Classed
 		cnode_slot,ok = LinearFindText(sst.NODE_DIRECTORY.GT1024,event,ignore_caps)
 	}
 
-	if ok {
-		return cnode_slot,ok
-	} else {
-		// Check for alternative caps
-
-		ignore_caps = true
-		alternative_caps := false
-		
-		switch event.NPtr.Class {
-		case N1GRAM:
-			for key := range sst.NODE_DIRECTORY.N1grams {
-				if strings.ToLower(key) == strings.ToLower(event.S) {
-					alternative_caps = true
-				}
-			}
-		case N2GRAM:
-			for key := range sst.NODE_DIRECTORY.N2grams {
-				if strings.ToLower(key) == strings.ToLower(event.S) {
-					alternative_caps = true
-				}
-			}
-		case N3GRAM:
-			for key := range sst.NODE_DIRECTORY.N3grams {
-				if strings.ToLower(key) == strings.ToLower(event.S) {
-					alternative_caps = true
-				}
-			}
-
-		case LT128:
-			_,alternative_caps = LinearFindText(sst.NODE_DIRECTORY.LT128,event,ignore_caps)
-		case LT1024:
-			_,alternative_caps = LinearFindText(sst.NODE_DIRECTORY.LT1024,event,ignore_caps)
-		case GT1024:
-			_,alternative_caps = LinearFindText(sst.NODE_DIRECTORY.GT1024,event,ignore_caps)
-		}
-
-		if alternative_caps {
-			ErrFunc(WARN_DIFFERENT_CAPITALS+" ("+event.S+")")
-		}
-
-	}
 	return cnode_slot,ok
+}
+
+//**************************************************************
+
+func CheckAltCaps(sst *PoSST,event Node,ErrFunc func(string)) {
+		
+	// Check for alternative caps
+	
+	var keyNPtr NodePtr
+	
+	switch event.NPtr.Class {
+	case N1GRAM:
+		for key := range sst.NODE_DIRECTORY.N1grams {
+			if DifferentCaps(key,event.S) {
+				keyNPtr.Class = N1GRAM
+				keyNPtr.CPtr = sst.NODE_DIRECTORY.N1grams[key]
+				NearEquiv(sst,keyNPtr,event.NPtr,key,event.S,ErrFunc)
+			}
+		}
+	case N2GRAM:
+		for key := range sst.NODE_DIRECTORY.N2grams {
+			if DifferentCaps(key,event.S) {
+				keyNPtr.Class = N2GRAM
+				keyNPtr.CPtr = sst.NODE_DIRECTORY.N2grams[key]
+				NearEquiv(sst,keyNPtr,event.NPtr,key,event.S,ErrFunc)
+			}
+		}
+	case N3GRAM:
+		for key := range sst.NODE_DIRECTORY.N3grams {
+			if DifferentCaps(key,event.S) {
+				keyNPtr.Class = N3GRAM
+				keyNPtr.CPtr = sst.NODE_DIRECTORY.N3grams[key]
+				NearEquiv(sst,keyNPtr,event.NPtr,key,event.S,ErrFunc)
+			}
+		}
+	}
+}
+
+//**************************************************************
+
+func DifferentCaps(s1,s2 string) bool {
+
+	m := regexp.MustCompile("[.,;: ]+") 
+        s1 = m.ReplaceAllString(s1,"") 
+        s2 = m.ReplaceAllString(s2,"") 
+
+	if (s1 != s2) && (strings.ToLower(s1) == strings.ToLower(s2)) {
+		return true
+	}
+
+	return false
+}
+
+//**************************************************************
+
+func NearEquiv(sst *PoSST,n1,n2 NodePtr, s1,s2 string,ErrFunc func(string)) {
+
+	// Alternative capitalizations are NEAR = "capitalization" one another
+
+	var lnk Link
+	var context = []string{"ambiguous"}
+
+	lnk.Arr = sst.ARROW_SHORT_DIR["caps"]
+	lnk.Wgt = 1
+	lnk.Ctx = RegisterContext(sst,nil,context)
+	AppendLinkToNode(sst,n1,lnk,n2)
+	AppendLinkToNode(sst,n2,lnk,n1)
+
+	ErrFunc(WARN_DIFFERENT_CAPITALS+" ("+s1+" vs "+s2+") - linking as NEAR ")
 }
 
 //**************************************************************

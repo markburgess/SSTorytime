@@ -59,9 +59,8 @@ func TryContext(sst *PoSST,context []string) ContextPtr {
 
 	ctxstr := CompileContextString(context)
 	str,ctxptr := GetDBContextByName(sst,ctxstr)
-		fmt.Println("HERE")
+
 	if ctxptr == -1 || str != ctxstr {
-				fmt.Println("HERE3")
 		ctxptr = UploadContextToDB(sst,ctxstr,-1)
 		RegisterContext(sst,nil,context)
 	}

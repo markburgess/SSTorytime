@@ -28,7 +28,7 @@ for prog in $BINARIES; do
    if ../src/bin/$prog -h > /dev/null 2>&1; then 
        echo -e "Testing $prog ${GREEN} ok ${END}"
    else 
-       echo -e "Testing $prog ${RED} NOT ok ${END}"
+       echo -e "Testing $prog ${RED} NOT yet ok, no data? ${END}"
    fi
 done
 

@@ -1330,6 +1330,9 @@ func AddMandatory(sst *SST.PoSST) {
 	inv := SST.InsertArrowDirectory(sst,"leadsto","void","unbug","-")
 	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
+	arr = SST.InsertArrowDirectory(sst,"near",SST.NEAR_CAPS_S,SST.NEAR_CAPS_L,"both")
+	SST.InsertInverseArrowDirectory(sst,arr,arr)
+
 	// reserved for text2N4L
 
 	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_FINDS_S,SST.CONT_FINDS_L,"+")

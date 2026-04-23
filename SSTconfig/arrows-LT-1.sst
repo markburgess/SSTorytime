@@ -24,6 +24,9 @@
   + comes before         (bfr)       - comes after          (after)
   + supplies             (suppl)     - has been supplied by (suppl-by)
   + evolved to           (evolve)    - evolved from         (evolve-fr)
+  + included studying    (studied)   - was the study of     (study-in)
+  + led to work on       (worked on) - was work done during (work-in)
+  + did                  (did)       - was done by          (done-by)
 
     :: games ::
 

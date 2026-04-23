@@ -37,6 +37,7 @@
  + release format    (relform)      - has release          (has-rel)
  + recording date    (recdate)      - date for recording   (date-rec)
  + release date      (reldate)      - date for release     (date-rel)
+ + happened in years (year)         - the years in which   (year-for)
 
  + has supplier        (supply)      - is the supplier of           (supply-by)
  + has source          (source)      - the source for               (source-of)
@@ -100,6 +101,7 @@
  + wrote               (wrote)      - written by       (written)  
  + invented            (invent)     - invented by      (invent-by)
  + is the publisher of (published)  - was published by (pub-by)
+ + is published in     (published in)  - is the published citation for (citation)
  + composer of         (comp-of)    - composed by      (comp)
  + conductor of        (conduct-of) - conducted by     (conducted)
 

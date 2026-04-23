@@ -39,10 +39,10 @@
  + release date      (reldate)      - date for release     (date-rel)
  + happened in years (year)         - the years in which   (year-for)
 
- + has supplier        (supply)      - is the supplier of           (supply-by)
- + has source          (source)      - the source for               (source-of)
+ + has supplier        (supply)      - is the supplier of (supply-by)
+ + has source          (source)      - the source for     (source-of)
 
- + discusses           (disc)        - is discussed in              (is-disc)
+ + discusses           (disc)        - is discussed in    (is-disc)
  + describes           (describe)    - is described by    (descr-by)   
 
  + described as        (descr)       - is used as a description of  (isdescr)
@@ -91,6 +91,8 @@
  + is known for            (knownfor) - made famous by                     (knownin)
  + has story text          (story)    - is the text of the story           (isstory)
  + has ownership of        (owns)     - is owned by                        (owned-by)
+
+
 
  + used to own             (owned)    - was previously owned by (prev-owned)
 

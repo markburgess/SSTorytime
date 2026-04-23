@@ -7,6 +7,8 @@
  + uses word          (useword)   - is a word used in   (word-in)
  + uses material      (material)  - is a material for   (mat-for)
  + contains           (contain)   - belongs to          (belong)
+ + characterises      (rel)       - relationship kind   (relation)
+
  + may contain        (m-cont)    - may be contained by (m-cont-by)
  + has component      (has-cmpt) - is component of      (cmpt-of)
  + has a part         (has-pt)   - is a part of         (pt-of)

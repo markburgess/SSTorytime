@@ -25,7 +25,7 @@ Testing, Docker postgres setup.
 
 * Ewout Prangsma figured out the go build structure
 
-* Mike Svoboda (using Claude AI) contributed the pages/ derived from the documentation.
+* Mike Svoboda (using Claude AI) contributed the pages/ derived from the documentation, available here: [Mike's pages](https://mikesvoboda.github.io/SSTorytime/) 
 
 * NLnet Foundation
 

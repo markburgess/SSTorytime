@@ -27,6 +27,8 @@ Testing, Docker postgres setup.
 
 * Mike Svoboda (using Claude AI) contributed the pages/ derived from the documentation, available here: [Mike's pages](https://mikesvoboda.github.io/SSTorytime/) 
 
+* Edmund Humenberger made colour contrast suggestions and has been supportive in applications for the project.
+
 * NLnet Foundation
 
 Funding for development from [NG10

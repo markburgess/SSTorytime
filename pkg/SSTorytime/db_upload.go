@@ -19,57 +19,33 @@ import (
 func GraphToDB(sst PoSST,wait_counter bool) {
 
 	total := len(sst.NODE_DIRECTORY.N1directory) + len(sst.NODE_DIRECTORY.N2directory) + len(sst.NODE_DIRECTORY.N3directory) + len(sst.NODE_DIRECTORY.LT128) + len(sst.NODE_DIRECTORY.LT1024) + len(sst.NODE_DIRECTORY.GT1024) + len(sst.PAGE_MAP)
-
-	fmt.Println("\nStoring primary nodes ...\n")
-
+	
+	fmt.Println("\nStoring primary nodes ...")
+	
 	for class := N1GRAM; class <= GT1024; class++ {
-
+		
 		offset := int(sst.BASE_DB_CHANNEL_STATE[class])
-
+		
 		switch class {
 		case N1GRAM:
-			for n := offset; n < len(sst.NODE_DIRECTORY.N1directory); n++ {
-				org := sst.NODE_DIRECTORY.N1directory[n]
-				UploadNodeToDB(&sst,org)
-				Waiting(wait_counter,total)
-			}
+			UploadNodesBatch(&sst, sst.NODE_DIRECTORY.N1directory[offset:])
 		case N2GRAM:
-			for n := offset; n < len(sst.NODE_DIRECTORY.N2directory); n++ {
-				org := sst.NODE_DIRECTORY.N2directory[n]
-				UploadNodeToDB(&sst,org)
-				Waiting(wait_counter,total)
-			}
+			UploadNodesBatch(&sst, sst.NODE_DIRECTORY.N2directory[offset:])
 		case N3GRAM:
-			for n := offset; n < len(sst.NODE_DIRECTORY.N3directory); n++ {
-				org := sst.NODE_DIRECTORY.N3directory[n]
-				UploadNodeToDB(&sst,org)
-				Waiting(wait_counter,total)
-			}
+			UploadNodesBatch(&sst, sst.NODE_DIRECTORY.N3directory[offset:])
 		case LT128:
-			for n := offset; n < len(sst.NODE_DIRECTORY.LT128directory); n++ {
-				org := sst.NODE_DIRECTORY.LT128directory[n]
-				UploadNodeToDB(&sst,org)
-				Waiting(wait_counter,total)
-			}
+			UploadNodesBatch(&sst, sst.NODE_DIRECTORY.LT128directory[offset:])
 		case LT1024:
-			for n := offset; n < len(sst.NODE_DIRECTORY.LT1024); n++ {
-				org := sst.NODE_DIRECTORY.LT1024[n]
-				UploadNodeToDB(&sst,org)
-				Waiting(wait_counter,total)
-			}
-
+			UploadNodesBatch(&sst, sst.NODE_DIRECTORY.LT1024[offset:])
 		case GT1024:
-			for n := offset; n < len(sst.NODE_DIRECTORY.GT1024); n++ {
-				org := sst.NODE_DIRECTORY.GT1024[n]
-				UploadNodeToDB(&sst,org)
-				Waiting(wait_counter,total)
-			}
+			UploadNodesBatch(&sst, sst.NODE_DIRECTORY.GT1024[offset:])
 		}
-	}
 
+	}
+	
 	// Arrows etc
 
-	fmt.Println("\nStoring Arrows...")
+	fmt.Println("Storing Arrows...")
 
 	sst.DB.QueryRow("drop table ArrowDirectory")
 	sst.DB.QueryRow("drop table ArrowInverses")
@@ -83,17 +59,11 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 		os.Exit(-1)
 	}
 
-	for arrow := range sst.ARROW_DIRECTORY {
-
-		UploadArrowToDB(sst,ArrowPtr(arrow))
-	}
+	UploadArrowsToDB(sst)
 
 	fmt.Println("Storing inverse Arrows...")
 
-	for arrow := range sst.INVERSE_ARROWS {
-
-		UploadInverseArrowToDB(sst,ArrowPtr(arrow))
-	}
+	UploadInverseArrowsToDB(sst)
 
 	fmt.Println("Storing contexts...")
 
@@ -101,11 +71,8 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 
 	fmt.Println("Storing page map...")
 
-	for line := 0; line < len(sst.PAGE_MAP); line ++ {
-		UploadPageMapEvent(sst,sst.PAGE_MAP[line])
-		Waiting(wait_counter,total)
-	}
-
+	UploadPageMapBatch(&sst, sst.PAGE_MAP)
+	
 	// CREATE INDICES
 
 	fmt.Println("Indexing ....")
@@ -118,54 +85,41 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_cnt on ContextDirectory USING GIN (Context)")
 	sst.DB.QueryRow("ALTER TABLE Node SET LOGGED")
 	sst.DB.QueryRow("ALTER TABLE PageMap SET LOGGED")
-
-	fmt.Println("Finally done!")
+		
+	fmt.Println("Done!",total)
 }
 
 // **************************************************************************
 //  Uploading memory cache to database
 // **************************************************************************
 
-func UploadNodeToDB(sst *PoSST, org Node) {
+func UploadNodesBatch(sst *PoSST, nodes []Node) {
 
-	const nolink = 999
+	const chunk = 200
 
-	qstr := "BEGIN;\n" + FormDBNode(sst,org)
-
-	for stindex := 0; stindex < len(org.I); stindex++ {
-
-		lnkarray := FormatSQLLinkArray(org.I[stindex])
-		sttype := STIndexToSTType(stindex)
-		qstr += AppendDBLinkArrayToNode(sst,org.NPtr,lnkarray,sttype)
-	}
-
-	qstr += "\nCOMMIT;"
-
-	row,err := sst.DB.Query(qstr)
-
-	if err != nil {
-		s := fmt.Sprint("Failed to insert",err)
-		
-		if strings.Contains(s,"duplicate key") {
-		} else {
-			fmt.Println(s,"FAILED \n",qstr,err)
+	var qstr string
+	
+	for i := 0; i < len(nodes); i++ {
+	
+		if (i % chunk == 0) {
+			DBCommit(sst,qstr)
+			qstr = ""
 		}
-		return
+
+		qstr += UploadNodeToDB(sst,nodes[i])
 	}
 
-	row.Close()
+	DBCommit(sst,qstr)
 }
 
 // **************************************************************************
 
-func UploadArrowToDB(sst PoSST,arrow ArrowPtr) {
+func DBCommit(sst *PoSST, qstr string) {
 
-	staidx := sst.ARROW_DIRECTORY[arrow].STAindex
-	long := SQLEscape(sst.ARROW_DIRECTORY[arrow].Long)
-	short := SQLEscape(sst.ARROW_DIRECTORY[arrow].Short)
-
-	qstr := fmt.Sprintf("INSERT INTO ArrowDirectory (STAindex,Long,Short,ArrPtr) SELECT %d,'%s','%s',%d WHERE NOT EXISTS (SELECT Long,Short,ArrPtr FROM ArrowDirectory WHERE lower(Long) = lower('%s') OR lower(Short) = lower('%s') OR ArrPtr = %d)",staidx,long,short,arrow,long,short,arrow)
-
+	cstr := "BEGIN;\n"
+	cstr += qstr
+	cstr += "\nCOMMIT;"
+	
 	row,err := sst.DB.Query(qstr)
 	
 	if err != nil {
@@ -177,19 +131,94 @@ func UploadArrowToDB(sst PoSST,arrow ArrowPtr) {
 		}
 		return
 	}
-
+	
 	row.Close()
+	return
+
 }
 
 // **************************************************************************
 
-func UploadInverseArrowToDB(sst PoSST,arrow ArrowPtr) {
+func UploadNodeToDB(sst *PoSST, n Node) string {
 
-	plus := arrow
-	minus := sst.INVERSE_ARROWS[arrow]
+	const nodecols  = "(NPtr.Chan,NPtr.Cptr,L,S,Chap,Seq," +
+		I_MEXPR + "," + I_MCONT + "," + I_MLEAD + "," + I_NEAR + "," + I_PLEAD + "," + I_PCONT + "," + I_PEXPR + ")"
 
-	qstr := fmt.Sprintf("INSERT INTO ArrowInverses (Plus,Minus) SELECT %d,%d WHERE NOT EXISTS (SELECT Plus,Minus FROM ArrowInverses WHERE Plus = %d OR minus = %d)",plus,minus,plus,minus)
+	n.L, n.NPtr.Class = StorageClass(n.S)
 
+	seq := "false"
+
+	if n.Seq {
+		seq = "true"
+	}
+
+	// Im3, Im2, Im1, In0, Il1, Ic2, Ie3.
+
+	cols := [7]string{"{}", "{}", "{}", "{}", "{}", "{}", "{}"}
+
+	for stindex := 0; stindex < len(n.I) && stindex < ST_TOP; stindex++ {
+		cols[stindex] = FormatSQLLinkArray(n.I[stindex])
+	}
+
+	vals := fmt.Sprintf("(%d,%d,%d,'%s','%s',%s,'%s','%s','%s','%s','%s','%s','%s')",
+		n.NPtr.Class, n.NPtr.CPtr, n.L,
+		SQLEscape(n.S), SQLEscape(n.Chap), seq,
+		cols[0], cols[1], cols[2], cols[3], cols[4], cols[5], cols[6])
+
+	
+	qstr := "INSERT INTO Node " + nodecols + " VALUES " + vals + ";\n"
+
+	return qstr
+}
+
+// **************************************************************************
+
+func UploadArrowsToDB(sst PoSST) {
+	
+	qstr := "BEGIN;\n"
+	
+	for arrow := range sst.ARROW_DIRECTORY {
+		
+		staidx := sst.ARROW_DIRECTORY[arrow].STAindex
+		long := SQLEscape(sst.ARROW_DIRECTORY[arrow].Long)
+		short := SQLEscape(sst.ARROW_DIRECTORY[arrow].Short)
+		
+		qstr += fmt.Sprintf("INSERT INTO ArrowDirectory (STAindex,Long,Short,ArrPtr) SELECT %d,'%s','%s',%d WHERE NOT EXISTS (SELECT Long,Short,ArrPtr FROM ArrowDirectory WHERE lower(Long) = lower('%s') OR lower(Short) = lower('%s') OR ArrPtr = %d);\n",staidx,long,short,arrow,long,short,arrow)
+		
+	}
+	
+	qstr += "\nCOMMIT;"
+	
+	row,err := sst.DB.Query(qstr)
+	
+	if err != nil {
+		s := fmt.Sprint("Failed to insert",err)
+		
+		if strings.Contains(s,"duplicate key") {
+		} else {
+			fmt.Println(s,"FAILED \n",qstr,err)
+		}
+		return
+	}
+	
+	row.Close()	
+}
+
+// **************************************************************************
+
+func UploadInverseArrowsToDB(sst PoSST) {
+
+	qstr := "BEGIN;\n"
+	
+	for arrow := range sst.INVERSE_ARROWS {
+		plus := arrow
+		minus := sst.INVERSE_ARROWS[arrow]
+		
+		qstr += fmt.Sprintf("INSERT INTO ArrowInverses (Plus,Minus) SELECT %d,%d WHERE NOT EXISTS (SELECT Plus,Minus FROM ArrowInverses WHERE Plus = %d OR minus = %d);\n",plus,minus,plus,minus)
+	}
+
+	qstr += "\nCOMMIT;"
+	
 	row,err := sst.DB.Query(qstr)
 	
 	if err != nil {
@@ -244,34 +273,27 @@ func UploadContextToDB(sst *PoSST,contextstring string,ptr ContextPtr) ContextPt
 
 //**************************************************************
 
-func UploadPageMapEvent(sst PoSST, line PageMap) {
+func UploadPageMapBatch(sst *PoSST, lines []PageMap) {
 
-	chap := SQLEscape(line.Chapter)
+	const chunk = 200
 
-	qstr := "BEGIN;\n"
-
-	qstr += fmt.Sprintf("INSERT INTO PageMap (Chap,Alias,Ctx,Line) VALUES ('%s','%s',%d,%d);\n",chap,line.Alias,line.Context,line.Line)
-
-	lnkarray := FormatSQLLinkArray(line.Path)
-
-	qstr += fmt.Sprintf("\nUPDATE PageMap SET Path='%s' WHERE Chap = '%s' AND Line = '%d';",lnkarray,chap,line.Line)
-
-	qstr += "COMMIT;"
-
-	row,err := sst.DB.Query(qstr)
+	var qstr string
 	
-	if err != nil {
-		s := fmt.Sprint("Failed to insert pagemap event",err)
-		
-		if strings.Contains(s,"duplicate key") {
-		} else {
-			fmt.Println(s,"FAILED \n",qstr,err)
+	for i := 0; i < len(lines); i++ {
+	
+		if (i % chunk == 0) {
+			DBCommit(sst,qstr)
+			qstr = ""
 		}
-		row.Close()
-		return
+
+		line := lines[i]
+		qstr += fmt.Sprintf("INSERT INTO PageMap (Chap,Alias,Ctx,Line,Path) VALUES ('%s','%s',%d,%d,'%s');\n",
+		SQLEscape(line.Chapter), line.Alias, line.Context, line.Line,
+		FormatSQLLinkArray(line.Path))
 	}
 
-	row.Close()
+	DBCommit(sst,qstr)
+
 }
 
 

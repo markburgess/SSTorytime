@@ -40,8 +40,6 @@ func FormDBNode(sst *PoSST, n Node) string {
 	return qstr
 }
 
-
-
 // **************************************************************************
 
 func IdempDBAddNode(sst *PoSST,n Node) Node {

@@ -3,11 +3,15 @@
 - contains
 
   :: identity orientation::
+
  + consists of        (consists)  - makes up part of    (mkpt)
+
  + uses word          (useword)   - is a word used in   (word-in)
  + uses material      (material)  - is a material for   (mat-for)
  + contains           (contain)   - belongs to          (belong)
+ + includes           (incl)      - is included in      (is-incl)
  + characterises      (rel)       - relationship kind   (relation)
+ + has a kind called  (haskind)   - is a kind of (kind of)
 
  + may contain        (m-cont)    - may be contained by (m-cont-by)
  + has component      (has-cmpt) - is component of      (cmpt-of)
@@ -42,6 +46,14 @@
  + houses             (house)    - is housed by        (is-housed)
  + situates           (situate)  - is situated in      (is-sit)
  + bullet point       (bullet)   - is a bulletpoint for (isbullet)
+
+ :: episodes ::
+
+ # Episodes and decisions are events contained as part of a sequence of events or an epoch
+
+ + an episode occurred       (episode)  - this happened in/during   (happened)
+ + a decision was made       (decision) - was decided as part of    (decided-in)
+ + work was done             (work)     - was work done during      (work-in)
 
   :: situation ::
 

@@ -1,36 +1,65 @@
 
 - Finn Ravndal bio
 
+ ######################################
+
+ # There is no unique way to do this, but
+ # it's useful to make groups and categories
+ # to remember things as lists
+
+ ######################################
+
  :: people ::
 
- Anne Hærdig
- Jon Åge Ruud
- Tor Haugset
- Susanne Viefers
- Nils Tveten
+ Students of Finn Ravndal
 
- Jon Magne Leinaas (relation) Colleague Professor
- Kåre Olaufsen     (relation) Friend, ...
- Jan Myrheim       (relation) Colleague
-      "            (note) Very smart and eccentric
- Alex Hansen       (relation) graduate student
+      "   (has-memb)  Anne Hærdig
+      "   (has-memb)  Jon Åge Ruud
+      "   (has-memb)  Tor Haugset
+      "   (has-memb)  Susanne Viefers
+      "   (has-memb)  Nils Tveten
+      "   (has-memb)  Alex Hansen
 
+
+ Colleagues of Finn Ravndal
+      "   (has-memb) Jon Magne Leinaas
+      "   (has-memb) Jan Myrheim  (note) Very smart and eccentric
+
+
+ Friends of Finn Ravndal
+      "   (has-memb)  Kåre Olaufsen
+      "   (has-memb)  Alex Hansen
+
+ ######################################
  
- :: projects ::
+ :: work, projects ::
 
- anyons
- quarks
- Bose-Einstein condensation
+ Broad projects worked on by Finn
+
+    " (incl) Cosmology
+    " (incl) Anyon project (year) 1990-1995
+    " (incl) Quarks
+    " (incl) Bose-Einstein condensation
 
  :: lecture courses ::
 
- General Relativity
- Quantum Field Theory
- Statistical Mechanics (year) 1999-2000
-          "            (note) This was hot!
+    General Relativity
+    Quantum Field Theory
+    Statistical Mechanics (year) 1999-2000
+          "  (note) This was probabilistic
 
+
+ ######################################
+ 
  :: locations ::
 
+  Molde
+  Oslo
+  Berlin
+  America
+  Canada
+  Caltech
+  NTNU
 
  :: travels ::
 
@@ -45,17 +74,17 @@
 
  # Events timeline
 
- :: _sequence_ ::  // sequence makes the items link up in order
 
  #########################
 
- :: childhood, Molde ::
+ :: childhood, Molde, _sequence_ ::
 
   Left Molde and went to study in the Norwegian bush, living with bears for three years.
      "  (met) Lars Larson
      "  (met) Ben Benson
      "  (studied) Physics of Northern Lights
      "  (year) 19xx
+     " (happened) Molde years
 
   Applied for a doctoral degree at XYZ but was rejected for being too tall.
      " (note) Being tall is incompatible with relativity at high speed.
@@ -87,11 +116,12 @@
 
  #########################
  
- :: anyon years ::
+ :: anecdotes, events, episodes, and happenings ::
 
   Received a letter from Mark Burgess, a newly finished PhD student at Newcastle University. Invited hom to Oslo to meet and discuss a postdoc with money from Royal Society.
       " (note) Met in Finn's office at the university and talked about a book Finn had read.
       " (met) Mark Burgess
+      " (happened) Anyon project
 
   Jon Magne Leinaas takes up Professorship in Oslo.
      " (year) 199x
@@ -101,7 +131,7 @@
     " (involves) Nils Tveten
     " (involves) Jens Anderson (note) Jens was then working with Aashamar before joining the theory group.
     " (involves) Susanne Viefers
-    " (involves) Ole Martin Lovvik
+    " (involves) Ole Martin Løvvik
 
   Anyon conference in the Norwegian mountains.
     " (involves) Schrieffer

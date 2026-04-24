@@ -158,10 +158,12 @@ type NodeDirectory struct {
 	N3directory []Node
 	N3_top ClassedNodePtr
 
+	LT128 map[string]ClassedNodePtr
+	LT128directory []Node
+	LT128_top ClassedNodePtr
+
 	// Use linear search on these exp fewer long strings
 
-	LT128 []Node
-	LT128_top ClassedNodePtr
 	LT1024 []Node
 	LT1024_top ClassedNodePtr
 	GT1024 []Node

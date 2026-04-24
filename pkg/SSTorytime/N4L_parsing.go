@@ -60,7 +60,8 @@ func AppendTextToDirectory(sst *PoSST,event Node,ErrFunc func(string)) NodePtr {
 		cnode_slot = sst.NODE_DIRECTORY.LT128_top
 		node_alloc_ptr.CPtr = cnode_slot
 		event.NPtr = node_alloc_ptr
-		sst.NODE_DIRECTORY.LT128 = append(sst.NODE_DIRECTORY.LT128,event)
+		sst.NODE_DIRECTORY.LT128directory = append(sst.NODE_DIRECTORY.LT128directory,event)
+		sst.NODE_DIRECTORY.LT128[event.S] = cnode_slot
 		sst.NODE_DIRECTORY.LT128_top++
 	case LT1024:
 		cnode_slot = sst.NODE_DIRECTORY.LT1024_top
@@ -97,7 +98,7 @@ func CheckExisting(sst *PoSST,event Node) (ClassedNodePtr,bool) {
 	case N3GRAM:
 		cnode_slot,ok = sst.NODE_DIRECTORY.N3grams[event.S]
 	case LT128:
-		cnode_slot,ok = LinearFindText(sst.NODE_DIRECTORY.LT128,event,ignore_caps)
+		cnode_slot,ok = sst.NODE_DIRECTORY.LT128[event.S]
 	case LT1024:
 		cnode_slot,ok = LinearFindText(sst.NODE_DIRECTORY.LT1024,event,ignore_caps)
 	case GT1024:
@@ -129,7 +130,7 @@ func CheckAltCaps(sst *PoSST,event Node,ErrFunc func(string)) {
 		}
 	case N2GRAM:
 		for key := range sst.NODE_DIRECTORY.N2grams {
-
+			
 			keyNPtr.Class = N2GRAM
 			keyNPtr.CPtr = sst.NODE_DIRECTORY.N2grams[key]
 			n := sst.NODE_DIRECTORY.N2directory[keyNPtr.CPtr]
@@ -150,6 +151,19 @@ func CheckAltCaps(sst *PoSST,event Node,ErrFunc func(string)) {
 				NearEquiv(sst,keyNPtr,event.NPtr,key,event.S,ErrFunc)
 			}
 
+		}
+
+	case LT128:
+		for key := range sst.NODE_DIRECTORY.LT128 {
+			
+			keyNPtr.Class = N3GRAM
+			keyNPtr.CPtr = sst.NODE_DIRECTORY.LT128[key]
+			n := sst.NODE_DIRECTORY.LT128directory[keyNPtr.CPtr]
+			
+			if DifferentCaps(n,event) {
+				NearEquiv(sst,keyNPtr,event.NPtr,key,event.S,ErrFunc)
+			}
+			
 		}
 	}
 }
@@ -219,7 +233,7 @@ func IdempAddChapterSeqToNode(sst *PoSST,class int,cptr ClassedNodePtr,chap stri
 	case N3GRAM:
 		sst.NODE_DIRECTORY.N3directory[cptr].Chap = newchap
 	case LT128:
-		sst.NODE_DIRECTORY.LT128[cptr].Chap = newchap
+		sst.NODE_DIRECTORY.LT128directory[cptr].Chap = newchap
 	case LT1024:
 		sst.NODE_DIRECTORY.LT1024[cptr].Chap = newchap
 	case GT1024:
@@ -242,8 +256,8 @@ func UpdateSeqStatus(sst *PoSST,class int,cptr ClassedNodePtr,seq bool) Node {
 		sst.NODE_DIRECTORY.N3directory[cptr].Seq = sst.NODE_DIRECTORY.N3directory[cptr].Seq || seq
 		return sst.NODE_DIRECTORY.N3directory[cptr]
 	case LT128:
-		sst.NODE_DIRECTORY.LT128[cptr].Seq = sst.NODE_DIRECTORY.LT128[cptr].Seq || seq
-		return sst.NODE_DIRECTORY.LT128[cptr]
+		sst.NODE_DIRECTORY.LT128directory[cptr].Seq = sst.NODE_DIRECTORY.LT128directory[cptr].Seq || seq
+		return sst.NODE_DIRECTORY.LT128directory[cptr]
 	case LT1024:
 		sst.NODE_DIRECTORY.LT1024[cptr].Seq = sst.NODE_DIRECTORY.LT1024[cptr].Seq || seq
 		return sst.NODE_DIRECTORY.LT1024[cptr]
@@ -333,7 +347,7 @@ func AppendLinkToNode(sst *PoSST,frptr NodePtr,link Link,toptr NodePtr) {
 	case N3GRAM:
 		sst.NODE_DIRECTORY.N3directory[frm].I[stindex] = MergeLinkLists(sst,sst.NODE_DIRECTORY.N3directory[frm].I[stindex],link)
 	case LT128:
-		sst.NODE_DIRECTORY.LT128[frm].I[stindex] = MergeLinkLists(sst,sst.NODE_DIRECTORY.LT128[frm].I[stindex],link)
+		sst.NODE_DIRECTORY.LT128directory[frm].I[stindex] = MergeLinkLists(sst,sst.NODE_DIRECTORY.LT128directory[frm].I[stindex],link)
 	case LT1024:
 		sst.NODE_DIRECTORY.LT1024[frm].I[stindex] = MergeLinkLists(sst,sst.NODE_DIRECTORY.LT1024[frm].I[stindex],link)
 	case GT1024:

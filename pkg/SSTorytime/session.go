@@ -179,6 +179,10 @@ func MemoryInit(sst *PoSST) {
 		sst.NODE_DIRECTORY.N3grams = make(map[string]ClassedNodePtr)
 	}
 
+	if sst.NODE_DIRECTORY.LT128 == nil {
+		sst.NODE_DIRECTORY.LT128 = make(map[string]ClassedNodePtr)
+	}
+
 	sst.NODE_CACHE = make(map[NodePtr]NodePtr)
 	sst.INVERSE_ARROWS = make(map[ArrowPtr]ArrowPtr)
 	sst.ARROW_SHORT_DIR = make(map[string]ArrowPtr)

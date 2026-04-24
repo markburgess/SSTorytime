@@ -46,8 +46,8 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 				Waiting(wait_counter,total)
 			}
 		case LT128:
-			for n := offset; n < len(sst.NODE_DIRECTORY.LT128); n++ {
-				org := sst.NODE_DIRECTORY.LT128[n]
+			for n := offset; n < len(sst.NODE_DIRECTORY.LT128directory); n++ {
+				org := sst.NODE_DIRECTORY.LT128directory[n]
 				UploadNodeToDB(&sst,org)
 				Waiting(wait_counter,total)
 			}

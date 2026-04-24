@@ -37,7 +37,7 @@ func GetNodeTxtFromPtr(sst *PoSST,frptr NodePtr) string {
 	case N3GRAM:
 		node = sst.NODE_DIRECTORY.N3directory[index]
 	case LT128:
-		node = sst.NODE_DIRECTORY.LT128[index]
+		node = sst.NODE_DIRECTORY.LT128directory[index]
 	case LT1024:
 		node = sst.NODE_DIRECTORY.LT1024[index]
 	case GT1024:
@@ -64,7 +64,7 @@ func GetMemoryNodeFromPtr(sst *PoSST,frptr NodePtr) Node {
 	case N3GRAM:
 		node = sst.NODE_DIRECTORY.N3directory[index]
 	case LT128:
-		node = sst.NODE_DIRECTORY.LT128[index]
+		node = sst.NODE_DIRECTORY.LT128directory[index]
 	case LT1024:
 		node = sst.NODE_DIRECTORY.LT1024[index]
 	case GT1024:
@@ -247,7 +247,7 @@ func SynchronizeNPtrs(sst *PoSST) {
 							sst.NODE_DIRECTORY.N3directory = append(sst.NODE_DIRECTORY.N3directory,empty)
 							sst.NODE_DIRECTORY.N3_top++
 						case LT128:
-							sst.NODE_DIRECTORY.LT128 = append(sst.NODE_DIRECTORY.LT128,empty)
+							sst.NODE_DIRECTORY.LT128directory = append(sst.NODE_DIRECTORY.LT128directory,empty)
 							sst.NODE_DIRECTORY.LT128_top++
 						case LT1024:
 							sst.NODE_DIRECTORY.LT1024 = append(sst.NODE_DIRECTORY.LT1024,empty)

@@ -739,7 +739,7 @@ func CompleteInferences(sst *SST.PoSST) {
 				SST.CheckAltCaps(sst,node,ParseError)
 			}
 		case SST.LT128:
-			for _,node := range sst.NODE_DIRECTORY.LT128 {
+			for _,node := range sst.NODE_DIRECTORY.LT128directory {
 				CompleteNode(sst,node)
 				SST.CheckAltCaps(sst,node,ParseError)
 			}
@@ -879,7 +879,7 @@ func SummarizeGraph(sst SST.PoSST) {
 				PrintNodeSystem(sst,n,org,&count_links)
 			}
 		case SST.LT128:
-			for n,org := range sst.NODE_DIRECTORY.LT128 {
+			for n,org := range sst.NODE_DIRECTORY.LT128directory {
 				count_nodes++
 				PrintNodeSystem(sst,n,org,&count_links)
 			}
@@ -1193,8 +1193,8 @@ func AssembleInvolvedNodes(sst SST.PoSST,search_list []SST.ArrowPtr) ([]SST.Node
 				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.N3directory[n],search_list,node_list,weights)
 			}
 		case SST.LT128:
-			for n := range sst.NODE_DIRECTORY.LT128 {
-				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.LT128[n],search_list,node_list,weights)
+			for n := range sst.NODE_DIRECTORY.LT128directory {
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.LT128directory[n],search_list,node_list,weights)
 			}
 		case SST.LT1024:
 			for n := range sst.NODE_DIRECTORY.LT1024 {
@@ -2373,8 +2373,8 @@ func GetMemChapters(sst SST.PoSST) []string {
 		chapters[chap]++
 	}
 
-	for index := range sst.NODE_DIRECTORY.LT128 {
-		chap := sst.NODE_DIRECTORY.LT128[index].Chap
+	for index := range sst.NODE_DIRECTORY.LT128directory {
+		chap := sst.NODE_DIRECTORY.LT128directory[index].Chap
 		chapters[chap]++
 	}
 

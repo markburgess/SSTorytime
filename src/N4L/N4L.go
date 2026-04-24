@@ -313,7 +313,8 @@ func NewFile(filename string) {
 
 	CURRENT_FILE = filename
 	TEST_DIAG_FILE = DiagnosticName(filename)
-
+	GIVE_SIGNS_OF_LIFE = false
+	
 	Box("Parsing new file",filename)
 
 	stat, err := os.Stat(filename)
@@ -725,18 +726,22 @@ func CompleteInferences(sst *SST.PoSST) {
 		case SST.N1GRAM:
 			for _,node := range sst.NODE_DIRECTORY.N1directory {
 				CompleteNode(sst,node)
+				SST.CheckAltCaps(sst,node,ParseError)
 			}
 		case SST.N2GRAM:
 			for _,node := range sst.NODE_DIRECTORY.N2directory {
 				CompleteNode(sst,node)
+				SST.CheckAltCaps(sst,node,ParseError)
 			}
 		case SST.N3GRAM:
 			for _,node := range sst.NODE_DIRECTORY.N3directory {
 				CompleteNode(sst,node)
+				SST.CheckAltCaps(sst,node,ParseError)
 			}
 		case SST.LT128:
 			for _,node := range sst.NODE_DIRECTORY.LT128 {
 				CompleteNode(sst,node)
+				SST.CheckAltCaps(sst,node,ParseError)
 			}
 		case SST.LT1024:
 			for _,node := range sst.NODE_DIRECTORY.LT1024 {
@@ -1736,7 +1741,7 @@ func HandleNode(sst *SST.PoSST,annotated string) SST.NodePtr {
 //**************************************************************
 
 func IdempAddNode(sst *SST.PoSST,s string,intended_sequence bool) (SST.NodePtr,string) {
-
+	
 	clean_version := StripAnnotations(s)
 
 	l,c := SST.StorageClass(s)

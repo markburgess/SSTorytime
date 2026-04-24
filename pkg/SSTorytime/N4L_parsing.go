@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"regexp"
 	_ "github.com/lib/pq"
 
 )
@@ -78,7 +77,6 @@ func AppendTextToDirectory(sst *PoSST,event Node,ErrFunc func(string)) NodePtr {
 	}
 
 	event.NPtr = node_alloc_ptr
-	CheckAltCaps(sst,event,ErrFunc)
 	
 	return node_alloc_ptr
 }
@@ -114,45 +112,61 @@ func CheckExisting(sst *PoSST,event Node) (ClassedNodePtr,bool) {
 func CheckAltCaps(sst *PoSST,event Node,ErrFunc func(string)) {
 		
 	// Check for alternative caps
-	
+
 	var keyNPtr NodePtr
 	
 	switch event.NPtr.Class {
 	case N1GRAM:
 		for key := range sst.NODE_DIRECTORY.N1grams {
-			if DifferentCaps(key,event.S) {
-				keyNPtr.Class = N1GRAM
-				keyNPtr.CPtr = sst.NODE_DIRECTORY.N1grams[key]
+
+			keyNPtr.Class = N1GRAM
+			keyNPtr.CPtr = sst.NODE_DIRECTORY.N1grams[key]
+			n := sst.NODE_DIRECTORY.N1directory[keyNPtr.CPtr]
+
+			if DifferentCaps(n,event) {
 				NearEquiv(sst,keyNPtr,event.NPtr,key,event.S,ErrFunc)
 			}
 		}
 	case N2GRAM:
 		for key := range sst.NODE_DIRECTORY.N2grams {
-			if DifferentCaps(key,event.S) {
-				keyNPtr.Class = N2GRAM
-				keyNPtr.CPtr = sst.NODE_DIRECTORY.N2grams[key]
+
+			keyNPtr.Class = N2GRAM
+			keyNPtr.CPtr = sst.NODE_DIRECTORY.N2grams[key]
+			n := sst.NODE_DIRECTORY.N2directory[keyNPtr.CPtr]
+
+			if DifferentCaps(n,event) {
 				NearEquiv(sst,keyNPtr,event.NPtr,key,event.S,ErrFunc)
 			}
+
 		}
 	case N3GRAM:
 		for key := range sst.NODE_DIRECTORY.N3grams {
-			if DifferentCaps(key,event.S) {
-				keyNPtr.Class = N3GRAM
-				keyNPtr.CPtr = sst.NODE_DIRECTORY.N3grams[key]
+
+			keyNPtr.Class = N3GRAM
+			keyNPtr.CPtr = sst.NODE_DIRECTORY.N3grams[key]
+			n := sst.NODE_DIRECTORY.N3directory[keyNPtr.CPtr]
+
+			if DifferentCaps(n,event) {
 				NearEquiv(sst,keyNPtr,event.NPtr,key,event.S,ErrFunc)
 			}
+
 		}
 	}
 }
 
 //**************************************************************
 
-func DifferentCaps(s1,s2 string) bool {
+func DifferentCaps(n1,n2 Node) bool {
 
-	m := regexp.MustCompile("[.,;: ]+") 
-        s1 = m.ReplaceAllString(s1,"") 
-        s2 = m.ReplaceAllString(s2,"") 
+	const margin = 2
+	
+	if n1.L != n2.L {
+		return false
+	}
 
+	s1 := n1.S
+	s2 := n2.S
+	
 	if (s1 != s2) && (strings.ToLower(s1) == strings.ToLower(s2)) {
 		return true
 	}

@@ -52,10 +52,12 @@
   + creates   (cr)           - is created by    (crtd)
   + redirects (redir)        - is redirected by (redir-by)
 
+  + worked on (worked)       - was a work project by (work-proj)
+
   + is used by (used-by)     - makes use of (uses)
   + binds to   (bind-to)     - is bound by  (bound-by)
 
-  + results in        (result)    - was a result of      (result-of)
+  + results in       (result)    - was a result of      (result-of)
   + did not result in (no-result) - was not a result of  (no-result-of)
 
   + yields     (yield)      - is the yield of (yield-of)

@@ -13,6 +13,9 @@
 
  :: attributes, supporting information ::
 
+ + date of birth     (born)         - is the birthday of   (bday)
+ + thesis advisor    (advisor)      - was thesis advisor for (advisor-for)
+
  + to be decided     (tbd)          - to be figured out    (tbf)
  + has example       (e.g.)         - is an example of     (ex)
  + in other words    (i.e.)         - is a clarification of (clarify)
@@ -53,10 +56,11 @@
  + has title           (title)       - is the title of              (title of)
  + has description     (description) - is the description for      (descrip-for)
 
- + is about topic/them (about)       - is the topic/theme of            (theme-of)
- + is wrong about      (wrongabt)    - is not accurately represented by (narb)
- + expresses property  (expr)        - is/are expressed by              (expr-by)
- + can express         (canex)       - is expressible by                (isexpr)
+ + is about topic/them       (about)       - is the topic/theme of            (theme-of)
+ + wrote a thesis with title (th-title)    - is a thesis title of          (thauthor)
+ + is wrong about            (wrongabt)    - is not accurately represented by (narb)
+ + expresses property        (expr)        - is/are expressed by              (expr-by)
+ + can express               (canex)       - is expressible by                (isexpr)
 
  :: scientific and technical annotations ::
 

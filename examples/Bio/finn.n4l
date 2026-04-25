@@ -20,10 +20,11 @@
       "   (has-memb)  Nils Tveten
       "   (has-memb)  Alex Hansen
 
-
  Colleagues of Finn Ravndal
       "   (has-memb) Jon Magne Leinaas
       "   (has-memb) Jan Myrheim  (note) Very smart and eccentric
+      "   (has-memb)  Kåre Olaufsen
+      "   (has-memb)  Alex Hansen
 
 
  Friends of Finn Ravndal
@@ -41,27 +42,40 @@
     " (incl) Quarks
     " (incl) Bose-Einstein condensation
 
- :: lecture courses ::
 
-    General Relativity
-    Quantum Field Theory
-    Statistical Mechanics (year) 1999-2000
-          "  (note) This was probabilistic
+ Anyon project (note) Most of the work was around the statistical mechanics of anyons???
+      "   (has-memb)  Anne Hærdig (th-title) Hovedfag, "Bose-Einstein Condensation???"
+      "   (has-memb)  Jon Åge Ruud
+      "   (has-memb)  Tor Haugset
+      "   (has-memb)  Susanne Vierfers (th-title) PhD, "Field theory of anyons and the fractional quantum Hall effect"
+
+
+ ######################################
+
+ :: teaching, lectures ::
+
+ Lecture courses taught by Finn Ravndal
+
+        " (incl) General Relativity
+        " (incl) Quantum Field Theory
+        " (incl) Statistical Mechanics (note) This was probabilistically a success
 
 
  ######################################
  
  :: locations ::
 
-  Molde
+  Molde (note) Home town until 
   Oslo
-  Berlin
+  Berlin  (note) Bought an apartment in 2345 
   America
   Canada
   Caltech
-  NTNU
+  Trondheim
 
- :: travels ::
+ #########################
+
+ :: travels, major trips for work and pleasure ::
 
   America 1995
   Singapore 2005
@@ -72,22 +86,32 @@
        "  (worked on) Cosmological quantum beers
        "  (worked on) Gravity bubbles
 
- # Events timeline
-
 
  #########################
+ # Now try to make a timeline of major events
+ #########################
 
- :: childhood, Molde, _sequence_ ::
+ :: _sequence_ ::
 
-  Left Molde and went to study in the Norwegian bush, living with bears for three years.
-     "  (met) Lars Larson
-     "  (met) Ben Benson
-     "  (studied) Physics of Northern Lights
-     "  (year) 19xx
-     "  (happened) Molde
+  Finn Ravndal  (born) 24. august 1942 i Nesna
 
-  Applied for a doctoral degree at XYZ but was rejected for being too tall.
-     " (note) Being tall is incompatible with relativity at high speed.
+  Enrolled at the Norwegian Institute of Technology to study physics or "Teknisk Fysikk" (year) 1961
+
+  Completed the degree of "Sivilingeniør" with a dissertation in the area of theoretical physics under
+     "  (advisor) Harald Wergeland.
+     "  (year) 1966
+
+  Received in 1968 a Norwegian doctorate "Dr.Ing." in theoretical physics,
+   " (th-title) The effects of electromagnetic pulses, "EMP", from atomic explosions.
+   " (note) This was while completing his national service at Forsvarets forskningsinstitutt,
+   " (advisor)  ????
+
+
+ He obtained a position to study at the California Institute of Technology, Caltech (year) 1968
+
+ Received a second doctoral degree of Ph.D.    (year) 1971.
+   " (th-title) A relativistic model of quarks
+   " (advisor) Richard Feynman
 
  #########################
  

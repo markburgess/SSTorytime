@@ -18,7 +18,6 @@ import (
 
 func GraphToDB(sst PoSST,wait_counter bool) {
 
-	total := len(sst.NODE_DIRECTORY.N1directory) + len(sst.NODE_DIRECTORY.N2directory) + len(sst.NODE_DIRECTORY.N3directory) + len(sst.NODE_DIRECTORY.LT128) + len(sst.NODE_DIRECTORY.LT1024) + len(sst.NODE_DIRECTORY.GT1024) + len(sst.PAGE_MAP)
 	
 	fmt.Println("\nStoring primary nodes ...")
 	
@@ -77,7 +76,6 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 
 	fmt.Println("Indexing ....")
 
-//	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_type on Node (((NPtr).Chan),L,S)")
 	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_gin on Node USING GIN (to_tsvector('english',Search))")
 	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_ungin on Node USING GIN (to_tsvector('english',UnSearch))")
 	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_s on Node USING GIN (S)")
@@ -85,8 +83,7 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 	sst.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_cnt on ContextDirectory USING GIN (Context)")
 	sst.DB.QueryRow("ALTER TABLE Node SET LOGGED")
 	sst.DB.QueryRow("ALTER TABLE PageMap SET LOGGED")
-		
-	fmt.Println("Done!",total)
+
 }
 
 // **************************************************************************

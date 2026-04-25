@@ -122,8 +122,8 @@
  + works by method (works-by)       - is the modus operandi for (mo)
  + implemented by  (how)            - is the implementation of  (impl)
 
- + likes             (lk)           - is liked by          (lk-by)
-
+ + likes            (like)         - is liked by          (lk-by)
+ + has a special significance (significance) - is a significant reflection (siginv)
 
  + used for          (use-for)       - is a use of          (use-of)
  + might be used for (perhaps used)  - is a possible use of (perhaps useof)

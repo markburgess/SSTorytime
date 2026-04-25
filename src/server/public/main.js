@@ -350,13 +350,13 @@ switch (obj.Response)
 	 }
       break;
    case "Sequence":
-      if (obj.Content != null && obj.Content[0] != null)
-         {
-         title = "Story sequences ... " + obj.Content[0].Chapter;
+      if (obj.Content != null && obj.Content[0].Chap != null)
+	 {
+	 title = "Stories about " + obj.Content[0].Chap;
          } 
       else
          {
-         title = "Story sequences ... ";
+         title = "Stories ... ";
          }
       break;
    case "PageMap":

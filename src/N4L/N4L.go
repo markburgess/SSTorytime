@@ -564,7 +564,7 @@ func ClassifyConfigRole(sst *SST.PoSST,token string) {
 func ArrowCollision(arr SST.ArrowPtr,short,long string) {
 
 	if arr < 0 {
-		ParseError(ERR_ARR_REDEFINITION+"long \""+long+"\"/"+"short \""+short+"\" seems to be previously used somewhere")
+		ParseError(ERR_ARR_REDEFINITION+"long \""+long+"\", "+"short \""+short+"\" seems to be previously used somewhere")
 		//os.Exit(-1)
 	}
 }

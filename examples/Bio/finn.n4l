@@ -11,28 +11,27 @@
 
  :: interests, likes, dislikes ::
 
-@like Finn Ravndal, a few of my favourite things
+@fav Finn Ravndal, a few of my favourite things
 
       " (like) The First Three Minutes, Steven Weinberg (note) A great book.
 
-      " (like) Faure's Requiem, Gabriel Faure
+      " (like) Faure's Requiem, Gabriel Faure (note) First introduced to this by Mark Burgess on a dinner visit at his apartment at the Penthouse apartment, Kirkeveien 98, Oslo around 1992
 
-$PREV.2 (note) First introduced to this by Mark Burgess on a dinner visit at his apartment at the Penthouse apartment, Kirkeveien 98, Oslo around 1992
-
-$like.1    " (like) Driving through America
+  $fav.1  (like) Driving through America
 
  ######################################
 
- :: special moments ::
+ :: special or memorable moments ::
 
+  Seeing Feynman looking like Jesus
+  Birth of baby daughter
 
 
  ######################################
 
  :: people ::
 
- Students of Finn Ravndal
-
+  Students of Finn Ravndal
       "   (has-memb)  Anne Hærdig
       "   (has-memb)  Jon Åge Ruud
       "   (has-memb)  Tor Haugset
@@ -46,10 +45,10 @@ $like.1    " (like) Driving through America
       "   (has-memb)  Kåre Olaufsen
       "   (has-memb)  Alex Hansen
 
-
  Friends of Finn Ravndal
       "   (has-memb)  Kåre Olaufsen
       "   (has-memb)  Alex Hansen
+      "   (has-memb)  Mark Burgess
 
  ######################################
  
@@ -144,7 +143,7 @@ $like.1    " (like) Driving through America
 
   Richard Feynman drilled holes in his skull.
 
-     " (note) Surely he must be joking?
+     " (remark) Surely he must be joking?
      " (year) 2345 or was is 4321?
 
 
@@ -160,17 +159,17 @@ $like.1    " (like) Driving through America
 
  #########################
  
- :: anecdotes, events, episodes, and happenings ::
+ :: anecdotes, events, episodes, happenings ::
 
-  Received a letter from Mark Burgess, a newly finished PhD student at Newcastle University. Invited hom to Oslo to meet and discuss a postdoc with money from Royal Society.
-      " (note) Met in Finn's office at the university and talked about a book Finn had read.
+  Received a letter from Mark Burgess, a newly finished PhD student at Newcastle University. Fin invited him to Oslo to meet and discuss a postdoc with money from Royal Society.
+      " (note) Met in Finn's office at the university and talked about a history of physics book Finn had read.
       " (met) Mark Burgess
-      " (happened) Anyon project
+      " (happened) Post doctoral invitation.
 
   Jon Magne Leinaas takes up Professorship in Oslo.
      " (year) 199x
 
-  On 5th January Mark Burgess arrived in Oslo and we started a group of hovedfag students meeting to talk about field theory and anyons.
+  On 5th January, postdoc Mark Burgess arrived in Oslo and a group of hovedfag students began meeting to talk about field theory and anyons.
     " (involves) Mark Burgess
     " (involves) Nils Tveten
     " (involves) Jens Anderson (note) Jens was then working with Aashamar before joining the theory group.
@@ -181,7 +180,13 @@ $like.1    " (like) Driving through America
     " (involves) Schrieffer
     " (involves) Dan Arovas
 
+
+  Finn retires, and the real work begins.
+
  #########################
   :: retirement ::
 
     Bought an apartment in Berlin and began commuting like an major Abelian operator between Oslo and Berlin.
+
+
+

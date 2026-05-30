@@ -40,8 +40,8 @@ hypothalamus (role) key nexus between body and brain , vital decision making cir
 
  "     (infl) urges to eat, drink, sleep, find shelter, avoid whatever is causing pain or fear, or respond with defensive or aggressive behaviours.
 
- " (evolved from) early telencephalon, meaning the end of the brain
- " (leads to) ultimately expand in mammals to become the neocortex
+ " (evolved from) early =telencephalon, meaning the end of the brain
+ " (leads to) ultimately expand in mammals to become the =neocortex
 
 hormones (infl) autonomic nervous system 
 
@@ -81,20 +81,29 @@ tectum (role) maps incoming sensory stimulus to a menu of actions/instincts
  
    "    (where) top of midbrain
 
-layer 1 (role) top down modulation
+layer 1 (description) Outer molecular layer. Dense mat of =axons, =dendrites, and ="glial cells", containing few neuronal cell bodies. Inputs from ="brain stem".
+   "    (role) provides top down modulation and integrated activity.
+   "  (role) cortical to cortical communication
    "    (note) plays a role in intentionality?
 
-layer 2, layer 3 (role) collect sensory information and integrate with neighbouring columns
+layer 2 (description) External granular layer. Composed of small ="pyramidal cells" and ="inhibitory cells". Receives input from deeper layers.
+   "    (role) collect sensory information and integrate with neighbouring =columns
+   
+layer 3 (description) External pyramidal layer. Small to medium pyramidal neurons. Send exicitory outputs to other cortical areas across the corpus callosum.
+   "    (role) collect sensory information and integrate with neighbouring =columns
+   "    (role) association and interhemipsheric signalling
 
-layer 4 (role) receive inputs from other brain areas
+layer 4 (description) Internal granular layer. The main entry point for incoming sensory signals. Direct signals from the =thalamus.
+   "   (role) primary input centre, receive inputs from other brain areas
 
-layer 5 (role) take signals from 2,3 and context and redistribute
+layer 5 (description) Internal pyramidal layer. Contains a large number of =pyramidal neurons/="Betz cells" and motor neurons.  Responsible for sending signals out of the cerebral cortex to deeper brain regions, spinal cord.
+   "    (role) take signals from 2,3 and context and redistribute
    "    (signals) tectum, cortex, spine, other hemisphere 
 
-layer 6 (role) feedback mainly to thalamus
-   "    (signals) back to thalamus
+layer 6 (role) Multiform layer. The deepest layer. Sends massive feedback mainly to thalamus, allowing the cortex to regulate and filter sensory information.
+   "    (signals) return data back to =thalamus
 
-thalamus (role) conduit/relay station for sensory information
+thalamus (role) conduit/relay station for sensory information.
    "     (role) performs significant processing/compression on input
 
 affordances (role) what we can do with a object or service

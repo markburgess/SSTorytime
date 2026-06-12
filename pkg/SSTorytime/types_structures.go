@@ -296,8 +296,6 @@ type History struct {
 	Time  string
 }
 
-
-
 //
 // types_structures.go
 //

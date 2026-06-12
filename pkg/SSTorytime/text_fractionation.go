@@ -70,6 +70,14 @@ type TextRank struct {
 
 //**************************************************************
 
+type Sentence struct {
+
+	S string
+	Frags []string
+}
+
+//**************************************************************
+
 func NewNgramMap() [N_GRAM_MAX]map[string]float64 {
 
 	var thismap [N_GRAM_MAX]map[string]float64
@@ -109,7 +117,7 @@ func CleanText(s string) string {
 
 //******************************************************************
 
-func FractionateTextFile(name string) ([][][]string,int) {
+func FractionateTextFile(name string) ([][]Sentence,int) {
 
 	file := ReadTextFile(name)
 	proto_text := CleanText(file)
@@ -122,9 +130,9 @@ func FractionateTextFile(name string) ([][][]string,int) {
 
 			count++
 
-			for f := range pbsf[p][s] {
+			for f := range pbsf[p][s].Frags {
 
-				change_set := Fractionate(pbsf[p][s][f],count,STM_NGRAM_FREQ,N_GRAM_MIN)
+				change_set := Fractionate(pbsf[p][s].Frags[f],count,STM_NGRAM_FREQ,N_GRAM_MIN)
 
 				// Update global n-gram frequencies for fragment, and location histories
 
@@ -138,15 +146,16 @@ func FractionateTextFile(name string) ([][][]string,int) {
 			}
 		}
 	}
+
 	return pbsf,count
 }
 
 //**************************************************************
 
-func SplitIntoParaSentences(file string) [][][]string {
+func SplitIntoParaSentences(file string) [][]Sentence {
 
-	var pbsf [][][]string
-
+	var pbsf [][]Sentence
+	
 	// first split by paragraph
 
 	paras := strings.Split(file,"\n\n")
@@ -156,7 +165,7 @@ func SplitIntoParaSentences(file string) [][][]string {
 		p = strings.TrimSpace(p)
 		sentences := SplitSentences(p)
 
-		var cleaned [][]string
+		var cleaned []Sentence
 		
 		for s := range sentences {
 
@@ -164,17 +173,19 @@ func SplitIntoParaSentences(file string) [][][]string {
 
 			frags := SplitPunctuationText(sentences[s])
 
-			var codons []string
+			var this Sentence
+
+			this.S = sentences[s]
 
 			for f := range frags {
 				content := strings.TrimSpace(frags[f])
 				if len(content) > 2 {			
-					codons = append(codons,content)
+					this.Frags = append(this.Frags,content)
 				}
 			}
 
-			if len(codons) > 0 {
-				cleaned = append(cleaned,codons)
+			if len(this.S) > 0 {
+				cleaned = append(cleaned,this)
 			}
 		}
 
@@ -190,39 +201,76 @@ func SplitIntoParaSentences(file string) [][][]string {
 
 func SplitSentences(para string) []string {
 
-	var sentences []string
-	const small_string = 10
-
-	re := regexp.MustCompile("[?!.。][ \n\t]")
-	para = re.ReplaceAllString(para,"$0#")
-
-	sents := strings.Split(para,"#")
+	const min_sentence = 20
+	const min_paragraph = 100
 	
-	var str string
+	para = strings.ReplaceAll(para,"\n"," ")
+	para = strings.ReplaceAll(para,"\t"," ")
+	lquote := fmt.Sprintf("%c",NON_ASCII_LQUOTE)
+	para = strings.ReplaceAll(para,lquote,"\"")
+	rquote := fmt.Sprintf("%c",NON_ASCII_RQUOTE)
+	para = strings.ReplaceAll(para,rquote,"\"")
+	para = strings.ReplaceAll(para,"`","'")
+	para = strings.ReplaceAll(para,"’","'")
+	para = strings.TrimSpace(para)
 
-	for i := 0; i < len(sents); i++ {
-		
-		if i < len(sents)-1 && len(sents[i]) < small_string {
-			str += sents[i]
-			continue
+	var sentences []string
+	var extract []rune
+	var dlevel, slevel int
+	
+	if len(para) < min_paragraph {
+		extract = []rune(para)
+	} else {
+
+		// First look for matching pairs of quotes
+
+		for _,rval := range para {
+			
+			extract = append(extract,rval)
+			
+			switch rval {
+				
+			case '\'':
+				if slevel == 0 {
+					slevel++
+				} else {
+					slevel--
+				}
+				
+			case '"':
+				if dlevel == 0 {
+					dlevel++
+				} else {
+					dlevel--
+				}
+				
+			case '!','.','。':
+				if slevel == 0 && dlevel == 0 && len(extract) > min_sentence {
+					sentences = append(sentences,SanitizeSentence(extract))
+					extract = nil
+				}
+			}
 		}
-
-		str += sents[i]
-		str = strings.ReplaceAll(str,"\n"," ")
-		sentences = append(sentences,str)
-		str = ""
 	}
 	
+	if len(extract) > 0 {
+		sentences = append(sentences,SanitizeSentence(extract))
+	}
+
 	return sentences
 }
 
-
-
 //**************************************************************
 
-func SplitCommandText(s string) []string {
+func SanitizeSentence(extract []rune) string {
 
-	return SplitPunctuationTextWork(s,true)
+	s := string(extract)
+	
+	if strings.Count(s,"\"") % 2 != 0 {
+		s += "\""
+	}
+
+	return s
 }
 
 //**************************************************************

@@ -279,7 +279,7 @@ func Sanitize(s string) string {
 
 //*******************************************************************
 
-func SelectByRunningIntent(psf [][][]string,L int,percentage float64) []SST.TextRank {
+func SelectByRunningIntent(psf [][]SST.Sentence,L int,percentage float64) []SST.TextRank {
 
 	// Rank sentences
 
@@ -293,21 +293,14 @@ func SelectByRunningIntent(psf [][][]string,L int,percentage float64) []SST.Text
 		for s := range psf[p] {
 
 			score := 0.0
-			text := ""
 
-			for f := 0; f < len(psf[p][s]); f++ {
+			for f := 0; f < len(psf[p][s].Frags); f++ {
 
-				score += SST.RunningIntentionality(sentence_counter,psf[p][s][f])
-
-				text += psf[p][s][f]
-
-				if f < len(psf[p][s])-1 {
-					text += ", "
-				}
+				score += SST.RunningIntentionality(sentence_counter,psf[p][s].Frags[f])
 			}
 
 			var this SST.TextRank
-			this.Fragment = text
+			this.Fragment = psf[p][s].S
 			this.Significance = score
 			this.Order = sentence_counter
 			this.Partition = sentence_counter / coherence_length
@@ -323,7 +316,7 @@ func SelectByRunningIntent(psf [][][]string,L int,percentage float64) []SST.Text
 
 // ***************************************************
 
-func SelectByStaticIntent(psf [][][]string,L int,percentage float64) []SST.TextRank {
+func SelectByStaticIntent(psf [][]SST.Sentence,L int,percentage float64) []SST.TextRank {
 
 	// Rank sentences
 
@@ -337,21 +330,14 @@ func SelectByStaticIntent(psf [][][]string,L int,percentage float64) []SST.TextR
 		for s := range psf[p] {
 
 			score := 0.0
-			text := ""
 
-			for f := 0; f < len(psf[p][s]); f++ {
+			for f := 0; f < len(psf[p][s].Frags); f++ {
 
-				score += SST.AssessStaticIntent(psf[p][s][f],L,SST.STM_NGRAM_FREQ,1)
-
-				text += psf[p][s][f]
-
-				if f < len(psf[p][s])-1 {
-					text += ", "
-				}
+				score += SST.AssessStaticIntent(psf[p][s].Frags[f],L,SST.STM_NGRAM_FREQ,1)
 			}
 
 			var this SST.TextRank
-			this.Fragment = text
+			this.Fragment = psf[p][s].S
 			this.Significance = score
 			this.Order = sentence_counter
 			this.Partition = sentence_counter / coherence_length

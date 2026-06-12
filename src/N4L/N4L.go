@@ -1741,7 +1741,7 @@ func HandleNode(sst *SST.PoSST,annotated string) SST.NodePtr {
 //**************************************************************
 
 func IdempAddNode(sst *SST.PoSST,s string,intended_sequence bool) (SST.NodePtr,string) {
-	
+
 	clean_version := StripAnnotations(s)
 
 	l,c := SST.StorageClass(s)

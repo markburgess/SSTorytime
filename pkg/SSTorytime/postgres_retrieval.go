@@ -78,7 +78,7 @@ func GetDBNodePtrMatchingNCCS(sst PoSST,nm,chap string,cn []string,arrow []Arrow
 	nm = SQLEscape(nm)
 	chap = SQLEscape(chap)
 
-	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L ASC,(CARDINALITY(Ie3)+CARDINALITY(Im3)+CARDINALITY(Il1)) DESC LIMIT %d",NodeWhereString(sst,nm,chap,cn,arrow,seq),limit)
+	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY S ASC,(CARDINALITY(Ie3)+CARDINALITY(Im3)+CARDINALITY(Il1)) DESC LIMIT %d",NodeWhereString(sst,nm,chap,cn,arrow,seq),limit)
 
 	row, err := sst.DB.Query(qstr)
 
@@ -339,6 +339,7 @@ func GetDBNodeByNodePtr(sst *PoSST,db_nptr NodePtr) Node {
 	row, err := sst.DB.Query(qstr)
 
 	var n Node
+	var matches []Node
 	var count int = 0
 
 	if err != nil {
@@ -358,29 +359,35 @@ func GetDBNodeByNodePtr(sst *PoSST,db_nptr NodePtr) Node {
 			for i := 0; i < ST_TOP; i++ {
 				n.I[i] = ParseLinkArray(whole[i])
 			}
+			
+			matches = append(matches,n)
 			count++
 		}
 
 		if count > 1 {
-			fmt.Println("GetDBNodeByNodePtr returned too many matches (multi-model conflict?):",count,"for ptr",db_nptr)
-			os.Exit(-1)
+			fmt.Println("\nWARNING !\nGetDBNodeByNodePtr returned too many matches (this shouldn't happen):",count,"for ptr",db_nptr)
+
+			for _,val := range matches {
+				fmt.Println(" - Value: ",val)
+			}
+			fmt.Println("Selected first match: ",matches[0],"\n")
 		}
 
 		// Expand any dynamic inbuilt functions
 
 		if strings.HasPrefix(n.S,"Dynamic: ") {
-			n.S = ExpandDynamicFunctions(n.S)
+			matches[0].S = ExpandDynamicFunctions(matches[0].S)
 		}
 
 		row.Close()
 
 		if !cached {
-			CacheNode(sst,n)
+			CacheNode(sst,matches[0])
 		}
 	}
 
 	n.NPtr = db_nptr
-	return n
+	return matches[0]
 }
 
 // **************************************************************************

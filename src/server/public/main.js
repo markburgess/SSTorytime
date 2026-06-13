@@ -565,7 +565,7 @@ for (let story of obj.Content)
       }
 
    ShowSequenceItem(panel, story, counter, "fwd", "then", "span");
-   console.log("XXXXX",obj.Content)
+
    PlotGraphics(story, laststory, obj.Content.length);
    laststory = story; // link up
 
@@ -1136,12 +1136,6 @@ else
 let action = "(" + nclass + "," + ncptr + ")";
 Event(thisx, thisy, thisz, action);
 Label(thisx, thisy, thisz, str.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
-
-/*if (array[path][i].NPtr != null)
-   {
-   ncptr = array[path][i].NPtr.CPtr;
-   nclass = array[path][i].NPtr.Class;
-   }*/
 
 if (str.includes("\n") && !IsMath(str))
    {
@@ -2455,6 +2449,7 @@ if (event.Orbits[Il1] != null)
    {
    for (let ngh of event.Orbits[Il1])
       {
+      let action = "(" + ngh.Dst.Class + "," + ngh.Dst.CPtr + ")";
       Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, action);
       LeadsTo(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
       if (showtext)
@@ -2468,6 +2463,7 @@ if (event.Orbits[Im1] != null)
    {
    for (let ngh of event.Orbits[Im1])
       {
+      let action = "(" + ngh.Dst.Class + "," + ngh.Dst.CPtr + ")";
       Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, action);
       LeadsTo(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
       if (showtext)
@@ -2481,6 +2477,7 @@ if (event.Orbits[Ic2] != null)
    {
    for (let ngh of event.Orbits[Ic2])
       {
+      let action = "(" + ngh.Dst.Class + "," + ngh.Dst.CPtr + ")";
       Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, action);
       Contains(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
       if (showtext)
@@ -2494,6 +2491,7 @@ if (event.Orbits[Im2] != null)
    {
    for (let ngh of event.Orbits[Im2])
       {
+      let action = "(" + ngh.Dst.Class + "," + ngh.Dst.CPtr + ")";
       Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, action);
       Contains(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
       if (showtext)
@@ -2507,6 +2505,7 @@ if (event.Orbits[Ie3] != null)
    {
    for (let ngh of event.Orbits[Ie3])
       {
+      let action = "(" + ngh.Dst.Class + "," + ngh.Dst.CPtr + ")";
       Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, action);
       Expresses(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
       if (showtext)
@@ -2520,6 +2519,7 @@ if (event.Orbits[Im3] != null)
    {
    for (let ngh of event.Orbits[Im3])
       {
+      let action = "(" + ngh.Dst.Class + "," + ngh.Dst.CPtr + ")";
       Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, action);
       Expresses(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
       if (showtext)
@@ -2533,6 +2533,7 @@ if (event.Orbits[In0] != null)
    {
    for (let ngh of event.Orbits[In0])
       {
+      let action = "(" + ngh.Dst.Class + "," + ngh.Dst.CPtr + ")";
       Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, action);
       Near(ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z, ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
       if (showtext)
@@ -2648,11 +2649,45 @@ let canvas = document.createElement("canvas");
 canvas.id = "myCanvas";
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+
+canvas.addEventListener('click', function(event)
+			{
+			const rect = canvas.getBoundingClientRect();
+    
+			// 2. Subtract canvas offsets from the absolute client mouse positions
+			const x = event.clientX - rect.left;
+			const y = event.clientY - rect.top;
+
+			for (let [action,value] of COORDINATE_MAP)
+			   {
+			   if (ClickNear(value.X,value.Y,x,y))
+			      {
+			      sendLinkSearch(action);
+			      break;
+			      }
+			   }
+			}, false);
+
+ 
 CTX = canvas.getContext("2d");
 CTX.beginPath();
 
 parent.appendChild(canvas);
 return canvas;
+}
+
+// *************************************************
+
+function ClickNear(X,Y,x,y)
+{
+const grace = 10;
+
+ if (x > X - grace && x < X + grace && y > Y - grace && y < Y + grace)
+    {
+    return true;
+    }
+
+ return false;
 }
 
 // *************************************************
@@ -2798,7 +2833,7 @@ let y0 = Ty(x, y, z);
 r = (r * 1.6) / Horizon(x, y, z);
 
 COORDINATE_MAP.set(action, { X: x0, Y: y0 });
- 
+
 let grad = CTX.createLinearGradient(x0, y0, x0 + r, y0 + r);
 
 grad.addColorStop(0, col2);

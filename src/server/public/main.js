@@ -115,6 +115,7 @@ history.forEach((item) =>
 var CANVAS = CreateCanvas();
 var CTX = CANVAS.getContext("2d");
 
+var COORDINATE_MAP = new Map();
 var CANVAS_LABEL_COLOUR = "darkgray";
 var LEADSTO_COLOUR = "darkred";
 var CONTAINS_COLOUR = "lightblue";
@@ -432,6 +433,7 @@ for (let node_event of obj.Content)
    ShowNodeEvent(panel, node_event, separates, "all", "", "h4");
 
    last_node_event = node_event; // don't link up
+
    PlotGraphics(node_event, last_node_event, obj.Content.length);
    }
 }
@@ -563,6 +565,7 @@ for (let story of obj.Content)
       }
 
    ShowSequenceItem(panel, story, counter, "fwd", "then", "span");
+   console.log("XXXXX",obj.Content)
    PlotGraphics(story, laststory, obj.Content.length);
    laststory = story; // link up
 
@@ -626,16 +629,18 @@ for (let chpblk of obj.Content)
 
    let link = document.createElement("a");
    let item = document.createElement("h3");
+   let action = '\\notes \\chapter ' + Quote(chpblk.Chapter);
+
    link.onclick = function ()
       {
-      sendLinkSearch('\\notes \\chapter ' + Quote(chpblk.Chapter));
+      sendLinkSearch(action);
       };
 
    item.textContent = counter + ". " + chpblk.Chapter;
    link.appendChild(item);
    chapter_section.appendChild(link);
 
-   Event(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z);
+   Event(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z, chpblk.Chapter, action);
    Label(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z, chpblk.Chapter, 12, "gray",);
 
    // First do the context groups or ambient parts
@@ -643,10 +648,11 @@ for (let chpblk of obj.Content)
       {
       for (let ctx of chpblk.Context)
          {
+	 let action = "any \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx.Text);
          let link = document.createElement("a");
          link.onclick = function ()
             {
-            sendLinkSearch("any \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx.Text));
+            sendLinkSearch(action);
             };
 
          link.id = "toc-frag";
@@ -659,20 +665,22 @@ for (let chpblk of obj.Content)
 
          chapter_section.appendChild(link);
 
-         Concept(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z);
+         Concept(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z, action);
          Contains(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
          }
       }
 
    //Spacer ?
+   
    if (chpblk.Single != null)
       {
       for (let ctx of chpblk.Single)
          {
          let link = document.createElement("a");
+	 let action = "\\notes \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx.Text);
          link.onclick = function ()
             {
-	      sendLinkSearch("\\notes \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx.Text));
+	    sendLinkSearch(action);
             };
          link.textContent = " !! ";
 
@@ -683,7 +691,7 @@ for (let chpblk of obj.Content)
 
          chapter_section.appendChild(link);
 
-         Thing(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z);
+         Thing(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z, action);
          Near(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
          }
       }
@@ -694,9 +702,10 @@ for (let chpblk of obj.Content)
          {
          let link = document.createElement("a");
          let sitem = document.createElement("span");
+	 let action = "\\notes \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx.Text);
          link.onclick = function ()
             {
-            sendLinkSearch("\\notes \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx.Text));
+            sendLinkSearch(action);
             };
          link.textContent = "Ambient context:: ";
          link.id = "toc-frag";
@@ -707,7 +716,7 @@ for (let chpblk of obj.Content)
          link.appendChild(sitem);
          chapter_section.appendChild(link);
 
-         Thing(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z);
+         Thing(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z, action);
          Near(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
          }
       }
@@ -1124,14 +1133,15 @@ else
    lastz = UNINITIALIZED;;
    }
 
-Event(thisx, thisy, thisz);
+let action = "(" + nclass + "," + ncptr + ")";
+Event(thisx, thisy, thisz, action);
 Label(thisx, thisy, thisz, str.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
 
-if (array[path][i].NPtr != null)
+/*if (array[path][i].NPtr != null)
    {
    ncptr = array[path][i].NPtr.CPtr;
    nclass = array[path][i].NPtr.Class;
-   }
+   }*/
 
 if (str.includes("\n") && !IsMath(str))
    {
@@ -1332,7 +1342,7 @@ for (let line = 0; line < array.length; line++)
          lasty = thisy;
          lastz = thisz;
 
-         Event(thisx, thisy, thisz);
+         Event(thisx, thisy, thisz,"action1");
          Label(thisx, thisy, thisz, str.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
 
          if (array[line][i].NPtr != null)
@@ -1535,9 +1545,9 @@ if (counter == 0)
    {
      let from_link = document.createElement("a");
      from_link.onclick = function ()
-     {
-       sendlinkData(event.NPtr.Class, event.NPtr.CPtr);
-     };
+        {
+        sendlinkData(event.NPtr.Class, event.NPtr.CPtr);
+        };
 
      // BLUE FULL TEXT (pre)
      let from_text = document.createElement("pre");
@@ -1548,7 +1558,7 @@ if (counter == 0)
 
      child.appendChild(from_link);
    }
-   else
+else
    {
      let from_link = document.createElement("span");
      from_link.onclick = function ()
@@ -1868,7 +1878,7 @@ if (event.Orbits[sttype] != null)
 	 switch (sat.Radius)
 	    {
 	    case 1:
-		PrintLink(inner,sat.Radius,sat.STindex,sat.Arrow,sat.Text,sat.Dst.Class,sat.Dst.CPtr,event.Chap,sat.Ctx,sat.Wgt);
+	       PrintLink(inner,sat.Radius,sat.STindex,sat.Arrow,sat.Text,sat.Dst.Class,sat.Dst.CPtr,event.Chap,sat.Ctx,sat.Wgt);
 	       panel.appendChild(inner);
 	       outer = inner; // reset
 	       break;
@@ -1880,7 +1890,7 @@ if (event.Orbits[sttype] != null)
 		 outer = CollapseDetails(inner,previous.Text);
 		 }
 
-		PrintLink(outer,sat.Radius,sat.STindex,sat.Arrow,sat.Text,sat.Dst.Class,sat.Dst.CPtr,event.Chap,sat.Ctx,sat.Wgt);
+	       PrintLink(outer,sat.Radius,sat.STindex,sat.Arrow,sat.Text,sat.Dst.Class,sat.Dst.CPtr,event.Chap,sat.Ctx,sat.Wgt);
 	       break;
 	    }
 
@@ -2417,13 +2427,14 @@ return hsl;
 
 /***********************************************************/
 
-function PlotGraphics(event, lastevent, number)
+function PlotGraphics(event, lastevent, number, nptr)
 {
 let tx = event.XYZ.X;
 let ty = event.XYZ.Y;
 let tz = event.XYZ.Z;
-
-Event(tx, ty, tz);
+let action = "(" + event.NPtr.Class + "," + event.NPtr.CPtr + ")";
+ 
+Event(tx, ty, tz, action);
 Label(tx, ty, tz, event.Text.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
 
 // if the display is uncluttered, we can print all the labels
@@ -2444,7 +2455,7 @@ if (event.Orbits[Il1] != null)
    {
    for (let ngh of event.Orbits[Il1])
       {
-      Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+      Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, action);
       LeadsTo(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
       if (showtext)
 	{
@@ -2457,7 +2468,7 @@ if (event.Orbits[Im1] != null)
    {
    for (let ngh of event.Orbits[Im1])
       {
-      Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+      Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, action);
       LeadsTo(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
       if (showtext)
 	{
@@ -2470,7 +2481,7 @@ if (event.Orbits[Ic2] != null)
    {
    for (let ngh of event.Orbits[Ic2])
       {
-      Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+      Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, action);
       Contains(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
       if (showtext)
 	{
@@ -2483,7 +2494,7 @@ if (event.Orbits[Im2] != null)
    {
    for (let ngh of event.Orbits[Im2])
       {
-      Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+      Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, action);
       Contains(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
       if (showtext)
 	{
@@ -2496,7 +2507,7 @@ if (event.Orbits[Ie3] != null)
    {
    for (let ngh of event.Orbits[Ie3])
       {
-      Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+      Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, action);
       Expresses(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
       if (showtext)
 	{
@@ -2509,7 +2520,7 @@ if (event.Orbits[Im3] != null)
    {
    for (let ngh of event.Orbits[Im3])
       {
-      Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+      Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, action);
       Expresses(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
       if (showtext)
 	{
@@ -2522,7 +2533,7 @@ if (event.Orbits[In0] != null)
    {
    for (let ngh of event.Orbits[In0])
       {
-      Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+      Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, action);
       Near(ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z, ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
       if (showtext)
 	{
@@ -2584,7 +2595,7 @@ let y0 = 0;
 for (let z = 1; z > -1.0; z -= orbit)
    {
    LeadsTo(x0, y0, z, 0, 0, z + orbit);
-   Event(x0, y0, z, 10);
+   Event(x0, y0, z, 10,"welcome");
 
    Label(x0, y0, z, "SST event " + z, 16, "darkblue");
 
@@ -2757,28 +2768,28 @@ Arrow(x0, y0, z0, xp, yp, zp, NEAR_COLOUR, 1 * mob);
 
 // *************************************************
 
-function Event(x, y, z)
+function Event(x, y, z, action)
 {
-Node(x, y, z, 6 * mob, "yellow", "brown");
+ Node(x, y, z, 6 * mob, "yellow", "brown", action);
 }
 
 // *************************************************
 
-function Thing(x, y, z)
+function Thing(x, y, z, action)
 {
-Node(x, y, z, 4 * mob, "#334455", "#54A5F6");
+ Node(x, y, z, 4 * mob, "#334455", "#54A5F6", action);
 }
 
 // *************************************************
 
-function Concept(x, y, z)
+function Concept(x, y, z, action)
 {
-Node(x, y, z, 4 * mob, "darkblue", "#FFD540");
+ Node(x, y, z, 4 * mob, "darkblue", "#FFD540", action);
 }
 
 // *************************************************
 
-function Node(x, y, z, r, col1, col2)
+function Node(x, y, z, r, col1, col2, action)
 {
 CTX.save();
 CTX.beginPath();
@@ -2786,6 +2797,8 @@ let x0 = Tx(x, y, z);
 let y0 = Ty(x, y, z);
 r = (r * 1.6) / Horizon(x, y, z);
 
+COORDINATE_MAP.set(action, { X: x0, Y: y0 });
+ 
 let grad = CTX.createLinearGradient(x0, y0, x0 + r, y0 + r);
 
 grad.addColorStop(0, col2);

@@ -9,7 +9,6 @@ package SSTorytime
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 	"encoding/json"
 	_ "github.com/lib/pq"
@@ -101,86 +100,6 @@ func LinkWebPaths(sst *PoSST,cone [][]Link,nth int,chapter string,context []stri
 	}
 
 	return conepaths
-}
-
-// **************************************************************************
-
-func GetChaptersByChapContext(sst PoSST,chap string,cn []string,limit int) map[string][]string {
-
-	qstr := ""
-	chap_col := ""
-
-	chap = strings.Trim(chap,"\"")
-
-	if chap != "any" && chap != "" {
-
-		remove_chap_accents,chap_stripped := IsBracketedSearchTerm(chap)
-
-		if remove_chap_accents {
-			chap_search := "%"+chap_stripped+"%"
-			chap_col = fmt.Sprintf("AND lower(unaccent(chap)) LIKE lower('%s')",chap_search)
-		} else {
-			chap_search := "%"+chap+"%"
-			chap_col = fmt.Sprintf("AND lower(chap) LIKE lower('%s')",chap_search)
-		}
-	}
-
-	if chap == "TableOfContents" {
-		chap_col = ""
-	}
-
-	_,cn_stripped := IsBracketedSearchList(cn)
-	context := FormatSQLStringArray(cn_stripped)
-
-	qstr = fmt.Sprintf("SELECT DISTINCT chap,ctx FROM PageMap WHERE match_context(ctx,%s) %s ORDER BY Chap",context,chap_col)
-
-	row, err := sst.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("QUERY GetChaptersByChapContext Failed",err,qstr)
-	}
-
-	var rchap string
-	var rcontext ContextPtr
-	var toc = make(map[string][]string)
-
-	if row != nil {
-		for row.Next() {		
-			err = row.Scan(&rchap,&rcontext)
-
-			// Each chapter can be a comma separated list
-
-			chps := SplitChapters(rchap)
-
-			for c := 0; c < len(chps); c++ {
-
-				if len(toc) == limit {
-					row.Close()
-					return toc
-				}
-
-				rc := chps[c]
-
-				cn := strings.Split(GetContext(&sst,rcontext),",")
-				ctx_grp := ""
-
-				for s := 0; s < len(cn); s++ {
-					ctx_grp += cn[s]
-					if s < len(cn)-1 {
-						ctx_grp += ", "
-					}
-				}
-
-				if len(ctx_grp) > 0 {
-					toc[rc] = append(toc[rc],ctx_grp)
-				}
-			}
-		}
-
-		row.Close()
-	}
-
-	return toc
 }
 
 // **************************************************************************
@@ -430,61 +349,6 @@ func TruncatePathsByArrow(path []Link,arrow ArrowPtr) ([]Link,int) {
 	}
 
 	return path,len(path)
-}
-
-
-//******************************************************************
-
-func ContextIntentAnalysis(spectrum map[string]int,clusters []string) ([]string,[]string) {
-
-        // Used in table of contents
-
-	var intentional []string
-	const intent_limit = 3  // policy from research
-
-	for f := range spectrum {
-		if spectrum[f] < intent_limit {
-			intentional = append(intentional,f)
-			delete(spectrum,f)
-		}
-	}
-
-	for cl := range clusters {
-		for deletions := range intentional {
-			clusters[cl] = strings.Replace(clusters[cl],intentional[deletions]+", ","",-1)
-			clusters[cl] = strings.Replace(clusters[cl],intentional[deletions],"",-1)
-		}
-	}
-
-	spectrum = make(map[string]int)
-
-	for cl := range clusters {
-		if strings.TrimSpace(clusters[cl]) != "" {
-			pruned := strings.Trim(clusters[cl],", ")
-			spectrum[pruned]++
-		}
-	}
-
-	// Now we have a small set of largely separated major strings.
-	// One more round of diffs for a final separation
-
-	var ambient = make(map[string]int)
-
-	context := Map2List(spectrum)
-
-	for ci := 0; ci < len(context); ci++ {
-		for cj := ci+1; cj < len(context); cj++ {
-
-			s,i := DiffClusters(context[ci],context[cj])
-
-			if len(s) > 0 && len(i) > 0 && len(i) <= len(context[ci])+len(context[ci]) {
-				ambient[strings.TrimSpace(s)]++
-				ambient[strings.TrimSpace(i)]++
-			}
-		}
-	}
-	
-	return intentional,Map2List(ambient)
 }
 
 

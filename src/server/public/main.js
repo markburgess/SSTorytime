@@ -622,7 +622,9 @@ for (let chpblk of obj.Content)
    counter++;
 
    // N. Section/chapter header title
+
    let chapter_section = document.createElement("div");
+
    chapter_section.setAttribute("class", "card-view");
    chapter_section.id = "toc-panel";
    chapter_section.style.display = "inline-flex";
@@ -644,7 +646,8 @@ for (let chpblk of obj.Content)
    Label(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z, chpblk.Chapter, 12, "gray",);
 
    // First do the context groups or ambient parts
-   if (chpblk.Context != null)
+
+   /* if (chpblk.Context != null)
       {
       for (let ctx of chpblk.Context)
          {
@@ -668,13 +671,13 @@ for (let chpblk of obj.Content)
          Concept(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z, action);
          Contains(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
          }
-      }
+	 }*/
 
    //Spacer ?
    
-   if (chpblk.Single != null)
+   if (chpblk.Intent != null)
       {
-      for (let ctx of chpblk.Single)
+      for (let ctx of chpblk.Intent)
          {
          let link = document.createElement("a");
 	 let action = "\\notes \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx.Text);
@@ -696,9 +699,9 @@ for (let chpblk of obj.Content)
          }
       }
 
-   if (chpblk.Common != null)
+   if (chpblk.Ambient != null)
       {
-      for (let ctx of chpblk.Common)
+      for (let ctx of chpblk.Ambient)
          {
          let link = document.createElement("a");
          let sitem = document.createElement("span");

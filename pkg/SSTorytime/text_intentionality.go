@@ -15,6 +15,113 @@ import (
 
 )
 
+//******************************************************************
+
+func ContextIntentAnalysis(spectrum map[string]int) ([]string,[]string) {
+
+        // Used in table of contents.
+	// Split a list of contexts into mutex intentional and ambient
+
+	var intentional []string
+	var ambient []string
+	
+	const intent_limit = 3  // policy from research
+
+	// The spectrum is the number of times a DNA fragment appears in N4L classifications
+	
+	for f := range spectrum {
+
+		if spectrum[f] < intent_limit {
+			intentional = append(intentional,f)
+		} else {
+			ambient = append(ambient,f)
+		}
+	}
+
+	return intentional,ambient
+}
+
+
+// **************************************************************************
+
+func GetChaptersByChapContext(sst PoSST,chap string,cn []string,limit int) map[string][]string {
+
+	qstr := ""
+	chap_col := ""
+
+	chap = strings.Trim(chap,"\"")
+
+	if chap != "any" && chap != "" {
+
+		remove_chap_accents,chap_stripped := IsBracketedSearchTerm(chap)
+
+		if remove_chap_accents {
+			chap_search := "%"+chap_stripped+"%"
+			chap_col = fmt.Sprintf("AND lower(unaccent(chap)) LIKE lower('%s')",chap_search)
+		} else {
+			chap_search := "%"+chap+"%"
+			chap_col = fmt.Sprintf("AND lower(chap) LIKE lower('%s')",chap_search)
+		}
+	}
+
+	if chap == "TableOfContents" {
+		chap_col = ""
+	}
+
+	_,cn_stripped := IsBracketedSearchList(cn)
+	context := FormatSQLStringArray(cn_stripped)
+
+	qstr = fmt.Sprintf("SELECT DISTINCT chap,ctx FROM PageMap WHERE match_context(ctx,%s) %s ORDER BY Chap",context,chap_col)
+
+	row, err := sst.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetChaptersByChapContext Failed",err,qstr)
+	}
+
+	var rchap string
+	var rcontext ContextPtr
+	var toc = make(map[string][]string)
+
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&rchap,&rcontext)
+
+			// Each chapter can be a comma separated list
+
+			chps := SplitChapters(rchap)
+
+			for c := 0; c < len(chps); c++ {
+
+				if len(toc) == limit {
+					row.Close()
+					return toc
+				}
+
+				rc := chps[c]
+
+				cn := strings.Split(GetContext(&sst,rcontext),",")
+				ctx_grp := ""
+
+				for s := 0; s < len(cn); s++ {
+					ctx_grp += cn[s]
+					if s < len(cn)-1 {
+						ctx_grp += ", "
+					}
+				}
+
+				if len(ctx_grp) > 0 {
+					toc[rc] = append(toc[rc],ctx_grp)
+				}
+			}
+		}
+
+		row.Close()
+	}
+
+	return toc
+}
+
 // *********************************************************************
 
 func UpdateSTMContext(sst *PoSST,ambient,key string,now int64,params SearchParameters) string {
@@ -144,7 +251,7 @@ func CommitContextToken(token string,now int64,key string) {
 
 // **************************************************************************
 
-func IntersectContextParts(context_clusters []string) (int,[]string,[][]int)  {
+func IntersectContextParts(context_clusters []string) ([]string,[][]int)  {
 
 	// return a weighted upper triangular matrix of overlaps between frags,
 	// and an idempotent list of fragments
@@ -176,7 +283,7 @@ func IntersectContextParts(context_clusters []string) (int,[]string,[][]int)  {
 		adj = append(adj,row)
 	}
 
-	return len(cluster_list),cluster_list,adj
+	return cluster_list,adj
 }
 
 // **************************************************************************
@@ -239,6 +346,8 @@ func OverlapMatrix(m1,m2 map[string]int) (string,string) {
 
 func GetContextTokenFrequencies(fraglist []string) map[string]int {
 
+	// Count up the occurrences of different context fragments
+	
 	var spectrum = make(map[string]int)
 
 	for l := range fraglist {

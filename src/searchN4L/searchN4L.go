@@ -474,15 +474,15 @@ func ShowMatchingChapter(sst SST.PoSST,chap string,context []string,limit int) {
 
 		fmt.Printf("\n%d. Chapter: %s\n",c,chap_list[c])
 
-		dim,clist,adj := SST.IntersectContextParts(toc[chap_list[c]])
+		clist,adj := SST.IntersectContextParts(toc[chap_list[c]])
 
-		ShowContextFractions(dim,clist,adj)
+		ShowContextFractions(clist,adj)
 	}
 }
 
 //******************************************************************
 
-func ShowContextFractions(dim int,clist []string,adj [][]int) {
+func ShowContextFractions(clist []string,adj [][]int) {
 
 	for c := 0; c < len(adj); c++ {
 
@@ -526,7 +526,7 @@ func ShowChapterContexts(sst SST.PoSST,chap string,context []string,limit int) {
 		fmt.Printf("\n   Chapter context: %s\n",c)
 
 		spectrum := SST.GetContextTokenFrequencies(toc[c])
-		intent,ambient := SST.ContextIntentAnalysis(spectrum,toc[c])
+		intent,ambient := SST.ContextIntentAnalysis(spectrum)
 
 		var intended string
 		var common string

@@ -981,13 +981,24 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request, sst SST.PoSST, 
 
 		// Fractionate the (chapter,context) information
 
-		dim, clist, adj := SST.IntersectContextParts(toc[chap_list[c]])
-		spectrum := SST.GetContextTokenFrequencies(toc[chap_list[c]])
-		intent, ambient := SST.ContextIntentAnalysis(spectrum, toc[chap_list[c]])
+		clist, adj := SST.IntersectContextParts(toc[chap_list[c]])
 
-		chap_anchor.Context = GetContextSets(dim, clist, adj, chap_anchor.XYZ)
-		chap_anchor.Single = GetContextFragments(intent, chap_anchor.XYZ)
-		chap_anchor.Common = GetContextFragments(ambient, chap_anchor.XYZ)
+		// The spectrum is the number of times a DNA fragment appears in N4L classifications
+
+		spectrum := SST.GetContextTokenFrequencies(toc[chap_list[c]])
+
+		// Get a list of all the full declared contexts, and assign coordinates
+
+		chap_anchor.Context = GetContextSets(clist, adj, chap_anchor.XYZ)
+		
+		// Classify "DNA" fragments of Cntext into complementary parts
+		
+		intent, ambient := SST.ContextIntentAnalysis(spectrum)
+
+		// Allocate coordinates and marshall fragments
+		
+		chap_anchor.Intent = GetContextFragments(intent, chap_anchor.XYZ)
+		chap_anchor.Ambient = GetContextFragments(ambient, chap_anchor.XYZ)
 
 		chapters = append(chapters, chap_anchor)
 	}
@@ -1004,7 +1015,7 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request, sst SST.PoSST, 
 
 //******************************************************************
 
-func GetContextSets(dim int, clist []string, adj [][]int, xyz SST.Coords) []SST.Loc {
+func GetContextSets(clist []string, adj [][]int, xyz SST.Coords) []SST.Loc {
 
 	var retvar []SST.Loc
 

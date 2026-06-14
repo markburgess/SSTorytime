@@ -269,8 +269,8 @@ type ChCtx struct {
 	Chapter  string
 	XYZ      Coords
 	Context  []Loc
-	Single   []Loc
-	Common   []Loc
+	Intent   []Loc
+	Ambient   []Loc
 }
 
 //******************************************************************

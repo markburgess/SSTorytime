@@ -1309,7 +1309,7 @@ for (let line = 0; line < array.length; line++)
          {
          let str = array[line][i].Name;
          let ncptr = array[line][i].NPtr.CPtr;
-         let nclass = array[line][i].NPtr.NClass;
+         let nclass = array[line][i].NPtr.Class;
          let xyz = array[line][i].XYZ;
 
          let thisx = xyz.X;
@@ -1336,14 +1336,10 @@ for (let line = 0; line < array.length; line++)
          lasty = thisy;
          lastz = thisz;
 
-         Event(thisx, thisy, thisz,"action1");
-         Label(thisx, thisy, thisz, str.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
+	 let action = "(" + nclass + "," + ncptr + ")";
 
-         if (array[line][i].NPtr != null)
-            {
-            ncptr = array[line][i].NPtr.CPtr;
-            nclass = array[line][i].NPtr.Class;
-            }
+         Event(thisx, thisy, thisz, action);
+         Label(thisx, thisy, thisz, str.slice(0, 25), 12,CANVAS_LABEL_COLOUR);
 
          // if the last line starts with the same item, don't repeat it, use ditto
 
@@ -2653,10 +2649,10 @@ canvas.height = window.innerHeight;
 canvas.addEventListener('click', function(event)
 			{
 			const rect = canvas.getBoundingClientRect();
-    
-			// 2. Subtract canvas offsets from the absolute client mouse positions
 			const x = event.clientX - rect.left;
 			const y = event.clientY - rect.top;
+
+			console.log("Canvas click");
 
 			for (let [action,value] of COORDINATE_MAP)
 			   {

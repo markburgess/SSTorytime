@@ -13,8 +13,20 @@
  \theme spaceblue
 </pre>
 
+## Finding concepts and contexts
 
-## Word search
+To carry out a generic top-down search, matching chapter headings, sub-contexts, and then text matches,
+try the `\\find` keyword:
+<pre>
+ \find brain case
+</pre>
+This will search for each string "brain" and "case" independently and return possible places to look. 
+You can quote a phrase:
+<pre>
+ \find "any bonus" agreement
+</pre>
+
+## Word from text search
 
 * Search for a precise word
 

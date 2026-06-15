@@ -96,11 +96,11 @@ func TextExcerpt(L int, S string, finds []string) string {
 			e := pos+window/2
 
 			for off := 1; off < window/2-1; off++ {
-				if b-off > window/2 && S[b-off] == ' ' {
+				if b-off > window/2 && S[b-off] == ' ' && S[b-off] == ',' {
 					b = b-off
 				}
 
-				if e+off < L && S[e+off] == ' ' {
+				if e+off < L && S[e+off] == ' ' && S[e+off] == ',' {
 					e = e+off
 				}
 			}

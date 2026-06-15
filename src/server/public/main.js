@@ -793,7 +793,7 @@ for (let chpblk of obj.Content)
             };
 
          link.id = "toc-frag";
-         link.textContent = " :: ";
+         link.textContent = " SCENE ";
 
          let sitem = document.createElement("span");
          sitem.textContent = ctx_frag.Text;

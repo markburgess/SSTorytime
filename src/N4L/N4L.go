@@ -842,6 +842,7 @@ func CompleteSequences(sst *SST.PoSST,node SST.Node) {
 
 			var link SST.Link
 			link.Arr = cl.Result
+			link.Wgt = 1
 			arrname := sst.ARROW_DIRECTORY[link.Arr].Short
 
 			m := fmt.Sprintf("   Complete: %s -(%s)-> %s",t1,arrname,t2)

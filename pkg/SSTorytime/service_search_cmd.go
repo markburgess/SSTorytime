@@ -53,7 +53,6 @@ const (
 	CMD_ON_2 = "on"    // _2 are too short to be intentional
 	CMD_FOR = "\\for"  // so double these for "smarter" accident avoidance
 	CMD_FOR_2 = "for"
-	CMD_ABOUT = "\\about"
 	CMD_NOTES = "\\notes"
 	CMD_BROWSE = "\\browse"
 	CMD_PAGE = "\\page"
@@ -89,9 +88,9 @@ const (
 	CMD_REMIND = "\\remind"
 	CMD_HELP = "\\help"
 	CMD_HELP_2 = "help"
-	// What to find in orbit
-	CMD_FINDS = "\\finds"
-	CMD_FINDING = "\\finding"
+	// overview
+	CMD_FINDS = "\\find"
+	CMD_ABOUT = "\\about"
 	// bounding linear path and parallel arrows
 	CMD_GT = "\\gt"
 	CMD_LT = "\\lt"
@@ -121,13 +120,13 @@ func DecodeSearchField(cmd string) SearchParameters {
 		CMD_ARROW,CMD_ARROWS,
 		CMD_GT,CMD_MIN,CMD_ATLEAST,
 		CMD_LT,CMD_MAX,CMD_ATMOST,
-		CMD_ON,CMD_ON_2,CMD_ABOUT,CMD_FOR,CMD_FOR_2,
+		CMD_ON,CMD_ON_2,CMD_FOR,CMD_FOR_2,
 		CMD_PAGE,
 		CMD_LIMIT,CMD_RANGE,CMD_DISTANCE,CMD_DEPTH,
 		CMD_STATS,CMD_STATS_2,
 		CMD_REMIND,CMD_NEVER,CMD_NEW,
 		CMD_HELP,CMD_HELP_2,
-		CMD_FINDS,CMD_FINDING,
+		CMD_FINDS,CMD_ABOUT,
         }
 	
 	// parentheses are reserved for unaccenting
@@ -415,7 +414,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				param.Horizon = NEVER
 				continue
 
-			case CMD_ON,CMD_ON_2,CMD_ABOUT,CMD_FOR,CMD_FOR_2:
+			case CMD_ON,CMD_ON_2,CMD_FOR,CMD_FOR_2:
 				if lenp > p+1 {
 					for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 						p++
@@ -433,7 +432,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				}
 				continue
 
-			case CMD_FINDS,CMD_FINDING:
+			case CMD_FINDS,CMD_ABOUT:
 
 				for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 					p++

@@ -512,9 +512,13 @@ func HandleSearch(sst SST.PoSST,search SST.SearchParameters, line string, w http
 		search.Name = append(search.Name,"any")
 	}
 
-	nodeptrs = SST.SolveNodePtrs(sst, search.Name, search, arrowptrs, maxlimit)
-
-	fmt.Println("Solved search nodes ...")
+	if search.Finds != nil {
+		nodeptrs = SST.SolveNodePtrs(sst, search.Finds, search, arrowptrs, maxlimit)
+	} else {
+		nodeptrs = SST.SolveNodePtrs(sst, search.Name, search, arrowptrs, maxlimit)
+	}
+	
+	fmt.Println("Solved search nodes ... for ",search.Name)
 
 	// SEARCH SELECTION *********************************************
 
@@ -525,6 +529,11 @@ func HandleSearch(sst SST.PoSST,search SST.SearchParameters, line string, w http
 		return
 	}
 
+	if search.Finds != nil {
+		ShowOverview(w,r,sst,search,nodeptrs,maxlimit)
+		return
+	}
+	
 	if (context || chapter) && !name && !sequence && !pagenr && !(from || to) {
 		ShowChapterContexts(w,r,sst,search,maxlimit)
 		return
@@ -954,6 +963,88 @@ func ShowStats(w http.ResponseWriter, r *http.Request, sst SST.PoSST, search SST
 
 // *********************************************************************
 
+func ShowOverview(w http.ResponseWriter, r *http.Request, sst SST.PoSST, search SST.SearchParameters, nptrs []SST.NodePtr, limit int) {
+
+	fmt.Println("Solver/handler: ShowOverview()")
+
+	var chapters []SST.ChCtx
+	var chap_idemp = make(map[string]int)
+
+	// Look at all chapter strings
+	
+	for _,chap_frags := range search.Finds {
+
+		finds := SST.GetChaptersByChapContext(sst,chap_frags,nil, limit)
+		
+		for chaps := range finds {
+			chap_idemp[chaps]++
+		}
+	}
+
+	// Look at all sub-chapter context strings
+	
+	finds := SST.GetChaptersByChapContext(sst,"", search.Finds, limit)
+
+	for chaps := range finds {
+		chap_idemp[chaps]++
+	}
+
+	// Now search the E.T.C.
+
+	for _,nptr := range nptrs {
+		node := SST.GetDBNodeByNodePtr(&sst,nptr)
+		chap_idemp[node.Chap]++
+	}	
+
+	// Assemble ChCtx structure
+
+	chap_list := SST.Map2List(chap_idemp)
+
+	for c := 0; c < len(chap_list); c++ {
+
+		var chap_anchor SST.ChCtx
+
+		chap_anchor.Chapter = chap_list[c]
+		chap_anchor.XYZ = SST.AssignChapterCoordinates(c, len(chap_list))
+
+		// Fractionate the (chapter,context) information
+
+		clist, adj := SST.IntersectContextParts(finds[chap_list[c]])
+
+		chap_anchor.Context = GetContextSets(clist, adj, chap_anchor.XYZ)
+
+		// Append the NPtr satellites and coords to the chapters
+
+		for n,nptr := range nptrs {
+			node := SST.GetDBNodeByNodePtr(&sst,nptr)
+			if chap_anchor.Chapter == node.Chap {
+				var child SST.Frag
+				child.Text = SST.TextExcerpt(node.L,node.S,search.Finds)
+				child.NPtr = nptr
+				child.XYZ = SST.AssignFragmentCoordinates(chap_anchor.XYZ, n, len(nptrs))
+				chap_anchor.Intent = append(chap_anchor.Intent,child)
+			}
+		}
+
+		chapters = append(chapters, chap_anchor)
+
+	}
+
+	// Package JSON
+	
+	data, _ := json.Marshal(chapters)
+	response := PackageResponse(sst, search, "FINDS", string(data))
+
+	//fmt.Println("Chap/context...", string(response))
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
+	fmt.Println("Done/sent content")
+
+}
+
+// *********************************************************************
+
 func ShowChapterContexts(w http.ResponseWriter, r *http.Request, sst SST.PoSST, search SST.SearchParameters, limit int) {
 
 	chap := search.Chapter
@@ -1015,19 +1106,19 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request, sst SST.PoSST, 
 
 //******************************************************************
 
-func GetContextSets(clist []string, adj [][]int, xyz SST.Coords) []SST.Loc {
+func GetContextSets(clist []string, adj [][]int, xyz SST.Coords) []SST.Frag {
 
-	var retvar []SST.Loc
+	var retvar []SST.Frag
 
 	for c := 0; c < len(adj); c++ {
 
-		var contextgroup SST.Loc
+		var contextgroup SST.Frag
 
 		contextgroup.Text = clist[c]
 
 		for cp := 0; cp < len(adj[c]); cp++ {
 			if adj[c][cp] > 0 {
-				contextgroup.Reln = append(contextgroup.Reln, cp)
+				contextgroup.Overlap = append(contextgroup.Overlap, cp)
 			}
 		}
 
@@ -1040,13 +1131,13 @@ func GetContextSets(clist []string, adj [][]int, xyz SST.Coords) []SST.Loc {
 
 //******************************************************************
 
-func GetContextFragments(clist []string, ooo SST.Coords) []SST.Loc {
+func GetContextFragments(clist []string, ooo SST.Coords) []SST.Frag {
 
-	var retvar []SST.Loc
+	var retvar []SST.Frag
 
 	for c := 0; c < len(clist); c++ {
 
-		var contextgroup SST.Loc
+		var contextgroup SST.Frag
 
 		contextgroup.Text = clist[c]
 		contextgroup.XYZ = SST.AssignFragmentCoordinates(ooo, c, len(clist))

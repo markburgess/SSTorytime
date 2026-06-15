@@ -54,10 +54,62 @@ func ExcludedByBindings(firstword,whole,lastword string) bool {
 			return true
 		}
 	}
-
+	
 	return false 
 }
 
+//**************************************************************
+
+func TextExcerpt(L int, S string, finds []string) string {
+
+	const small_string = 128
+	const window = 30
+	
+	if L < small_string {
+		return S
+	}
+
+	n := len(finds)
+	
+	frag_size := L / n
+
+	if n < 3 && frag_size <  small_string {
+		return S
+	}
+
+	// Need to chop up the string
+
+	start := 30
+	for off := 1; off < 5; off++ {
+		if S[start-off] == ' ' {
+			start = start-off
+		}
+	}
+	
+	retstr := S[0:start] + "..."
+		
+	for _,f := range finds {
+		pos := strings.Index(S,f)
+		if pos > window && pos < L - window {
+			b := pos-window/2
+			e := pos+window/2
+
+			for off := 1; off < window/2; off++ {
+				if S[b-off] == ' ' {
+					b = b-off
+				}
+
+				if S[e+off] == ' ' {
+					e = e+off
+				}
+			}
+			
+			retstr += S[b:e] + "..."
+		}
+	}
+
+	return retstr
+}
 
 
 //

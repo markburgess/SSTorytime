@@ -12,7 +12,6 @@ import (
 	"sort"
 	"time"
 	_ "github.com/lib/pq"
-
 )
 
 //******************************************************************
@@ -25,7 +24,7 @@ func ContextIntentAnalysis(spectrum map[string]int) ([]string,[]string) {
 	var intentional []string
 	var ambient []string
 	
-	const intent_limit = 3  // policy from research
+	const intent_limit = 2  // policy from research
 
 	// The spectrum is the number of times a DNA fragment appears in N4L classifications
 	

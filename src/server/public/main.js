@@ -366,6 +366,9 @@ switch (obj.Response)
    case "TOC":
       title = "Table of contents";
       break;
+   case "FINDS":
+      title = "Scan overview";
+      break;
    case "Arrows":
       title = "Arrow lookup";
       break;
@@ -602,8 +605,8 @@ panel = PrintNotes(panel, obj.Content.Notes);
 function DoTOCPanel(obj)
 {
 RerenderMath();
-let section = document.querySelector("main");
 
+let section = document.querySelector("main");
 let panel = document.createElement("div");
 panel.id = "main_content_panel";
 section.appendChild(panel);
@@ -649,9 +652,9 @@ for (let chpblk of obj.Content)
 
    /* if (chpblk.Context != null)
       {
-      for (let ctx of chpblk.Context)
+      for (let ctx_frag of chpblk.Context)
          {
-	 let action = "any \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx.Text);
+	 let action = "any \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx_frag.Text);
          let link = document.createElement("a");
          link.onclick = function ()
             {
@@ -662,25 +665,25 @@ for (let chpblk of obj.Content)
          link.textContent = " :: ";
 
          let sitem = document.createElement("span");
-         sitem.textContent = ctx.Text;
+         sitem.textContent = ctx_frag.Text;
          sitem.id = "toc-elem";
          link.appendChild(sitem);
 
          chapter_section.appendChild(link);
 
-         Concept(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z, action);
-         Contains(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
+         Concept(ctx_frag.XYZ.X, ctx_frag.XYZ.Y, ctx_frag.XYZ.Z, action);
+         Contains(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx_frag.XYZ.X,ctx_frag.XYZ.Y,ctx_frag.XYZ.Z);
          }
-	 }*/
+   }*/
 
    //Spacer ?
    
    if (chpblk.Intent != null)
       {
-      for (let ctx of chpblk.Intent)
+      for (let ctx_frag of chpblk.Intent)
          {
          let link = document.createElement("a");
-	 let action = "\\notes \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx.Text);
+	 let action = "\\notes \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx_frag.Text);
          link.onclick = function ()
             {
 	    sendLinkSearch(action);
@@ -688,24 +691,24 @@ for (let chpblk of obj.Content)
          link.textContent = " !! ";
 
          let sitem = document.createElement("span");
-         sitem.textContent = ctx.Text;
+         sitem.textContent = ctx_frag.Text;
          sitem.id = "toc-single";
          link.appendChild(sitem);
 
          chapter_section.appendChild(link);
 
-         Thing(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z, action);
-         Near(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
+         Thing(ctx_frag.XYZ.X, ctx_frag.XYZ.Y, ctx_frag.XYZ.Z, action);
+         Near(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx_frag.XYZ.X,ctx_frag.XYZ.Y,ctx_frag.XYZ.Z);
          }
       }
 
    if (chpblk.Ambient != null)
       {
-      for (let ctx of chpblk.Ambient)
+      for (let ctx_frag of chpblk.Ambient)
          {
          let link = document.createElement("a");
          let sitem = document.createElement("span");
-	 let action = "\\notes \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx.Text);
+	 let action = "\\notes \\context " + CtxSplice(ctx_frag.Text);
          link.onclick = function ()
             {
             sendLinkSearch(action);
@@ -713,17 +716,121 @@ for (let chpblk of obj.Content)
          link.textContent = "Ambient context:: ";
          link.id = "toc-frag";
 
-         sitem.textContent = ctx.Text;
+         sitem.textContent = ctx_frag.Text;
          sitem.id = "toc-common";
 
          link.appendChild(sitem);
          chapter_section.appendChild(link);
 
-         Thing(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z, action);
-         Near(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
+         Thing(ctx_frag.XYZ.X, ctx_frag.XYZ.Y, ctx_frag.XYZ.Z, action);
+         Near(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx_frag.XYZ.X,ctx_frag.XYZ.Y,ctx_frag.XYZ.Z);
          }
       }
 
+   panel.appendChild(chapter_section);
+   }
+}
+
+/***********************************************************/
+
+function DoScanOverview(obj)
+{
+RerenderMath();
+
+let section = document.querySelector("main");
+let panel = document.createElement("div");
+panel.id = "main_content_panel";
+section.appendChild(panel);
+
+let item = document.createElement("h3");
+item.textContent = "Where to look";
+panel.appendChild(item);
+
+CANVAS = CreateCanvas();
+DrawGrid(0, 0, 1);
+
+let counter = 0;
+
+for (let chpblk of obj.Content)
+   {
+   counter++;
+
+   // N. Section/chapter header title
+
+   let chapter_section = document.createElement("div");
+
+   chapter_section.setAttribute("class", "card-view");
+   chapter_section.id = "toc-panel";
+   chapter_section.style.display = "inline-flex";
+
+   let link = document.createElement("a");
+   let item = document.createElement("h3");
+   let action = '\\notes \\chapter ' + Quote(chpblk.Chapter);
+
+   link.onclick = function ()
+      {
+      sendLinkSearch(action);
+      };
+
+   item.textContent = counter + ". " + chpblk.Chapter;
+   link.appendChild(item);
+   chapter_section.appendChild(link);
+
+   Event(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z, chpblk.Chapter, action);
+   Label(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z, chpblk.Chapter, 12, "gray",);
+
+   // First do the context groups or ambient parts
+
+   if (chpblk.Context != null)
+      {
+      for (let ctx_frag of chpblk.Context)
+         {
+	 let action = "any \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx_frag.Text);
+         let link = document.createElement("a");
+         link.onclick = function ()
+            {
+            sendLinkSearch(action);
+            };
+
+         link.id = "toc-frag";
+         link.textContent = " :: ";
+
+         let sitem = document.createElement("span");
+         sitem.textContent = ctx_frag.Text;
+         sitem.id = "toc-elem";
+         link.appendChild(sitem);
+
+         chapter_section.appendChild(link);
+
+         Concept(ctx_frag.XYZ.X, ctx_frag.XYZ.Y, ctx_frag.XYZ.Z, action);
+         Contains(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx_frag.XYZ.X,ctx_frag.XYZ.Y,ctx_frag.XYZ.Z);
+         }
+      }
+   
+   if (chpblk.Intent != null)
+      {
+      for (let ctx_frag of chpblk.Intent)
+         {
+         let link = document.createElement("a");
+	 let action = "(" + ctx_frag.NPtr.Class + "," + ctx_frag.NPtr.CPtr + ")";
+         link.onclick = function ()
+            {
+	    sendLinkSearch(action);
+            };
+         link.textContent = " ETC ";
+
+         let sitem = document.createElement("span");
+         sitem.textContent = ctx_frag.Text;
+         sitem.id = "toc-single";
+         link.appendChild(sitem);
+
+         chapter_section.appendChild(link);
+
+         Thing(ctx_frag.XYZ.X, ctx_frag.XYZ.Y, ctx_frag.XYZ.Z, action);
+         Near(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx_frag.XYZ.X,ctx_frag.XYZ.Y,ctx_frag.XYZ.Z);
+         }
+      }
+   
    panel.appendChild(chapter_section);
    }
 }
@@ -1370,13 +1477,15 @@ for (let line = 0; line < array.length; line++)
 
 	    FetchAssets(parent,array[line][i].Name,array[line][i].Chp,array[line][i].Ctx);
 	    
-            chtxt = array[line][i].Chp + ":" + array[line][i].Ctx;
+            chtxt = '"' + array[line][i].Chp + '"' + " - Context: " + array[line][i].Ctx;
 
             if (chtxt.length > 4 && chtxt != lastchtxt)
                {
+	       let spc = document.createElement("br");
+	       parent.appendChild(spc);
                let sec = document.createElement("i");
 	       sec.id = "line-num";
-               sec.textContent = '  From: "' + chtxt + '"';
+               sec.textContent = '  From: ' + chtxt;
                parent.appendChild(sec);
                }
 
@@ -2077,6 +2186,9 @@ fetch("/searchN4L", { method: POST_METHOD, body: formData })
       case "TOC":
          DoTOCPanel(resp);
          break;
+      case "FINDS":
+         DoScanOverview(resp);
+         break;
       case "Arrows":
          DoArrowsPanel(resp);
          break;
@@ -2295,6 +2407,9 @@ fetch("/searchN4L", { method: POST_METHOD, body: formData })
       case "TOC":
          DoTOCPanel(resp);
          break;
+      case "FINDS":
+         DoScanOverview(resp);
+         break;	 
       case "Arrows":
          DoArrowsPanel(resp);
          break;

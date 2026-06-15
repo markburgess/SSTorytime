@@ -256,11 +256,12 @@ type Orbit struct {  // union, JSON transformer
 
 //******************************************************************
 
-type Loc struct {
+type Frag struct {
 
-	Text string
-	Reln []int
-	XYZ  Coords
+	Text    string
+	NPtr    NodePtr
+	Overlap []int
+	XYZ     Coords
 }
 
 //******************************************************************
@@ -268,9 +269,9 @@ type Loc struct {
 type ChCtx struct {
 	Chapter  string
 	XYZ      Coords
-	Context  []Loc
-	Intent   []Loc
-	Ambient   []Loc
+	Context  []Frag
+	Intent   []Frag
+	Ambient  []Frag
 }
 
 //******************************************************************

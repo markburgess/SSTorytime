@@ -743,7 +743,7 @@ panel.id = "main_content_panel";
 section.appendChild(panel);
 
 let item = document.createElement("h3");
-item.textContent = "Where to look";
+item.textContent = "Search fragment findings...";
 panel.appendChild(item);
 
 CANVAS = CreateCanvas();

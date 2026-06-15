@@ -77,9 +77,10 @@ func TextExcerpt(L int, S string, finds []string) string {
 		return S
 	}
 
-	// Need to chop up the string
+	// Need to chop up the string into samples ...
 
 	start := 30
+
 	for off := 1; off < 5; off++ {
 		if S[start-off] == ' ' {
 			start = start-off
@@ -94,12 +95,12 @@ func TextExcerpt(L int, S string, finds []string) string {
 			b := pos-window/2
 			e := pos+window/2
 
-			for off := 1; off < window/2; off++ {
-				if S[b-off] == ' ' {
+			for off := 1; off < window/2-1; off++ {
+				if b-off > window/2 && S[b-off] == ' ' {
 					b = b-off
 				}
 
-				if S[e+off] == ' ' {
+				if e+off < L && S[e+off] == ' ' {
 					e = e+off
 				}
 			}

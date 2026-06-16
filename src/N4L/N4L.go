@@ -843,6 +843,8 @@ func CompleteSequences(sst *SST.PoSST,node SST.Node) {
 			var link SST.Link
 			link.Arr = cl.Result
 			link.Wgt = 1
+			link.Ctx = node.I[SST.ST_ZERO+SST.LEADSTO][0].Ctx // infer from default node context
+
 			arrname := sst.ARROW_DIRECTORY[link.Arr].Short
 
 			m := fmt.Sprintf("   Complete: %s -(%s)-> %s",t1,arrname,t2)

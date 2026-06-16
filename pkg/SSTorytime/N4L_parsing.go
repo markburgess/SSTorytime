@@ -433,7 +433,7 @@ func MergeContextLists(sst *PoSST,one,two []string) ContextPtr {
 		ctxptr = sst.CONTEXT_TOP
 		sst.CONTEXT_TOP++
 	}
-
+	
 	return ctxptr
 }
 

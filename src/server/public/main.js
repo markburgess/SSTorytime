@@ -1470,11 +1470,6 @@ for (let line = 0; line < array.length; line++)
             // New line has possble new chap/context
             lastline = line;
 
-            let line_no = document.createElement("span");
-	    line_no.id = "line-num";
-            line_no.textContent = "At line " + array[line][i].Line;
-            parent.appendChild(line_no);
-
 	    FetchAssets(parent,array[line][i].Name,array[line][i].Chp,array[line][i].Ctx);
 	    
             chtxt = '"' + array[line][i].Chp + '"' + " - Context: " + array[line][i].Ctx;
@@ -1489,7 +1484,13 @@ for (let line = 0; line < array.length; line++)
                parent.appendChild(sec);
                }
 
-            lastchtxt = chtxt;
+
+            let line_no = document.createElement("p");
+	    line_no.id = "line-num";
+            line_no.textContent = "At line " + array[line][i].Line;
+            parent.appendChild(line_no);
+
+	    lastchtxt = chtxt;
 
             child = document.createElement("div");
             child.className = "notes-view";

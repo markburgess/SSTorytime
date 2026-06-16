@@ -269,7 +269,7 @@ func AssembleSatellitesBySTtype(sst *PoSST,stindex int,satellite []Orbit,sweep [
 					if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
 						break
 					}
-					
+
 					nt.Arrow = arrow.Long
 					nt.STindex = arrow.STAindex
 					nt.Dst = next.Dst

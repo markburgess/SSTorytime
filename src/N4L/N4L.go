@@ -1716,6 +1716,8 @@ func IdempAddLink(sst *SST.PoSST,from string, frptr SST.NodePtr, link SST.Link,t
 
 	invlink := GetLinkArrowByName(sst,sst.ARROW_DIRECTORY[sst.INVERSE_ARROWS[link.Arr]].Short)
 
+	invlink.Ctx = link.Ctx
+
 	SST.AppendLinkToNode(sst,toptr,invlink,frptr)
 
 }

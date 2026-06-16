@@ -370,6 +370,11 @@ func GetDBNodeByNodePtr(sst *PoSST,db_nptr NodePtr) Node {
 			for _,val := range matches {
 				fmt.Println(" - Value: ",val)
 			}
+			
+			if !cached {
+				CacheNode(sst,matches[0])
+			}
+			
 			fmt.Println("Selected first match: ",matches[0],"\n")
 		}
 
@@ -381,9 +386,6 @@ func GetDBNodeByNodePtr(sst *PoSST,db_nptr NodePtr) Node {
 
 		row.Close()
 
-		if !cached {
-			CacheNode(sst,matches[0])
-		}
 	}
 
 	n.NPtr = db_nptr

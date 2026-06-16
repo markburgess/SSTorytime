@@ -458,8 +458,8 @@ DrawGrid(0, 0, 1);
 
 for (let head_nptr of obj.Content)
    {
-   let nclass = head_nptr.NClass;
-   let ncptr = head_nptr.NCPtr;
+   let nclass = head_nptr.Class;
+   let ncptr = head_nptr.CPtr;
 
    let card = document.createElement("div");
    card.setAttribute("class", "card-view");
@@ -1221,7 +1221,7 @@ let thisy;
 let thisz;
 let str = array[path][i].Name;
 let ncptr = array[path][i].NPtr.CPtr;
-let nclass = array[path][i].NPtr.NClass;
+let nclass = array[path][i].NPtr.Class;
 let xyz = array[path][i].XYZ;
 
 thisx = xyz.X;

@@ -374,22 +374,22 @@ func GetDBNodeByNodePtr(sst *PoSST,db_nptr NodePtr) Node {
 			if !cached {
 				CacheNode(sst,matches[0])
 			}
-			
+
+			n = matches[0]
 			fmt.Println("Selected first match: ",matches[0],"\n")
 		}
 
 		// Expand any dynamic inbuilt functions
 
 		if strings.HasPrefix(n.S,"Dynamic: ") {
-			matches[0].S = ExpandDynamicFunctions(matches[0].S)
+			n.S = ExpandDynamicFunctions(n.S)
 		}
 
 		row.Close()
-
 	}
-
+	
 	n.NPtr = db_nptr
-	return matches[0]
+	return n
 }
 
 // **************************************************************************

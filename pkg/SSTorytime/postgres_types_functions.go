@@ -87,6 +87,12 @@ const CONTEXT_DIRECTORY_TABLE = "CREATE TABLE IF NOT EXISTS ContextDirectory " +
 	"CtxPtr  int primary key  " +
 	")"
 
+const BOOKMARK_TABLE = "CREATE TABLE IF NOT EXISTS Bookmarks " +
+	"(    " +
+	"Query text,  " +
+	"Bookmark text" +
+	")"
+
 const APPOINTMENT_TYPE = "CREATE TYPE Appointment AS  " +
 	"(                    " +
 	"Arr    int," +
@@ -96,7 +102,6 @@ const APPOINTMENT_TYPE = "CREATE TYPE Appointment AS  " +
 	"NTo    NodePtr," +
 	"NFrom  NodePtr[]" +
 	")"
-
 
 // **************************************************************************
 

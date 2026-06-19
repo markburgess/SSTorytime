@@ -251,6 +251,7 @@ func Configure(sst PoSST,load_arrows bool) {
 		sst.DB.QueryRow("drop table ArrowInverses")
 		sst.DB.QueryRow("drop table ContextDirectory")
 		sst.DB.QueryRow("drop table LastSeen")
+		sst.DB.QueryRow("drop table Bookmarks")
 
 	}
 
@@ -274,6 +275,11 @@ func Configure(sst PoSST,load_arrows bool) {
 	}
 
 	if !CreateTable(sst,CONTEXT_DIRECTORY_TABLE) {
+		fmt.Println("Unable to create table as, ",CONTEXT_DIRECTORY_TABLE)
+		os.Exit(-1)
+	}
+
+	if !CreateTable(sst,BOOKMARK_TABLE) {
 		fmt.Println("Unable to create table as, ",CONTEXT_DIRECTORY_TABLE)
 		os.Exit(-1)
 	}

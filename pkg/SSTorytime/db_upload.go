@@ -89,6 +89,21 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 }
 
 // **************************************************************************
+
+func BookmarksToDB(sst PoSST,marks map[string]string) {
+
+	qstr := ""
+	
+	for b, q := range marks {
+	
+		qstr += fmt.Sprintf("INSERT INTO Bookmarks (Bookmark,Query) VALUES ('%s','%s');\n",b,q)
+	}
+
+	DBCommit(&sst,qstr)
+}
+
+
+// **************************************************************************
 //  Uploading memory cache to database
 // **************************************************************************
 

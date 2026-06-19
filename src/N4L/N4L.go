@@ -302,6 +302,9 @@ func Upload(sst SST.PoSST) {
 	} else {
 		fmt.Println("\n\nUploading nodes..")
 		SST.GraphToDB(sst,true)
+		marks := GetBookMarks()
+		fmt.Println("\n\nUploading bookmarks..")
+		SST.BookmarksToDB(sst,marks)
 	}
 }
 
@@ -1678,6 +1681,51 @@ func StoreAlias(name string) {
 	}
 }
 
+//**************************************************************
+
+func GetBookMarks() map[string]string {
+
+	marks := make(map[string]string)
+	
+	search_paths := []string{"./SSTconfig","../SSTconfig","../../SSTconfig"}
+
+	for p := range search_paths {
+
+		filename := fmt.Sprintf("%s/bookmarks.sst",search_paths[p]);
+
+		info, err := os.Stat(filename)
+		
+		if err == nil && !info.IsDir() {
+			
+			file, err := os.Open(filename)
+
+			if err != nil {
+				fmt.Printf("Error opening file: %s", err)
+				continue
+			}
+
+			defer file.Close()
+			scanner := bufio.NewScanner(file)
+
+			for scanner.Scan() {
+				line := scanner.Text()
+
+				const silly = 10
+				
+				if len(line) > silly {
+					s := strings.Split(line,":")
+					key := strings.TrimSpace(s[0])
+					value := strings.TrimSpace(s[1])
+					if len(key) > 0 && len(value) > 0 {
+						marks[key] = value
+					}
+				}
+			}
+		}
+	}
+
+	return marks
+}
 
 //**************************************************************
 // Memory representation

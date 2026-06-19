@@ -216,7 +216,7 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 			UpdateLastSawNPtr(sst,w,r,nclass,ncptr,chapcontext)
 			return
 		}
-
+		
 		name = SST.CheckNPtrQuery(name,nclass,ncptr)
 		name = SST.CheckRemindQuery(name)
 		name = SST.CheckHelpQuery(name)
@@ -503,6 +503,11 @@ func HandleSearch(sst SST.PoSST,search SST.SearchParameters, line string, w http
 
 	var nodeptrs, leftptrs, rightptrs []SST.NodePtr
 
+	if (search.Bookmarks) {
+		HandleBookmarks(w,r,sst,search)
+		return
+	}
+	
 	if (from || to) && !pagenr && !sequence {
 		leftptrs = SST.SolveNodePtrs(sst, search.From, search, arrowptrs, maxlimit)
 		rightptrs = SST.SolveNodePtrs(sst, search.To, search, arrowptrs, maxlimit)
@@ -621,6 +626,22 @@ func HandleSearch(sst SST.PoSST,search SST.SearchParameters, line string, w http
 	w.Write(response)
 
 	fmt.Println("Didn't find a solver")
+}
+
+// *********************************************************************
+
+func HandleBookmarks(w http.ResponseWriter, r *http.Request, sst SST.PoSST, search SST.SearchParameters) {
+
+	marks := SST.GetBookmarksFromDB(sst)
+	
+	data, _ := json.Marshal(marks)
+	response := PackageResponse(sst,search,"Bookmarks",string(data))
+
+	//fmt.Println("REPLY:\n",string(response))
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
+	fmt.Println("Reply Bookmarks sent")
 }
 
 // *********************************************************************

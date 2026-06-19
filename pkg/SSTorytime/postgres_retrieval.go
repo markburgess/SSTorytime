@@ -62,6 +62,73 @@ func SolveNodePtrs(sst PoSST,nodenames []string,search SearchParameters,arr []Ar
 
 //******************************************************************
 
+func GetBookmarksFromDB(sst PoSST) []Bookmark {
+
+	// Order by L to favour exact matches
+
+	qstr := fmt.Sprintf("SELECT Bookmark,Query FROM Bookmarks;")
+
+	row, err := sst.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("QUERY BegBookmarksFromDB Failed",err,qstr)
+	}
+
+	var b Bookmark
+	var chaps []string
+	var sorts = make(map[string][]Bookmark)
+	var retval []Bookmark
+
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&b.Bookmark,&b.Query)
+
+			line := strings.Split(b.Bookmark,",")
+
+			if len(line) > 1 {
+				var bp Bookmark
+				chapter := strings.TrimSpace(line[0])
+				section := strings.TrimSpace(line[1])
+				bp.Bookmark = section
+				bp.Query = b.Query
+				sorts[chapter] = append(sorts[chapter],bp)
+			} else {
+				sorts["misc"] = append(sorts["misc"],b)
+			}
+		}
+		
+		row.Close()
+
+		for key := range sorts {
+			chaps = append(chaps,key)
+		}
+
+		sort.Strings(chaps)
+		
+		for _,k := range chaps {
+
+			// Empty query is title
+
+			var bp Bookmark
+			bp.Bookmark = k
+			bp.Query = ""
+			retval = append(retval,bp)
+			
+			sort.Slice(sorts[k], func(i, j int) bool {
+				return sorts[k][i].Bookmark < sorts[k][j].Bookmark
+			})
+			
+			for _,sorted := range sorts[k] {
+				retval = append(retval,sorted)
+			}
+		}
+	}
+
+	return retval
+}
+
+//******************************************************************
+
 func GetDBNodePtrMatchingName(sst PoSST,name,chap string) []NodePtr {
 
 	// simplified, retain for compatibility

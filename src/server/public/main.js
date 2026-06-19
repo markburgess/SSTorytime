@@ -326,10 +326,13 @@ header.innerHTML = "";
 let titlebar = document.createElement("h2");
 titlebar.id = "topmost_page_title";
 
-let title = "app";
+let title = "Semantic Spacetime";
 
 switch (obj.Response)
    {
+   case "Bookmarks":
+      console.log("OBJ",obj);
+      break;
    case "Orbits":
       if (obj.Content != null && obj.Content[0] != null)
          {
@@ -377,6 +380,7 @@ switch (obj.Response)
      title = obj.Content;
      break;
    default:
+      console.log("OBJ",obj);
       title = "SSToryGraph browser";
       break;
    }
@@ -405,11 +409,41 @@ header.appendChild(ctxbar);
 
 /***********************************************************/
 
-function ShortCuts()
+function DoBookMarkPanel(obj)
 {
+let section = document.querySelector("main");
+let panel = document.createElement("i");
+panel.id = "main_content_panel";
+section.appendChild(panel);
+
+if (obj == null)
+   {
+   return;
+   }
+
 CANVAS = CreateCanvas();
 DrawGrid(0, 0, 1);
 DrawWelcomeImage();
+
+if (obj.Content == null || obj.Content.length == 0)
+   {
+   panel.textContent = "No result";
+   return;
+   }
+
+var subsection;
+ 
+for (let shortcut of obj.Content)
+   {
+   if (shortcut.Query == "")
+      {
+      subsection = ShowBookMark(panel,shortcut);
+      }
+   else
+      {
+      ShowShortCut(subsection,shortcut);
+      }
+   }
 }
 
 /***********************************************************/
@@ -1590,6 +1624,48 @@ return parent;
 
 /***********************************************************/
 
+function ShowBookMark(panel,book)
+{
+let child = document.createElement("div");
+child.className = "card-view";
+child.id = "orbit_column_1of3";
+panel.appendChild(child);
+
+let booklink = document.createElement("a");
+booklink.textContent = book.Bookmark;
+booklink.id = "bookmark";
+booklink.onclick = function ()
+   {
+   sendLinkSearch(book.Query);
+   };
+
+child.appendChild(booklink);
+return child;
+}
+
+/***********************************************************/
+
+function ShowShortCut(panel,book)
+{
+let child = document.createElement("div");
+child.className = "card-view";
+child.id = "orbit_column_1of3";
+panel.appendChild(child);
+
+let booklink = document.createElement("a");
+booklink.textContent = book.Bookmark;
+booklink.id = "bookmark";
+booklink.onclick = function ()
+   {
+   sendLinkSearch(book.Query);
+   };
+
+child.appendChild(booklink);
+return child;
+}
+
+/***********************************************************/
+
 function ShowNodeEvent(panel,event,counter,direction,skiparrow,anchortag)
 {
 let child = document.createElement("div");
@@ -2178,6 +2254,9 @@ fetch("/searchN4L", { method: POST_METHOD, body: formData })
 
    switch (resp.Response)
       {
+      case "Bookmarks":
+         DoBookMarkPanel(resp);
+         break;
       case "Orbits":
          DoOrbitPanel(resp);
          break;
@@ -2399,6 +2478,9 @@ fetch("/searchN4L", { method: POST_METHOD, body: formData })
 
    switch (resp.Response)
       {
+      case "Bookmarks":
+         DoBookMarkPanel(resp);
+         break;
       case "Orbits":
          DoOrbitPanel(resp);
          break;
@@ -2711,8 +2793,6 @@ Label(-x, -y, 0, bwd, size, colour);
 
 function DrawWelcomeImage()
 {
-DrawGrid(0, 0, 1);
-return;
 let orbit = 0.5;
 let x0 = 0;
 let y0 = 0;
@@ -2728,7 +2808,7 @@ for (let z = 1; z > -1.0; z -= orbit)
       {
       let x = orbit * Math.cos(a);
       let y = orbit * Math.sin(a);
-      Concept(x, y, z, 6);
+      Thing(x, y, z, 6);
       Expresses(0, 0, z, x, y, z);
       }
    }

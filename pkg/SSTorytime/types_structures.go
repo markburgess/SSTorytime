@@ -266,6 +266,13 @@ type Frag struct {
 
 //******************************************************************
 
+type Bookmark struct {
+	Bookmark  string
+	Query     string
+}
+
+//******************************************************************
+
 type ChCtx struct {
 	Chapter  string
 	XYZ      Coords

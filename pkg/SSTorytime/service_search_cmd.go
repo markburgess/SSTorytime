@@ -14,25 +14,25 @@ import (
 
 )
 
-
 // ******************************************************************
 
 type SearchParameters struct {
 
-	Name     []string
-	From     []string
-	To       []string
-	Chapter  string
-	Context  []string
-	Arrows   []string
-	PageNr   int
-	Range    int
-	Min      []int
-	Max      []int
-	Finds    []string
-	Sequence bool
-	Stats    bool
-	Horizon  int
+	Name      []string
+	From      []string
+	To        []string
+	Chapter   string
+	Context   []string
+	Arrows    []string
+	PageNr    int
+	Range     int
+	Min       []int
+	Max       []int
+	Finds     []string
+	Sequence  bool
+	Stats     bool
+	Bookmarks bool
+	Horizon   int
 }
 
 // ******************************************************************
@@ -48,7 +48,6 @@ type STM struct {
 // ******************************************************************
 
 const (
-
 	CMD_ON = "\\on"
 	CMD_ON_2 = "on"    // _2 are too short to be intentional
 	CMD_FOR = "\\for"  // so double these for "smarter" accident avoidance
@@ -88,6 +87,7 @@ const (
 	CMD_REMIND = "\\remind"
 	CMD_HELP = "\\help"
 	CMD_HELP_2 = "help"
+	CMD_BOOKMARKS = "\\bookmarks"
 	// overview
 	CMD_FINDS = "\\find"
 	CMD_ABOUT = "\\about"
@@ -127,6 +127,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 		CMD_REMIND,CMD_NEVER,CMD_NEW,
 		CMD_HELP,CMD_HELP_2,
 		CMD_FINDS,CMD_ABOUT,
+		CMD_BOOKMARKS,
         }
 	
 	// parentheses are reserved for unaccenting
@@ -203,7 +204,10 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 		for p := 0; p < lenp; p++ {
 
 			switch SomethingLike(cmd_parts[c][p],keywords) {
-
+			case CMD_BOOKMARKS:
+				param.Bookmarks = true;
+				continue
+				
 			case CMD_STATS, CMD_STATS_2:
 				param.Stats = true
 				continue

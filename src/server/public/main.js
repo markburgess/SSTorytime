@@ -405,6 +405,15 @@ header.appendChild(ctxbar);
 
 /***********************************************************/
 
+function ShortCuts()
+{
+CANVAS = CreateCanvas();
+DrawGrid(0, 0, 1);
+DrawWelcomeImage();
+}
+
+/***********************************************************/
+
 function DoOrbitPanel(obj)
 {
 RerenderMath();

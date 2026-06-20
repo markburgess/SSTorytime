@@ -43,7 +43,7 @@ Science, Moon recession : \notes \chapter moon
 </pre>
 The bookmarks are updated whenever you use `N4L -wipe -u` to reload the database.
 If you start the bookmark with a comman separated section, the entries will be collected
-into a group.
+into a group. You can then click on the entries to see the result of the search (as if you had typed it).
 You can see the bookmark listing by searching for
 <pre>
  \bookmarks

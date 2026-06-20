@@ -26,6 +26,29 @@ You can quote a phrase:
  \find "any bonus" agreement
 </pre>
 
+## Bookmarked searches
+
+Constructing a search expression each time, for a complex extraction can be tedious. You can
+create a set of links to search expressions to select sections of data by creating
+a `SSTconfig/bookmarks.sst` file in the format
+<pre>
+Bookmark entry : search expression.
+</pre>
+e.g.
+<pre>
+Chinese, Elevators  : \notes \chapter "chinese language" \context  elevator
+Chinese, Numbers  : \notes \chapter "chinese language" \context  number
+Science, Astronomy poem : \notes \chapter "astronomy"
+Science, Moon recession : \notes \chapter moon
+</pre>
+The bookmarks are updated whenever you use `N4L -wipe -u` to reload the database.
+If you start the bookmark with a comman separated section, the entries will be collected
+into a group.
+You can see the bookmark listing by searching for
+<pre>
+ \bookmarks
+</pre>
+
 ## Word from text search
 
 * Search for a precise word

@@ -331,7 +331,7 @@ let title = "Semantic Spacetime";
 switch (obj.Response)
    {
    case "Bookmarks":
-      console.log("OBJ",obj);
+      title = "Bookmarked Semantic Sections";
       break;
    case "Orbits":
       if (obj.Content != null && obj.Content[0] != null)
@@ -413,7 +413,7 @@ function DoBookMarkPanel(obj)
 {
 let section = document.querySelector("main");
 let panel = document.createElement("i");
-panel.id = "main_content_panel";
+panel.id = "bookmark-panel";
 section.appendChild(panel);
 
 if (obj == null)
@@ -1628,7 +1628,7 @@ function ShowBookMark(panel,book)
 {
 let child = document.createElement("div");
 child.className = "card-view";
-child.id = "orbit_column_1of3";
+child.id = "bookmark-start";
 panel.appendChild(child);
 
 let booklink = document.createElement("h4");
@@ -2789,24 +2789,43 @@ Label(-x, -y, 0, bwd, size, colour);
 
 function DrawWelcomeImage()
 {
-let orbit = 0.5;
-let x0 = 0;
-let y0 = 0;
-
-for (let z = 1; z > -1.0; z -= orbit)
+// Make an attractive teaser..
+let scale = 0.1
+let xs = scale * 0.02;
+let xr = scale * 0.3;
+let orbit = xs+Math.random(xs);
+let x0 = Math.random(xr)-xr;
+let y0 = Math.random(xr)-xr;
+let lastx = x0;
+let lasty = y0;
+let lastz = 1;
+let step = 0.5;
+ 
+for (let z = 1; z >= -1.0; z -= step)
    {
-   LeadsTo(x0, y0, z, 0, 0, z + orbit);
+   x0 = Math.random(xr)-xr;
+   y0 = Math.random(xr)-xr;
+   orbit = 0.6*Math.random(xs);
+
+   if (z < 1)
+      {
+      LeadsTo(x0, y0, z, lastx, lasty, lastz);
+      }
    Event(x0, y0, z, 10,"welcome");
 
-   Label(x0, y0, z, "SST event " + z, 16, "darkblue");
+   Label(x0, y0, z, "SST search slice ", 16, "darkblue");
 
-   for (let a = 0; a < 2 * Math.PI; a += Math.PI / 6)
+   for (let a = 0; a < 2 * Math.PI; a += Math.PI / 12)
       {
-      let x = orbit * Math.cos(a);
-      let y = orbit * Math.sin(a);
+      let x = x0 + orbit * Math.cos(a);
+      let y = y0 + orbit * Math.sin(a);
       Thing(x, y, z, 6);
-      Expresses(0, 0, z, x, y, z);
+      Expresses(x0, y0, z, x, y, z);
       }
+
+   lastx = x0;
+   lasty = y0;
+   lastz = z;
    }
 }
 
@@ -2974,7 +2993,7 @@ return yt;
 function LeadsTo(x0, y0, z0, xp, yp, zp)
 {
 //Arrow(x0,y0,z0,xp,yp,zp,"rgba(0,250,0,1)",3);
-Arrow(x0, y0, z0, xp, yp, zp, LEADSTO_COLOUR, 3 * mob);
+Arrow(x0, y0, z0, xp, yp, zp, LEADSTO_COLOUR, 4 * mob);
 }
 
 // *************************************************

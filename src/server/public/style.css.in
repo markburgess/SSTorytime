@@ -105,6 +105,7 @@ nav {
   }
 }
 
+
 a {
   position: relative;
   transition-property: transform, translate, scale, rotate;
@@ -450,7 +451,6 @@ img {
 #bookmark-link {
   padding-inline: 0ch;
   color: TOC_COLOUR;
-  margin-top: 0px;
   margin-bottom: 0px;
   margin-left: 10ch;
 }

@@ -1,16 +1,19 @@
 
 Chinese, Shopping : \notes \chapter "chinese language" \context  shop
 Chinese, Colours  : \notes \chapter "chinese language" \context  colour
-Chinese, Colours  : \notes \chapter "chinese language" \context  restaurant
-Chinese, Colours  : \notes \chapter "chinese language" \context  come,go
-Chinese, Colours  : \notes \chapter "chinese language" \context  food
-Chinese, Colours  : \notes \chapter "chinese language" \context  travel
-Chinese, Colours  : \notes \chapter "chinese language" \context  airport,flying
-Chinese, Colours  : \notes \chapter "chinese language" \context  train
-Chinese, Colours  : \notes \chapter "chinese language" \context  date
-Chinese, Colours  : \notes \chapter "chinese language" \context  conjugations
-Chinese, Colours  : \notes \chapter "chinese language" \context  hotel
+Chinese, Restaurant  : \notes \chapter "chinese language" \context  restaurant
+Chinese, Coming and going  : \notes \chapter "chinese language" \context  come,go
+Chinese, Foods  : \notes \chapter "chinese language" \context "food types"
+Chinese, Food ordering scene  : \notes \chapter "chinese language" \context  food
 
+Chinese, Travel  : \notes \chapter "chinese language" \context  travel
+Chinese, Airport/Flying  : \notes \chapter "chinese language" \context  airport,flying
+Chinese, Trains  : \notes \chapter "chinese language" \context  train
+Chinese, Dates and times : \notes \chapter "chinese language" \context  date
+Chinese, Conjugations  : \notes \chapter "chinese language" \context  conjugations
+Chinese, Hotel  : \notes \chapter "chinese language" \context  hotel
+Chinese, Elevators  : \notes \chapter "chinese language" \context  elevator
+Chinese, Numbers  : \notes \chapter "chinese language" \context  number
 
 Science, Astronomy poem : \notes \chapter "astronomy"
 Science, Moon recession : \notes \chapter moon

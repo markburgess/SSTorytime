@@ -447,6 +447,14 @@ img {
   line-height: 150%;
 }
 
+#bookmark-link {
+  padding-inline: 0ch;
+  color: var(--pink-4);
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-left: 10ch;
+}
+
 #toc-panel {
   flex-direction: row;
   flex-wrap: wrap;

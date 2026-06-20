@@ -86,9 +86,10 @@ func GetBookmarksFromDB(sst PoSST) []Bookmark {
 			line := strings.Split(b.Bookmark,",")
 
 			if len(line) > 1 {
+				// Chop chapter from line
 				var bp Bookmark
 				chapter := strings.TrimSpace(line[0])
-				section := strings.TrimSpace(line[1])
+				section := strings.TrimSpace(b.Bookmark[len(line[0])+1:])
 				bp.Bookmark = section
 				bp.Query = b.Query
 				sorts[chapter] = append(sorts[chapter],bp)

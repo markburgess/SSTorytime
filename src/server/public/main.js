@@ -1631,13 +1631,9 @@ child.className = "card-view";
 child.id = "orbit_column_1of3";
 panel.appendChild(child);
 
-let booklink = document.createElement("a");
+let booklink = document.createElement("h4");
 booklink.textContent = book.Bookmark;
-booklink.id = "bookmark";
-booklink.onclick = function ()
-   {
-   sendLinkSearch(book.Query);
-   };
+booklink.id = "bookmark-section";
 
 child.appendChild(booklink);
 return child;
@@ -1647,14 +1643,14 @@ return child;
 
 function ShowShortCut(panel,book)
 {
-let child = document.createElement("div");
-child.className = "card-view";
-child.id = "orbit_column_1of3";
+let child = document.createElement("p");
+child.className = "bookmark";
+child.id = "bookmark";
 panel.appendChild(child);
 
 let booklink = document.createElement("a");
 booklink.textContent = book.Bookmark;
-booklink.id = "bookmark";
+booklink.id = "bookmark-link";
 booklink.onclick = function ()
    {
    sendLinkSearch(book.Query);

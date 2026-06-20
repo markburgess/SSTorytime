@@ -156,7 +156,7 @@ func CheckAltCaps(sst *PoSST,event Node,ErrFunc func(string)) {
 	case LT128:
 		for key := range sst.NODE_DIRECTORY.LT128 {
 			
-			keyNPtr.Class = N3GRAM
+			keyNPtr.Class = LT128
 			keyNPtr.CPtr = sst.NODE_DIRECTORY.LT128[key]
 			n := sst.NODE_DIRECTORY.LT128directory[keyNPtr.CPtr]
 			

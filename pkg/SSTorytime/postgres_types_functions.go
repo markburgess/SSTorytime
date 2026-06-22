@@ -843,6 +843,8 @@ func DefineStoredFunctions(sst PoSST) {
 		"   item text;\n" +
 		"   item_db text;\n" +
 		"   item_us text;\n" +
+		"   partial text;\n" +
+		"   diff int;\n" +
 		"   ref text;\n" +
 		"   c text;\n"+
 		"BEGIN \n" +
@@ -927,17 +929,19 @@ func DefineStoredFunctions(sst PoSST) {
 
 		// if still not match, check any left overs, client AND matches are still unresolved
 
-		/* DEPRECATE THIS FOR NOW, AS IT MATCHES TOO MUCH ... WILL THIS CAUSE REGRESSIONS?
+		/* DEPRECATED UNRELIABLE
 		"FOREACH ref IN ARRAY or_list LOOP\n" +
 		    // now we can look at substring partial matches
 		"   FOREACH c IN ARRAY client LOOP\n"+
-		"      pattern := Format('[^.]*%s[^.]*',c);\n" +
-		       // substring too greedy if there is a .
-		"      IF substring(ref,pattern) IS NOT NULL THEN \n" +
+		"      pattern := Format('%s[^.]*',c);\n" +
+		"      partial := substring(ref,pattern);\n" +
+		"      diff := length(partial) - length(c);\n" +
+		// Only allow significant matches, since this is approx
+		"      IF partial IS NOT NULL AND diff >= 0 AND diff < 3 THEN \n" +
 	        "         return true;\n" +
 		"      END IF;\n" +
 		"   END LOOP;\n"+
-		"END LOOP;\n" +*/
+		"END LOOP;\n" + */
 
 		"RETURN false;\n" +
 

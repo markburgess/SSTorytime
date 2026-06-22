@@ -22,6 +22,7 @@ Chinese, Negative : \notes \chapter "chinese language" \context negative, no
 Chinese, Shi : \notes \chapter "chinese language" \context shi
 Chinese, AND / OR : \notes \chapter "chinese language" \context and, |or|
 Chinese, If/Whether : \notes \chapter "chinese language" \context whether
+Chinese, Derived Compound Words: \notes \chapter "chinese language" \context "compound words,root words,word connections"
 
 Science, Astronomy poem : \notes \chapter "astronomy"
 Science, Moon recession : \notes \chapter moon

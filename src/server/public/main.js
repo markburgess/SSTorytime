@@ -421,10 +421,6 @@ if (obj == null)
    return;
    }
 
-CANVAS = CreateCanvas();
-DrawGrid(0, 0, 1);
-DrawWelcomeImage();
-
 if (obj.Content == null || obj.Content.length == 0)
    {
    panel.textContent = "No result";
@@ -432,18 +428,24 @@ if (obj.Content == null || obj.Content.length == 0)
    }
 
 var subsection;
+var chapters = [];
  
 for (let shortcut of obj.Content)
    {
    if (shortcut.Query == "")
       {
       subsection = ShowBookMark(panel,shortcut);
+      chapters.push(shortcut.Bookmark);
       }
    else
       {
       ShowShortCut(subsection,shortcut);
       }
    }
+
+CANVAS = CreateCanvas();
+DrawGrid(0, 0, 1);
+DrawVisual(chapters);
 }
 
 /***********************************************************/
@@ -2787,9 +2789,9 @@ Label(-x, -y, 0, bwd, size, colour);
 /* GRAPHICS PANE                                           */
 /***********************************************************/
 
-function DrawWelcomeImage()
+function DrawVisual(chapters)
 {
-// Make an attractive teaser..
+// Make an attractive teaser.. not an accurate representation
 let scale = 0.1
 let xs = scale * 0.02;
 let xr = scale * 0.3;
@@ -2800,7 +2802,9 @@ let lastx = x0;
 let lasty = y0;
 let lastz = 1;
 let step = 0.5;
- 
+let each = 0;
+let steps = 2.0 / step;
+
 for (let z = 1; z >= -1.0; z -= step)
    {
    x0 = Math.random(xr)-xr;
@@ -2813,7 +2817,12 @@ for (let z = 1; z >= -1.0; z -= step)
       }
    Event(x0, y0, z, 10,"welcome");
 
-   Label(x0, y0, z, "SST search slice ", 16, "darkblue");
+   // Reverse label order as countdown
+   if (each > steps - chapters.length)
+      {
+      console.log("STEP",each,steps-chapters.length);
+      Label(x0, y0, z, chapters[steps - each], 16, "darkblue");
+      }
 
    for (let a = 0; a < 2 * Math.PI; a += Math.PI / 12)
       {
@@ -2826,6 +2835,7 @@ for (let z = 1; z >= -1.0; z -= step)
    lastx = x0;
    lasty = y0;
    lastz = z;
+   each++;
    }
 }
 

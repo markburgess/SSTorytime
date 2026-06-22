@@ -1,11 +1,13 @@
-
+Chinese, Big / Da derived words : \notes \chapter "chinese language" \context big
+Chinese, Same / Tong derived words: \notes \chapter "chinese language" \context Same
 Chinese, Shopping : \notes \chapter "chinese language" \context  shop
 Chinese, Colours  : \notes \chapter "chinese language" \context  colour
 Chinese, Restaurant  : \notes \chapter "chinese language" \context  restaurant
 Chinese, Coming and going  : \notes \chapter "chinese language" \context  come,go
 Chinese, Foods  : \notes \chapter "chinese language" \context "food types"
 Chinese, Food ordering scene  : \notes \chapter "chinese language" \context  food
-
+Chinese, Idiom  : \notes \chapter "chinese language" \context idiom,phrase
+Chinese, Phone  : \notes \chapter "chinese language" \context phone
 Chinese, Travel  : \notes \chapter "chinese language" \context  travel
 Chinese, Airport/Flying  : \notes \chapter "chinese language" \context  airport,flying
 Chinese, Trains  : \notes \chapter "chinese language" \context  train
@@ -14,6 +16,12 @@ Chinese, Conjugations  : \notes \chapter "chinese language" \context  conjugatio
 Chinese, Hotel  : \notes \chapter "chinese language" \context  hotel
 Chinese, Elevators  : \notes \chapter "chinese language" \context  elevator
 Chinese, Numbers  : \notes \chapter "chinese language" \context  number
+Chinese, Grammar  : \notes \chapter "chinese language" \context grammar
+Chinese, Very,really : \notes \chapter "chinese language" \context really
+Chinese, Negative : \notes \chapter "chinese language" \context negative, no
+Chinese, Shi : \notes \chapter "chinese language" \context shi
+Chinese, AND / OR : \notes \chapter "chinese language" \context and, or
+Chinese, If/Whether : \notes \chapter "chinese language" \context whether
 
 Science, Astronomy poem : \notes \chapter "astronomy"
 Science, Moon recession : \notes \chapter moon

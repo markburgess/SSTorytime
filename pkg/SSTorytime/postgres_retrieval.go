@@ -110,8 +110,15 @@ func GetBookmarksFromDB(sst PoSST) []Bookmark {
 
 			// Empty query is title
 
+			const dunbar_limit = 30
+			var note_added string = ""
+
+			if len(sorts[k]) > dunbar_limit {
+				note_added = " ... (list exceeds Dunbar limit for learning)"
+			}
+
 			var bp Bookmark
-			bp.Bookmark = k
+			bp.Bookmark = k + note_added
 			bp.Query = ""
 			retval = append(retval,bp)
 			

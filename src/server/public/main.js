@@ -370,7 +370,7 @@ switch (obj.Response)
       title = "Table of contents";
       break;
    case "FINDS":
-      title = "Scan overview";
+      title = "Breadth Scan Overview";
       break;
    case "Arrows":
       title = "Arrow lookup";

@@ -926,6 +926,8 @@ func DefineStoredFunctions(sst PoSST) {
 		"END IF;\n"+
 
 		// if still not match, check any left overs, client AND matches are still unresolved
+
+		/* DEPRECATE THIS FOR NOW, AS IT MATCHES TOO MUCH ... WILL THIS CAUSE REGRESSIONS?
 		"FOREACH ref IN ARRAY or_list LOOP\n" +
 		    // now we can look at substring partial matches
 		"   FOREACH c IN ARRAY client LOOP\n"+
@@ -935,7 +937,7 @@ func DefineStoredFunctions(sst PoSST) {
 	        "         return true;\n" +
 		"      END IF;\n" +
 		"   END LOOP;\n"+
-		"END LOOP;\n" +
+		"END LOOP;\n" +*/
 
 		"RETURN false;\n" +
 

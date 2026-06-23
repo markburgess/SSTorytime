@@ -2820,7 +2820,6 @@ for (let z = 1; z >= -1.0; z -= step)
    // Reverse label order as countdown
    if (each > steps - chapters.length)
       {
-      console.log("STEP",each,steps-chapters.length);
       Label(x0, y0, z, chapters[steps - each], 16, "darkblue");
       }
 

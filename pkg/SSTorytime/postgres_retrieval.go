@@ -1042,7 +1042,7 @@ func GetDBPageMap(sst PoSST,chap string,cn []string,page int) []PageMap {
 	const hits_per_page = 60
 	offset := (page-1) * hits_per_page;
 
-	qstr = fmt.Sprintf("SELECT DISTINCT Chap,Ctx,Line,Path FROM PageMap\n"+
+	qstr = fmt.Sprintf("SELECT DISTINCT Chap,Ctx,Line,Path FROM PageMap "+
 		"WHERE match_context(Ctx,%s)=true AND lower(Chap) LIKE lower('%s') ORDER BY Chap,Line OFFSET %d LIMIT %d",context,chapter,offset,hits_per_page)
 
 	row, err := sst.DB.Query(qstr)

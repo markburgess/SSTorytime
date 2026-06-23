@@ -850,7 +850,6 @@ func DefineStoredFunctions(sst PoSST) {
 		"BEGIN \n" +
 
 		// If no constraints at all, then match
-
 		"IF array_length(user_set,1) IS NULL THEN\n" +  // Shouldn't happen anymore
 		"   RETURN true;\n"+
 		"END IF;\n"+
@@ -929,19 +928,18 @@ func DefineStoredFunctions(sst PoSST) {
 
 		// if still not match, check any left overs, client AND matches are still unresolved
 
-		/* DEPRECATED UNRELIABLE
 		"FOREACH ref IN ARRAY or_list LOOP\n" +
 		    // now we can look at substring partial matches
 		"   FOREACH c IN ARRAY client LOOP\n"+
 		"      pattern := Format('%s[^.]*',c);\n" +
 		"      partial := substring(ref,pattern);\n" +
 		"      diff := length(partial) - length(c);\n" +
-		// Only allow significant matches, since this is approx
-		"      IF partial IS NOT NULL AND diff >= 0 AND diff < 3 THEN \n" +
+		       // Only allow significant matches, since this is approx
+		"      IF partial IS NOT NULL AND length(c) >= 4 AND diff < 3 THEN \n" +
 	        "         return true;\n" +
 		"      END IF;\n" +
 		"   END LOOP;\n"+
-		"END LOOP;\n" + */
+		"END LOOP;\n" + 
 
 		"RETURN false;\n" +
 

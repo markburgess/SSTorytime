@@ -80,6 +80,12 @@ how much does this cost?
 
    :: ad hoc idioms, phrases ::
 
+yīxià (ph) 一下 (he) a bit/one time
+
+kind of/a bit (eh) 有点儿 (hp) yǒudiǎn er
+a bit (ep) yǒudiǎn (ph) 有点
+
+
 tīng shuō (ph) 听说 (he) I heard that ...
 
   #
@@ -1145,6 +1151,12 @@ let/allow/permit   (eh) 让  (hp) ràng
 
 :: food, shopping ::
 
+
+xīn (ph) 新 (he)new 
+新鲜 (hp)xīnxiān (pe)fresh
+
+  zuò fàn / make food (sl) zǎofàn / earlyfood
+
 shuǐguǒ (ph) 水果 (he) fruit
 chāoshì  (ph) 超市 (he) supermarket
     " (e.g.) wǒ zài zhǎo chāoshì de língshí qù (ph) 我在找超市的零食去 (he) I'm looking for snacks in the supermarket
@@ -1300,12 +1312,6 @@ tā xiǎng xiàng wǒ jiè qián (ph) 它想向我借钱  (he) it wants to borro
 
 #########################################
 
-:: come, come in, enter ::
-
-Enter (eh) 进 (hp) jìn
-Come in (eh) 进来 (hp) Jìnlái
-
--:: come, come in, enter ::
 
 ::waiting, robot ::
 
@@ -1923,9 +1929,7 @@ hàoqí (ph) 好奇 (he) curious
 start (eh) 开始  (hp) kāishǐ
 stop  (eh)  停止  (hp) tíngzhǐ
 
-leave  (eh) 离开  (hp) líkāi
-arrive  (eh) 到  (hp) dào
-come  (eh) 来  (hp) lái
+
 
 zuò  (ph) 做  (he) do/make
 yào  (ph) 要  (he) want/need to 
@@ -2043,13 +2047,46 @@ liú (ph) 留 (he) stay
 go  (eh)去  (hp) qù
 往  (hp) wǎng  (pe)go/walk ..
 
+leave  (eh) 离开  (hp) líkāi
+arrive  (eh) 到  (hp) dào
+come  (eh) 来  (hp) lái
+
+enter (eh) 进 (hp) jìn
+come in (eh) 进来 (hp) jìnlái
+
+ +:: _sequence_ ::
+
+xiān wǎng qián zǒu (ph) 先往前走 (he) first, walk straight ahead
+ránhòu wǎng yòu zǒu (ph) 然后往右走 (he) then go to the right
+zuìhòu wǎng zuǒ zǒu (ph) 最后往左走 (he) finally, go left
+
+-:: _sequence_ ::
+
+
+wǒmen cóng shūdiàn chūláile  (ph) 我们从书店出来了  (he) We came out of the bookstore.
+
+ :: do, doing ::
+
+zuò (ph) 做 (he) do - northern standard, more flexible usage
+gàn (ph) 干 (he) do - also “do someone”, fuck!, more specific usage
+
+huì gàn (ph) 会干 (he) going to do/will do
+huì zuò (ph) 会做 (he) going to do/will do
+
+
+
+
+
+ :: near, approach :
 
 kào (ph) 靠 (he) approach/depend on
 kàojìn  (ph) 靠近 approach/come close 
 
 don't come near me  (eh) 别靠近我  (hp) bié kàojìn wǒ
 
-:: sport, motion ::
+
+ :: sport, motion ::
+
 
 运动 (hp) yùndòng (pe) sports
 
@@ -2845,26 +2882,12 @@ shāng jiā (ph) 商家 (he) merchant
 xià xuě 下雪 snow
 xià yǔ 下雨 rain
 
-
 tāmen pǎole shànglái (ph) 他们跑了上来 (he) they ran up
 
 get off work / climbing off  (eh) 下班(hp)  xiàbān
 start work /getting off  (eh) 上班 (hp) shàngbān
 
- +:: _sequence_ ::
-
-xiān wǎng qián zǒu (ph) 先往前走 (he) first, walk straight ahead
-ránhòu wǎng yòu zǒu (ph) 然后往右走 (he) then go to the right
-zuìhòu wǎng zuǒ zǒu (ph) 最后往左走 (he) finally, go left
-
--:: _sequence_ ::
-
-:: coming , going ::
-
-arrive  (eh) 到  (hp) dào
-leave  (eh) 离开  (hp) líkāi
-
-wǒmen cóng shūdiàn chūláile  (ph) 我们从书店出来了  (he) We came out of the bookstore.
+ :: location, at, inside, outside ::
 
 在 (hp)zài (pe) positional
 
@@ -3750,24 +3773,11 @@ hǎoxiàng (ph) 好像 (he) seems/looks like
 
   " (e.g.) wǒ shǒubiǎo hǎoxiàng méi diànle (ph) 我手表好像没电了 (he) My watch seems to be out of battery.
 
-:: go, do ::
 
-xīn (ph) 新 (he)new 
-新鲜 (hp)xīnxiān (pe)fresh
 
-qù (ph) 去 (he) go
-yīxià (ph) 一下 (he) a bit/one time
 
-kind of/a bit (eh) 有点儿 (hp) yǒudiǎn er
-a bit (ep) yǒudiǎn (ph) 有点
 
-zuò (ph) 做 (he) do - northern standard, more flexible usage
-gàn (ph) 干 (he) do - also “do someone”, fuck!, more specific usage
-
-huì gàn (ph) 会干 (he) going to do/will do
-huì zuò (ph) 会做 (he) going to do/will do
-
-  :: challenge, competition ::
+  :: challenge, competition, sport ::
 
 yíng (ph) 赢 (he) win
 shū (ph) 输 (he) lose
@@ -4471,7 +4481,6 @@ zuò (ph) 做 (he) do/make
 
 #################
 
-  zuò fàn / make food (sl) zǎofàn / earlyfood
 
   huì (sl) huí (sl) huǐ 
   会 (sl) 回 (sl) 悔

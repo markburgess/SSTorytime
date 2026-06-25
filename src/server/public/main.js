@@ -405,6 +405,10 @@ let ctxbar = document.createElement("div");
 ctxbar.id = "context_history";
 ctxbar.textContent = obj.Intent;
 header.appendChild(ctxbar);
+
+let b_add = document.createElement("span");
+nowbar.appendChild(b_add);
+BookMarkButton(b_add);
 }
 
 /***********************************************************/
@@ -1900,6 +1904,22 @@ spanner.className = "checkmark";
 label.appendChild(checkbox);
 label.appendChild(spanner);
 container.appendChild(label);
+}
+
+/***********************************************************/
+
+function BookMarkButton(container)
+{
+let button = document.createElement("button");
+button.textContent = "BM";
+button.id = "bm-shortcut";
+container.appendChild(button);
+
+button.onclick = function uploadbutton()
+   {
+   let action = "\\bookmarks";
+   sendLinkSearch(action);
+   };
 }
 
 /***********************************************************/

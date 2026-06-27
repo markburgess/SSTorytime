@@ -1,4 +1,7 @@
 Chinese, Big / Da derived words : \notes \chapter "chinese language" \context big
+Chinese, Animals : \notes \chapter "chinese language" \context animal
+Chinese, Measure word classes : \notes \chapter "chinese language" \context measure,measure words \limit 100
+Chinese, Cities & Countries : \notes \chapter "chinese language" \context countries,city
 Chinese, Same / Tong derived words: \notes \chapter "chinese language" \context Same
 Chinese, Shopping : \notes \chapter "chinese language" \context  shop
 Chinese, Colours  : \notes \chapter "chinese language" \context  colour

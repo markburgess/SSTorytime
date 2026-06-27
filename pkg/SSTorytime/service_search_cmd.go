@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"strings"
 	"regexp"
+	"unicode"
 	_ "github.com/lib/pq"
 
 )
@@ -775,6 +776,12 @@ func SplitQuotes(s string) []string {
 	for r := 0; r < len(cmd); r++ {
 
 		if IsQuote(cmd[r]) {
+
+			if IsApostrophe(cmd,r) {
+				upto = append(upto,cmd[r])
+				continue
+			}
+			
 			if len(upto) > 0 {
 				items = append(items,string(upto))
 			}
@@ -819,6 +826,25 @@ func SplitQuotes(s string) []string {
 	}
 
 	return items
+}
+
+// **************************************************************************
+
+func IsApostrophe(s []rune, pos int) bool {
+
+	if s[pos] != '\'' {
+		return false
+	}
+
+	if pos <= 1 || pos >= len(s)-1 {
+		return false
+	}
+
+	if !unicode.IsSpace(s[pos-1]) && !unicode.IsSpace(s[pos+1]) {
+		return true
+	}
+
+	return false
 }
 
 // **************************************************************************

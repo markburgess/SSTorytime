@@ -96,7 +96,7 @@ func BookmarksToDB(sst PoSST,marks map[string]string) {
 	
 	for b, q := range marks {
 	
-		qstr += fmt.Sprintf("INSERT INTO Bookmarks (Bookmark,Query) VALUES ('%s','%s');\n",b,q)
+		qstr += fmt.Sprintf("INSERT INTO Bookmarks (Bookmark,Query) VALUES ('%s','%s');\n",SQLEscape(b),SQLEscape(q))
 	}
 
 	DBCommit(&sst,qstr)
@@ -252,7 +252,7 @@ func UploadInverseArrowsToDB(sst PoSST) {
 func UploadContextsToDB(sst *PoSST) {
 
 	for ctxdir := range sst.CONTEXT_DIRECTORY {
-		UploadContextToDB(sst,sst.CONTEXT_DIRECTORY[ctxdir].Context,sst.CONTEXT_DIRECTORY[ctxdir].Ptr)
+		UploadContextToDB(sst,SQLEscape(sst.CONTEXT_DIRECTORY[ctxdir].Context),sst.CONTEXT_DIRECTORY[ctxdir].Ptr)
 	}
 }
 

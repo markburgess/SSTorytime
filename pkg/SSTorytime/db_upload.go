@@ -18,7 +18,7 @@ import (
 
 func GraphToDB(sst PoSST,wait_counter bool) {
 
-	
+	fmt.Println(".  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  ")	
 	fmt.Println("\nStoring primary nodes ...")
 	
 	for class := N1GRAM; class <= GT1024; class++ {
@@ -44,6 +44,7 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 	
 	// Arrows etc
 
+	fmt.Println(".  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  ")	
 	fmt.Println("Storing Arrows...")
 
 	sst.DB.QueryRow("drop table ArrowDirectory")
@@ -73,7 +74,8 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 	UploadPageMapBatch(&sst, sst.PAGE_MAP)
 	
 	// CREATE INDICES
-
+	
+	fmt.Println(".  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  ")	
 	fmt.Println("Indexing ....")
 
 	Waiting()

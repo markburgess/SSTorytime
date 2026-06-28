@@ -1149,9 +1149,11 @@ else
    let text_link = document.createElement("a");
    let spantext = document.createElement("span"); // replaces <pre>
 
-   if (IsURL(str,arrow))
+   let [isurl,link] = IsURL(str,arrow);
+
+   if (isurl)
       {
-      text_link.href = str;
+      text_link.href = link;
       text_link.target = "_blank";
       text_link.rel = "noopener";
       } 
@@ -1576,13 +1578,26 @@ for (let line = 0; line < array.length; line++)
          else
             {
             let text_link = document.createElement("a");
-            text_link.onclick = function ()
-               {
-               sendlinkData(nclass, ncptr);
-               };
 
+	    let [isurl,link] = IsURL(str,"has URL");
+	    
+	    if (isurl)
+	       {
+	       text_link.href = link;
+	       text_link.target = "_blank";
+	       text_link.rel = "noopener";
+	       }
+	    else
+	       {
+	       text_link.onclick = function ()
+                  {
+                  sendlinkData(nclass, ncptr);
+                  };
+	       }
+	    
             let text = document.createElement("span");
-            text.textContent = str;
+
+	    text.textContent = str;
             if (i > 0)
                {
                text.id = "notes_secondary_colour";
@@ -2214,15 +2229,17 @@ return false;
 
 function IsURL(str, arrow)
 {
-if (arrow == "has URL")
+if (arrow == "has URL" || arrow == "is a URL for")
    {
-   if (str.slice(0, 6) == "http:/" || str.slice(0, 7) == "https:/")
+   let stripped = str.replace(/^['"]|['"]$/g, '');
+
+   if (stripped.slice(0, 6) == "http:/" || stripped.slice(0, 7) == "https:/")
       {
-      return true;
+      return [true, stripped];
       }
    }
 
-return false;
+ return [false, ""];
 }
 
 /***********************************************************/

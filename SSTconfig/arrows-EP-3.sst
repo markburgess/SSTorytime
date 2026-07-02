@@ -27,6 +27,7 @@
  + has status        (status)       - is the status of     (status-of)
  + has data          (data)         - is data for          (data-for)
  + has metadata      (metadata)     - is metadata for      (metadata-for)
+ + has metaphor      (metaphor)     - is a metaphor for    (metafor-for)
  + has email         (email)        - is email address for (email-for)
  + has id            (id)           - is an id for         (id-for)
  + has username      (username)     - is the username for  (uname-for)

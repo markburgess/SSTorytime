@@ -720,9 +720,10 @@ func AddArrowClosure(sst *SST.PoSST,sequence []string,result string) {
 
 func CompleteInferences(sst *SST.PoSST) {
 
-	Box("Completing node inferences and cliques.....")
-
 	for class := SST.N1GRAM; class <= SST.GT1024; class++ {
+
+		header := fmt.Sprintf("Completing node inferences and cliques.....for class %d",class)
+		Box(header)
 
 		switch class {
 

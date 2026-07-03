@@ -1504,11 +1504,11 @@ for (let line = 0; line < array.length; line++)
 
          // if the last line starts with the same item, don't repeat it, use ditto
 
-         if (i == 0 && str == last_line_start)
+         if (i == 0 && str == last_line_start && str != "")
             {
             // repeated item, so ditto
             subline = document.createElement("div");
-            child.append(subline);
+            child.appendChild(subline);
             let text = document.createElement("span");
             text.id = "ditto";
             text.textContent = ' . . . .  .   " . . . . .   ';
@@ -1547,7 +1547,7 @@ for (let line = 0; line < array.length; line++)
             child.className = "notes-view";
             parent.appendChild(child);
             subline = document.createElement("div");
-            child.append(subline);
+            child.appendChild(subline);
             }
 
          if (i == 0)
@@ -1558,7 +1558,7 @@ for (let line = 0; line < array.length; line++)
 
         // Subsequent items on same line inside a card
         // if pre-formatted
-
+	 
          if (str.includes("\n") && !IsMath(str))
             {
             let text_link = document.createElement("a");
@@ -1596,12 +1596,13 @@ for (let line = 0; line < array.length; line++)
 	       }
 	    
             let text = document.createElement("span");
-
 	    text.textContent = str;
+		
             if (i > 0)
                {
                text.id = "notes_secondary_colour";
                }
+
             text_link.appendChild(text);
             subline.appendChild(text_link);
             }

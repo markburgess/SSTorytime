@@ -20,11 +20,11 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 
 	fmt.Println(".  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  ")	
 	fmt.Println("\nStoring primary nodes ...")
-	
+
 	for class := N1GRAM; class <= GT1024; class++ {
 		
 		offset := int(sst.BASE_DB_CHANNEL_STATE[class])
-		
+
 		switch class {
 		case N1GRAM:
 			UploadNodesBatch(&sst, sst.NODE_DIRECTORY.N1directory[offset:])
@@ -117,7 +117,7 @@ func UploadNodesBatch(sst *PoSST, nodes []Node) {
 	
 	for i := 0; i < len(nodes); i++ {
 	
-		if (i % chunk == 0) {
+		if (i > 0 && i % chunk == 0) {
 			DBCommit(sst,qstr)
 			qstr = ""
 		}
@@ -131,6 +131,10 @@ func UploadNodesBatch(sst *PoSST, nodes []Node) {
 // **************************************************************************
 
 func DBCommit(sst *PoSST, qstr string) {
+
+	if qstr == "" {
+		return
+	}
 
 	cstr := "BEGIN;\n"
 	cstr += qstr
@@ -159,8 +163,6 @@ func UploadNodeToDB(sst *PoSST, n Node) string {
 
 	const nodecols  = "(NPtr.Chan,NPtr.Cptr,L,S,Chap,Seq," +
 		I_MEXPR + "," + I_MCONT + "," + I_MLEAD + "," + I_NEAR + "," + I_PLEAD + "," + I_PCONT + "," + I_PEXPR + ")"
-
-	n.L, n.NPtr.Class = StorageClass(n.S)
 
 	seq := "false"
 

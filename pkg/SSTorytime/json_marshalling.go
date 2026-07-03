@@ -146,9 +146,9 @@ func JSONPage(sst PoSST, maplines []PageMap) string {
 		// Next line item
 
 		for lnk := 0; lnk < len(maplines[n].Path); lnk++ {
-			
+
 			text := GetDBNodeByNodePtr(&sst,maplines[n].Path[lnk].Dst)
-			
+
 			if lnk == 0 {
 				var ws WebPath
 				ws.Name = text.S

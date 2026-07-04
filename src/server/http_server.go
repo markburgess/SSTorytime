@@ -592,12 +592,12 @@ func HandleSearch(sst SST.PoSST,search SST.SearchParameters, line string, w http
 		}
 
 		if chapter {
-			notes = SST.GetDBPageMap(sst,search.Chapter,search.Context,search.PageNr)
+			notes = SST.GetDBPageMap(sst,search.Chapter,search.Context,search.PageNr,maxlimit)
 			HandlePageMap(w,r,sst,search,notes)
 			return
 		} else {
 			for n := range search.Name {
-				notes = SST.GetDBPageMap(sst,search.Name[n],search.Context,search.PageNr)
+				notes = SST.GetDBPageMap(sst,search.Name[n],search.Context,search.PageNr,maxlimit)
 				HandlePageMap(w,r,sst,search,notes)
 			}
 			return

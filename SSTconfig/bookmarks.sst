@@ -28,6 +28,7 @@ Chinese, If/Whether : \notes \chapter "chinese language" \context whether
 Chinese, Derived Compound Words: \notes \chapter "chinese language" \context "compound words,root words,word connections"
 Chinese, Don't! : \notes \chapter "chinese language" \context "don't do it"
 Chinese, Kitchen / cooking : \notes \chapter "chinese language" \context kitchen,utensil,cooking
+Chinese, Aesop's Fable of The two friends and the bear : \notes \chapter "two good friends and the bear"  \limit 200
 
 Science, Astronomy poem : \notes \chapter "astronomy"
 Science, Moon recession : \notes \chapter moon

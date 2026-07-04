@@ -1,63 +1,418 @@
 
 -chinese story: two good friends and the bear
 
- 
+#######################################################################################
+#
+# The translation language model rewrites and beautifies the translation, 
+# losing the pathway to meaning that one gets by trying to identify components 
+# in the semantics.
+#######################################################################################
 
- :: _sequence_, aesop's fables, aesop, two good friends and the bear ::
+ :: _sequence_, aesop's fables, aesop, two good friends and the bear, the story ::
 
 Yí wèi =shāngrén hé yí wèi =nóngfū =jiébàn =tóngxíng, tāmen yào =jīngguò ="yí gè méiyǒurén yān de shùlín".
    " (ph) 一位商人和一位农夫结伴同行，他们要经过一个没有人烟的树林。
-   " (pe) A merchant and a farmer travelled together. They needed to pass through an uninhabited forest.
+   " (pe) A merchant and a farmer were travelling together. They needed to pass through an uninhabited forest. 
+   " (llm) A merchant and a farmer travelled together. They needed to pass through an uninhabited forest.
 
-="Nàlǐ shì wēixiǎn dìdài", suǒyǐ tāmen =yuēhǎo le, wúlùn yùjiàn shénme =wēixiǎn, liǎng gè rén dōu yào xiāng hù =bāngzhù. 
+
+
+="Nàlǐ shì wēixiǎn dìdài", suǒyǐ tāmen =yuēhǎo le, wúlùn yùjiàn shénme =wēixiǎn, liǎng gè rén dōu yào xiānghù =bāngzhù. 
    " (ph) 那里是危险地带，所以他们约好了，无论遇见什么危险，两个人都要相互帮助。
-   " (pe) It was a dangerous area, so they made an agreement that no matter what danger they encountered, both of them would help each other.
+   " (pe) It was a dangerous place so they made a pact that no matter what danger they experienced they would help each other.
+   " (llm) It was a dangerous area, so they made an agreement that no matter what danger they encountered, both of them would help each other.
+
+
 
 Tāmen zǒu jìn shùlín bù jiǔ, =wēixiǎn =jiùlái lín le —— yì zhī dà xióng =cóng qiánmiàn =cháo tā men zǒu lái.
    " (ph) 他们走进树林不久，危险就来临了——一只大熊从前面朝他们走来。
-   " (pe) Not long after they walked into the forest, danger arrived—a big bear was walking toward them from up ahead.
+   " (pe) They hadn't gone far through the forest when danger suddenly was upon them. A large bear was walking towards them from up ahead.
+   " (llm) Not long after they walked into the forest, danger arrived—a big bear was walking toward them from up ahead.
 
-Shāngrén dòng zuò mǐnjié, tā gǎn kuài pá shàng zuì jìn de dà shù duǒ qǐ lái. 
+# jiù  soon / suddenly
+# láilín 来临  arrived
+
+Shāngrén dòngzuò mǐnjié, tā gǎnkuài páshàng zuìjìn de dà shù duǒ qǐlái. 
    " (ph) 商人动作敏捷，他赶快爬上最近的大树躲起来。
-   " (pe) The merchant moved quickly and nimbly; he immediately climbed up the nearest large tree to hide.
+   " (pe) The merchant acted with agility, quickly climbing the nearest large tree to hide.
+   " (llm) The merchant moved quickly and nimbly; he immediately climbed up the nearest large tree to hide.
 
+# páshàng 爬上 climbup
+# zuìjìn 最近 recent/nearest
+# qǐlái 起来 upwards
+# dòngzuò 动作 action
+# mǐnjié 敏捷 agile nimble
+# duǒ  躲 hide
+# gǎnkuài 赶快 quickly/hurriedly
 
-=kě nóngfū bào zhe shù gàn jiù shì pá bú shàng qù, tā zhǐ hǎo =gǎnkuài tǎng zài =dìshang zhuāng sǐ.
+=kě nóngfū =bàozhe shù =gànjiù shì pá bú =shàngqù, tā =zhǐhǎo =gǎnkuài tǎng zài =dìshang =zhuāngsǐ.
    " (ph) 可农夫抱着树干就是爬不上去，他只好赶快躺在地上装死。
-   " (pe) But the farmer hugged the tree trunk and just couldn't climb up, so he had no choice but to quickly lie on the ground and pretend to be dead.
+   " (pe) But the farmer hugging the tree just couldn't climb up, he was forced to quickly lie on the ground and play dead.
+   " (llm) But the farmer hugged the tree trunk and just couldn't climb up, so he had no choice but to quickly lie on the ground and pretend to be dead.
+   " (note) This sentence starts with 可/kě is used here as a shortened, spoken form of 但是/dànshì or 可是/kěshì, meaning "but" or "however". Gemini informs: what makes this sentence work so well is the relationship between 可/kě at the beginning and 就是/jiùshì in the middle: 可 flags to the listener: "Pay attention, a problem is coming!" 说明/就是 emphasizes the total frustration or helplessness of the situation: "He tried, but he just couldn't do it." If you were reading this fable out loud, that initial 可 is the exact moment the tension spikes for the character!
 
-xióng zǒu jìn hòu, kànjiàn tǎng zài dì shang de nóngfū, jiù guò lái yòng bí zi wén, bìng wéi rào zhe tā rào le bàn tiān.
+# bàozhe 抱着 hug / embrace / carry in arms
+# jiùshì 就是 exactly
+# pá 爬 climb
+# shàngqù 上去 go up
+# dìshang 地上 ground
+# tǎng 躺 lie
+# zhǐhǎo 只好 forced to
+# zhuāngsǐ 装死 play dead
+# gànjiù 干就 just do it
+# kě 可 but short for 可是 meaning but
+
+xióng =zǒujìn hòu, kànjiàn tǎng zài dìshang de nóngfū, jiù guòlái yòng bízi wén, bìngwéi ràozhe tā rào le bàntiān.
    "  (ph) 熊走近后，看见躺在地上的农夫，就过来用鼻子闻，并围绕着他绕了半天。
-   "  (pe) After the bear approached, it saw the farmer lying on the ground. It came over to sniff him with its nose and circled around him for a long time. 
+   "  (pe) After the bear got close, it saw the farmer lying on the ground and came over to sniff using its nose, circling around him for a long time.
+   "  (llm) After the bear approached, it saw the farmer lying on the ground. It came over to sniff him with its nose and circled around him for a long time. 
 
-nóngfū jǐn bì shuāng yǎn, bǐng zhù hū xī, yí dòng yě bú dòng.
+# zǒujìn 走近 approach / get closer
+# jiù 就 immediately 
+# guòlái 过来 come over
+# bízi 鼻子 nose
+# wén 闻 smell
+# bìngwéi 并围 encircle
+# ràozhe 绕着 circle around
+# bàntiān 半天 long time
+
+
+
+nóngfū jǐnbì shuāng yǎn, bǐngzhù hūxī, yí dòng yě bú dòng.
    "  (ph) 农夫紧闭双眼，屏住呼吸，一动也不动。
-   "  (pe) The farmer shut his eyes tightly, held his breath, and did not move at all.
+   "  (pe) The farmer closed his eyes tightly, held his breath, and kept perfectly still. 
+   "  (llm) The farmer shut his eyes tightly, held his breath, and did not move at all.
 
+# jǐnbì 紧闭 tightly closed
+# bǐngzhù / pǐngzhù 屏住 hold, e.g. breath
+# hūxī 呼吸 breathe
+# bǐngzhù hūxī 屏住呼吸 hold your breath
+# dòng 动 move
+#yí dòng yě bú dòng 一动也不动 perfectly still
+# yīdòng 一动 slightest movement /
+# yě 也 also
+# yǎn 眼 eyes
 
 # caption
-shāngrén kàn dào xióng xiàng tā men zǒu lái, biàn rēng xià nóngfū, yí gè rén pá dào shù shàng duǒ cáng qǐ lái. (ph) 商人看到熊向他们走来，便扔下农夫，一个人爬到树上躲藏起来。 (he) Seeing the bear walking toward them, the merchant abandoned the farmer and climbed the tree alone to hide.
-#
+shāngrén kàndào xióng xiàng tāmen zǒu lái, biàn rēngxià nóngfū, yí gè rén pá dào shù shàng duǒ cáng qǐ lái.
+   " (ph) 商人看到熊向他们走来，便扔下农夫，一个人爬到树上躲藏起来。
+   " (pe) Seeing the bear walking toward them, the merchant abandoned the farmer and climbed the tree alone to hide.
 
-xióng yǐ wéi nóng fū zhēn de shì gè sǐ rén, jiù zǒu kāi le. yīn wèi xióng shì bù chī sǐ rén de. (ph) 熊以为农夫真的是个死人，就走开了。因为熊是不吃死人的。 (he) The bear thought the farmer was truly a dead person, so it walked away. Because bears do not eat dead people.
+# kàndào 看到 sê
+# rēngxià 扔下 abandon/ditch/leave behind
+# biàn 便 immediately
 
+ dà xióng yǐwéi nóngfū zhēnde shì gè sǐ rén, jiù zǒukāi le. yīnwèi xióng shì bù chī sǐ rén de.
+  " (ph) 大熊以为农夫真的是个死人，就走开了。因为熊是不吃死人的。
+  " (pe) The great bear presumed the farmer really was a dead person, and soon walked away, because bears be like don't eat dead people yo!
+  " (llm) The bear thought the farmer was truly a dead person, so it walked away. Because bears do not eat dead people.
 
-zhídào dà xióng zǒu yuǎn le, shāngrén cái cóng shù shàng xià lai, nóngfū yě pá le qǐ lái. shāngrén jiù wèn nóngfū: “péng you, dà xióng gāng cái fú zài nǐ de ěr páng gēn nǐ shuō le xiē shén me ya?” (ph) 直到大熊走远了，商人才从树上下来，农夫也爬了起来。商人就问农夫：“朋友,大熊刚才伏在你的耳旁跟你说了些什么呀？” (he) Not until the big bear had walked far away did the merchant come down from the tree, and the farmer climbed up from the ground too. The merchant then asked the farmer, "My friend, what did the big bear whisper right next to your ear just now?"
+# yǐwéi 以为 presume / believe mistakenly
+# zhēnde 真的 really
+# zǒukāi 走开 go away
 
-nóngfū zhuāng zuò háo bú zài hu de yàng zi, bù jǐn bú màn de shuō: “dà xióng dào shì méi hé wǒ shuō shénme mì mì, tā zhǐ shì gào su wǒ, xià cì bú yào zài hé méi yǒu xìn yòng de rén jiāo péng you la!” (ph) 农夫装作毫不在乎的样子，不紧不慢地说：“大熊倒是没和我说什么秘密，它只是告诉我，下次不要再和没有信用的人交朋友啦！” (he) Pretending not to care at all, the farmer said calmly and unhurriedly, "The big bear didn't actually tell me any secrets. It only told me not to make friends with untrustworthy people next time!"
+zhídào dà xióng zǒuyuǎn le, shāngrén cái cóng shù shàng xiàlai, nóngfū yě pá le qǐlái. shāngrén jiù wèn nóngfū: “péngyou, dàxióng gāngcái fúzài nǐ de ěr páng gēn nǐ shuō le xiē shénme ya?”
+   " (ph) 直到大熊走远了，商人才从树上下来，农夫也爬了起来。商人就问农夫：“朋友,大熊刚才伏在你的耳旁跟你说了些什么呀？”
+   " (pe) Knowing that the bear had gone, the merchant only then came down from up in the tree. the farmer also got up. The merchant then asked the farmer: "Friend, when the great bear was leaning over you just now, what did he whisper in your ear?"
+   " (llm) Not until the big bear had walked far away did the merchant come down from the tree, and the farmer climbed up from the ground too. The merchant then asked the farmer, "My friend, what did the big bear whisper right next to your ear just now?"
 
-shāngrén tīng le, =xiūkuì de dī xià le tóu. (ph) 商人听了，羞愧地低下了头。 (he) hearing this, the merchant lowered his head in shame.
+# cái 才 not until [when before a time expression]
+# xiàlai 下来 come down
+# cóng shù shàng 从树上 from up in the tree
+# fúzài 伏在 means "leaning over," "crouching down close to," or "bending over."
+# qǐlái  起来 stand up
+# gāngcái 刚才 just now
+# nǐ de ěr páng 你的耳旁 beside your ear
+# nǐ de ěr páng gēn nǐ shuōle xiē shénme ya 你的耳旁跟你说了些什么呀 What was whispered in your ear?
+
+nóngfū zhuāngzuò háo bú zàihu de yàngzi, bù jǐn bú màn de shuō: “dà xióng dàoshì méi hé wǒ shuō shénme mìmì, tā zhǐshì gàosu wǒ, xiàcì bú yào zài hé méi yǒu xìnyòng de rén jiāo péng you la!”
+    " (ph) 农夫装作毫不在乎的样子，不紧不慢地说：“大熊倒是没和我说什么秘密，它只是告诉我，下次不要再和没有信用的人交朋友/ ！”
+    " (pe) The farmer, pretending not to care, evenly replied: "Actually, the great bear didn't speak any secrets, he only told me that next time don't make friends with untrustworthy people." 
+    " (llm) Pretending not to care at all, the farmer said calmly and unhurriedly, "The big bear didn't actually tell me any secrets. It only told me not to make friends with untrustworthy people next time!"
+
+# zàihu 在乎 to care
+# xìnyòng 信用 trustworthiness / credibility / good faith. (contains) xìn 信 trust, believe, or honesty as used in 信用卡 xìnyòngkǎ: Credit card (literally, "trust-use card")
+
+# zhuāngzuò 装作 pretend to
+
+shāngrén tīng le, =xiūkuì dei dīxià le tóu.
+   " (ph) 商人听了，羞愧地低下了头。
+   " (pe) hearing this, the merchant lowered his head in shame.
+
+# dīxià 低下 low
+# xiūkuì dei dīxià 羞愧地低下 lowered in shame
+# yàngzi 样子 appearance
+# Bù jǐn bù màn de shuō 不紧不慢地说 Speaking in a measured, unhurried manner
+# dàoshì 倒是 actually/ ơn the contrary - a bit sarcastic
+# mìmì 秘密 secret
+# zhǐshì 只是 only
+# xiàcì 下次 next time
+
+# méi yǒu xìn yòng de rén 没有信用的人 uncreditworthy untrustworthy person
+# jiāo péng you 交朋友 make friends
 
  -: _sequence_ :
 
+#######################################################################################
 
- :: aesop fable, vocabulary ::
+ :: aesop fable, vocabulary alphabetic, two good friends and the bear, the story ::
+
+
+bàntiān (ph) 半天 (he) long time
+
+bào (ph)  抱 (he) hug / embrace / carry in arms
+
+bízi (ph)  鼻子 (he) nose
+
+bìngwéi (ph)  并围 (he) encircle
+
+bǐngzhù / pǐngzhù  (ph) 屏住 (he) hold, e.g. breath
+
+bǐngzhù hūxī  (ph) 屏住呼吸 (he) hold your breath
+
+bù jǐn bù màn de shuō  (ph) 不紧不慢地说 (he) Speaking in a measured, unhurried manner
+
+cái  (ph) 才 (he) not until [when used before a time expression]
+
+cóng shù shàng  (ph) 从树上 (he) from up in the tree
+
+dàoshì  (ph) 倒是 (he) actually on the contrary, a bit sarcastic
+
+dīxià  (ph) 低下 (he) low
+
+dìshang  (ph) 地上 (he) ground
+
+dòng (ph)  动 (he) move
+
+dòngzuò (ph)  动作 (he) action
+
+fúzài (ph) 伏在 (he) leaning over, crouching down close to, bending over
+
+gāngcái  (ph) 刚才 (he) just now
+
+guòlái  (ph) 过来 (he) come over
+
+jǐnbì (ph)  紧闭 (he) tightly closed
+
+jiù  (ph) 就 (he) immediately
+
+jiùshì  (ph) 就是 (he) exactly
+
+jiāo péng you (ph)  交朋友 (he) make friends
+
+kàndào (ph)  看到 (he) see
+
+méi yǒu xìn yòng de rén  (ph) 没有信用的人 (he) uncreditworthy untrustworthy person
+
+mǐnjié  (ph) 敏捷 (he) agile nimble
+
+mìmì  (ph) 秘密 (he) secret
+
+nǐ de ěr páng  (ph) 你的耳旁 (he) beside your ear
+
+Nǐ de ěr páng gēn nǐ shuōle xiē shénme ya  (ph) 你的耳旁跟你说了些什么呀 (he) What was whispered in your ear?
+
+pá  (ph) 爬 (he) climb
+
+páshàng  (ph) 爬上(he)  climb up
+
+qǐlái  (ph) 起来 (he) upwards / stand up
+
+rēngxià (ph) 扔下 (he) abandon/ditch/leave behind
+
+ràozhe  (ph) 绕着 (he) circle around
+
+shàngqù  (ph) 上去 (he) go up
+
+tǎng  (ph) 躺 (he) lie
+
+wén  (ph) 闻 (he) smell
+
+xiàcì  (ph) 下次 (he)  next time
+
+xiàlai  (ph) 下来 (he) come down
+
+xiūkuì dei dīxià  (ph) 羞愧地低下 (he) lowered in shame
+
+yàngzi  (ph) 样子 (he) appearance
+
+yīdòng  (ph) 一动 (he) slightest movement
+
+yí dòng yě bú dòng  (ph) 一动也不动 (he) perfectly still
+
+yě  (ph) 也 (he) also
+
+yǐwéi  (ph) 以为 (he) presume, believe mistakenly
+
+zàihu  (ph) 在乎 (he) to care
+
+zhēnde  (ph) 真的 (he) really
+
+zhǐhǎo  (ph) 只好 (he) forced to
+
+zhǐshì  (ph) 只是 (he) only
+
+zǒujìn  (ph) 走近 (he) approach / get closer
+
+zǒukāi  (ph) 走开 (he) go away
+
+zhuāngsǐ  (ph) 装死 (he) play dead
+
+zhuāngzuò  (ph) 装作 (he) pretend to
+
+zuìjìn  (ph) 最近 (he) recently
+
+#######################################################################################
+
+:: aesop fable, vocabulary by category, two good friends and the bear ::
+
+## Gemini now orders the results by "category"
+
+ +:: Characters & Physical Traits ::
+
+    bízi  (ph) 鼻子 (he) nose
+
+    yàngzi  (ph) 样子 (he) appearance
+
+    mǐnjié  (ph) 敏捷 (he) agile / nimble
+
+    méi yǒu xìn yòng de rén  (ph) 没有信用的人 (he) uncreditworthy / untrustworthy person
+
+ -:: Characters & Physical Traits ::
+
+ ####
+
+ +:: Movements & Actions ::
+
+    dòng  (ph) 动 (he) move
+
+    yīdòng  (ph) 一动 (he) slightest movement
+
+    dòngzuò  (ph) 动作 (he) action
+
+    pá  (ph) 爬 (he) climb
+
+    páshàng (ph)  爬上 (he) climb up
+
+    shàngqù  (ph) 上去 (he) go up
+
+    xiàlai  (ph) 下来 (he) come down
+
+    cóng shù shàng (ph)  从树上 (he) from up in the tree
+
+    zǒujìn  (ph) 走近 (he) approach / get closer
+
+    guòlái  (ph) 过来 (he) come over
+
+    zǒukāi  (ph) 走开 (he) go away
+
+    bào  (ph) 抱 (he) hug / embrace / carry in arms
+
+    jiāo péng you  (ph) 交朋友 (he)  make friends
+
+ -:: Movements & Actions ::
+
+ ####
+
+ +:: Facing the Bear, The Climax ::
+
+    dìshang  (ph) 地上 (he) ground
+
+    tǎng  (ph) 躺 (he) lie
+
+    yí dòng yě bú dòng  (ph) 一动也不动 (he) perfectly still
+
+    jǐnbì  (ph) 紧闭 (he) tightly closed
+
+    bǐngzhù / pǐngzhù  (ph) 屏住 (he) hold e.g. breath
+
+    hūxī  (ph) 呼吸 (he) breath/e
+
+    bǐngzhù hūxī  (ph) 屏住呼吸 (he) hold your breath
+
+    wén  (ph) 闻 (he) smell
+
+    bìngwéi  (ph) 并围 (he) encircle
+
+    ràozhe  (ph) 绕着 (he) circle around
+
+    zhuāngsǐ  (ph) 装死 (he) play dead
+
+    zhuāngzuò  (ph) 装作 (he) pretend to
+
+    yǐwéi  (ph) 以为 (he) presume, believe falsely
+
+    kàndào  (ph) 看到 (he) see
+
+ -:: Facing the Bear, The Climax ::
+
+ ####
+
+ +:: Dialogue & Outcomes ::
+
+    nǐ de ěr páng  (ph) 你的耳旁 (he) beside your ear
+
+    Nǐ de ěr páng gēn nǐ shuōle xiē shénme ya  (ph) 你的耳旁跟你说了些什么呀 (he)  What was whispered in your ear?
+
+    Bù jǐn bù慢 de shuō  (ph) 不紧不慢地说 (he) speaking in a measured, unhurried manner
+
+    dīxià  (ph) 低下 (he) low
+
+    xiūkuì dei dīxià  (ph) 羞愧地低下 (he) lowered in shame
+
+    zàihu  (ph) 在乎 (he) to care
+
+    mìmì  (ph) 秘密 (he) secret
+
+ -:: Dialogue & Outcomes ::
+
+  ####
+
+ +:: Time, Sequence & Connectives ::
+
+    gāngcái  (ph) 刚才 (he) just now
+
+    zuìjìn  (ph) 最近 (he) recently
+
+    bàntiān  (ph) 半天 (he) a long time
+
+    xiàcì  (ph) 下次 (he) next time
+
+    cái  (ph) 才 (he) not until
+
+    jiù  (ph) 就 (he) immediately
+
+    jiùshì  (ph) 就是 (he) exactly
+
+    zhǐhǎo  (ph) 只好 (he) forced to / have no choice but to
+
+    zhǐshì  (ph) 只是 (he) only
+
+    yě  (ph) 也 (he) also
+
+    zhēnde  (ph) 真的 (he) really
+
+    dàoshì  (ph) 倒是 (he) on the contrary
+
+    qǐlái  (ph) 起来 (he) upwards / stand up
+
+ -:: Time, Sequence & Connectives ::
+
+##
+# Other notes
+##
+
+
+ :: aesop fable, vocabulary personal, two good friends and the bear ::
+
 
 dìdài (ph) 地带 (he) zone / region / district
 
 shāngrén (ph) 商人 (he)  merchant/businessman
 
 nóngfū (ph) 农夫 (he) farmer
+
+zàihū (ph) 在乎 (he) to care
 
 jiébàn (ph) 结伴 (he) travelling together / partnering
 

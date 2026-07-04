@@ -277,13 +277,13 @@ func Search(sst SST.PoSST, search SST.SearchParameters,line string) {
 		}
 
 		if chapter {
-			notes = SST.GetDBPageMap(sst,search.Chapter,search.Context,search.PageNr)
+			notes = SST.GetDBPageMap(sst,search.Chapter,search.Context,search.PageNr,maxlimit)
 			ShowNotes(sst,notes)
 			ShowTime(sst,search)
 			return
 		} else {
 			for n := range search.Name {
-				notes = SST.GetDBPageMap(sst,search.Name[n],search.Context,search.PageNr)
+				notes = SST.GetDBPageMap(sst,search.Name[n],search.Context,search.PageNr,maxlimit)
 				ShowNotes(sst,notes)
 				ShowTime(sst,search)
 			}

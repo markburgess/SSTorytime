@@ -1030,7 +1030,7 @@ func ScoreContext(i,j int) bool {
 
 // **************************************************************************
 
-func GetDBPageMap(sst PoSST,chap string,cn []string,page int) []PageMap {
+func GetDBPageMap(sst PoSST,chap string,cn []string,page int,limit int) []PageMap {
 
 	var qstr string
 
@@ -1039,7 +1039,7 @@ func GetDBPageMap(sst PoSST,chap string,cn []string,page int) []PageMap {
 	context := FormatSQLStringArray(cn)
 	chapter := "%"+chap+"%"
 
-	const hits_per_page = 60
+	hits_per_page := limit
 	offset := (page-1) * hits_per_page;
 
 	qstr = fmt.Sprintf("SELECT DISTINCT Chap,Ctx,Line,Path FROM PageMap "+

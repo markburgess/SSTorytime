@@ -1,9 +1,9 @@
 Chinese, Big / Da derived words : \notes \chapter "chinese language" \context big
-Chinese, Animals : \notes \chapter "chinese language" \context animal
+Chinese, Animals : \notes \chapter "chinese language" \context animal  \limit 50
 Chinese, Measure word classes : \notes \chapter "chinese language" \context measure,measure words \limit 100
-Chinese, Cities & Countries : \notes \chapter "chinese language" \context countries,city
+Chinese, Cities & Countries : \notes \chapter "chinese language" \context countries,city  \limit 50
 Chinese, Same / Tong derived words: \notes \chapter "chinese language" \context Same
-Chinese, Shopping : \notes \chapter "chinese language" \context  shop
+Chinese, Shopping : \notes \chapter "chinese language" \context  shop  \limit 50
 Chinese, Colours  : \notes \chapter "chinese language" \context  colour
 Chinese, Restaurant  : \notes \chapter "chinese language" \context  restaurant
 Chinese, Coming and going  : \notes \chapter "chinese language" \context  coming,going
@@ -12,13 +12,13 @@ Chinese, Food ordering scene  : \notes \chapter "chinese language" \context  foo
 Chinese, Idiom  : \notes \chapter "chinese language" \context idiom,phrase
 Chinese, Phone  : \notes \chapter "chinese language" \context phone
 Chinese, Travel  : \notes \chapter "chinese language" \context  travel
-Chinese, Airport/Flying  : \notes \chapter "chinese language" \context  airport,flying
-Chinese, Trains  : \notes \chapter "chinese language" \context  train
-Chinese, Dates and times : \notes \chapter "chinese language" \context  date
+Chinese, Airport/Flying  : \notes \chapter "chinese language" \context  airport,flying \limit 50
+Chinese, Trains  : \notes \chapter "chinese language" \context  train  \limit 50
+Chinese, Dates and times : \notes \chapter "chinese language" \context  date  \limit 50
 Chinese, Conjugations  : \notes \chapter "chinese language" \context  conjugations
-Chinese, Hotel  : \notes \chapter "chinese language" \context  hotel
+Chinese, Hotel  : \notes \chapter "chinese language" \context  hotel  \limit 50
 Chinese, Elevators  : \notes \chapter "chinese language" \context  elevator
-Chinese, Numbers  : \notes \chapter "chinese language" \context  number
+Chinese, Numbers  : \notes \chapter "chinese language" \context  number  \limit 50
 Chinese, Grammar  : \notes \chapter "chinese language" \context grammar
 Chinese, Very,really : \notes \chapter "chinese language" \context really
 Chinese, Negative : \notes \chapter "chinese language" \context negative, no

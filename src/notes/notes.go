@@ -80,8 +80,9 @@ func Page(sst SST.PoSST,chapter string,context []string,page int) {
 
 	var last string
 	var lastc string
+	const maxlimit = 100
 
-	notes := SST.GetDBPageMap(sst,chapter,context,page)
+	notes := SST.GetDBPageMap(sst,chapter,context,page,maxlimit)
 
 	for n := 0; n < len(notes); n++ {
 

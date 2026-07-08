@@ -374,9 +374,7 @@ zhèngzài (ph) 正在  (he) just now, right now
 gāngcái   (ph) 刚才 (he) just now
 
    " (e.g.) tā gǎn gāng jìnle diàntī  (ph) 他敢刚进了电梯  (he) He just got into the elevator
-   " (e.g.) tā gāng gēchàng de hěn hǎo (ph)  他刚歌唱的很好  (he) He just sang very well
 
- $PREV.2 (compare) tā chànggē chàng dé hěn hǎo (ph)  他唱歌唱得很好  (he) He sings very well
 
 
   ####################################
@@ -1051,27 +1049,31 @@ Wǒ xǐhuān shèjì   (ph) 我喜欢设计  (he) I like design
   beef (english has pinyin) niúròu  (pinyin has hanzi) 牛肉
   milk (english has pinyin) niúnǎi  (pinyin has hanzi) 牛奶
 
-  vegetable (english has pinyin) shūcài  (pinyin has hanzi) 蔬菜
-  fruit     (english has pinyin) shuǐguǒ (pinyin has hanzi) 水果
- watermelon (english has pinyin) xīguā   (pinyin has hanzi) 西瓜
+  shūcài  (pinyin has hanzi) 蔬菜 (he) vegetable
+  
 
+ shuǐguǒ (pinyin has hanzi) 水果 (he) fruit
+   " (involves) guǒ
+   
+ xīguā   (pinyin has hanzi) 西瓜 (he) watermelon
 
-húluóbo  (ph)  胡萝卜  (he) carrot
+ húluóbo  (ph)  胡萝卜  (he) carrot
 
 shípǔ  (ph)  食谱   (he) recipe
 guǒjiàng  (ph) 果酱  (he) jam/preserve
 
 yángcōng (ph)  洋葱  (he) onion
 
- chocolate (english has pinyin) qiǎokèlì (pinyin has hanzi) 巧克力 
-   alcohol (english has pinyin) jiǔjīng  (pinyin has hanzi) 酒精
-      fish (english has pinyin) yú       (pinyin has hanzi) 鱼
-      rice (english has pinyin) mǐ       (pinyin has hanzi) 米
-   noodles (english has pinyin) miàntiáo (pinyin has hanzi) 面条
 
+ qiǎokèlì (pinyin has hanzi) 巧克力 (he) chocolate
+ jiǔjīng  (pinyin has hanzi) 酒精 (he) alcohol 
+ yú (pinyin has hanzi) 鱼 (he) fish
+ mǐ (pinyin has hanzi) 米 (he) rice
+   miàntiáo (pinyin has hanzi) 面条 (he) noodles
+   
   # more realistic with abbreviations ...
 
-菜 (hp) Cài (pe) vegetable 
+cài (ph) 菜 (he) vegetable 
 meat (eh) 肉 (hp) ròu
 lamb  (eh) 羊肉  (hp) yángròu
 chicken (eh)  鸡肉 (hp)  jīròu
@@ -1111,7 +1113,7 @@ hot and sour soup  (eh) 酸辣汤  (hp) suān là tāng
 
 filled steam bun  (eh) 包子 (hp)  bāozi
 braised pork rice (eh)  卤肉饭  (hp) lǔ ròu fàn
-peking duck  (eh) 北京烤鸭 (hp)  Běijīng kǎoyā
+Peking duck  (eh) 北京烤鸭 (hp)  Běijīng kǎoyā
 kung pao chicken (eh)  宫保鸡丁  (hp) gōng bǎo jī dīng
 spring rolls  (eh) 春卷 (hp)  chūnjuǎn
 hot sour soup  酸辣汤 Suān là tāng
@@ -1751,7 +1753,7 @@ niánqīng (ph) 年轻 (he) young
  shíjiān    (ph) 时间 (he) time
    "       (e.g.) wǒ méiyǒu shíjiān (ph) 我没有时间 (he) i don't have time
 
-   "       (e.g.) nǐ yǒu shíjiān dǎ lánqiú ma (ph) 你有时间打篮球吗 (he) do you have time to play basketball  
+   "       (e.g.) nǐ yǒu shíjiān dǎ lánqiú ma (ph) 你有时间打篮球吗 (he) do you have time to =play basketball  
 
  wǒ méiyǒu kòng  (ph) 我没有空 (he) i'm not free / I don't have time
 
@@ -2175,7 +2177,7 @@ kào (ph) 靠 (he) approach/depend on
 kàojìn  (ph) 靠近 approach/come close 
 
 
- :: sport, motion, games ::
+ :: sport, motion, games, play, playing ::
 
 
 运动 (hp) yùndòng (pe) sports
@@ -2198,16 +2200,23 @@ play basketball  (eh) 打篮球 (hp) dǎ lánqiú
 play table tennis  (eh) 打乒乓球 (hp) dǎ pīngpāng qiú
 play tennis (eh) 打网球 (hp) dǎ wǎngqiú
 
-play  (eh) 玩 (hp) wán
-game  (eh) 游戏 (hp) yóuxì
 
+wán  (ph) 玩 (he) play a game
+yóuxì (ph) 游戏 (he) game 
+zòu 奏 (pe) =play perform music on an instrument
+   "     (has-cmpt) zòu
+   "     (has-cmpt) 奏
 
-hike/mountaineering (eh) 爬山 (hp) páshān 
+zòuyuè (ph) 奏乐 (he) =play music
 
-fitness/exercise (ph) 健身 (he) fitness/exercise
+páshān  (ph) 爬山 (he) hike/mountaineering
+
+jiànshēn (ph) 健身 (he) fitness/exercise
     " (e.g.) nǐ xǐhuān jiànshēn ma (ph) 你喜欢健身吗 (he) do you like fitness/exercise?
-exercise/workout (eh)  锻炼 (hp) duànliàn
-go out           (eh) 出去 (eh) chūqù
+
+    " (compare) duànliàn  (ph)  锻炼 (he) exercise/workout
+
+chūqù (ph) 出去 (he) go out 
 
 
 yóuyǒng (ph) 游泳 (he) swim 
@@ -2215,12 +2224,12 @@ yóuyǒng (ph) 游泳 (he) swim
     "   (e.g.) jīntiān tā yǒu le yīgè xiǎoshí de yǒng  (ph) 今天他有了一个小时的泳  (he) he swam for an hour today
 
 
-jīngguò (ph) 经过 (he) pass by / pass something  
+jīngguò (ph) 经过 (he) pass by / pass something
+   "  (involves) guò
 
 rúguǒ nǐ yīzhí wǎng qián zǒu jiù huì dào gōngyuán (ph) 如果你一直往前走就会到公园  (he) if you keep walking you will reach the park
 
-
-dance (eh) 跳舞  (eh) tiàowǔ
+tiàow  (ph) 跳舞  (he)ǔ dance
 
 
 #######################################################
@@ -3264,16 +3273,19 @@ $PREV.3 (contrast) play an instrument (ep) =zòu =奏
     "   (contrast) play a sport (ep) dǎ
 $PREV.2 (contrast) play an instrument
 
-游戏  (hp) yóuxì  (pe)game
-音乐  (hp) yīnyuè  (pe)music
-听  (hp) tīng  (pe)listen
-歌  (hp) gē  (pe)song
-tiàowǔ (ph) 跳舞  (he)dance
-唱  (hp) chàng  (pe)sing
+yóuxì  (ph) 游戏  (he) game
 
-kàn yǎnchū (ph)  看演出  (he)  watch a show/performance
+yīnyuè  (ph) 音乐  (he) music
+tīng  (ph) 听  (he) listen
+chàng  (ph) 唱  (he) sing
+gē  (pe)歌  (hp)song
+tā chàng gē chàng dé hěn hǎo (ph)  他唱歌唱得很好  (he) He sings very well
+
+tiàowǔ (ph) 跳舞  (he) dance
+
 yuèduì (ph) 乐队  (he) band
 jítā  (ph) 吉他  (he) guitar
+kàn yǎnchū (ph)  看演出  (he)  watch a show/performance
 
 wǒ méi jiànguò zhè zhǒng yuèqì  (ph)  我没见过这种乐器  (he) I haven't seen this kind of instrument
 
@@ -3896,6 +3908,7 @@ hǎoxiàng (ph) 好像 (he) seems/looks like
 
   :: challenge, competition, sport ::
 
+liànxí (ph) 练习 (he) practice/train 
 yíng (ph) 赢 (he) win
 shū (ph) 输 (he) lose
 
@@ -3904,31 +3917,23 @@ tiǎozhàn  (ph) 挑战  (he) challenge
     "    (e.g.)  zhè shì yīgè hěn dà tiǎozhàn  (ph) 这是一个很大挑战  (he) This is a big challenge
 
 
-踢 (hp) tī (pe) kick e.g. a football
-踢足球 (hp) tī zúqiú (pe) play football 
+tī (ph) 踢 (he) kick e.g. a football
+tī zúqiú (ph) 踢足球 (he) play football 
 
 bǐsài (ph) 比赛 (he) contest/race/competition
 cānjiā (ph) 参加 (he) participate/attend/take part in
 
-
-start (eh) 开始 (hp) kāishǐ
-the race is over (eh) 比赛结束了 (hp) bǐsài jiéshùle
-
-practice/train (eh) 练习 (hp) liànxí
-
-
+kāishǐ (ph) 开始 (he) start 
 bǐsài kuàiyàole (ph) 比赛快要了 (he) the game is about to start
+bǐsài jiéshùle  (ph) 比赛结束了 (he) the race is over
 
+jiémù (ph) 节目 (he) show / programme
+diànshì =jiémù (ph) 电视节目 (he) tv show
 
+biǎoxiàn (ph) 表现 (he) performance 
 
-节目 (hp) jiémù (pe) show / programme
-电视节目 (hp) diànshì jiémù (pe) tv show
-表现 (hp) biǎoxiàn (pe) performance 
-
-physical education (ep) tǐyù (ph)体育
-tǐ yù jiémù (ph)体育节目 (he)sports programme
-
-
+tǐyù (ph) 体育 (he) physical education
+tǐyù =jiémù (ph) 体育节目 (he) sports programme
 
 
 #########################################################
@@ -4548,6 +4553,8 @@ kuàilè (ph) 快乐 (he) happy
 
 ############
 
+:: zou, zhou, zao ::
+
   zou  (sl) zuo (ll) zou
   zou (sl) zao (ll) zuo
 
@@ -4556,12 +4563,11 @@ zǒu (sl) zòu
 zǒu (ph) 走 (he) walk
 zǒu (ph) 走 (pe) walk
 
-zòu 奏 (he) play perform music on an instrument
-zòu 奏 (pe) play perform music on an instrument
+zòu 奏 (pe) =play perform music on an instrument
    "     (has-cmpt) zòu
    "     (has-cmpt) 奏
 
-zòuyuè (ph) 奏乐 (he) play music
+zòuyuè (ph) 奏乐 (he) =play music
 
 ################
 
@@ -4598,6 +4604,7 @@ zuò (ph) 做 (he) do/make
 
 #################
 
+ :: hui ::
 
   huì (sl) huí (sl) huǐ 
   会 (sl) 回 (sl) 悔
@@ -4605,6 +4612,11 @@ zuò (ph) 做 (he) do/make
  dǔchē / traffic jam (sl)  dǎchē / take a cab 
  堵车 (sounds like) 打车
 
+#################
+
+ :: guo ::
+
+guò (sl) guō (sl) guò (sl) guǒ
 
 #################################################
 

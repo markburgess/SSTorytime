@@ -1936,6 +1936,17 @@ button.onclick = function uploadbutton()
    let action = "\\bookmarks";
    sendLinkSearch(action);
    };
+
+let button2 = document.createElement("button");
+button2.textContent = "TOC";
+button2.id = "toc-shortcut";
+container.appendChild(button2);
+
+button2.onclick = function uploadbutton()
+   {
+   let action = "\\toc";
+   sendLinkSearch(action);
+   };
 }
 
 /***********************************************************/

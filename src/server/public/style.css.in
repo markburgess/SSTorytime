@@ -274,8 +274,16 @@ h3 {
 }
 
 #bm-shortcut {
-    padding-left: 8px;
-    padding-right: 8px;
+    padding-left: 6px;
+    padding-right: 6px;
+    max-width: 50px;
+    margin-left: 10px;
+}
+
+
+#toc-shortcut {
+    padding-left: 6px;
+    padding-right: 6px;
     max-width: 50px;
     margin-left: 10px;
 }

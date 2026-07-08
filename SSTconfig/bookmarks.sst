@@ -14,7 +14,7 @@ Chinese, Phone  : \notes \chapter "chinese language" \context phone
 Chinese, Travel  : \notes \chapter "chinese language" \context  travel
 Chinese, Airport/Flying  : \notes \chapter "chinese language" \context  airport,flying \limit 50
 Chinese, Trains  : \notes \chapter "chinese language" \context  train  \limit 50
-Chinese, Dates and times : \notes \chapter "chinese language" \context  date  \limit 50
+Chinese, Dates and occasions : \notes \chapter "chinese language" \context  date,times,occasion  \limit 50
 Chinese, Conjugations  : \notes \chapter "chinese language" \context  conjugations
 Chinese, Hotel  : \notes \chapter "chinese language" \context  hotel  \limit 50
 Chinese, Elevators  : \notes \chapter "chinese language" \context  elevator

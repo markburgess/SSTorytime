@@ -336,46 +336,47 @@ guò nián hǎo  (ph) 过年好 happy new year
 
 :: hour , time , clock::
 
-jǐ diǎn  (ph) 几点  (he) what time
-jǐ suì   (ph) 几岁  (he) how old
-jǐ gè    (ph) 几个  (he) how many / as question
+jǐdiǎn  (ph) 几点  (he) what time
+jǐsuì   (ph) 几岁  (he) how old
+jǐgè    (ph) 几个  (he) how many (note) as question
   " (e.g.) nǐmen xiǎodé zǔ yǒu jǐ gèrén (ph) 你们晓得组有几个人 (he) How many people are in the/your group
+duōshǎo  (ph) 多少  (he) how many (note) what number of
 
-jǐ wèi   (ph) 几位 (he) several people/how many people
-jǐ nián  (ph) 几年 (he) what year
+jǐwèi   (ph) 几位 (he) several people/how many people
+jǐnián  (ph) 几年 (he) what year
 
  #
  #
 
- :: time,  order, ordering::
+:: occasion | time concepts | early , late , before, after,  order, ordering::
 
-first of all/to start with (eh) 先   (hp)  xiān
-then/next           (eh) 然后  (hp) ránhòu
-finally             (eh) 最后  (hp) zuìhòu
+now (eh) 现在 (hp) xiànzài
+jiù  (ph) 就 (he) then/just/at once/suddenly
+
+xiān  (ph) 先   (he) first of all/to start with
+ránhòu (ph) 然后  (he) then/next
+zuìhòu (ph) 最后  (he) finally
 
 zhè cì (ph) 这次 (he) this time/occasion
 cì     (ph) 次 (he) occasion or episode or time
 
-5th (eh) 第五 (hp) dì wǔ ge
-nth (eh) 第n个 (hp) dì n gè
+dì wǔ ge  (eh) 第五个 (hp) 5th
+dì n gè  (eh) 第n个 (hp) nth
 
-this is the fifth time/occasion (eh) 这是第五次 (hp) zhè shì dì wǔ cì
+zhè shì dì wǔ cì  (eh) 这是第五次 (hp) this is the fifth time/occasion
 
  #
  #
 
-:: time | time concepts | early , late , before, after ::
 
-now (eh) 现在 (hp) xiànzài
 zhèng (ph) 正 (he) just
 zhèngzài (ph) 正在  (he) just now, right now
-then/just/at once/suddenly (eh) 就 (hp) jiù
-tā gǎn gāng jìnle diàntī  (ph) 他敢刚进了电梯  (he) He just got into the elevator
-just now  (eh) 刚才 (hp) gāngcái
+gāngcái   (ph) 刚才 (he) just now
 
-tā gāng gēchàng de hěn hǎo (ph)  他刚歌唱的很好  (he) He just sang very well
+   " (e.g.) tā gǎn gāng jìnle diàntī  (ph) 他敢刚进了电梯  (he) He just got into the elevator
+   " (e.g.) tā gāng gēchàng de hěn hǎo (ph)  他刚歌唱的很好  (he) He just sang very well
 
-tā chànggē chàng dé hěn hǎo (ph)  他唱歌唱得很好  (he) He sings very well
+ $PREV.2 (compare) tā chànggē chàng dé hěn hǎo (ph)  他唱歌唱得很好  (he) He sings very well
 
 
   ####################################
@@ -1929,8 +1930,6 @@ where (eh)   在哪里  (hp) zài nǎlǐ
   "   (eh)  在哪儿   (hp) zài nǎ'er
 
 which/how many (eh)  几  (hp) jǐ
-how many       (eh) 多少 (hp) duōshǎo
-
 duōshǎo  (ph) 多少  (he) how many/what number of
 
 
@@ -2395,8 +2394,8 @@ get off horse   (eh) 下马  (hp) xiàmǎ
 
 jīchǎng (ph) 机场 (he) airport 
 
->>guónèi háng zhàn lóu (ph) 国内航站楼 (he) domestic terminal
->>guójì háng zhàn lóu  (ph) 国际航站楼 (he) international terminal
+>>guónèi háng =zhàn lóu (ph) 国内航站楼 (he) domestic terminal
+>>guójì háng =zhàn lóu  (ph) 国际航站楼 (he) international terminal
 
 international  (eh) 国际 (hp) guójì
 domestic  (eh) 国内 (hp) guónèi
@@ -2455,17 +2454,18 @@ bump into (eh)  遇到  (hp) yù dào
 
   :: countries, geography, travel, foreign ::
 
-guówài (ph) 国外 (he) foreign / abroad 
-wàidì rén  (ph) 外地人  (he) outsiders
+guówài (ph) 国外 (he) foreign / abroad
+  "    (involves) guó
 wàiguórén  (ph) 外国人  (he) foreigners
+  "    (involves) guó
+wàidì rén  (ph) 外地人  (he) outsiders
 
-country  (eh) 国家 (hp) guójiā
-
+country  (eh) 国家 (hp) guójiā  (involves) guó
 spain (he)  西班牙 (hp) xībānyá
-germany (he)  德国  (hp) déguó
+germany (he)  德国  (hp) déguó  (involves) guó
 italy (he)  意大利  (hp) yìdàlì
-uk  (he) 英国  (hp) yīngguó
-france (he)  法国  (hp) fàguó
+uk  (he) 英国  (hp) yīngguó  (involves) guó
+france (he)  法国  (hp) fàguó  (involves) guó
 india  (he) 印度  (hp) yìndù
 japan  (he) 日本  (hp) rìběn
 australia (eh) 澳大利亚 (hp) àodàlìyǎ 
@@ -2479,17 +2479,17 @@ $PREV.2 (ex) shàncháng  (ph) 擅长  (he) proficient in/good at
 
 wàiyǔ (ph)  外语  (he) foreign languages
 
-日语  (hp) rìyǔ  (pe)  japanese as a language
-韩语  (hp) hányǔ (pe) Korean language
-韩国人 (hp) hánguó rén (pe) "Korean(s)"
-汉语  (hp) hànyǔ (pe) Chinese language
-zhōngwén yǒu jǐ gè shēngdiào (ph)  中文有几个声调  (he) How many tones does Chinese have?
+rìyǔ  (ph) 日语  (he)  japanese as a language
+hányǔ (ph) 韩语  (he)  Korean language
+hánguó rén (ph) 韩国人 (he)  "Korean(s)"
+hànyǔ (ph) 汉语  (he) Chinese language
+zhōngwén yǒu =jǐgè shēngdiào (ph)  中文有几个声调  (he) How many tones does Chinese have?
 
 wǒ bùnéng shuō liúlì zhōngwén (ph) 我不能说流利中文  (he) i can't speak chinese fluently
 
 tā liǎng gè xīngqí hòu huì qù rìběn (ph) 他两个星期后会去日本  (he) he will go to japan in two weeks
 
-tā zài gēn wàiguó rén yuēhuì  (ph) 他在跟外国人约会  (he) he is dating a foreigner
+tā zài gēn =wàiguórén yuēhuì  (ph) 他在跟外国人约会  (he) he is dating a foreigner
 
 
 ###################################################
@@ -4432,7 +4432,7 @@ tā dǎbàn dé hěn piàoliang  (ph) 她打扮得很漂亮  (he) she is dressed
 
 
 tā yǒu hěnduō péngyǒu  (ph) 他有很多朋友  (he) he has many friends
-tā yǒu duōshǎo péngyǒu  (ph) 他有多少朋友  (he) how many friends does he have
+tā yǒu =duōshǎo péngyǒu  (ph) 他有多少朋友  (he) how many friends does he have
 
 nǐ néng lái ma?  (ph) 你能来吗？ (he)  can you come?
 

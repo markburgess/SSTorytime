@@ -84,6 +84,8 @@ The tool-set consistent of several components, starting with:
 * * [Using Knowledge Maps for Learning Comprehension](https://mark-burgess-oslo-mb.medium.com/using-knowledge-maps-for-learning-comprehension-15e162a251cd)
 * * [Unifying Data Structures and Knowledge Graphs](https://medium.com/@mark-burgess-oslo-mb/unifying-data-structures-and-knowledge-graphs-5c9fa32e74ea)
 * * [Using Knowledge Graphs For Inferential Reasoning](https://medium.com/@mark-burgess-oslo-mb/using-knowledge-graphs-for-inferential-reasoning-8a06e583b4d4)
+* * [Using N4L notes and SST Knowledge Graphs For Foreign Language Learning](https://medium.com/@mark-burgess-oslo-mb/using-n4l-notes-and-sst-knowledge-graphs-for-foreign-language-learning-ac4c0731320d)
+* * [From A.I. to Comprehension, with an SST extended Knowledge Graph: Study case: using SSTorytime to learn language translation](https://medium.com/@mark-burgess-oslo-mb/from-a-i-to-comprehension-with-an-sst-extended-knowledge-graph-3b832643dcfa?sharedUserId=mark-burgess-oslo-mb)
 
 
 

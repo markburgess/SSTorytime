@@ -812,6 +812,7 @@ func CompleteCloseness(sst *SST.PoSST,node SST.Node) {
 
 					var link SST.Link
 					link.Arr = arrow
+					link.Wgt = 1
 
 					t1 := SST.GetNodeTxtFromPtr(sst,neighbours[n])
 					t2 := SST.GetNodeTxtFromPtr(sst,neighbours[o])

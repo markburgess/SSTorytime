@@ -8,7 +8,7 @@ Chinese, Colours  : \notes \chapter "chinese language" \context  colour
 Chinese, Restaurant  : \notes \chapter "chinese language" \context  restaurant
 Chinese, Coming and going  : \notes \chapter "chinese language" \context  coming,going
 Chinese, Foods  : \notes \chapter "chinese language" \context "food types"
-Chinese, Food ordering scene  : \notes \chapter "chinese language" \context  food
+Chinese, Food ordering scene  : \notes \chapter "chinese language" \context food, "ordering food scene" \limit 100
 Chinese, Idiom  : \notes \chapter "chinese language" \context idiom,phrase
 Chinese, Phone  : \notes \chapter "chinese language" \context phone
 Chinese, Travel  : \notes \chapter "chinese language" \context  travel

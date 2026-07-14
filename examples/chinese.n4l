@@ -1197,8 +1197,6 @@ hat  (eh) 帽子(hp)  màozi
 try on  (eh) 试试(hp)  shì shì 
 he wants to try this  (eh) 他想试试这条 (hp) tā xiǎng shì shì zhè tiáo
 
-shāngdiàn (ph) 商店 (he) shop
-jiǔdiàn (ph) 酒店 (he)  hotel 
 
 :: look, see, looking ::
 
@@ -1243,6 +1241,7 @@ let/allow/permit   (eh) 让  (hp) ràng
 
 :: food, shopping ::
 
+shāngdiàn (ph) 商店 (he) shop
 
 xīn (ph) 新 (he)new 
 新鲜 (hp)xīnxiān (pe)fresh
@@ -1820,8 +1819,6 @@ mahjong  (eh) 麻将 (hp) májiàng
 tā wán fēipán, wán dé hǎobù hǎo  (ph) 他玩飞盘玩得好不好  (he) Is he good at playing Frisbee?
 
 he is interested in american culture  (eh) 他对美国文化感兴趣 (hp) tā duì měiguó wénhuà gǎn xìngqù
-
-photograph (eh)  照片 (hp)  zhàopiàn
 
 
 
@@ -2890,8 +2887,34 @@ Your leg is broken (eh) 你的腿断了 (hp) nǐ de tuǐ duànle
 
  :: hotel ::
 
-酒店  (hp) jiǔdiàn  (pe) hotel
-房间  (hp) fángjiān  (pe) room
+jiǔdiàn (ph) 酒店 (he)  hotel 
+fángjiān (ph) 房间  (he) room
+
+jiǔdiàn wài yǒuyī liàng chūzū chē (ph) 酒店外有一辆出租车 (he) there is a taxi outside the hotel
+
+
+wǒ de xínglǐ zài fángjiān lǐ (ph) 我的行李在房间里 (he) my luggage is in the room
+   " (contrast) fángjiān li yǒu wǒ de xínglǐ (ph) 房间里有我的行李 (he) the room has my luggage in it
+
+:: hotel, home, furniture, zi ::
+
+zhuōzi (ph) 桌子 (he) table 
+cānzhuō (ph) 餐桌 (he) dining table
+    " (see) $dtable.1
+
+shelf (eh) 架子 (hp) jiàzǐ
+chair  (eh) 椅子 (hp) yǐzi
+
+chōutì  (ph) 抽屉  (he) drawer
+   "    (e.g.) $drawerex.1
+
+@box xiāngzǐ  (ph) 箱子  (he) box
+
+zhuōzǐ shàng yǒu yī běn shū        (ph) 桌子上有一本书    (he) there is a book on the table
+   " (similar) bīngxiāng li yǒu niúnǎi           (ph) 冰箱里有牛奶      (he) there is milk in the fridge
+   " (contrast) zhàopiàn zài jiàzǐ shàng          (ph) 照片在架子上      (he) the photo is on the shelf
+
+
 
  :: elevator, escalator, up, down, rising, falling ::
 
@@ -2916,19 +2939,6 @@ escalator  (eh) 自动扶梯 (hp) zìdòng fútī
 by  (eh) 被 (hp) bèi 
 
 
-:: hotel, home, furniture, zi ::
-
-zhuōzi (ph) 桌子 (he) table 
-cānzhuō (ph) 餐桌 (he) dining table
-    " (see) $dtable.1
-
-shelf (eh) 架子 (hp) jiàzǐ
-chair  (eh) 椅子 (hp) yǐzi
-
-chōutì  (ph) 抽屉  (he) drawer
-   "    (e.g.) $drawerex.1
-
-@box xiāngzǐ  (ph) 箱子  (he) box
 
  :: devices, appliances ::
 
@@ -3230,7 +3240,7 @@ the taxi is waiting outside the hotel (eh)  "出租车已在酒店外等(候)" (
 
 ##############################################
 
-:: environment ::
+:: shu, similar sounds ::
 
 书  (hp) shū (pe) book
 树  (hp) shù (pe) tree
@@ -3250,18 +3260,18 @@ diànnǎo (ph) 电脑  (he) computer
 dǎkāi (ph) 打开 (he) switch on / turn on
   " (e.g.) tā dǎkāi diànnǎo (ph) 他打开电脑  (he) he turns on the computer
 
-电话  (hp) diànhuà  (pe)telephone
+diànhuà  (ph) 电话  (he) telephone
 
-手机  (hp) shǒujī  (pe) cellphone
-收据  (hp) shōujù (pe) receipt
+shǒujī  (ph) 手机  (he) cellphone
+   " (sl) shōujù (ph) 收据  (he) receipt
  
-电  (hp) diàn  (pe)electric
-telephone call  (ep) 打电话  (hp) dǎ diànhuà
+diàn  (ph) 电  (he) electric
 
-take selfie  (eh) 自拍 (hp)  zìpāi
+dǎ diànhuà   (ph) 打电话  (he) telephone call
+
+zìpāi  (ph) 自拍 (he) take selfie 
 
 :: social media, internet, electronic::
-
 
 wǎng  (ph) 网  (he) net / network
 
@@ -3296,6 +3306,13 @@ friends list (eh)  好友 (hp)  hǎoyǒu
 click  (eh) 点击 (hp)  diǎnjī
 'likes'  (eh) 赞 (hp)  zàn
 
+ :: photo ::
+
+photograph (eh)  照片 (hp)  zhàopiàn
+
+please share this photo (eh) 请分享这张照片 (hp) qǐng fēnxiǎng zhè zhāng zhàopiàn
+
+diànnǎo li yǒu wǒ de zhàopiàn  (ph) 电脑里有我的照片  (he) my photos are in the computer
 
 ##############################################
 
@@ -4443,8 +4460,6 @@ qǐng suíbiàn zuò  (ph) 请随便坐  (he) please sit wherever you like
 suíbiàn nǐ  (ph) 随便你  (he) whatever you want / it's up to you
 
 
-please share this photo (eh) 请分享这张照片 (hp) qǐng fēnxiǎng zhè zhāng zhàopiàn
-
 nǐ xiǎng zuò shénme chē  (ph) 你想做什么车  (he) what kind of transport do you want
 
 
@@ -4454,7 +4469,7 @@ wǒ xiǎng zuò chūzū chē qù wǒ de jiǔdiàn  (ph) 我想坐出租车去我
 tāmen dōu bù huì yòng kuàizi  (ph) 他们都不会用筷子  (he) none of them know how to use chopsticks
 
 wǒ zài zhè'er xià chē ma  (ph) 我在这儿下车吗  (he) do i get off here?
-diànnǎo li yǒu wǒ de zhàopiàn  (ph) 电脑里有我的照片  (he) my photos are in the computer
+
 
 
 qǐng wǎng yòubiān zǒu  (ph) 请往右边走  (he) please go to the right

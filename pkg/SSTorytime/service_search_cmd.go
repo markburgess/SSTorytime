@@ -566,7 +566,10 @@ func MinMaxPolicy(search SearchParameters) (int,int) {
 
 	// Defaults
 
-	if search.Chapter == "TableOfContents" {
+	if search.Name == nil && (search.Chapter != "" || search.Context != nil) {
+
+		maxlimit = 50
+	} else if search.Chapter == "TableOfContents" {
 
 		// We want to see all contents
 		maxlimit = 50

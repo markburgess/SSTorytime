@@ -574,10 +574,6 @@ func MinMaxPolicy(search SearchParameters) (int,int) {
 		// We want to see all contents
 		maxlimit = 50
 
-	} else if search.Range > 0 {
-
-		maxlimit = search.Range
-
 	} else if len(search.Max) == 1 {  // if only one, we probably meant Range
 
 		maxlimit = search.Max[0]
@@ -601,6 +597,12 @@ func MinMaxPolicy(search SearchParameters) (int,int) {
 		}
 	}
 
+	if search.Range > 0 {
+
+		maxlimit = search.Range
+
+	}
+	
 	return minlimit,maxlimit
 }
 

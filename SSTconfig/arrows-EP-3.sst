@@ -202,6 +202,7 @@
 
  :: languages, translation of meaning ::
 
+ + is slang for          (slang) - has slang expression (has_slang)
  + english has french    (ef) - french has english    (fe)
  + pinyin has english    (pe) - english has pinyin    (ep) 
  + pinyin has hanzi      (ph) - hanzi has pinyin      (hp)

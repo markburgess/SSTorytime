@@ -351,7 +351,7 @@ Good fortune (eh) 好财运 (hp) hǎo cáiyùn
 
 ###############################################################
 
- :: ordering food scene, example episode, _sequence_ ::
+ :: ordering food scene, episode, _sequence_ ::
 
 wǒ huílái le (ph) 我回来了 (he) I'm back
 
@@ -397,6 +397,28 @@ wǒ xūyào gěi wǒ shǒujī chōngdiàn (ph) 我需要给我手机充电 (he) 
 chōngdiàn xiàn (ph) 充电线 (he) Charging cable
 
  -:: _sequence_ ::
+
+ :: grammar, for, give, gei ::
+
+ gěi (ph) 给 (he) give [verb] or "for" [prep]
+  " (e.g.) wǒ xūyào gěi wǒ shǒujī chōngdiàn (note)  When you see gěi wǒ / 给我 together, it’s natural to translate it as "give me" or "for me." But in this specific sentence, they actually belong to two different grammatical blocks. Instead of grouping "gěi wǒ" together, the sentence groups wǒ shǒujī [我手机] together. 1>  wǒ [我] = I / my; 2>  xūyào [需要] = need to; 3>  gěi [给] = [preposition] for / to; 4>  wǒ shǒujī [我手机] = my phone [the "de" 的 is omitted here, which is very common in casual speech]; 5> chōngdiàn [充电] = charge [the battery]. So the literal structure is: "I need to [for] [my phone] [charge]."
+
+$PREV.3 (then) If "gěi wǒ" were acting as a single unit meaning "for me" or "give me", the sentence would look like this (e.g.)  gěi wǒ yī bēi shuǐ. (ph) 给我一杯水。(he) Give me a glass of water.
+
+$PREV.2 (e.g.) tā gěi wǒ mǎi le shǒujī. (ph) 他给我买了手机。(he)  He bought a phone for me.
+
+
+
+wǒ xūyào gěi wǒ shǒujī chōngdiàn (note) why "gěi" is there: in Chinese, you don't just "charge a phone" [verb + direct object] the way you do in English. Instead, you perform the action of "charging" for or to the phone.
+
+gěi wǒ shǒujī chōngdiàn (ph) 给我手机充电 (he) to charge my phone [literally: "for my phone, charge"]
+
+gěi māma dǎ diànhuà (ph) 给妈妈打电话 (he) to call mom [literally: "for mom, make a call"]
+
+What "gěi wǒ" would mean if grouped together
+
+
+
 
 ###############################################################
 
@@ -545,7 +567,7 @@ yīcì (ph) 一次 (he) once/once time
 
  #################################
 
- :: conjugations, examples ::
+ :: grammar, conjugations ::
 
 i am sleeping (eh) 我在睡觉  (hp) wǒ zài shuìjiào
 i am eating (eh)  我在吃/饭  (hp) wǒ zài chī/fàn
@@ -992,7 +1014,7 @@ always  (eh) 总是 (hp) zǒng shì
 he is not only handsome but also smart  (eh) 他不但帅而且聪明 (hp) Tā bùdàn shuài érqiě cōngmíng
 
 
--::modal, adverbs, example ::
+-::modal, adverbs ::
 
 
 
@@ -2080,8 +2102,6 @@ where (eh)   在哪里  (hp) zài nǎlǐ
 which/how many (eh)  几  (hp) jǐ
 duōshǎo  (ph) 多少  (he) how many/what number of
 
-
-+:: example, usage ::
 
 dìtiě zhàn de míngzì zěnme xiě  (ph) 地铁站的名字怎么写  (he) How to write the name of the subway station
 
@@ -3229,7 +3249,7 @@ dìxiàshì (ph)  地下室  (he) basement
 dìxià (ph)  地下  (he) underground
 
 
- :: position, relative position, examples::
+ :: position, relative position ::
 
 contains (ep) lǐ yǒu (ph) 里有
 

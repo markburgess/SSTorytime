@@ -1,16 +1,20 @@
 
 # Main Contributors
 
+SSTorytime is the idea and programming creation of:
+
+* [Mark Burgess](http://markburgess.org)
+
+It was designed and written by hand, without the aid of "AI".
+The concept and long term plan are based on Promise Theory and Semantic
+Spacetime. Program architecture, design, and implementation.
+
 Many discussions and ideas have emerged from 20 years of research
 experience into knowledge representations, going back to my work with
 Alva Couch in 2007. I continue to benefit from comments and ideas I
 receive.
 
-* [Mark Burgess](http://markburgess.org)
-
-Concept, long term plan, based on Promise Theory and Semantic
-Spacetime. Program architecture, design, and implementation. Slow
-learner.
+## Other contributors:
 
 * Alex Shadrin
 

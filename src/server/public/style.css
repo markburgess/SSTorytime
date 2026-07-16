@@ -150,6 +150,7 @@ h3 {
 
 .notes-view {
   width: 95svw;
+  margin-left: 2ch;
   text-wrap: wrap balance;
 }
 

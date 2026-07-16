@@ -567,7 +567,7 @@ yīcì (ph) 一次 (he) once/once time
 
  #################################
 
- :: grammar, conjugations ::
+ :: grammar, conjugations, comparison ::
 
 i am sleeping (eh) 我在睡觉  (hp) wǒ zài shuìjiào
 i am eating (eh)  我在吃/饭  (hp) wǒ zài chī/fàn
@@ -1046,14 +1046,33 @@ kěnéng (ph) 可能 (he) might/may/possibly
 
 ################################
 
- :: better ::
+#################################
 
+:: comparison , compare, best, biggest, better, bi ::
+
+
+@geng gèng / 更 and jiào /较, which is short for bǐjiào 比较, are both used to make comparisons, but they do it in different ways. gèng pushes a comparison to a higher level "even more", while jiào softens it, "relatively" or "quite".
 
 perfect (eh) 完美 (hp) wánměi 
 
-gèng (ph)  更 (he) better
-   " (e.g.) míngtiān huì gèng hǎo(ph)  明天会更好  (he) tomorrow will be better
+táng bǐ fēngmì gèng tián. (ph) 糖比蜂蜜更甜。 (he) sugar is sweeter than honey.
+  " (involves) gèng
 
+
+
+gèng (ph)  更 (he) more / compare
+   " (e.g.) míngtiān huì gèng hǎo(ph)  明天会更好  (he) tomorrow will be better
+   " (note) $geng.1
+
+bǐjiào  (ph) 比较 (hp) relatively / quite / comparatively
+  " (e.g.) zhèlǐ de cài bǐjiào hào chī (ph)  这里的菜比较好吃 (he) The food here is better
+  " (note) $geng.1
+   
+jiào   (ph) 较 (he) relatively / quite / compare
+  "   (compare) gèng
+  "  (short for) bǐjiào 
+  " (note) $geng.1
+   
 nǐ zuì hǎo  (ph)  你最好  (he)  You had better ...
     " (e.g.) nǐ zuì hǎo bǎ chē tíng zài xuéxiào fùjìn (ph)  你最好把车停在学校附近  (he) You'd better park your car near the school
 
@@ -1065,18 +1084,10 @@ nǐ de yīngyǔ yuè lái yuè hǎo(ph)  你的英语越来越好  (he) your eng
 
 
 
-#################################
-
-:: comparisons , compare, best, biggest, better, bi uses ::
-
 
 @rule_cmp  bǐ ... adj/adv   (rule) is...adj/adv/older/faster/stronger...than 
    " (e.g.) zhè jiàn chènshān bǐ nǐ de qúnzǐ guì (ph) 这件衬衫比你的裙子贵 (he) this shirt is more expensive than your skirt
    " (e.g.) wǒ de bàba bǐ nǐ de dà (ph) 我的爸爸比你的大 (he) My dad is bigger than yours
-
-jiào   (ph) 较 (he) compare/more
-bǐjiào  (ph) 比较 (hp) comparatively
-  " (e.g.) zhèlǐ de cài bǐjiào hào chī (ph)  这里的菜比较好吃 (he) The food here is better
 
 
 @rule_most bǐjiào... adj/adv   (rule) the adj/adv/bigger/faster/stronger one 

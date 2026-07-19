@@ -2089,6 +2089,23 @@ zhǒng (ph) 种 (he) a number of types of
   "  (e.g.) yī zhǒng dòngwù (pe) a type of animal
   " (e.g.) yī zhǒng gǎnjué (pe) a kind of feeling
 
+
+that pair of shoes (eh) 那双鞋 (hp) nà shuāng xié
+that pair of trousers  (eh) 那条裤子  (hp) nà tiáo kùzǐ
+that dress/skirt  (eh) 那条裙子  (hp) nà tiáo qúnzǐ
+zhè zhāng huàzhuāngpǐn (ph) 这张化妆品 (he) this cosmetic
+that panda  (eh) 那只熊猫  (hp) nà zhǐ xióngmāo
+that horse (eh)  那匹马  (hp) nà pǐ mǎ
+that cat  (eh) 那只猫  (hp) nà zhǐ māo
+that dog  (eh) 那只狗  (hp) nà zhǐ gǒu
+that bird  (eh) 那只鸟  (hp) nà zhǐ niǎo
+two birds  (eh) 两只鸟  (hp) liǎng zhī niǎo
+that tiger (eh) 那只老虎  (hp) nà zhǐ lǎohǔ
+those two tigers  (eh) 那两只老虎  (hp) nà liǎng zhī lǎohǔ
+
+@dtable yī zhāng cānzhuō (ph)  一张餐桌  (he) a dining table
+
+
 ################################
 
 :: fractions, measures, group types , gaggle, school of fish::
@@ -2119,24 +2136,22 @@ that kind  (eh) 那种 (hp) nà zhǒng
 
 approximate/about  (eh) 大约(hp)  dàyuē
 
-that pair of shoes (eh) 那双鞋 (hp) nà shuāng xié
-that pair of trousers  (eh) 那条裤子  (hp) nà tiáo kùzǐ
-that dress/skirt  (eh) 那条裙子  (hp) nà tiáo qúnzǐ
-zhè zhāng huàzhuāngpǐn (ph) 这张化妆品 (he) this cosmetic
-that panda  (eh) 那只熊猫  (hp) nà zhǐ xióngmāo
-that horse (eh)  那匹马  (hp) nà pǐ mǎ
-that cat  (eh) 那只猫  (hp) nà zhǐ māo
-that dog  (eh) 那只狗  (hp) nà zhǐ gǒu
-that bird  (eh) 那只鸟  (hp) nà zhǐ niǎo
-two birds  (eh) 两只鸟  (hp) liǎng zhī niǎo
-that tiger (eh) 那只老虎  (hp) nà zhǐ lǎohǔ
-those two tigers  (eh) 那两只老虎  (hp) nà liǎng zhī lǎohǔ
+ + :: liang ::
 
-@dtable yī zhāng cānzhuō (ph)  一张餐桌  (he) a dining table
+量 is a "polyphonic character" [多音字 - duōyīn zì], meaning it has two different pronunciations and meanings depending on how it's used.
 
-+:: another ::
+liáng [2nd tone] (ph) 量 (he) To Measure [verb]
+  " (e.g.) liáng shēngāo (ph) 量身高 (he) Measure height
+  " (e.g.) liáng tǐwēn (ph) 量体温 (he) Take/measure body temperature
 
-wǒmen xiǎng zàishēng yīgè háizǐ (ph) 我们想再生一个孩子 (he) We want to have another child
+liàng [4th tone] (ph) 量 (he) Quantity / Capacity [noun]
+  " (e.g.) shùliàng (ph) 数量 (he) quantity / amount
+  " (e.g.) lìliàng (ph) 力量 (he) strength / power
+  " (e.g.) jiǔliàng (ph) 酒量 (he) alcohol tolerance /literally "wine capacity"
+  " (e.g.) zhè zuò =shuǐkù de róngliàng hěn dà. (ph)    这座水库的容量很大 (he) The capacity of this reservoir is very large.
+
+shuǐkù (ph) 水库 (he) reservoir
+
 
 #######################################################
 
@@ -2246,11 +2261,10 @@ stop  (eh)  停止  (hp) tíngzhǐ
 
 zuò  (ph) 做  (he) do/make
 yào  (ph) 要  (he) want/need to 
-
-+:: health, medical ::
   "  (ph) 药 (he) medicine
 药 (sounds like) 要
--:: health, medical ::
+
+wǒmen xiǎng zàishēng yīgè háizǐ (ph) 我们想再生一个孩子 (he) We want to have another child
 
 wǒ chángshì (ph) 我尝试 (he) i try/attempt 
 
@@ -2350,34 +2364,34 @@ answer (eh) 答 (hp) dá (word-in) huídá
 
 go/stay home (ep) qǐngjià (ph) 请假
 
+go  (eh)去  (hp) qù
 dào (ph) 到 (he) arrive
 lái (ph) 来 (he) come/arrive/happen
 liú (ph) 留 (he) stay
 
 shànglái  (ph) 上来  (he) come up
-Shàngqù  (ph) 上去  (he) go up
-Xiàlái  (ph) 下来  (he) come down
-Xiàqù  (ph) 下去  (he) go down
+shàngqù  (ph) 上去  (he) go up
+xiàlái  (ph) 下来  (he) come down
+xiàqù  (ph) 下去  (he) go down
 guòlái  (ph)  过来  (he) come over
 guòqù  (ph) 过去  (he) go over there/away
+jìn  (ph) 进 (he) enter
 jìnlái  (ph) 进来  (he) come in
 jìnqù  (ph) 进去  (he) enter/go on in
 chūlái (ph)  出来  (he) come out [e.g. to play]
 chūqù (ph)  出去  (he) go out [e.g. to play]
 
 
-路  (hp) lù  (pe) the way/path
-
-走  (hp) zǒu  (pe) walk
-go  (eh)去  (hp) qù
-往  (hp) wǎng  (pe)go/walk ..
+lù  (ph) 路 (he) the way/path
+zǒu  (ph) 走  (he) to walk
+wǎng  (ph) 往  (he) a direction imperative (note) =wàng and =zǒu can appear in contexts involving moving or walking, they actually belong to entirely different parts of speech. The former is a direction indicator, and the latter is the action of walking itself.
+  " (e.g.) wàng qián zǒu. (ph) 往前走。 (he) walk toward the front/go straight ahead.
+  " (e.g.) wàng zuǒ kàn. (ph) 往左看。 (he) Look toward the left/look left
 
 leave  (eh) 离开  (hp) líkāi
 arrive  (eh) 到  (hp) dào
 come  (eh) 来  (hp) lái
 
-enter (eh) 进 (hp) jìn
-come in (eh) 进来 (hp) jìnlái
 
  +:: _sequence_ ::
 

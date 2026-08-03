@@ -376,8 +376,8 @@ switch (obj.Response)
       title = "Arrow lookup";
       break;
    case "Error":
-     console.log(obj.Response);
-     title = obj.Content;
+     console.log(obj.Response, obj.Content);
+     title = (typeof obj.Content === "string") ? obj.Content : "Search error";
      break;
    default:
       console.log("OBJ",obj);
@@ -472,7 +472,7 @@ DrawGrid(0, 0, 1);
 
 const separates = 0;
 
-if (obj.Content == null || obj.Content.length == 0)
+if (obj.Content == null || !Array.isArray(obj.Content) || obj.Content.length == 0)
    {
    panel.textContent = "No result";
    return;
@@ -502,6 +502,12 @@ section.appendChild(panel);
 
 CANVAS = CreateCanvas();
 DrawGrid(0, 0, 1);
+
+if (obj == null || obj.Content == null || !Array.isArray(obj.Content) || obj.Content.length == 0)
+   {
+   panel.textContent = "No result";
+   return;
+   }
 
 // Iterate over the cones from different starting nodes
 
@@ -601,6 +607,12 @@ section.appendChild(panel);
 CANVAS = CreateCanvas();
 DrawGrid(0, 0, 1);
 
+if (obj == null || obj.Content == null || !Array.isArray(obj.Content) || obj.Content.length == 0)
+   {
+   panel.textContent = "No result";
+   return;
+   }
+
 let counter = 1;
 let laststory = obj.Content[0]; // arbitrary init
 
@@ -666,6 +678,14 @@ panel.appendChild(item);
 
 CANVAS = CreateCanvas();
 DrawGrid(0, 0, 1);
+
+if (obj == null || obj.Content == null || !Array.isArray(obj.Content) || obj.Content.length == 0)
+   {
+   let empty = document.createElement("p");
+   empty.textContent = "No result";
+   panel.appendChild(empty);
+   return;
+   }
 
 let counter = 0;
 
@@ -798,6 +818,14 @@ panel.appendChild(item);
 CANVAS = CreateCanvas();
 DrawGrid(0, 0, 1);
 
+if (obj == null || obj.Content == null || !Array.isArray(obj.Content) || obj.Content.length == 0)
+   {
+   let empty = document.createElement("p");
+   empty.textContent = "No result";
+   panel.appendChild(empty);
+   return;
+   }
+
 let counter = 0;
 
 for (let chpblk of obj.Content)
@@ -902,6 +930,14 @@ panel.appendChild(title);
 
 CANVAS = CreateCanvas();
 DrawGrid(0, 0, 1);
+
+if (obj == null || obj.Content == null || !Array.isArray(obj.Content) || obj.Content.length == 0)
+   {
+   let empty = document.createElement("p");
+   empty.textContent = "No result";
+   panel.appendChild(empty);
+   return;
+   }
 
 let counter = 0;
 let lastsection = "xxx";
@@ -1011,6 +1047,12 @@ let section = document.querySelector("main");
 let panel = document.createElement("span");
 panel.id = "main_content_panel";
 section.appendChild(panel);
+
+if (obj == null || obj.Content == null || !Array.isArray(obj.Content) || obj.Content.length == 0)
+   {
+   panel.textContent = "No result";
+   return;
+   }
 
 CANVAS = CreateCanvas();
 DrawGrid(0, 0, 1);
@@ -2552,15 +2594,23 @@ fetch("/searchN4L", { method: POST_METHOD, body: formData })
       case "Arrows":
          DoArrowsPanel(resp);
          break;
+      case "STAT":
+         DoStatsPanel(resp);
+         break;
       case "Error":
-	console.log(resp.Response);
+	console.log(resp.Response, resp.Content);
+	DisplayError(typeof resp.Content === "string" ? resp.Content : "No solver matched this search");
+	break;
+      default:
+	console.log("Unhandled response kind", resp.Response, resp);
 	break;
       }
    })
 
 .catch((error) =>
    {
-   console.log("error ", error + " No solver found");
+   console.log("error ", error);
+   DisplayError("Search failed: " + error);
    });
 }
 

@@ -133,11 +133,8 @@ func DBCommit(sst *PoSST, qstr string) {
 		return
 	}
 
-	cstr := "BEGIN;\n"
-	cstr += qstr
-	cstr += "\nCOMMIT;"
-
-	row, err := sst.query(qstr)
+	// Multi-statement INSERT batches (simple protocol via sst.exec).
+	_, err := sst.exec(qstr)
 
 	if err != nil {
 		s := fmt.Sprint("Failed to insert", err)
@@ -148,10 +145,6 @@ func DBCommit(sst *PoSST, qstr string) {
 		}
 		return
 	}
-
-	row.Close()
-	return
-
 }
 
 // **************************************************************************
@@ -189,7 +182,7 @@ func UploadNodeToDB(sst *PoSST, n Node) string {
 
 func UploadArrowsToDB(sst PoSST) {
 
-	qstr := "BEGIN;\n"
+	var qstr string
 
 	for arrow := range sst.ARROW_DIRECTORY {
 
@@ -201,28 +194,14 @@ func UploadArrowsToDB(sst PoSST) {
 
 	}
 
-	qstr += "\nCOMMIT;"
-
-	row, err := sst.query(qstr)
-
-	if err != nil {
-		s := fmt.Sprint("Failed to insert", err)
-
-		if strings.Contains(s, "duplicate key") {
-		} else {
-			fmt.Println(s, "FAILED \n", qstr, err)
-		}
-		return
-	}
-
-	row.Close()
+	DBCommit(&sst, qstr)
 }
 
 // **************************************************************************
 
 func UploadInverseArrowsToDB(sst PoSST) {
 
-	qstr := "BEGIN;\n"
+	var qstr string
 
 	for arrow := range sst.INVERSE_ARROWS {
 		plus := arrow
@@ -231,20 +210,7 @@ func UploadInverseArrowsToDB(sst PoSST) {
 		qstr += fmt.Sprintf("INSERT INTO ArrowInverses (Plus,Minus) SELECT %d,%d WHERE NOT EXISTS (SELECT Plus,Minus FROM ArrowInverses WHERE Plus = %d OR minus = %d);\n", plus, minus, plus, minus)
 	}
 
-	qstr += "\nCOMMIT;"
-
-	row, err := sst.query(qstr)
-
-	if err != nil {
-		s := fmt.Sprint("Failed to insert", err)
-
-		if strings.Contains(s, "duplicate key") {
-		} else {
-			fmt.Println(s, "FAILED \n", qstr, err)
-		}
-		return
-	}
-	row.Close()
+	DBCommit(&sst, qstr)
 }
 
 // **************************************************************************

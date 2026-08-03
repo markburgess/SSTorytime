@@ -418,8 +418,7 @@ func HandleSearch(sst SST.PoSST, search SST.SearchParameters, line string, w htt
 	if (name && from) || (name && to) {
 		fmt.Printf("\nSearch \"%s\" has conflicting parts <to|from> and match strings\n", line)
 		w.Header().Set("Content-Type", "application/json")
-		data, _ := json.Marshal("conflicting to|from and match strings")
-		w.Write(PackageResponse(sst, search, "Error", string(data)))
+		w.Write(PackageResponse(sst, search, "Error", marshalJSONString("conflicting to|from and match strings")))
 		return
 	}
 
@@ -489,8 +488,7 @@ func HandleSearch(sst SST.PoSST, search SST.SearchParameters, line string, w htt
 
 	w.Header().Set("Content-Type", "application/json")
 
-	data, _ := json.Marshal("No solver matched this search")
-	response := PackageResponse(sst, search, "Error", string(data))
+	response := PackageResponse(sst, search, "Error", marshalJSONString("No solver matched this search"))
 
 	w.Write(response)
 
@@ -503,8 +501,7 @@ func HandleBookmarks(w http.ResponseWriter, r *http.Request, sst SST.PoSST, sear
 
 	marks := SST.GetBookmarksFromDB(sst)
 
-	data, _ := json.Marshal(marks)
-	response := PackageResponse(sst, search, "Bookmarks", string(data))
+	response := PackageResponse(sst, search, "Bookmarks", marshalJSONArray(marks))
 
 	//fmt.Println("REPLY:\n",string(response))
 
@@ -543,8 +540,7 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request, sst SST.PoSST, search S
 		array = append(array, nodeevent)
 	}
 
-	data, _ := json.Marshal(array)
-	response := PackageResponse(sst, search, "Orbits", string(data))
+	response := PackageResponse(sst, search, "Orbits", marshalJSONArray(array))
 
 	//fmt.Println("REPLY:\n",string(response))
 
@@ -587,9 +583,7 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request, sst SST.PoSST, np
 		}
 	}
 
-	array, _ := json.Marshal(cones)
-
-	response := PackageResponse(sst, search, "ConePaths", string(array))
+	response := PackageResponse(sst, search, "ConePaths", marshalJSONArray(cones))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -651,9 +645,8 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request, sst SST.PoSST, left
 
 		soln.Paths = wpaths
 		pack = append(pack, soln)
-		array_pack, _ := json.Marshal(pack)
 
-		response := PackageResponse(sst, search, "PathSolve", string(array_pack))
+		response := PackageResponse(sst, search, "PathSolve", marshalJSONArray(pack))
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(response)
@@ -748,9 +741,7 @@ func HandleStories(w http.ResponseWriter, r *http.Request, sst SST.PoSST, search
 		}
 	}
 
-	jarray, _ := json.Marshal(node_events)
-
-	response := PackageResponse(sst, search, "Sequence", string(jarray))
+	response := PackageResponse(sst, search, "Sequence", marshalJSONArray(node_events))
 
 	//fmt.Println("Sequence...",string(response))
 
@@ -815,8 +806,7 @@ func HandleMatchingArrows(w http.ResponseWriter, r *http.Request, sst SST.PoSST,
 		}
 	}
 
-	data, _ := json.Marshal(arrows)
-	response := PackageResponse(sst, search, "Arrows", string(data))
+	response := PackageResponse(sst, search, "Arrows", marshalJSONArray(arrows))
 
 	fmt.Println("Arrows...", string(response))
 
@@ -841,9 +831,7 @@ func ShowStats(w http.ResponseWriter, r *http.Request, sst SST.PoSST, search SST
 		}
 	}
 
-	data, _ := json.Marshal(retval)
-
-	response := PackageResponse(sst, search, "STAT", string(data))
+	response := PackageResponse(sst, search, "STAT", marshalJSONArray(retval))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -922,8 +910,7 @@ func ShowOverview(w http.ResponseWriter, r *http.Request, sst SST.PoSST, search 
 
 	// Package JSON
 
-	data, _ := json.Marshal(chapters)
-	response := PackageResponse(sst, search, "FINDS", string(data))
+	response := PackageResponse(sst, search, "FINDS", marshalJSONArray(chapters))
 
 	//fmt.Println("Chap/context...", string(response))
 
@@ -984,8 +971,7 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request, sst SST.PoSST, 
 		chapters = append(chapters, chap_anchor)
 	}
 
-	data, _ := json.Marshal(chapters)
-	response := PackageResponse(sst, search, "TOC", string(data))
+	response := PackageResponse(sst, search, "TOC", marshalJSONArray(chapters))
 
 	//fmt.Println("Chap/context...", string(response))
 
@@ -1081,6 +1067,17 @@ func ShowNode(sst *SST.PoSST, nptr []SST.NodePtr) string {
 
 func PackageResponse(sst SST.PoSST, search SST.SearchParameters, kind string, jstr string) []byte {
 
+	// json.Marshal(nil slice) is "null"; the web UI does for-of over Content for array kinds.
+	// Keep Error (string) and PageMap (object) as-is.
+	switch kind {
+	case "Error", "PageMap":
+		// Content is a JSON string or object
+	default:
+		if jstr == "" || jstr == "null" {
+			jstr = "[]"
+		}
+	}
+
 	ambien, key, now := SST.GetTimeContext()
 	now_ctx := SST.UpdateSTMContext(&sst, ambien, key, now, search)
 
@@ -1090,6 +1087,24 @@ func PackageResponse(sst SST.PoSST, search SST.SearchParameters, kind string, js
 	response := fmt.Sprintf("{ \"Response\" : \"%s\",\n \"Content\" : %s,\n \"Time\" : \"%s\", \"Intent\" : %s, \"Ambient\" : %s }", kind, jstr, key, intent, ambient)
 
 	return []byte(response)
+}
+
+// marshalJSONArray encodes v as a JSON array; nil slices become [].
+func marshalJSONArray(v any) string {
+	data, err := json.Marshal(v)
+	if err != nil || len(data) == 0 || string(data) == "null" {
+		return "[]"
+	}
+	return string(data)
+}
+
+// marshalJSONString encodes a plain string as a JSON string value.
+func marshalJSONString(s string) string {
+	data, err := json.Marshal(s)
+	if err != nil {
+		return `""`
+	}
+	return string(data)
 }
 
 //******************************************************************
@@ -1159,8 +1174,7 @@ func ListCacheAssets(path string) []byte {
 		array = append(array, "/Assets/"+path+file.Name())
 	}
 
-	data, _ := json.Marshal(array)
-	response = fmt.Sprintf("{ \"Response\" : \"Assets\",\n \"Content\" : %s }", data)
+	response = fmt.Sprintf("{ \"Response\" : \"Assets\",\n \"Content\" : %s }", marshalJSONArray(array))
 
 	return []byte(response)
 

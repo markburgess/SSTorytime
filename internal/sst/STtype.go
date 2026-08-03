@@ -6,11 +6,6 @@
 
 package sst
 
-import (
-	"fmt"
-	"os"
-)
-
 // *************************************************************************
 
 func GetSTIndexByName(stname, pm string) int {
@@ -71,37 +66,6 @@ func PrintSTAIndex(stindex int) string {
 	const endgreen = "\x1b[0m"
 
 	return green + ty + endgreen
-}
-
-// **************************************************************************
-
-func STTypeDBChannel(sttype int) string {
-
-	// This expects the range for sttype to be unshifted 0,+/-
-
-	var link_channel string
-	switch sttype {
-
-	case NEAR:
-		link_channel = I_NEAR
-	case LEADSTO:
-		link_channel = I_PLEAD
-	case CONTAINS:
-		link_channel = I_PCONT
-	case EXPRESS:
-		link_channel = I_PEXPR
-	case -LEADSTO:
-		link_channel = I_MLEAD
-	case -CONTAINS:
-		link_channel = I_MCONT
-	case -EXPRESS:
-		link_channel = I_MEXPR
-	default:
-		fmt.Println(ERR_ILLEGAL_LINK_CLASS, sttype)
-		os.Exit(-1)
-	}
-
-	return link_channel
 }
 
 // **************************************************************************

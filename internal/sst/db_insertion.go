@@ -16,23 +16,20 @@ import (
 
 //**************************************************************
 
-func FormDBNode(sst *PoSST, n Node) string {
-
-	// Add node version setting explicit CPtr value, note different function call
-	// We use this function when we ARE managing/counting CPtr values ourselves
-	// Returns SQL only for batch builders; prefer InsertNodeFn for single calls.
-
+// FormDBNode inserts a node with an explicit CPtr via the InsertNode PL/pgSQL function.
+func FormDBNode(sst *PoSST, n Node) error {
 	n.L, n.NPtr.Class = StorageClass(n.S)
-
-	cptr := n.NPtr.CPtr
-	es := SQLEscape(n.S)
-	ec := SQLEscape(n.Chap)
-	seqstr := "false"
-	if n.Seq {
-		seqstr = "true"
+	if sst.Q == nil {
+		return fmt.Errorf("no querier")
 	}
-
-	return fmt.Sprintf("SELECT InsertNode(%d,%d,%d,'%s','%s',%s);\n", n.L, n.NPtr.Class, cptr, es, ec, seqstr)
+	return sst.Q.InsertNodeFn(sst.ctx(), sqlc.InsertNodeFnParams{
+		Column1: int32(n.L),
+		Column2: int32(n.NPtr.Class),
+		Column3: int32(n.NPtr.CPtr),
+		Isi:     n.S,
+		Ichapi:  n.Chap,
+		Column6: n.Seq,
+	})
 }
 
 // **************************************************************************
@@ -163,72 +160,43 @@ func AppendDBLinkToNode(sst *PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 
 // **************************************************************************
 
-func AppendDBLinkToNodeCommand(sst *PoSST, n1ptr NodePtr, lnk Link, sttype int) string {
-
-	// Legacy string form kept for batch tools; prefer AppendDBLinkToNode.
-
-	if sttype < -EXPRESS || sttype > EXPRESS {
-		fmt.Println(ERR_ST_OUT_OF_BOUNDS, sttype)
-		os.Exit(-1)
-	}
-
-	if n1ptr == lnk.Dst {
-		return ""
-	}
-
-	linkval := fmt.Sprintf("(%d, %f, %d, (%d,%d)::NodePtr)", lnk.Arr, lnk.Wgt, lnk.Ctx, lnk.Dst.Class, lnk.Dst.CPtr)
-	literal := fmt.Sprintf("%s::Link", linkval)
-	link_table := STTypeDBChannel(sttype)
-
-	return fmt.Sprintf("UPDATE NODE SET %s=array_append(%s,%s) WHERE (NPtr).CPtr = '%d' AND (NPtr).Chan = '%d' AND (%s IS NULL OR NOT %s = ANY(%s));\n",
-		link_table, link_table, literal, n1ptr.CPtr, n1ptr.Class, link_table, literal, link_table)
-}
-
-// **************************************************************************
-
-func AppendDBLinkArrayToNode(sst *PoSST, nptr NodePtr, array string, sttype int) string {
-
-	// Want to make this idempotent, because SQL is not (and not clause)
+// AppendDBLinkArrayToNode replaces one ST-channel link array on a node (sqlc).
+func AppendDBLinkArrayToNode(sst *PoSST, nptr NodePtr, array string, sttype int) error {
 
 	if sttype < -EXPRESS || sttype > EXPRESS {
 		fmt.Println(ERR_ST_OUT_OF_BOUNDS, sttype)
 		os.Exit(-1)
 	}
 
-	if sst.Q != nil {
-		cptr := int32(nptr.CPtr)
-		chan_ := int32(nptr.Class)
-		// FormatSQLLinkArray returns {...} without outer quotes sometimes with braces
-		arr := array
-		if !strings.HasPrefix(arr, "{") {
-			arr = "{" + arr + "}"
-		}
-		var err error
-		switch sttype {
-		case -EXPRESS:
-			err = sst.Q.SetLinkArrayIm3(sst.ctx(), sqlc.SetLinkArrayIm3Params{Column1: cptr, Column2: chan_, Column3: arr})
-		case -CONTAINS:
-			err = sst.Q.SetLinkArrayIm2(sst.ctx(), sqlc.SetLinkArrayIm2Params{Column1: cptr, Column2: chan_, Column3: arr})
-		case -LEADSTO:
-			err = sst.Q.SetLinkArrayIm1(sst.ctx(), sqlc.SetLinkArrayIm1Params{Column1: cptr, Column2: chan_, Column3: arr})
-		case NEAR:
-			err = sst.Q.SetLinkArrayIn0(sst.ctx(), sqlc.SetLinkArrayIn0Params{Column1: cptr, Column2: chan_, Column3: arr})
-		case LEADSTO:
-			err = sst.Q.SetLinkArrayIl1(sst.ctx(), sqlc.SetLinkArrayIl1Params{Column1: cptr, Column2: chan_, Column3: arr})
-		case CONTAINS:
-			err = sst.Q.SetLinkArrayIc2(sst.ctx(), sqlc.SetLinkArrayIc2Params{Column1: cptr, Column2: chan_, Column3: arr})
-		case EXPRESS:
-			err = sst.Q.SetLinkArrayIe3(sst.ctx(), sqlc.SetLinkArrayIe3Params{Column1: cptr, Column2: chan_, Column3: arr})
-		}
-		if err != nil {
-			fmt.Println("SetLinkArray failed", err)
-		}
-		return ""
+	if sst.Q == nil {
+		return fmt.Errorf("no querier")
 	}
 
-	link_table := STTypeDBChannel(sttype)
-	return fmt.Sprintf("UPDATE NODE SET %s='%s' WHERE (NPtr).CPtr = '%d' AND (NPtr).Chan = '%d';\n",
-		link_table, array, nptr.CPtr, nptr.Class)
+	cptr := int32(nptr.CPtr)
+	chan_ := int32(nptr.Class)
+	arr := array
+	if !strings.HasPrefix(arr, "{") {
+		arr = "{" + arr + "}"
+	}
+
+	switch sttype {
+	case -EXPRESS:
+		return sst.Q.SetLinkArrayIm3(sst.ctx(), sqlc.SetLinkArrayIm3Params{Column1: cptr, Column2: chan_, Column3: arr})
+	case -CONTAINS:
+		return sst.Q.SetLinkArrayIm2(sst.ctx(), sqlc.SetLinkArrayIm2Params{Column1: cptr, Column2: chan_, Column3: arr})
+	case -LEADSTO:
+		return sst.Q.SetLinkArrayIm1(sst.ctx(), sqlc.SetLinkArrayIm1Params{Column1: cptr, Column2: chan_, Column3: arr})
+	case NEAR:
+		return sst.Q.SetLinkArrayIn0(sst.ctx(), sqlc.SetLinkArrayIn0Params{Column1: cptr, Column2: chan_, Column3: arr})
+	case LEADSTO:
+		return sst.Q.SetLinkArrayIl1(sst.ctx(), sqlc.SetLinkArrayIl1Params{Column1: cptr, Column2: chan_, Column3: arr})
+	case CONTAINS:
+		return sst.Q.SetLinkArrayIc2(sst.ctx(), sqlc.SetLinkArrayIc2Params{Column1: cptr, Column2: chan_, Column3: arr})
+	case EXPRESS:
+		return sst.Q.SetLinkArrayIe3(sst.ctx(), sqlc.SetLinkArrayIe3Params{Column1: cptr, Column2: chan_, Column3: arr})
+	default:
+		return fmt.Errorf("illegal link class %d", sttype)
+	}
 }
 
 //

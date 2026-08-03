@@ -33,16 +33,6 @@ const (
 	ST_ZERO = EXPRESS
 	ST_TOP  = ST_ZERO + EXPRESS + 1
 
-	// For the SQL table, as 2d arrays not good
-
-	I_MEXPR = "Im3"
-	I_MCONT = "Im2"
-	I_MLEAD = "Im1"
-	I_NEAR  = "In0"
-	I_PLEAD = "Il1"
-	I_PCONT = "Ic2"
-	I_PEXPR = "Ie3"
-
 	// For separating text types
 
 	N1GRAM = 1

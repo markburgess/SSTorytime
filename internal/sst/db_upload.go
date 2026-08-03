@@ -108,7 +108,7 @@ func BookmarksToDB(sst PoSST, marks map[string]string) {
 func UploadNodesBatch(sst *PoSST, nodes []Node) {
 
 	for i := 0; i < len(nodes); i++ {
-		if err := insertNodeRow(sst, nodes[i]); err != nil {
+		if err := UploadNodeToDB(sst, nodes[i]); err != nil {
 			s := fmt.Sprint("Failed to insert", err)
 			if !strings.Contains(s, "duplicate key") {
 				fmt.Println(s, "FAILED", err)
@@ -119,29 +119,8 @@ func UploadNodesBatch(sst *PoSST, nodes []Node) {
 
 // **************************************************************************
 
-func DBCommit(sst *PoSST, qstr string) {
-
-	if qstr == "" {
-		return
-	}
-
-	// Multi-statement INSERT batches (simple protocol via sst.exec).
-	_, err := sst.exec(qstr)
-
-	if err != nil {
-		s := fmt.Sprint("Failed to insert", err)
-
-		if strings.Contains(s, "duplicate key") {
-		} else {
-			fmt.Println(s, "FAILED \n", qstr, err)
-		}
-		return
-	}
-}
-
-// **************************************************************************
-
-func insertNodeRow(sst *PoSST, n Node) error {
+// UploadNodeToDB inserts one in-memory node (with link arrays) via sqlc.
+func UploadNodeToDB(sst *PoSST, n Node) error {
 	if sst.Q == nil {
 		return fmt.Errorf("no querier")
 	}
@@ -166,12 +145,6 @@ func insertNodeRow(sst *PoSST, n Node) error {
 		Column12: cols[5],
 		Column13: cols[6],
 	})
-}
-
-func UploadNodeToDB(sst *PoSST, n Node) string {
-	// Legacy string form; prefer insertNodeRow.
-	_ = insertNodeRow(sst, n)
-	return ""
 }
 
 // **************************************************************************

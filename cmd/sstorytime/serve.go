@@ -8,11 +8,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
-	"github.com/markburgess/SSTorytime/internal/css"
 	"github.com/markburgess/SSTorytime/internal/db"
 	"github.com/markburgess/SSTorytime/internal/server"
 	"github.com/spf13/cobra"
@@ -36,34 +34,17 @@ var serveCmd = &cobra.Command{
 			return fmt.Errorf("database: %w", err)
 		}
 
-		if err := css.Ensure(); err != nil {
-			return fmt.Errorf("css themes: %w", err)
-		}
-
 		publicFS, err := server.PublicFS()
 		if err != nil {
 			return err
 		}
 
-		fileServer := http.FileServer(http.FS(publicFS))
 		mux := http.NewServeMux()
 		mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte("ok"))
 		})
-
-		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			path := strings.TrimPrefix(r.URL.Path, "/")
-			if strings.HasSuffix(path, ".css") {
-				name := strings.TrimSuffix(path, ".css")
-				if b, err := css.CSS(name); err == nil {
-					w.Header().Set("Content-Type", "text/css; charset=utf-8")
-					_, _ = w.Write(b)
-					return
-				}
-			}
-			fileServer.ServeHTTP(w, r)
-		})
+		mux.Handle("/", http.FileServer(http.FS(publicFS)))
 
 		if serveResources != "" {
 			mux.Handle("/Resources/", http.StripPrefix("/Resources/", http.FileServer(http.Dir(serveResources))))

@@ -3,22 +3,28 @@ package n4l
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"os"
 
 	SST "github.com/markburgess/SSTorytime/internal/sst"
+	"github.com/markburgess/SSTorytime/internal/sstconfig"
 )
 
 // Options for the N4L compiler.
 type Options struct {
-	Files     []string
-	Upload    bool
-	Force     bool
-	Wipe      bool
-	Verbose   bool
-	Diag      bool
-	Summary   bool
-	AdjList   string // empty = no adjacency matrix
+	Files       []string
+	Upload      bool
+	Force       bool
+	Wipe        bool
+	Verbose     bool
+	Diag        bool
+	Summary     bool
+	AdjList     string // empty = no adjacency matrix
 	DatabaseURL string
+	// ConfigFS is the SSTconfig tree. nil means embedded defaults
+	// (sstconfig.Default()). Pass os.DirFS(path) only when the user
+	// explicitly opts in to an on-disk config.
+	ConfigFS fs.FS
 }
 
 // Run compiles N4L files and optionally uploads to the database.
@@ -26,6 +32,12 @@ func Run(ctx context.Context, opt Options) error {
 	if len(opt.Files) < 1 {
 		return fmt.Errorf("n4l: at least one input file required")
 	}
+
+	fsys := opt.ConfigFS
+	if fsys == nil {
+		fsys = sstconfig.Default()
+	}
+	SetConfigFS(fsys)
 
 	VERBOSE = opt.Verbose
 	DIAGNOSTIC = opt.Diag
@@ -45,28 +57,23 @@ func Run(ctx context.Context, opt Options) error {
 
 	var sst SST.PoSST
 	if UPLOAD || opt.Wipe {
-		// DB required for upload / wipe (migrations + sqlc).
 		sst = SST.OpenWithDSN(ctx, opt.DatabaseURL)
 	} else {
-		// Parse-only: in-memory graph, no Postgres.
 		sst.Ctx = ctx
 		SST.MemoryInit(&sst)
 	}
 	AddMandatory(&sst)
 
-	config := ReadConfig()
 	CONFIGURING = true
-	for input := 0; input < len(config); input++ {
-		NewFile(config[input])
-		con := ReadFile(CURRENT_FILE)
-		ParseConfig(&sst, con)
+	for _, name := range ReadConfig() {
+		NewConfigFile(name)
+		ParseConfig(&sst, ReadConfigData(name))
 	}
 	CONFIGURING = false
 
-	for input := 0; input < len(opt.Files); input++ {
-		NewFile(opt.Files[input])
-		src := ReadFile(CURRENT_FILE)
-		ParseN4L(&sst, src)
+	for _, path := range opt.Files {
+		NewFile(path)
+		ParseN4L(&sst, ReadFile(path))
 	}
 
 	CompleteInferences(&sst)
@@ -115,5 +122,4 @@ func upload(sst SST.PoSST) error {
 	return nil
 }
 
-// ensure unused imports stay quiet in compiler.go after main rename
 var _ = os.Args

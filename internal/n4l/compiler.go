@@ -7,6 +7,7 @@
 package n4l
 
 import (
+	"io/fs"
 	"strings"
 	"os"
 	"bufio"
@@ -19,7 +20,24 @@ import (
 	"strconv"
 
 	SST "github.com/markburgess/SSTorytime/internal/sst"
+	"github.com/markburgess/SSTorytime/internal/sstconfig"
 )
+
+
+// configFS is the active SSTconfig tree (embedded by default).
+var configFS fs.FS = sstconfig.Default()
+
+// SetConfigFS replaces the config filesystem (explicit user override only).
+func SetConfigFS(fsys fs.FS) {
+	if fsys == nil {
+		configFS = sstconfig.Default()
+		return
+	}
+	configFS = fsys
+}
+
+// ConfigFS returns the active config filesystem.
+func ConfigFS() fs.FS { return configFS }
 
 //**************************************************************
 // Parsing state variables
@@ -317,24 +335,33 @@ func NewFile(filename string) {
 	CURRENT_FILE = filename
 	TEST_DIAG_FILE = DiagnosticName(filename)
 	GIVE_SIGNS_OF_LIFE = false
-	
-	Box("Parsing new file",filename)
+
+	Box("Parsing new file", filename)
 
 	stat, err := os.Stat(filename)
-
 	if err != nil {
-		ParseError(ERR_NO_SUCH_FILE_FOUND+filename)
+		ParseError(ERR_NO_SUCH_FILE_FOUND + filename)
 		os.Exit(-1)
 	}
-
 	if stat.Size() > LARGE_FILE {
 		GIVE_SIGNS_OF_LIFE = true
 	}
-
 	if !VERBOSE && GIVE_SIGNS_OF_LIFE {
-		fmt.Printf("\n[%s] is a large file. This will take a while...\n",filename)
+		fmt.Printf("\n[%s] is a large file. This will take a while...\n", filename)
 	}
+	resetParseState()
+}
 
+// NewConfigFile starts a config unit from configFS (no on-disk Stat).
+func NewConfigFile(name string) {
+	CURRENT_FILE = name
+	TEST_DIAG_FILE = DiagnosticName(name)
+	GIVE_SIGNS_OF_LIFE = false
+	Box("Parsing config", name)
+	resetParseState()
+}
+
+func resetParseState() {
 	LINE_ITEM_STATE = ROLE_BLANK_LINE
 	LINE_NUM = 1
 	LINE_ITEM_CACHE = make(map[string][]string)
@@ -350,13 +377,9 @@ func NewFile(filename string) {
 	BWD_ARROW = ""
 	SECTION_STATE = ""
 	ResetContextState()
-	Box("Reset context","any")
-	ContextEval("any","=")
+	Box("Reset context", "any")
+	ContextEval("any", "=")
 }
-
-//**************************************************************
-// N4L configuration
-//**************************************************************
 
 func ParseConfig(sst *SST.PoSST,src []rune) {
 
@@ -1383,37 +1406,18 @@ func AddMandatory(sst *SST.PoSST) {
 //**************************************************************
 
 func ReadConfig() []string {
+	// Names only; contents come from configFS via ReadConfigData.
+	return append([]string(nil), sstconfig.DefaultFiles...)
+}
 
-	files := []string{"arrows-LT-1.sst","arrows-NR-0.sst","arrows-CN-2.sst","arrows-EP-3.sst","annotations.sst","closures.sst"}
-	dir := os.Getenv("SST_CONFIG_PATH")
-
-	var configs []string
-
-	if dir != "" {
-
-		for f := 0; f < len(files); f++ {
-			configs = append(configs,dir+"/"+files[f])
-		}
-
-		return configs
-
-	} else {
-		search_paths := []string{"./SSTconfig","../SSTconfig","../../SSTconfig"}
-
-		for p := range search_paths {
-
-			info, err := os.Stat(search_paths[p]);
-
-			if err == nil && info.IsDir() {
-				for f := 0; f < len(files); f++ {
-					configs = append(configs,search_paths[p]+"/"+files[f])
-				}
-				return configs
-			}
-		}
+// ReadConfigData loads a config file from the active configFS.
+func ReadConfigData(name string) []rune {
+	b, err := fs.ReadFile(configFS, name)
+	if err != nil {
+		ParseError(fmt.Sprintf("config file %q: %v", name, err))
+		return nil
 	}
-
-	return []string{"no configuration file"}
+	return []rune(string(b))
 }
 
 //**************************************************************
@@ -1688,44 +1692,28 @@ func StoreAlias(name string) {
 func GetBookMarks() map[string]string {
 
 	marks := make(map[string]string)
-	
-	search_paths := []string{"./SSTconfig","../SSTconfig","../../SSTconfig"}
 
-	for p := range search_paths {
-
-		filename := fmt.Sprintf("%s/bookmarks.sst",search_paths[p]);
-
-		info, err := os.Stat(filename)
-		
-		if err == nil && !info.IsDir() {
-			
-			file, err := os.Open(filename)
-
-			if err != nil {
-				fmt.Printf("Error opening file: %s", err)
-				continue
-			}
-
-			defer file.Close()
-			scanner := bufio.NewScanner(file)
-
-			for scanner.Scan() {
-				line := scanner.Text()
-
-				const silly = 10
-				
-				if len(line) > silly {
-					s := strings.Split(line,":")
-					key := strings.TrimSpace(s[0])
-					value := strings.TrimSpace(s[1])
-					if len(key) > 0 && len(value) > 0 {
-						marks[key] = value
-					}
-				}
-			}
-		}
+	b, err := fs.ReadFile(configFS, sstconfig.BookmarksFile)
+	if err != nil {
+		// optional file
+		return marks
 	}
 
+	for _, line := range strings.Split(string(b), "\n") {
+		const silly = 10
+		if len(line) <= silly {
+			continue
+		}
+		s := strings.SplitN(line, ":", 2)
+		if len(s) < 2 {
+			continue
+		}
+		key := strings.TrimSpace(s[0])
+		value := strings.TrimSpace(s[1])
+		if len(key) > 0 && len(value) > 0 {
+			marks[key] = value
+		}
+	}
 	return marks
 }
 

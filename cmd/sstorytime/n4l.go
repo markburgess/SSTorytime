@@ -2,16 +2,18 @@ package main
 
 import (
 	"github.com/markburgess/SSTorytime/internal/n4l"
+	"github.com/markburgess/SSTorytime/internal/sstconfig"
 	"github.com/spf13/cobra"
 )
 
 var (
-	n4lUpload  bool
-	n4lWipe    bool
-	n4lForce   bool
-	n4lDiag    bool
-	n4lSummary bool
-	n4lAdj     string
+	n4lUpload    bool
+	n4lWipe      bool
+	n4lForce     bool
+	n4lDiag      bool
+	n4lSummary   bool
+	n4lAdj       string
+	n4lConfigDir string
 )
 
 var n4lCmd = &cobra.Command{
@@ -19,7 +21,7 @@ var n4lCmd = &cobra.Command{
 	Short: "Compile and optionally upload N4L notes into the graph database",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return n4l.Run(cmd.Context(), n4l.Options{
+		opt := n4l.Options{
 			Files:       args,
 			Upload:      n4lUpload,
 			Force:       n4lForce,
@@ -29,7 +31,15 @@ var n4lCmd = &cobra.Command{
 			Summary:     n4lSummary,
 			AdjList:     n4lAdj,
 			DatabaseURL: databaseURL,
-		})
+		}
+		if n4lConfigDir != "" {
+			fsys, err := sstconfig.Dir(n4lConfigDir)
+			if err != nil {
+				return err
+			}
+			opt.ConfigFS = fsys
+		}
+		return n4l.Run(cmd.Context(), opt)
 	},
 }
 
@@ -40,4 +50,5 @@ func init() {
 	n4lCmd.Flags().BoolVarP(&n4lDiag, "diagnostic", "d", false, "diagnostic mode")
 	n4lCmd.Flags().BoolVarP(&n4lSummary, "summary", "s", false, "print summary")
 	n4lCmd.Flags().StringVar(&n4lAdj, "adj", "none", "comma-separated short link names for adjacency")
+	n4lCmd.Flags().StringVar(&n4lConfigDir, "config", "", "SSTconfig directory (default: embedded); explicit opt-in only")
 }

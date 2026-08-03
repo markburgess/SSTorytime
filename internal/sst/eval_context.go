@@ -10,14 +10,11 @@ import (
 	"fmt"
 	"strings"
 	"time"
-	_ "github.com/lib/pq"
-
 )
-
 
 // **************************************************************************
 
-func GetContext(sst *PoSST,contextptr ContextPtr) string {
+func GetContext(sst *PoSST, contextptr ContextPtr) string {
 
 	exists := int(contextptr) < len(sst.CONTEXT_DIRECTORY)
 
@@ -30,21 +27,21 @@ func GetContext(sst *PoSST,contextptr ContextPtr) string {
 
 // ****************************************************************************
 
-func RegisterContext(sst *PoSST,parse_state map[string]bool,context []string) ContextPtr {
+func RegisterContext(sst *PoSST, parse_state map[string]bool, context []string) ContextPtr {
 
-	ctxstr := NormalizeContextString(parse_state,context)
+	ctxstr := NormalizeContextString(parse_state, context)
 
 	if len(ctxstr) == 0 {
 		return 0
 	}
 
-	ctxptr,exists := sst.CONTEXT_DIR[ctxstr] 
+	ctxptr, exists := sst.CONTEXT_DIR[ctxstr]
 
 	if !exists {
 		var cd ContextDirectory
 		cd.Context = ctxstr
 		cd.Ptr = sst.CONTEXT_TOP
-		sst.CONTEXT_DIRECTORY = append(sst.CONTEXT_DIRECTORY,cd)
+		sst.CONTEXT_DIRECTORY = append(sst.CONTEXT_DIRECTORY, cd)
 		sst.CONTEXT_DIR[ctxstr] = sst.CONTEXT_TOP
 		ctxptr = sst.CONTEXT_TOP
 		sst.CONTEXT_TOP++
@@ -55,14 +52,14 @@ func RegisterContext(sst *PoSST,parse_state map[string]bool,context []string) Co
 
 // **************************************************************************
 
-func TryContext(sst *PoSST,context []string) ContextPtr {
+func TryContext(sst *PoSST, context []string) ContextPtr {
 
 	ctxstr := CompileContextString(context)
-	str,ctxptr := GetDBContextByName(sst,ctxstr)
+	str, ctxptr := GetDBContextByName(sst, ctxstr)
 
 	if ctxptr == -1 || str != ctxstr {
-		ctxptr = UploadContextToDB(sst,ctxstr,-1)
-		RegisterContext(sst,nil,context)
+		ctxptr = UploadContextToDB(sst, ctxstr, -1)
+		RegisterContext(sst, nil, context)
 	}
 
 	return ctxptr
@@ -80,12 +77,12 @@ func CompileContextString(context []string) string {
 		merge[context[c]]++
 	}
 
-	return List2String(Map2List(merge))	
+	return List2String(Map2List(merge))
 }
 
 // **************************************************************************
 
-func NormalizeContextString(contextmap map[string]bool,ctx []string) string {
+func NormalizeContextString(contextmap map[string]bool, ctx []string) string {
 
 	// Mitigate combinatoric explosion
 
@@ -93,7 +90,7 @@ func NormalizeContextString(contextmap map[string]bool,ctx []string) string {
 	var clist []string
 
 	// Merge sources into single map
-	
+
 	if contextmap != nil {
 		for c := range contextmap {
 			merge[c] = true
@@ -105,11 +102,11 @@ func NormalizeContextString(contextmap map[string]bool,ctx []string) string {
 	}
 
 	for c := range merge {
-		s := strings.Split(c,",")
+		s := strings.Split(c, ",")
 		for i := range s {
 			s[i] = strings.TrimSpace(s[i])
 			if s[i] != "_sequence_" {
-				clist = append(clist,s[i])
+				clist = append(clist, s[i])
 			}
 		}
 	}
@@ -119,12 +116,12 @@ func NormalizeContextString(contextmap map[string]bool,ctx []string) string {
 
 // **************************************************************************
 
-func GetNodeContext(sst *PoSST,node Node) []string {
+func GetNodeContext(sst *PoSST, node Node) []string {
 
-	str := GetNodeContextString(sst,node)
+	str := GetNodeContextString(sst, node)
 
 	if str != "" {
-		return strings.Split(str,",")
+		return strings.Split(str, ",")
 	}
 
 	return nil
@@ -132,17 +129,17 @@ func GetNodeContext(sst *PoSST,node Node) []string {
 
 // **************************************************************************
 
-func GetNodeContextString(sst *PoSST,node Node) string {
+func GetNodeContextString(sst *PoSST, node Node) string {
 
 	// This reads the ghost link planted for the purpose of attaching
 	// a context to floating nodes
 
-	empty := GetDBArrowByName(sst,"empty")
+	empty := GetDBArrowByName(sst, "empty")
 
-	for _,lnk := range node.I[ST_ZERO+LEADSTO] {
+	for _, lnk := range node.I[ST_ZERO+LEADSTO] {
 
 		if lnk.Arr == empty {
-			return GetContext(sst,lnk.Ctx)
+			return GetContext(sst, lnk.Ctx)
 		}
 	}
 
@@ -154,43 +151,43 @@ func GetNodeContextString(sst *PoSST,node Node) string {
 // **************************************************************************
 
 var GR_DAY_TEXT = []string{
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-    }
-        
+	"Monday",
+	"Tuesday",
+	"Wednesday",
+	"Thursday",
+	"Friday",
+	"Saturday",
+	"Sunday",
+}
+
 var GR_MONTH_TEXT = []string{
 	"NONE",
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
+	"January",
+	"February",
+	"March",
+	"April",
+	"May",
+	"June",
+	"July",
+	"August",
+	"September",
+	"October",
+	"November",
+	"December",
 }
-        
+
 var GR_SHIFT_TEXT = []string{
-        "Night",
-        "Morning",
-        "Afternoon",
-        "Evening",
-    }
+	"Night",
+	"Morning",
+	"Afternoon",
+	"Evening",
+}
 
 // For second resolution Unix time
 
 const CF_MONDAY_MORNING = 345200
-const CF_MEASURE_INTERVAL = 5*60
-const CF_SHIFT_INTERVAL = 6*3600
+const CF_MEASURE_INTERVAL = 5 * 60
+const CF_SHIFT_INTERVAL = 6 * 3600
 
 const MINUTES_PER_HOUR = 60
 const SECONDS_PER_MINUTE = 60
@@ -201,13 +198,13 @@ const SECONDS_PER_YEAR = (365 * SECONDS_PER_DAY)
 const HOURS_PER_SHIFT = 6
 const SECONDS_PER_SHIFT = (HOURS_PER_SHIFT * SECONDS_PER_HOUR)
 const SHIFTS_PER_DAY = 4
-const SHIFTS_PER_WEEK = (4*7)
+const SHIFTS_PER_WEEK = (4 * 7)
 
 // ****************************************************************************
 // Semantic spacetime timeslots, CFEngine style
 // ****************************************************************************
 
-func DoNowt(then time.Time) (string,string) {
+func DoNowt(then time.Time) (string, string) {
 
 	//then := given.UnixNano()
 
@@ -219,68 +216,68 @@ func DoNowt(then time.Time) (string,string) {
 	// In this version, we need less accuracy and greater semantic distinction
 	// so prefix temporal classes with a :
 
-	year := fmt.Sprintf("Yr%d",then.Year())
+	year := fmt.Sprintf("Yr%d", then.Year())
 	month := GR_MONTH_TEXT[int(then.Month())]
 	day := then.Day()
-	hour := fmt.Sprintf("Hr%02d",then.Hour())
-	quarter := fmt.Sprintf("Qu%d",then.Minute()/15 + 1)
-	shift :=  fmt.Sprintf("%s",GR_SHIFT_TEXT[then.Hour()/6])
+	hour := fmt.Sprintf("Hr%02d", then.Hour())
+	quarter := fmt.Sprintf("Qu%d", then.Minute()/15+1)
+	shift := fmt.Sprintf("%s", GR_SHIFT_TEXT[then.Hour()/6])
 
 	//secs := then.Second()
 	//nano := then.Nanosecond()
 	//mins := fmt.Sprintf("Min%02d",then.Minute())
 
-	n_season,s_season := Season(month)
+	n_season, s_season := Season(month)
 
 	dayname := then.Weekday()
-	dow := fmt.Sprintf("%.3s",dayname)
-	daynum := fmt.Sprintf("Day%d",day)
+	dow := fmt.Sprintf("%.3s", dayname)
+	daynum := fmt.Sprintf("Day%d", day)
 
 	// 5 minute resolution capture is too fine grained for most human interest
-        interval_start := (then.Minute() / 5) * 5
-        interval_end := (interval_start + 5) % 60
-        minD := fmt.Sprintf("Min%02d_%02d",interval_start,interval_end)
+	interval_start := (then.Minute() / 5) * 5
+	interval_end := (interval_start + 5) % 60
+	minD := fmt.Sprintf("Min%02d_%02d", interval_start, interval_end)
 
 	// Don't include the time key in general context, as it varies too fast to be meaningful
 
-	var when string = fmt.Sprintf("%s, %s, %s, %s, %s, %s, %s, %s, %s",n_season,s_season,shift,dayname,daynum,month,year,hour,quarter)
-	var key string = fmt.Sprintf("%s:%s:%s-%s",dow,hour,quarter,minD)
+	var when string = fmt.Sprintf("%s, %s, %s, %s, %s, %s, %s, %s, %s", n_season, s_season, shift, dayname, daynum, month, year, hour, quarter)
+	var key string = fmt.Sprintf("%s:%s:%s-%s", dow, hour, quarter, minD)
 
 	return when, key
 }
 
 // ****************************************************************************
 
-func GetTimeContext() (string,string,int64) {
+func GetTimeContext() (string, string, int64) {
 
 	now := time.Now()
-	context,keyslot := DoNowt(now)
+	context, keyslot := DoNowt(now)
 
-	return context,keyslot,now.Unix()
+	return context, keyslot, now.Unix()
 }
 
 // ****************************************************************************
 
-func Season (month string) (string,string) {
+func Season(month string) (string, string) {
 
 	switch month {
 
-	case "December","January","February":
-		return "N_Winter","S_Summer"
-	case "March","April","May":
-		return "N_Spring","S_Autumn"
-	case "June","July","August":
-		return "N_Summer","S_Winter"
-	case "September","October","November":
-		return "N_Autumn","S_Spring"
+	case "December", "January", "February":
+		return "N_Winter", "S_Summer"
+	case "March", "April", "May":
+		return "N_Spring", "S_Autumn"
+	case "June", "July", "August":
+		return "N_Summer", "S_Winter"
+	case "September", "October", "November":
+		return "N_Autumn", "S_Spring"
 	}
 
-	return "hurricane","typhoon"
+	return "hurricane", "typhoon"
 }
 
 // ****************************************************************************
- 
-func GetTimeFromSemantics(speclist []string,now time.Time) time.Time {
+
+func GetTimeFromSemantics(speclist []string, now time.Time) time.Time {
 
 	day := 0
 	hour := 0
@@ -295,38 +292,38 @@ func GetTimeFromSemantics(speclist []string,now time.Time) time.Time {
 
 	// Parse semantic time array
 
-	for i,v := range speclist {
+	for i, v := range speclist {
 
 		if i == 0 {
 			continue
 		}
 
-		if strings.HasPrefix(v,"Day") {
-			fmt.Sscanf(v[3:],"%d",&day)
+		if strings.HasPrefix(v, "Day") {
+			fmt.Sscanf(v[3:], "%d", &day)
 			continue
 		}
 
-		if strings.HasPrefix(v,"Yr") {
-			fmt.Sscanf(v[2:],"%d",&year)
+		if strings.HasPrefix(v, "Yr") {
+			fmt.Sscanf(v[2:], "%d", &year)
 			continue
 		}
 
-		if strings.HasPrefix(v,"Min") {
-			fmt.Sscanf(v[3:],"%d",&mins)
+		if strings.HasPrefix(v, "Min") {
+			fmt.Sscanf(v[3:], "%d", &mins)
 			continue
 		}
 
-		if strings.HasPrefix(v,"Hr") {
-			fmt.Sscanf(v[2:],"%d",&hour)
+		if strings.HasPrefix(v, "Hr") {
+			fmt.Sscanf(v[2:], "%d", &hour)
 			continue
 		}
 
 		if !hasweekday {
-			weekday,hasweekday = InList(v,GR_DAY_TEXT)
+			weekday, hasweekday = InList(v, GR_DAY_TEXT)
 			if hasweekday {
 				intended := weekday
-				todayis := fmt.Sprintf("%s",now.Weekday())
-				actual,_ := InList(todayis,GR_DAY_TEXT)
+				todayis := fmt.Sprintf("%s", now.Weekday())
+				actual, _ := InList(todayis, GR_DAY_TEXT)
 				days_to_next = (intended - actual + 7) % 7
 				continue
 			}
@@ -334,14 +331,14 @@ func GetTimeFromSemantics(speclist []string,now time.Time) time.Time {
 
 		if !hasmonth {
 			var index int
-			index,hasmonth = InList(v,GR_MONTH_TEXT)
+			index, hasmonth = InList(v, GR_MONTH_TEXT)
 			if hasmonth {
 				month = time.Month(index)
 				continue
 			}
 		}
 
-		fmt.Println("Semantic time parameter without semantic prefix (Day,Hr,Min, etc)",v)
+		fmt.Println("Semantic time parameter without semantic prefix (Day,Hr,Min, etc)", v)
 	}
 
 	if hasweekday && (day > 0 || hasmonth || year > 0) {
@@ -352,8 +349,8 @@ func GetTimeFromSemantics(speclist []string,now time.Time) time.Time {
 		day = now.Day()
 		month = now.Month()
 		year = now.Year()
-		newnow := time.Date(year,month,day,0,0,0,0,time.UTC)
-		newnow = newnow.AddDate(0,0,days_to_next)
+		newnow := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+		newnow = newnow.AddDate(0, 0, days_to_next)
 		return newnow
 	}
 
@@ -375,15 +372,13 @@ func GetTimeFromSemantics(speclist []string,now time.Time) time.Time {
 
 	// Note the local timezone is very problematic in Go
 
-	_,offset_secs := now.Zone()
+	_, offset_secs := now.Zone()
 
 	offset := offset_secs / 3600
 
-	newnow := time.Date(year,month,day,hour-offset,mins,0,0,time.UTC)
+	newnow := time.Date(year, month, day, hour-offset, mins, 0, 0, time.UTC)
 	return newnow
 }
-
-
 
 //
 // END eval_context.go

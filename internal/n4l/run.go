@@ -57,9 +57,14 @@ func Run(ctx context.Context, opt Options) error {
 
 	var sst SST.PoSST
 	if UPLOAD || opt.Wipe {
-		sst = SST.OpenWithDSN(ctx, opt.DatabaseURL)
+		// Exact upstream always opens DB for upload; wipe handled inside Configure.
+		if opt.Wipe {
+			SST.WIPE_DB = true
+		}
+		sst = SST.OpenWithDSN(ctx, opt.DatabaseURL, true)
 	} else {
-		sst.Ctx = ctx
+		// Parse-only: in-memory only (no DB), same graph compile path as upstream
+		// before upload. Upstream always opened DB; we allow offline parse.
 		SST.MemoryInit(&sst)
 	}
 	AddMandatory(&sst)
@@ -94,7 +99,9 @@ func Run(ctx context.Context, opt Options) error {
 			return err
 		}
 	}
-	SST.Close(sst)
+	if sst.DB != nil {
+		SST.Close(sst)
+	}
 	return nil
 }
 

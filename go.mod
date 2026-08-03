@@ -7,7 +7,6 @@ tool github.com/sqlc-dev/sqlc/cmd/sqlc
 require (
 	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/jackc/pgx/v5 v5.7.5
-	github.com/lib/pq v1.12.1
 	github.com/spf13/cobra v1.9.1
 )
 
@@ -30,6 +29,7 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/lib/pq v1.12.1 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect
 	github.com/pganalyze/pg_query_go/v6 v6.1.0 // indirect

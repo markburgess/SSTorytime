@@ -10,19 +10,17 @@ import (
 	"fmt"
 	"strings"
 	"time"
-	_ "github.com/lib/pq"
-
 )
 
 //****************************************************************************
 
 func ExpandDynamicFunctions(s string) string {
 
-	if !strings.Contains(s,"{") {
+	if !strings.Contains(s, "{") {
 		return s
 	}
 
-	if !strings.Contains(s,"}") {
+	if !strings.Contains(s, "}") {
 		return s
 	}
 
@@ -35,7 +33,7 @@ func ExpandDynamicFunctions(s string) string {
 		if chars[pos] != '{' {
 			news += string(chars[pos])
 		} else {
-			newpos,result := EvaluateInBuilt(chars,pos)
+			newpos, result := EvaluateInBuilt(chars, pos)
 			news += result
 			pos = newpos
 		}
@@ -46,14 +44,14 @@ func ExpandDynamicFunctions(s string) string {
 
 //****************************************************************************
 
-func EvaluateInBuilt(chars []rune,pos int) (int,string) {
+func EvaluateInBuilt(chars []rune, pos int) (int, string) {
 
 	var fntext string
 	var endpos int
 
 	for r := pos; chars[r] != '}' && r < len(chars); r++ {
 		fntext += string(chars[r])
-		endpos = r+1
+		endpos = r + 1
 	}
 
 	fntext = fntext[1:len(fntext)]
@@ -62,9 +60,9 @@ func EvaluateInBuilt(chars []rune,pos int) (int,string) {
 		return c == ' ' || c == ',' || c == ';'
 	}
 
-	fn := strings.FieldsFunc(fntext,delim)
+	fn := strings.FieldsFunc(fntext, delim)
 	result := DoInBuiltFunction(fn)
-	return endpos,result
+	return endpos, result
 }
 
 //****************************************************************************
@@ -90,10 +88,10 @@ func DoInBuiltFunction(fn []string) string {
 func InBuiltTimeUntil(fn []string) string {
 
 	now := time.Now().Local()
-	intended_time := GetTimeFromSemantics(fn,now)
+	intended_time := GetTimeFromSemantics(fn, now)
 	duration := intended_time.Sub(now)
 
-	interval := int(duration / 1000000000)  // nanoseconds -> seconds
+	interval := int(duration / 1000000000) // nanoseconds -> seconds
 
 	years := interval / (365 * 24 * 3600)
 	r1 := interval % (365 * 24 * 3600)
@@ -102,11 +100,11 @@ func InBuiltTimeUntil(fn []string) string {
 	r2 := r1 % (24 * 3600)
 
 	hours := r2 / 3600
-	r3 :=  r2 % 3600
+	r3 := r2 % 3600
 
 	mins := r3 / 60
 
-	return ShowTime(years,days,hours,mins)
+	return ShowTime(years, days, hours, mins)
 }
 
 //****************************************************************************
@@ -114,11 +112,11 @@ func InBuiltTimeUntil(fn []string) string {
 func InBuiltTimeSince(fn []string) string {
 
 	now := time.Now().Local()
-	intended_time := GetTimeFromSemantics(fn,now)
+	intended_time := GetTimeFromSemantics(fn, now)
 
 	duration := now.Sub(intended_time)
 
-	interval := int(duration / 1000000000)  // nanoseconds -> seconds
+	interval := int(duration / 1000000000) // nanoseconds -> seconds
 
 	years := interval / (365 * 24 * 3600)
 	r1 := interval % (365 * 24 * 3600)
@@ -127,32 +125,32 @@ func InBuiltTimeSince(fn []string) string {
 	r2 := r1 % (24 * 3600)
 
 	hours := r2 / 3600
-	r3 :=  r2 % 3600
+	r3 := r2 % 3600
 
 	mins := r3 / 60
 
-	return ShowTime(years,days,hours,mins)
+	return ShowTime(years, days, hours, mins)
 }
 
 //****************************************************************************
 
-func ShowTime(years,days,hours,mins int) string {
+func ShowTime(years, days, hours, mins int) string {
 
 	var s string
 
 	if years > 0 {
-		s += fmt.Sprintf("%d Years, ",years)
+		s += fmt.Sprintf("%d Years, ", years)
 	}
 
 	if days > 0 {
-		s += fmt.Sprintf("%d Days, ",days)
+		s += fmt.Sprintf("%d Days, ", days)
 	}
 
 	if hours > 0 {
-		s += fmt.Sprintf("%d Hours, ",hours)
+		s += fmt.Sprintf("%d Hours, ", hours)
 	}
 
-	s += fmt.Sprintf("%d Mins ",mins)
+	s += fmt.Sprintf("%d Mins ", mins)
 
 	if mins < 0 {
 		s += " [already passed or waiting for next occurrence]"
@@ -160,8 +158,6 @@ func ShowTime(years,days,hours,mins int) string {
 
 	return s
 }
-
-
 
 //
 // expand_node_vars.go

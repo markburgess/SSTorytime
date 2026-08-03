@@ -7,45 +7,38 @@
 package sst
 
 import (
-	"context"
 	"database/sql"
+	_ "github.com/lib/pq"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 )
 
 //**************************************************************
 
 type PoSST struct {
 
-	// Legacy *sql.DB bridge (stdlib over pgx pool) for code not yet on sqlc.
 	DB *sql.DB
-
-	Pool *pgxpool.Pool
-	Q    *sqlc.Queries
-	Ctx  context.Context
-
 	// Session globals
+	
+	NODE_DIRECTORY NodeDirectory  // Internal histo-representations
+	NODE_CACHE map[NodePtr]NodePtr
+        BASE_DB_CHANNEL_STATE[7] ClassedNodePtr
 
-	NODE_DIRECTORY        NodeDirectory
-	NODE_CACHE            map[NodePtr]NodePtr
-	BASE_DB_CHANNEL_STATE [7]ClassedNodePtr
-
-	ARROW_DIRECTORY     []ArrowDirectory
-	ARROW_SHORT_DIR     map[string]ArrowPtr
-	ARROW_LONG_DIR      map[string]ArrowPtr
+	ARROW_DIRECTORY []ArrowDirectory
+	ARROW_SHORT_DIR map[string]ArrowPtr
+	ARROW_LONG_DIR map[string]ArrowPtr
 	ARROW_DIRECTORY_TOP ArrowPtr
-	INVERSE_ARROWS      map[ArrowPtr]ArrowPtr
+	INVERSE_ARROWS map[ArrowPtr]ArrowPtr
 
 	// Context array factorization
 
 	CONTEXT_DIRECTORY []ContextDirectory
-	CONTEXT_DIR       map[string]ContextPtr
-	CONTEXT_TOP       ContextPtr
+	CONTEXT_DIR map[string]ContextPtr
+	CONTEXT_TOP ContextPtr
 
 	// Page layout
-
+	
 	PAGE_MAP []PageMap
+
 }
 
 //******************************************************************

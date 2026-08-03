@@ -4,22 +4,18 @@
 //
 // *************************************************************************
 
-
 package sst
 
 import (
 	"fmt"
 	"os"
-	_ "github.com/lib/pq"
-
 )
-
 
 // *************************************************************************
 
-func GetSTIndexByName(stname,pm string) int {
+func GetSTIndexByName(stname, pm string) int {
 
-	var encoding  int
+	var encoding int
 	var sign int
 
 	switch pm {
@@ -32,11 +28,11 @@ func GetSTIndexByName(stname,pm string) int {
 	switch stname {
 
 	case "leadsto":
-		encoding = ST_ZERO + LEADSTO * sign
+		encoding = ST_ZERO + LEADSTO*sign
 	case "contains":
-		encoding = ST_ZERO + CONTAINS * sign
+		encoding = ST_ZERO + CONTAINS*sign
 	case "properties":
-		encoding = ST_ZERO + EXPRESS * sign
+		encoding = ST_ZERO + EXPRESS*sign
 	case "similarity":
 		encoding = ST_ZERO + NEAR
 	}
@@ -101,7 +97,7 @@ func STTypeDBChannel(sttype int) string {
 	case -EXPRESS:
 		link_channel = I_MEXPR
 	default:
-		fmt.Println(ERR_ILLEGAL_LINK_CLASS,sttype)
+		fmt.Println(ERR_ILLEGAL_LINK_CLASS, sttype)
 		os.Exit(-1)
 	}
 
@@ -150,9 +146,6 @@ func STTypeName(sttype int) string {
 	return "Unknown ST type"
 }
 
-
 //
 // STtype.go
 //
-
-

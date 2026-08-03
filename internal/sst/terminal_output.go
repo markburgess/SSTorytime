@@ -9,8 +9,6 @@ package sst
 import (
 	"fmt"
 	"unicode"
-	_ "github.com/lib/pq"
-
 )
 
 //****************************************************************************
@@ -34,10 +32,10 @@ func ShowText(s string, width int) {
 		if unicode.IsSpace(runes[r]) {
 			spacecounter++
 		}
-	} 
+	}
 
-	if len(runes) > SCREENWIDTH - LEFTMARGIN - RIGHTMARGIN {
-		if spacecounter > len(runes) / 3 {
+	if len(runes) > SCREENWIDTH-LEFTMARGIN-RIGHTMARGIN {
+		if spacecounter > len(runes)/3 {
 			fmt.Println()
 			fmt.Println(s)
 			return
@@ -52,7 +50,7 @@ func ShowText(s string, width int) {
 
 		if unicode.IsSpace(runes[r]) && linecounter > width-RIGHTMARGIN {
 			if runes[r] != '\n' {
-				fmt.Print("\n",indent)
+				fmt.Print("\n", indent)
 				linecounter = 0
 				continue
 			} else {
@@ -63,7 +61,7 @@ func ShowText(s string, width int) {
 			fmt.Print(string(runes[r]))
 			r++
 			if r < len(runes) && runes[r] != '\n' {
-				fmt.Print("\n",indent)
+				fmt.Print("\n", indent)
 				linecounter = 0
 				continue
 			} else {
@@ -75,19 +73,19 @@ func ShowText(s string, width int) {
 			fmt.Print(string(runes[r]))
 		}
 		linecounter++
-		
+
 	}
 }
 
 // *********************************************************************
 
-func ShowContext(amb,intent,key string) {
+func ShowContext(amb, intent, key string) {
 
 	fmt.Println()
 	fmt.Println("  .......................................................")
-	fmt.Printf("    Recurrent now: %s\n",key)
-	fmt.Printf("    Intentional  : %s\n",intent)
-	fmt.Printf("    Ambient      : %s\n",amb)
+	fmt.Printf("    Recurrent now: %s\n", key)
+	fmt.Printf("    Intentional  : %s\n", intent)
+	fmt.Printf("    Ambient      : %s\n", amb)
 	fmt.Println("  .......................................................")
 
 }
@@ -109,8 +107,8 @@ func Indent(indent int) string {
 
 func NewLine(n int) {
 
-	if n % 6 == 0 {
-		fmt.Print("\n    ",)
+	if n%6 == 0 {
+		fmt.Print("\n    ")
 	}
 }
 
@@ -118,55 +116,54 @@ func NewLine(n int) {
 
 func Waiting() {
 
-	var propaganda = []string{"\n1) JOT IT DOWN WHEN YOU THINK OF IT. . .\n","\n2) TYPE IT INTO N4L AS SOON AS YOU CAN. . .\n","\n3) ORGANIZE AND TIDY YOUR NOTES EVERY DAY. . .\n","\n4) UPLOAD AND BROWSE THEM ONLINE. . .\n","\n5) AND REMEMBER, IT ISN'T KNOWLEDGE IF YOU DON'T ACTUALLY KNOW IT !!\n"}
+	var propaganda = []string{"\n1) JOT IT DOWN WHEN YOU THINK OF IT. . .\n", "\n2) TYPE IT INTO N4L AS SOON AS YOU CAN. . .\n", "\n3) ORGANIZE AND TIDY YOUR NOTES EVERY DAY. . .\n", "\n4) UPLOAD AND BROWSE THEM ONLINE. . .\n", "\n5) AND REMEMBER, IT ISN'T KNOWLEDGE IF YOU DON'T ACTUALLY KNOW IT !!\n"}
 
-	for _,n := range propaganda {
+	for _, n := range propaganda {
 		fmt.Println(n)
 	}
 }
 
-
 // **************************************************************************
 
-func PrintNodeOrbit(sst *PoSST, nptr NodePtr,limit int) {
+func PrintNodeOrbit(sst *PoSST, nptr NodePtr, limit int) {
 
-	node := GetDBNodeByNodePtr(sst,nptr)		
+	node := GetDBNodeByNodePtr(sst, nptr)
 	fmt.Print("\"")
-	ShowText(node.S,SCREENWIDTH)
+	ShowText(node.S, SCREENWIDTH)
 	fmt.Print("\"")
-	fmt.Println("\tin chapter:",node.Chap)
+	fmt.Println("\tin chapter:", node.Chap)
 	fmt.Println()
 
-	satellites := GetNodeOrbit(sst,nptr,"",limit)
+	satellites := GetNodeOrbit(sst, nptr, "", limit)
 
-	PrintLinkOrbit(satellites,EXPRESS,0)
-	PrintLinkOrbit(satellites,-EXPRESS,0)
-	PrintLinkOrbit(satellites,-CONTAINS,0)
-	PrintLinkOrbit(satellites,LEADSTO,0)
-	PrintLinkOrbit(satellites,-LEADSTO,0)
-	PrintLinkOrbit(satellites,NEAR,0)
+	PrintLinkOrbit(satellites, EXPRESS, 0)
+	PrintLinkOrbit(satellites, -EXPRESS, 0)
+	PrintLinkOrbit(satellites, -CONTAINS, 0)
+	PrintLinkOrbit(satellites, LEADSTO, 0)
+	PrintLinkOrbit(satellites, -LEADSTO, 0)
+	PrintLinkOrbit(satellites, NEAR, 0)
 
 	fmt.Println()
 }
 
 // **************************************************************************
 
-func PrintLinkOrbit(satellites [ST_TOP][]Orbit,sttype int,indent_level int) {
+func PrintLinkOrbit(satellites [ST_TOP][]Orbit, sttype int, indent_level int) {
 
 	t := STTypeToSTIndex(sttype)
 
-	for n := range satellites[t] {		
+	for n := range satellites[t] {
 
 		r := satellites[t][n].Radius + indent_level
 
 		if satellites[t][n].Ctx != "" {
-			txt := fmt.Sprintf(" -    (%s) - %s  \t.. in the context of %s\n",satellites[t][n].Arrow,satellites[t][n].Text,satellites[t][n].Ctx)
-			text := Indent(LEFTMARGIN * r) + txt
-			ShowText(text,SCREENWIDTH)
+			txt := fmt.Sprintf(" -    (%s) - %s  \t.. in the context of %s\n", satellites[t][n].Arrow, satellites[t][n].Text, satellites[t][n].Ctx)
+			text := Indent(LEFTMARGIN*r) + txt
+			ShowText(text, SCREENWIDTH)
 		} else {
-			txt := fmt.Sprintf(" -    (%s) - %s\n",satellites[t][n].Arrow,satellites[t][n].Text)
-			text := Indent(LEFTMARGIN * r) + txt
-			ShowText(text,SCREENWIDTH)
+			txt := fmt.Sprintf(" -    (%s) - %s\n", satellites[t][n].Arrow, satellites[t][n].Text)
+			text := Indent(LEFTMARGIN*r) + txt
+			ShowText(text, SCREENWIDTH)
 		}
 
 	}
@@ -175,29 +172,29 @@ func PrintLinkOrbit(satellites [ST_TOP][]Orbit,sttype int,indent_level int) {
 
 // **************************************************************************
 
-func PrintLinkPath(sst *PoSST, cone [][]Link, p int, prefix string,chapter string,context []string) {
+func PrintLinkPath(sst *PoSST, cone [][]Link, p int, prefix string, chapter string, context []string) {
 
-	PrintSomeLinkPath(sst,cone, p,prefix,chapter,context,10000)
+	PrintSomeLinkPath(sst, cone, p, prefix, chapter, context, 10000)
 }
 
 // **************************************************************************
 
-func PrintSomeLinkPath(sst *PoSST, cone [][]Link, p int, prefix string,chapter string,context []string,limit int) {
+func PrintSomeLinkPath(sst *PoSST, cone [][]Link, p int, prefix string, chapter string, context []string, limit int) {
 
 	count := 0
 
 	if len(cone[p]) > 1 {
 
-		path_start := GetDBNodeByNodePtr(sst,cone[p][0].Dst)		
-		
+		path_start := GetDBNodeByNodePtr(sst, cone[p][0].Dst)
+
 		start_shown := false
 
 		var format int
 		var stpath []string
-		
+
 		for l := 1; l < len(cone[p]); l++ {
 
-			if !MatchContexts(sst,context,cone[p][l].Ctx) {
+			if !MatchContexts(sst, context, cone[p][l].Ctx) {
 				return
 			}
 
@@ -212,20 +209,20 @@ func PrintSomeLinkPath(sst *PoSST, cone [][]Link, p int, prefix string,chapter s
 			if !start_shown {
 
 				if len(cone) > 1 {
-					fmt.Printf("%s (%d) %s",prefix,p+1,path_start.S)
+					fmt.Printf("%s (%d) %s", prefix, p+1, path_start.S)
 				} else {
-					fmt.Printf("%s %s",prefix,path_start.S)
+					fmt.Printf("%s %s", prefix, path_start.S)
 				}
 				start_shown = true
 			}
 
-			nextnode := GetDBNodeByNodePtr(sst,cone[p][l].Dst)
+			nextnode := GetDBNodeByNodePtr(sst, cone[p][l].Dst)
 
-			if !SimilarString(nextnode.Chap,chapter) {
+			if !SimilarString(nextnode.Chap, chapter) {
 				break
 			}
 
-			arr := GetDBArrowByPtr(sst,cone[p][l].Arr)
+			arr := GetDBArrowByPtr(sst, cone[p][l].Arr)
 
 			if arr.Short == "then" {
 				fmt.Print("\n   >>> ")
@@ -236,12 +233,12 @@ func PrintSomeLinkPath(sst *PoSST, cone [][]Link, p int, prefix string,chapter s
 				fmt.Print("\n   <<< ")
 			}
 
-			stpath = append(stpath,STTypeName(STIndexToSTType(arr.STAindex)))
-	
+			stpath = append(stpath, STTypeName(STIndexToSTType(arr.STAindex)))
+
 			if l < len(cone[p]) {
-				fmt.Print("  -(",arr.Long,")->  ")
+				fmt.Print("  -(", arr.Long, ")->  ")
 			}
-			
+
 			fmt.Print(nextnode.S)
 			format += 2
 		}
@@ -249,13 +246,11 @@ func PrintSomeLinkPath(sst *PoSST, cone [][]Link, p int, prefix string,chapter s
 		fmt.Print("\n     -  [ Link STTypes:")
 
 		for s := range stpath {
-			fmt.Print(" -(",stpath[s],")-> ")
+			fmt.Print(" -(", stpath[s], ")-> ")
 		}
 		fmt.Println(". ]\n")
 	}
 }
-
-
 
 //**************************************************************
 
@@ -275,10 +270,6 @@ func ShowPsi(etc Etc) string {
 	return result
 }
 
-
-
 //
 // terminal_output.go
 //
-
-

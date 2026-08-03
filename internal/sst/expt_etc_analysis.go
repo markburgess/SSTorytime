@@ -6,20 +6,18 @@
 
 package sst
 
-import (
-	_ "github.com/lib/pq"
-)
+import ()
 
 //**************************************************************
 
-func CompleteETCTypes(sst *PoSST,node Node) string {
+func CompleteETCTypes(sst *PoSST, node Node) string {
 
 	message := ""
 
 	for st := 0; st < ST_TOP; st++ {
 
 		if len(node.I[st]) > 0 {
-			node.Psi,message = CollapsePsi(sst,node,st)
+			node.Psi, message = CollapsePsi(sst, node, st)
 		}
 	}
 
@@ -28,7 +26,7 @@ func CompleteETCTypes(sst *PoSST,node Node) string {
 
 //**************************************************************
 
-func CollapsePsi(sst *PoSST,node Node,stindex int) (Etc, string) {
+func CollapsePsi(sst *PoSST, node Node, stindex int) (Etc, string) {
 
 	// Follow the rules of SST Gamma(3,4) inference
 	// convergent search to fixed point, ultimately event
@@ -42,12 +40,12 @@ func CollapsePsi(sst *PoSST,node Node,stindex int) (Etc, string) {
 	arrow := sst.ARROW_DIRECTORY[node.I[stindex][0].Arr].Long
 
 	switch sttype {
-		
+
 	case NEAR:
 		//fmt.Println("NEAR...")
 
-	case -LEADSTO,LEADSTO:
-		
+	case -LEADSTO, LEADSTO:
+
 		// skip bogus empty links
 		for l := 0; l < len(node.I[stindex]); l++ {
 
@@ -58,7 +56,7 @@ func CollapsePsi(sst *PoSST,node Node,stindex int) (Etc, string) {
 			} else {
 				break
 			}
-			
+
 		}
 
 		if arrow == "empty" || arrow == "debug" {
@@ -71,7 +69,7 @@ func CollapsePsi(sst *PoSST,node Node,stindex int) (Etc, string) {
 
 	case CONTAINS:
 		etc.T = true
-		etc.T = false     // concept can't contain
+		etc.T = false // concept can't contain
 
 	case -CONTAINS:
 		etc.T = true
@@ -86,14 +84,12 @@ func CollapsePsi(sst *PoSST,node Node,stindex int) (Etc, string) {
 		etc.T = true
 		etc.C = false
 	}
-	
-	message = "Node " + "\"" + node.S + "\"  (seems to be of type)  " + ShowPsi(etc)
-	
-	return etc,message
-}
 
+	message = "Node " + "\"" + node.S + "\"  (seems to be of type)  " + ShowPsi(etc)
+
+	return etc, message
+}
 
 //
 // expt_etc_analysis.c
 //
-

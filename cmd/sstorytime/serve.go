@@ -30,6 +30,7 @@ var serveCmd = &cobra.Command{
 			ctx = context.Background()
 		}
 
+		// Ensure schema is applied before handlers open sessions.
 		if _, _, err := db.OpenDSN(ctx, databaseURL); err != nil {
 			return fmt.Errorf("database: %w", err)
 		}
@@ -40,15 +41,8 @@ var serveCmd = &cobra.Command{
 		}
 
 		mux := http.NewServeMux()
-		mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte("ok"))
-		})
-		mux.Handle("/", http.FileServer(http.FS(publicFS)))
-
-		if serveResources != "" {
-			mux.Handle("/Resources/", http.StripPrefix("/Resources/", http.FileServer(http.Dir(serveResources))))
-		}
+		server.VERBOSE = verbose
+		server.RegisterRoutes(mux, publicFS, serveResources)
 
 		srv := &http.Server{Addr: serveAddr, Handler: mux}
 		go func() {

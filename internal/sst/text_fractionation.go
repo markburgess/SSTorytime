@@ -8,14 +8,12 @@ package sst
 
 import (
 	"fmt"
-	"os"
 	"io/ioutil"
-	"strings"
-	"sort"
-	"regexp"
 	"math"
-	_ "github.com/lib/pq"
-
+	"os"
+	"regexp"
+	"sort"
+	"strings"
 )
 
 //*****************************************************************
@@ -26,18 +24,18 @@ func ReadTextFile(filename string) string {
 	// to yield a "pure" text for n-gram classification, with fewer special chars
 	// The text marks end of sentence with a # for later splitting
 
-	content,err := ioutil.ReadFile(filename)
+	content, err := ioutil.ReadFile(filename)
 
 	if err != nil {
-		fmt.Println("Couldn't find or open",filename)
+		fmt.Println("Couldn't find or open", filename)
 		os.Exit(-1)
 	}
 
 	// Start by stripping HTML / XML tags before para-split
 	// if they haven't been removed already
 
-	m1 := regexp.MustCompile("<[^>]*>") 
-	cleaned := m1.ReplaceAllString(string(content),";") 
+	m1 := regexp.MustCompile("<[^>]*>")
+	cleaned := m1.ReplaceAllString(string(content), ";")
 	return cleaned
 }
 
@@ -46,9 +44,9 @@ func ReadTextFile(filename string) string {
 //**************************************************************
 
 const N_GRAM_MAX = 6
-const N_GRAM_MIN = 2  // fragments that are too small are exponentially large in number and meaningless
+const N_GRAM_MIN = 2 // fragments that are too small are exponentially large in number and meaningless
 
-const DUNBAR_5 =5
+const DUNBAR_5 = 5
 const DUNBAR_15 = 15
 const DUNBAR_30 = 45
 const DUNBAR_150 = 150
@@ -71,8 +69,7 @@ type TextRank struct {
 //**************************************************************
 
 type Sentence struct {
-
-	S string
+	S     string
 	Frags []string
 }
 
@@ -96,12 +93,12 @@ func CleanText(s string) string {
 	// Start by stripping HTML / XML tags before para-split
 	// if they haven't been removed already
 
-	m := regexp.MustCompile("<[^>]*>") 
-	s = m.ReplaceAllString(s,":\n") 
+	m := regexp.MustCompile("<[^>]*>")
+	s = m.ReplaceAllString(s, ":\n")
 
 	// Weird English abbrev
-	s = strings.Replace(s,"[","",-1) 
-	s = strings.Replace(s,"]","",-1) 
+	s = strings.Replace(s, "[", "", -1)
+	s = strings.Replace(s, "]", "", -1)
 
 	// Encode sentence space boundaries and end of sentence markers with a # for later splitting
 
@@ -117,7 +114,7 @@ func CleanText(s string) string {
 
 //******************************************************************
 
-func FractionateTextFile(name string) ([][]Sentence,int) {
+func FractionateTextFile(name string) ([][]Sentence, int) {
 
 	file := ReadTextFile(name)
 	proto_text := CleanText(file)
@@ -132,7 +129,7 @@ func FractionateTextFile(name string) ([][]Sentence,int) {
 
 			for f := range pbsf[p][s].Frags {
 
-				change_set := Fractionate(pbsf[p][s].Frags[f],count,STM_NGRAM_FREQ,N_GRAM_MIN)
+				change_set := Fractionate(pbsf[p][s].Frags[f], count, STM_NGRAM_FREQ, N_GRAM_MIN)
 
 				// Update global n-gram frequencies for fragment, and location histories
 
@@ -140,14 +137,14 @@ func FractionateTextFile(name string) ([][]Sentence,int) {
 					for ng := range change_set[n] {
 						ngram := change_set[n][ng]
 						STM_NGRAM_FREQ[n][ngram]++
-						STM_NGRAM_LOCA[n][ngram] = append(STM_NGRAM_LOCA[n][ngram],count)
+						STM_NGRAM_LOCA[n][ngram] = append(STM_NGRAM_LOCA[n][ngram], count)
 					}
 				}
 			}
 		}
 	}
 
-	return pbsf,count
+	return pbsf, count
 }
 
 //**************************************************************
@@ -155,18 +152,18 @@ func FractionateTextFile(name string) ([][]Sentence,int) {
 func SplitIntoParaSentences(file string) [][]Sentence {
 
 	var pbsf [][]Sentence
-	
+
 	// first split by paragraph
 
-	paras := strings.Split(file,"\n\n")
+	paras := strings.Split(file, "\n\n")
 
-	for _,p := range paras {
+	for _, p := range paras {
 
 		p = strings.TrimSpace(p)
 		sentences := SplitSentences(p)
 
 		var cleaned []Sentence
-		
+
 		for s := range sentences {
 
 			// NB, if parentheses contain multiple sentences, this complains, TBD
@@ -179,18 +176,18 @@ func SplitIntoParaSentences(file string) [][]Sentence {
 
 			for f := range frags {
 				content := strings.TrimSpace(frags[f])
-				if len(content) > 2 {			
-					this.Frags = append(this.Frags,content)
+				if len(content) > 2 {
+					this.Frags = append(this.Frags, content)
 				}
 			}
 
 			if len(this.S) > 0 {
-				cleaned = append(cleaned,this)
+				cleaned = append(cleaned, this)
 			}
 		}
 
 		if len(cleaned) > 0 {
-			pbsf = append(pbsf,cleaned)
+			pbsf = append(pbsf, cleaned)
 		}
 	}
 
@@ -203,58 +200,58 @@ func SplitSentences(para string) []string {
 
 	const min_sentence = 20
 	const min_paragraph = 100
-	
-	para = strings.ReplaceAll(para,"\n"," ")
-	para = strings.ReplaceAll(para,"\t"," ")
-	lquote := fmt.Sprintf("%c",NON_ASCII_LQUOTE)
-	para = strings.ReplaceAll(para,lquote,"\"")
-	rquote := fmt.Sprintf("%c",NON_ASCII_RQUOTE)
-	para = strings.ReplaceAll(para,rquote,"\"")
-	para = strings.ReplaceAll(para,"`","'")
-	para = strings.ReplaceAll(para,"’","'")
+
+	para = strings.ReplaceAll(para, "\n", " ")
+	para = strings.ReplaceAll(para, "\t", " ")
+	lquote := fmt.Sprintf("%c", NON_ASCII_LQUOTE)
+	para = strings.ReplaceAll(para, lquote, "\"")
+	rquote := fmt.Sprintf("%c", NON_ASCII_RQUOTE)
+	para = strings.ReplaceAll(para, rquote, "\"")
+	para = strings.ReplaceAll(para, "`", "'")
+	para = strings.ReplaceAll(para, "’", "'")
 	para = strings.TrimSpace(para)
 
 	var sentences []string
 	var extract []rune
 	var dlevel, slevel int
-	
+
 	if len(para) < min_paragraph {
 		extract = []rune(para)
 	} else {
 
 		// First look for matching pairs of quotes
 
-		for _,rval := range para {
-			
-			extract = append(extract,rval)
-			
+		for _, rval := range para {
+
+			extract = append(extract, rval)
+
 			switch rval {
-				
+
 			case '\'':
 				if slevel == 0 {
 					slevel++
 				} else {
 					slevel--
 				}
-				
+
 			case '"':
 				if dlevel == 0 {
 					dlevel++
 				} else {
 					dlevel--
 				}
-				
-			case '!','.','。':
+
+			case '!', '.', '。':
 				if slevel == 0 && dlevel == 0 && len(extract) > min_sentence {
-					sentences = append(sentences,SanitizeSentence(extract))
+					sentences = append(sentences, SanitizeSentence(extract))
 					extract = nil
 				}
 			}
 		}
 	}
-	
+
 	if len(extract) > 0 {
-		sentences = append(sentences,SanitizeSentence(extract))
+		sentences = append(sentences, SanitizeSentence(extract))
 	}
 
 	return sentences
@@ -265,8 +262,8 @@ func SplitSentences(para string) []string {
 func SanitizeSentence(extract []rune) string {
 
 	s := string(extract)
-	
-	if strings.Count(s,"\"") % 2 != 0 {
+
+	if strings.Count(s, "\"")%2 != 0 {
 		s += "\""
 	}
 
@@ -277,12 +274,12 @@ func SanitizeSentence(extract []rune) string {
 
 func SplitPunctuationText(s string) []string {
 
-	return SplitPunctuationTextWork(s,false)
+	return SplitPunctuationTextWork(s, false)
 }
 
 //**************************************************************
 
-func SplitPunctuationTextWork(s string,allow_small bool) []string {
+func SplitPunctuationTextWork(s string, allow_small bool) []string {
 
 	// first split sentence on intentional separators
 
@@ -292,15 +289,15 @@ func SplitPunctuationTextWork(s string,allow_small bool) []string {
 
 	for f := 0; f < len(frags); f++ {
 
-		contents,hasparen := UnParen(frags[f])
+		contents, hasparen := UnParen(frags[f])
 
 		var sfrags []string
 
 		if hasparen {
 			// contiguous parenthesis
-			subfrags = append(subfrags,frags[f])
+			subfrags = append(subfrags, frags[f])
 			// and fractionated contents (recurse)
-			sfrags = SplitPunctuationTextWork(contents,allow_small)
+			sfrags = SplitPunctuationTextWork(contents, allow_small)
 			sfrags = nil // count but don't repeat
 		} else {
 			re := regexp.MustCompile("([\"—“”!?,:;—]+[ \n])")
@@ -309,9 +306,9 @@ func SplitPunctuationTextWork(s string,allow_small bool) []string {
 
 		for sf := range sfrags {
 			sfrags[sf] = strings.TrimSpace(sfrags[sf])
-			
+
 			if allow_small || len(sfrags[sf]) > 1 {
-				subfrags = append(subfrags,sfrags[sf])
+				subfrags = append(subfrags, sfrags[sf])
 			}
 		}
 	}
@@ -319,13 +316,13 @@ func SplitPunctuationTextWork(s string,allow_small bool) []string {
 	// handle parentheses first as a single fragment because this could mean un-accenting
 
 	// now split on any punctuation that's not a hyphen
-	
+
 	return subfrags
 }
 
 //**************************************************************
 
-func UnParen(s string) (string,bool) {
+func UnParen(s string) (string, bool) {
 
 	var counter byte = ' '
 
@@ -340,11 +337,11 @@ func UnParen(s string) (string,bool) {
 
 	if counter != ' ' {
 		if s[len(s)-1] == counter {
-			trimmed := strings.TrimSpace(s[1:len(s)-1])
-			return trimmed,true
+			trimmed := strings.TrimSpace(s[1 : len(s)-1])
+			return trimmed, true
 		}
 	}
-	return strings.TrimSpace(s),false
+	return strings.TrimSpace(s), false
 }
 
 //**************************************************************
@@ -369,7 +366,7 @@ func CountParens(s string) []string {
 				frag := strings.TrimSpace(string(text[fragstart:i]))
 				fragstart = i
 				if len(frag) > 0 {
-					subfrags = append(subfrags,frag)
+					subfrags = append(subfrags, frag)
 				}
 			}
 		case '[':
@@ -379,7 +376,7 @@ func CountParens(s string) []string {
 				frag := strings.TrimSpace(string(text[fragstart:i]))
 				fragstart = i
 				if len(frag) > 0 {
-					subfrags = append(subfrags,frag)
+					subfrags = append(subfrags, frag)
 				}
 			}
 		case '{':
@@ -389,18 +386,18 @@ func CountParens(s string) []string {
 				frag := strings.TrimSpace(string(text[fragstart:i]))
 				fragstart = i
 				if len(frag) > 0 {
-					subfrags = append(subfrags,frag)
+					subfrags = append(subfrags, frag)
 				}
 			}
 
 			// end
 
-		case ')',']','}':
+		case ')', ']', '}':
 			count[text[i]]--
 			if count[match] == 0 {
-				frag := text[fragstart:i+1]
-				fragstart = i+1
-				subfrags = append(subfrags,string(frag))
+				frag := text[fragstart : i+1]
+				fragstart = i + 1
+				subfrags = append(subfrags, string(frag))
 			}
 		}
 
@@ -409,7 +406,7 @@ func CountParens(s string) []string {
 	lastfrag := strings.TrimSpace(string(text[fragstart:len(text)]))
 
 	if len(lastfrag) > 0 {
-		subfrags = append(subfrags,string(lastfrag))
+		subfrags = append(subfrags, string(lastfrag))
 	}
 
 	// Ignore unbalanced parentheses, because it's unclear why in natural language
@@ -419,7 +416,7 @@ func CountParens(s string) []string {
 
 //**************************************************************
 
-func Fractionate(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min int) [N_GRAM_MAX][]string {
+func Fractionate(frag string, L int, frequency [N_GRAM_MAX]map[string]float64, min int) [N_GRAM_MAX][]string {
 
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
@@ -427,10 +424,10 @@ func Fractionate(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min 
 	var rrbuffer [N_GRAM_MAX][]string
 	var change_set [N_GRAM_MAX][]string
 
-	words := strings.Split(frag," ")
+	words := strings.Split(frag, " ")
 
 	for w := range words {
-		rrbuffer,change_set = NextWord(words[w],rrbuffer)
+		rrbuffer, change_set = NextWord(words[w], rrbuffer)
 	}
 
 	return change_set
@@ -438,7 +435,7 @@ func Fractionate(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min 
 
 //**************************************************************
 
-func AssessStaticIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min int) float64 {
+func AssessStaticIntent(frag string, L int, frequency [N_GRAM_MAX]map[string]float64, min int) float64 {
 
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
@@ -447,16 +444,16 @@ func AssessStaticIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float
 	var rrbuffer [N_GRAM_MAX][]string
 	var score float64
 
-	words := strings.Split(frag," ")
+	words := strings.Split(frag, " ")
 
 	for w := range words {
 
-		rrbuffer,change_set = NextWord(words[w],rrbuffer)
+		rrbuffer, change_set = NextWord(words[w], rrbuffer)
 
 		for n := min; n < N_GRAM_MAX; n++ {
 			for ng := range change_set[n] {
 				ngram := change_set[n][ng]
-				score += StaticIntentionality(L,ngram,STM_NGRAM_FREQ[n][ngram])
+				score += StaticIntentionality(L, ngram, STM_NGRAM_FREQ[n][ngram])
 			}
 		}
 	}
@@ -466,11 +463,11 @@ func AssessStaticIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float
 
 //**************************************************************
 
-func AssessStaticTextAnomalies(L int,frequencies [N_GRAM_MAX]map[string]float64,locations [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]TextRank,[N_GRAM_MAX][]TextRank) {
+func AssessStaticTextAnomalies(L int, frequencies [N_GRAM_MAX]map[string]float64, locations [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]TextRank, [N_GRAM_MAX][]TextRank) {
 
 	// Try to split a text into anomalous/ambient i.e. intentional + contextual  parts
 
-	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
+	const coherence_length = DUNBAR_30 // approx narrative range or #sentences before new point/topic
 
 	var anomalous [N_GRAM_MAX][]TextRank
 	var ambient [N_GRAM_MAX][]TextRank
@@ -480,16 +477,16 @@ func AssessStaticTextAnomalies(L int,frequencies [N_GRAM_MAX]map[string]float64,
 		for ngram := range STM_NGRAM_LOCA[n] {
 
 			var ns TextRank
-			ns.Significance = AssessStaticIntent(ngram,L,STM_NGRAM_FREQ,N_GRAM_MIN)
+			ns.Significance = AssessStaticIntent(ngram, L, STM_NGRAM_FREQ, N_GRAM_MIN)
 			ns.Fragment = ngram
 
-			if IntentionalNgram(n,ngram,L,coherence_length) {
-				anomalous[n] = append(anomalous[n],ns)
+			if IntentionalNgram(n, ngram, L, coherence_length) {
+				anomalous[n] = append(anomalous[n], ns)
 			} else {
-				ambient[n] = append(ambient[n],ns)
+				ambient[n] = append(ambient[n], ns)
 			}
 		}
-		
+
 		sort.Slice(anomalous[n], func(i, j int) bool {
 			return anomalous[n][i].Significance > anomalous[n][j].Significance
 		})
@@ -501,37 +498,37 @@ func AssessStaticTextAnomalies(L int,frequencies [N_GRAM_MAX]map[string]float64,
 
 	var intent [N_GRAM_MAX][]TextRank
 	var context [N_GRAM_MAX][]TextRank
-	var max_intentional = [N_GRAM_MAX]int{0,0,DUNBAR_150,DUNBAR_150,DUNBAR_30,DUNBAR_15}
+	var max_intentional = [N_GRAM_MAX]int{0, 0, DUNBAR_150, DUNBAR_150, DUNBAR_30, DUNBAR_15}
 
 	for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
 
 		for i := 0; i < max_intentional[n] && i < len(anomalous[n]); i++ {
-			intent[n] = append(intent[n],anomalous[n][i])
+			intent[n] = append(intent[n], anomalous[n][i])
 		}
 
 		for i := 0; i < max_intentional[n] && i < len(ambient[n]); i++ {
-			context[n] = append(context[n],ambient[n][i])
+			context[n] = append(context[n], ambient[n][i])
 		}
 	}
 
-	return intent,context
+	return intent, context
 }
 
 //**************************************************************
 
-func IntentionalNgram(n int,ngram string,L int,coherence_length int) bool {
+func IntentionalNgram(n int, ngram string, L int, coherence_length int) bool {
 
 	// If short file, everything is probably significant
 
 	if n == 1 {
-		return false 
+		return false
 	}
 
 	if L < coherence_length {
 		return true
 	}
 
-	occurrences,minr,maxr := IntervalRadius(n,ngram)
+	occurrences, minr, maxr := IntervalRadius(n, ngram)
 
 	// if too few occurrences, no difference between max and min delta
 
@@ -541,12 +538,12 @@ func IntentionalNgram(n int,ngram string,L int,coherence_length int) bool {
 
 	// the distribution of intraspacings is broad, so not just a regular pattern
 
-	return maxr > minr + coherence_length
+	return maxr > minr+coherence_length
 }
 
 //**************************************************************
 
-func IntervalRadius(n int, ngram string) (int,int,int) {
+func IntervalRadius(n int, ngram string) (int, int, int) {
 
 	// find minimax distances between n-grams (in sentences)
 
@@ -562,37 +559,37 @@ func IntervalRadius(n int, ngram string) (int,int,int) {
 		d := STM_NGRAM_LOCA[n][ngram][occ]
 		delta := d - dl
 		dl = d
-		
+
 		if dl == 0 {
 			continue
 		}
-		
+
 		if dl > dlmax {
 			dlmax = delta
 		}
-		
+
 		if dl < dlmin {
 			dlmin = delta
 		}
 	}
 
-	return occurrences,dlmin,dlmax
+	return occurrences, dlmin, dlmax
 }
 
 //**************************************************************
 
-func AssessTextCoherentCoactivation(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX]map[string]int,[N_GRAM_MAX]map[string]int,int) {
+func AssessTextCoherentCoactivation(L int, ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX]map[string]int, [N_GRAM_MAX]map[string]int, int) {
 
 	// In this global assessment of coherence intervals, we separate each into text that is unique (intentional)
 	// and fragments that are repeated in any other interval, so this is an extreme view. Compare to fast/slow method
 	// below
 
-	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
+	const coherence_length = DUNBAR_30 // approx narrative range or #sentences before new point/topic
 
 	var overlap [N_GRAM_MAX]map[string]int
 	var condensate [N_GRAM_MAX]map[string]int
 
-	C,partitions := CoherenceSet(ngram_loc,L,coherence_length)
+	C, partitions := CoherenceSet(ngram_loc, L, coherence_length)
 
 	for n := 1; n < N_GRAM_MAX; n++ {
 
@@ -606,18 +603,18 @@ func AssessTextCoherentCoactivation(L int,ngram_loc [N_GRAM_MAX]map[string][]int
 			for ngram := range C[n][0] {
 				overlap[n][ngram]++
 			}
-		// multiple coherence zones
+			// multiple coherence zones
 		} else {
 			for pi := 0; pi < len(C[n]); pi++ {
-				for pj := pi+1; pj < len(C[n]); pj++ {
+				for pj := pi + 1; pj < len(C[n]); pj++ {
 					for ngram := range C[n][pi] {
 						if C[n][pi][ngram] > 0 && C[n][pj][ngram] > 0 {
 							// ambients
-							delete(condensate[n],ngram)
+							delete(condensate[n], ngram)
 							overlap[n][ngram]++
 						} else {
 							// unique things here
-							_,ambient := overlap[n][ngram]
+							_, ambient := overlap[n][ngram]
 							if !ambient {
 								condensate[n][ngram]++
 							}
@@ -627,28 +624,28 @@ func AssessTextCoherentCoactivation(L int,ngram_loc [N_GRAM_MAX]map[string][]int
 			}
 		}
 	}
-	return overlap,condensate,partitions
+	return overlap, condensate, partitions
 }
 
 //**************************************************************
 
-func AssessTextFastSlow(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]map[string]int,[N_GRAM_MAX][]map[string]int,int) {
+func AssessTextFastSlow(L int, ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]map[string]int, [N_GRAM_MAX][]map[string]int, int) {
 
 	// Use a running evaluation of context intervals to separate ngrams that are varying quickly (intentional)
 	// from those changing slowly (context). For each region, what is different from the last is fast and what
 	// remains the same as last is slow. This is remarkably effective and quick to calculate.
 
-	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
+	const coherence_length = DUNBAR_30 // approx narrative range or #sentences before new point/topic
 
 	var slow [N_GRAM_MAX][]map[string]int
 	var fast [N_GRAM_MAX][]map[string]int
 
-	C,partitions := CoherenceSet(ngram_loc,L,coherence_length)
+	C, partitions := CoherenceSet(ngram_loc, L, coherence_length)
 
 	for n := 1; n < N_GRAM_MAX; n++ {
 
-		slow[n] = make([]map[string]int,partitions)
-		fast[n] = make([]map[string]int,partitions)
+		slow[n] = make([]map[string]int, partitions)
+		fast[n] = make([]map[string]int, partitions)
 
 		// now run through linearly and split nearest neighbours
 
@@ -663,7 +660,7 @@ func AssessTextFastSlow(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_M
 				fast[n][0][ngram]++
 			}
 
-		// multiple coherence zones
+			// multiple coherence zones
 
 		} else {
 			for p := 1; p < partitions; p++ {
@@ -685,27 +682,27 @@ func AssessTextFastSlow(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_M
 		}
 	}
 
-	return slow,fast,partitions
+	return slow, fast, partitions
 }
 
 //**************************************************************
 
-func CoherenceSet(ngram_loc [N_GRAM_MAX]map[string][]int, L,coherence_length int) ([N_GRAM_MAX][]map[string]int,int) {
+func CoherenceSet(ngram_loc [N_GRAM_MAX]map[string][]int, L, coherence_length int) ([N_GRAM_MAX][]map[string]int, int) {
 
 	var C [N_GRAM_MAX][]map[string]int
 
 	partitions := L/coherence_length + 1
 
 	for n := 1; n < N_GRAM_MAX; n++ {
-		
-		C[n] = make([]map[string]int,partitions)
+
+		C[n] = make([]map[string]int, partitions)
 
 		for p := 0; p < partitions; p++ {
 			C[n][p] = make(map[string]int)
 		}
 
 		for ngram := range ngram_loc[n] {
-			
+
 			// commute indices and expand to a sparse representation for simplicity
 
 			for s := range ngram_loc[n][ngram] {
@@ -715,12 +712,12 @@ func CoherenceSet(ngram_loc [N_GRAM_MAX]map[string][]int, L,coherence_length int
 		}
 	}
 
-	return C,partitions
+	return C, partitions
 }
 
 //**************************************************************
 
-func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]string,[N_GRAM_MAX][]string) {
+func NextWord(frag string, rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]string, [N_GRAM_MAX][]string) {
 
 	// Word by word, we form a superposition of scores from n-grams of different lengths
 	// as a simple sum. This means lower lengths will dominate as there are more of them
@@ -729,23 +726,23 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]string,[
 	var change_set [N_GRAM_MAX][]string
 
 	for n := 1; n < N_GRAM_MAX; n++ {
-		
+
 		// Pop from round-robin
 
-		if (len(rrbuffer[n]) > n-1) {
+		if len(rrbuffer[n]) > n-1 {
 			rrbuffer[n] = rrbuffer[n][1:n]
 		}
-		
+
 		// Push new to maintain length
 
-		rrbuffer[n] = append(rrbuffer[n],frag)
+		rrbuffer[n] = append(rrbuffer[n], frag)
 
 		// Assemble the key, only if complete cluster
-		
-		if (len(rrbuffer[n]) > n-1) {
-			
+
+		if len(rrbuffer[n]) > n-1 {
+
 			var key string
-			
+
 			for j := 0; j < n; j++ {
 				key = key + rrbuffer[n][j]
 				if j < n-1 {
@@ -755,21 +752,21 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]string,[
 
 			key = CleanNgram(key)
 
-			if ExcludedByBindings(CleanNgram(rrbuffer[n][0]),key,CleanNgram(rrbuffer[n][n-1])) {
+			if ExcludedByBindings(CleanNgram(rrbuffer[n][0]), key, CleanNgram(rrbuffer[n][n-1])) {
 				continue
 			}
 
-			change_set[n] = append(change_set[n],key)
+			change_set[n] = append(change_set[n], key)
 		}
 	}
 
 	frag = CleanNgram(frag)
-	
-	if N_GRAM_MIN <= 1 && !ExcludedByBindings(frag,frag,frag) {
-		change_set[1] = append(change_set[1],frag)
+
+	if N_GRAM_MIN <= 1 && !ExcludedByBindings(frag, frag, frag) {
+		change_set[1] = append(change_set[1], frag)
 	}
 
-	return rrbuffer,change_set
+	return rrbuffer, change_set
 }
 
 //**************************************************************
@@ -777,19 +774,19 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]string,[
 func CleanNgram(s string) string {
 
 	re := regexp.MustCompile("[-][-][-].*")
-	s = re.ReplaceAllString(s,"")
+	s = re.ReplaceAllString(s, "")
 	re = regexp.MustCompile("[\"—“”!?`,.:;—()_]+")
-	s = re.ReplaceAllString(s,"")
-	s = strings.Replace(s,"  "," ",-1)
-	s = strings.Trim(s,"-")
-	s = strings.Trim(s,"'")
+	s = re.ReplaceAllString(s, "")
+	s = strings.Replace(s, "  ", " ", -1)
+	s = strings.Trim(s, "-")
+	s = strings.Trim(s, "'")
 
 	return strings.ToLower(s)
 }
 
 //**************************************************************
 
-func ExtractIntentionalTokens(L int,selected []TextRank,Nmin,Nmax int) ([][]string,[][]string,[]string,[]string) {
+func ExtractIntentionalTokens(L int, selected []TextRank, Nmin, Nmax int) ([][]string, [][]string, []string, []string) {
 
 	// This function examines a fractionation of text for fractions, only for
 	// sentences that are selected, and extracts some shared context
@@ -798,15 +795,15 @@ func ExtractIntentionalTokens(L int,selected []TextRank,Nmin,Nmax int) ([][]stri
 	const reuse_threshold = 0
 	const intent_threshold = 1
 
-	slow,fast,doc_parts := AssessTextFastSlow(L,STM_NGRAM_LOCA)
+	slow, fast, doc_parts := AssessTextFastSlow(L, STM_NGRAM_LOCA)
 
 	var grad_amb [N_GRAM_MAX]map[string]float64
 	var grad_oth [N_GRAM_MAX]map[string]float64
 
 	// returns
 
-	var fastparts = make([][]string,doc_parts)
-	var slowparts = make([][]string,doc_parts)
+	var fastparts = make([][]string, doc_parts)
+	var slowparts = make([][]string, doc_parts)
 	var fastwhole []string
 	var slowwhole []string
 
@@ -824,106 +821,106 @@ func ExtractIntentionalTokens(L int,selected []TextRank,Nmin,Nmax int) ([][]stri
 
 			for ngram := range fast[n][p] {
 				if fast[n][p][ngram] > reuse_threshold {
-					other = append(other,ngram)
+					other = append(other, ngram)
 				}
 			}
 
 			for ngram := range slow[n][p] {
 				if slow[n][p][ngram] > reuse_threshold {
-					amb = append(amb,ngram)
+					amb = append(amb, ngram)
 				}
 			}
-			
+
 			// Sort by intentionality
 
 			sort.Slice(amb, func(i, j int) bool {
-				ambi :=	StaticIntentionality(L,amb[i],STM_NGRAM_FREQ[n][amb[i]])
-				ambj := StaticIntentionality(L,amb[j],STM_NGRAM_FREQ[n][amb[j]])
+				ambi := StaticIntentionality(L, amb[i], STM_NGRAM_FREQ[n][amb[i]])
+				ambj := StaticIntentionality(L, amb[j], STM_NGRAM_FREQ[n][amb[j]])
 				return ambi > ambj
 			})
 
 			sort.Slice(other, func(i, j int) bool {
-				inti := StaticIntentionality(L,other[i],STM_NGRAM_FREQ[n][other[i]])
-				intj := StaticIntentionality(L,other[j],STM_NGRAM_FREQ[n][other[j]])
+				inti := StaticIntentionality(L, other[i], STM_NGRAM_FREQ[n][other[i]])
+				intj := StaticIntentionality(L, other[j], STM_NGRAM_FREQ[n][other[j]])
 				return inti > intj
 			})
-			
-			for i := 0 ; i < policy_skim && i < len(amb); i++ {
-				v := StaticIntentionality(L,amb[i],STM_NGRAM_FREQ[n][amb[i]])
-				slowparts[p] = append(slowparts[p],amb[i])
+
+			for i := 0; i < policy_skim && i < len(amb); i++ {
+				v := StaticIntentionality(L, amb[i], STM_NGRAM_FREQ[n][amb[i]])
+				slowparts[p] = append(slowparts[p], amb[i])
 				if v > intent_threshold {
 					grad_amb[n][amb[i]] += v
 				}
 			}
-			
-			for i := 0 ; i < policy_skim && i < len(other); i++ {
-				v := StaticIntentionality(L,other[i],STM_NGRAM_FREQ[n][other[i]])
-				fastparts[p] = append(fastparts[p],other[i])
+
+			for i := 0; i < policy_skim && i < len(other); i++ {
+				v := StaticIntentionality(L, other[i], STM_NGRAM_FREQ[n][other[i]])
+				fastparts[p] = append(fastparts[p], other[i])
 				if v > intent_threshold {
 					grad_oth[n][other[i]] += v
 				}
 			}
 		}
 	}
-	
+
 	// Summary ranking of whole doc, but pick only if selected
-	
+
 	for n := Nmin; n < Nmax; n++ {
-		
+
 		var amb []string
 		var other []string
 
 		for s := range selected {
 			for ngram := range grad_amb[n] {
-				if !strings.Contains(selected[s].Fragment,ngram) {
-					delete(grad_amb[n],ngram)
+				if !strings.Contains(selected[s].Fragment, ngram) {
+					delete(grad_amb[n], ngram)
 				}
 			}
 
 			for ngram := range grad_oth[n] {
-				if !strings.Contains(selected[s].Fragment,ngram) {
-					delete(grad_oth[n],ngram)
+				if !strings.Contains(selected[s].Fragment, ngram) {
+					delete(grad_oth[n], ngram)
 				}
 			}
 		}
-				
+
 		// there is possible overlap
 
 		for ngram := range grad_oth[n] {
-			_,dup := grad_amb[n][ngram]
+			_, dup := grad_amb[n][ngram]
 			if dup {
 				continue
 			}
-			other = append(other,ngram)
+			other = append(other, ngram)
 		}
 
 		for ngram := range grad_amb[n] {
-			amb = append(amb,ngram)
+			amb = append(amb, ngram)
 		}
 
 		// Sort by intentionality
-		
+
 		sort.Slice(amb, func(i, j int) bool {
-			ambi := StaticIntentionality(L,amb[i],STM_NGRAM_FREQ[n][amb[i]])
-			ambj := StaticIntentionality(L,amb[j],STM_NGRAM_FREQ[n][amb[j]])
+			ambi := StaticIntentionality(L, amb[i], STM_NGRAM_FREQ[n][amb[i]])
+			ambj := StaticIntentionality(L, amb[j], STM_NGRAM_FREQ[n][amb[j]])
 			return ambi > ambj
 		})
 		sort.Slice(other, func(i, j int) bool {
-			inti := StaticIntentionality(L,other[i],STM_NGRAM_FREQ[n][other[i]])
-			intj := StaticIntentionality(L,other[j],STM_NGRAM_FREQ[n][other[j]])
+			inti := StaticIntentionality(L, other[i], STM_NGRAM_FREQ[n][other[i]])
+			intj := StaticIntentionality(L, other[j], STM_NGRAM_FREQ[n][other[j]])
 			return inti > intj
 		})
-		
-		for i := 0 ; i < policy_skim && i < len(amb); i++ {
-			slowwhole = append(slowwhole,amb[i])
+
+		for i := 0; i < policy_skim && i < len(amb); i++ {
+			slowwhole = append(slowwhole, amb[i])
 		}
 
-		for i := 0 ; i < policy_skim && i < len(other); i++ {
-			fastwhole = append(fastwhole,other[i])
+		for i := 0; i < policy_skim && i < len(other); i++ {
+			fastwhole = append(fastwhole, other[i])
 		}
-	}	
+	}
 
-	return fastparts,slowparts,fastwhole,slowwhole
+	return fastparts, slowparts, fastwhole, slowwhole
 }
 
 //**************************************************************
@@ -937,12 +934,12 @@ func RunningIntentionality(t int, frag string) float64 {
 	var rrbuffer [N_GRAM_MAX][]string
 	var score float64
 
-	words := strings.Split(frag," ")
+	words := strings.Split(frag, " ")
 	decayrate := float64(DUNBAR_30)
 
 	for w := range words {
 
-		rrbuffer,change_set = NextWord(words[w],rrbuffer)
+		rrbuffer, change_set = NextWord(words[w], rrbuffer)
 
 		for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
 
@@ -975,7 +972,7 @@ func StaticIntentionality(L int, s string, freq float64) float64 {
 	// inband learning uses an exponential deprecation based on
 	// SST scales (see "leg" meaning).
 
-	work := float64(len(s)) 
+	work := float64(len(s))
 
 	// if this doesn't occur at least 3 times, then why do we care?
 
@@ -993,7 +990,7 @@ func StaticIntentionality(L int, s string, freq float64) float64 {
 	phi_0 := float64(DUNBAR_30) // not float64(L)
 
 	// How often is too often for a concept?
-	const rho = 1/30.0 
+	const rho = 1 / 30.0
 
 	crit := phi/phi_0 - rho
 
@@ -1002,9 +999,6 @@ func StaticIntentionality(L int, s string, freq float64) float64 {
 	return meaning
 }
 
-
-
 //
 // text_fractionation.go
 //
-

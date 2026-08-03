@@ -7,12 +7,12 @@
 package sst
 
 import (
+	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 	"fmt"
 	"os"
 	"strings"
 	"strconv"
 	"sort"
-	_ "github.com/lib/pq"
 
 )
 
@@ -267,56 +267,25 @@ func NodeWhereString(sst PoSST,name,chap string,context []string,arrow []ArrowPt
 
 // **************************************************************************
 
-func GetDBChaptersMatchingName(sst PoSST,src string) []string {
-
-	var qstr string
-
-	remove_accents,stripped := IsBracketedSearchTerm(SQLEscape(src))
-
+func GetDBChaptersMatchingName(sst PoSST, src string) []string {
+	var out []string
+	search := "%" + src + "%"
+	remove_accents, stripped := IsBracketedSearchTerm(SQLEscape(src))
+	var rows []string
+	var err error
 	if remove_accents {
-		search := "%"+stripped+"%"
-		qstr = fmt.Sprintf("SELECT DISTINCT Chap FROM Node WHERE lower(unaccent(Chap)) LIKE lower('%s')",search)
+		search = "%" + stripped + "%"
+		rows, err = sst.Q.ListChaptersLikeUnaccent(sst.Ctx, search)
 	} else {
-		search := "%"+src+"%"
-		qstr = fmt.Sprintf("SELECT DISTINCT Chap FROM Node WHERE lower(Chap) LIKE lower('%s')",search)
+		rows, err = sst.Q.ListChaptersLike(sst.Ctx, search)
 	}
-
-	row, err := sst.DB.Query(qstr)
-	
 	if err != nil {
-		fmt.Println("QUERY GetDBChaptersMatchingName",err)
+		fmt.Println("GetDBChaptersMatchingName:", err)
+		return out
 	}
-
-	var whole string
-	var chapters = make(map[string]int)
-	var retval []string
-
-	if row != nil {
-		for row.Next() {		
-			err = row.Scan(&whole)
-			several := strings.Split(whole,",")
-			
-			for s := range several {
-				chapters[several[s]]++
-			}
-		}
-
-		for c := range chapters {
-			if strings.Contains(c,src) {
-				if len(c) > 0 {
-					retval = append(retval,c)
-				}
-			}
-		}
-
-		sort.Strings(retval)
-		row.Close()
-	}
-
-	return retval
+	return rows
 }
 
-// **************************************************************************
 
 func GetDBContextByName(sst *PoSST,src string) (string,ContextPtr) {
 
@@ -399,75 +368,53 @@ func GetSTtypesFromArrows(sst PoSST,arrows []ArrowPtr) []int {
 
 // **************************************************************************
 
-func GetDBNodeByNodePtr(sst *PoSST,db_nptr NodePtr) Node {
+func GetDBNodeByNodePtr(sst *PoSST, db_nptr NodePtr) Node {
 
-	im_nptr,cached := sst.NODE_CACHE[db_nptr]
-
+	im_nptr, cached := sst.NODE_CACHE[db_nptr]
 	if cached {
-		return GetMemoryNodeFromPtr(sst,im_nptr)
+		return GetMemoryNodeFromPtr(sst, im_nptr)
 	}
-
-	// This ony works if we insert non-null arrays like '[]' during initialization
-	cols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
-	qstr := fmt.Sprintf("select L,S,Chap,%s from Node where NPtr='(%d,%d)'::NodePtr AND NOT L=0",cols,db_nptr.Class,db_nptr.CPtr)
-
-	row, err := sst.DB.Query(qstr)
 
 	var n Node
-	var matches []Node
-	var count int = 0
-
+	row, err := sst.Q.GetNodeByPtr(sst.Ctx, sqlc.GetNodeByPtrParams{
+		Class: int32(db_nptr.Class),
+		Cptr:  int32(db_nptr.CPtr),
+	})
 	if err != nil {
-		fmt.Println("GetDBNodeByNodePointer Failed:",err)
 		return n
 	}
-
-	var whole [ST_TOP]string
-
-	// NB, there seems to be a "bug" in the SQL package, which cannot always populate the links, so try not to
-	//     rely on this and work around when needed using GetEntireCone(any,2..) separately
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&n.L,&n.S,&n.Chap,&whole[0],&whole[1],&whole[2],&whole[3],&whole[4],&whole[5],&whole[6])
-
-			for i := 0; i < ST_TOP; i++ {
-				n.I[i] = ParseLinkArray(whole[i])
-			}
-			
-			matches = append(matches,n)
-			count++
-		}
-
-		if count > 1 {
-			fmt.Println("\nWARNING !\nGetDBNodeByNodePtr returned too many matches (this shouldn't happen):",count,"for ptr",db_nptr)
-
-			for _,val := range matches {
-				fmt.Println(" - Value: ",val)
-			}
-			
-			if !cached {
-				CacheNode(sst,matches[0])
-			}
-
-			n = matches[0]
-			fmt.Println("Selected first match: ",matches[0],"\n")
-		}
-
-		// Expand any dynamic inbuilt functions
-
-		if strings.HasPrefix(n.S,"Dynamic: ") {
-			n.S = ExpandDynamicFunctions(n.S)
-		}
-
-		row.Close()
-	}
-	
+	n.L = int(row.L)
+	n.S = row.S
+	n.Chap = row.Chap
+	n.Seq = row.Seq
 	n.NPtr = db_nptr
+
+	edges, err := sst.Q.ListEdgesFrom(sst.Ctx, sqlc.ListEdgesFromParams{
+		SrcClass: int32(db_nptr.Class),
+		SrcCptr:  int32(db_nptr.CPtr),
+	})
+	if err == nil {
+		for _, e := range edges {
+			stindex := STTypeToSTIndex(StTypeToInt(e.St))
+			if stindex < 0 || stindex >= ST_TOP {
+				continue
+			}
+			lnk := Link{
+				Arr: ArrowPtr(e.Arr),
+				Wgt: e.Wgt,
+				Ctx: ContextPtr(e.Ctx),
+				Dst: NodePtr{Class: int(e.DstClass), CPtr: ClassedNodePtr(e.DstCptr)},
+			}
+			n.I[stindex] = append(n.I[stindex], lnk)
+		}
+	}
+
+	if strings.HasPrefix(n.S, "Dynamic: ") {
+		n.S = ExpandDynamicFunctions(n.S)
+	}
 	return n
 }
 
-// **************************************************************************
 
 func GetDBSingletonBySTType(sst PoSST,sttypes []int,chap string,cn []string) ([]NodePtr,[]NodePtr) {
 

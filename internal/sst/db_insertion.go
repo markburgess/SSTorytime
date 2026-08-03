@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 )
 
 //**************************************************************
@@ -18,24 +20,19 @@ func FormDBNode(sst *PoSST, n Node) string {
 
 	// Add node version setting explicit CPtr value, note different function call
 	// We use this function when we ARE managing/counting CPtr values ourselves
-
-	var qstr, seqstr string
+	// Returns SQL only for batch builders; prefer InsertNodeFn for single calls.
 
 	n.L, n.NPtr.Class = StorageClass(n.S)
 
 	cptr := n.NPtr.CPtr
-
 	es := SQLEscape(n.S)
 	ec := SQLEscape(n.Chap)
-
+	seqstr := "false"
 	if n.Seq {
 		seqstr = "true"
-	} else {
-		seqstr = "false"
 	}
 
-	qstr = fmt.Sprintf("SELECT InsertNode(%d,%d,%d,'%s','%s',%s);\n", n.L, n.NPtr.Class, cptr, es, ec, seqstr)
-	return qstr
+	return fmt.Sprintf("SELECT InsertNode(%d,%d,%d,'%s','%s',%s);\n", n.L, n.NPtr.Class, cptr, es, ec, seqstr)
 }
 
 // **************************************************************************
@@ -45,46 +42,29 @@ func IdempDBAddNode(sst *PoSST, n Node) Node {
 	// We use this function when we aren't counting CPtr values
 	// This functon may be deprecated in future
 
-	var qstr string
-
-	// No need to trust the values, ignore/overwrite CPtr
-
 	n.L, n.NPtr.Class = StorageClass(n.S)
 
-	es := SQLEscape(n.S)
-	ec := SQLEscape(n.Chap)
+	if sst.Q == nil {
+		return n
+	}
 
-	// Wrap BEGIN/END a single transaction
-
-	qstr = fmt.Sprintf("SELECT IdempAppendNode(%d,%d,'%s','%s')", n.L, n.NPtr.Class, es, ec)
-
-	row, err := sst.query(qstr)
-
+	row, err := sst.Q.IdempAppendNode(sst.ctx(), sqlc.IdempAppendNodeParams{
+		Column1: int32(n.L),
+		Column2: int32(n.NPtr.Class),
+		Isi:     n.S,
+		Ichapi:  n.Chap,
+	})
 	if err != nil {
 		s := fmt.Sprint("Failed to add node", err)
-
-		if strings.Contains(s, "duplicate key") {
-		} else {
-			fmt.Println(s, "FAILED \n", qstr, err)
+		if !strings.Contains(s, "duplicate key") {
+			fmt.Println(s, "FAILED", err)
 		}
 		return n
 	}
 
-	var whole string
-	var cl, ch int
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&whole)
-			fmt.Sscanf(whole, "(%d,%d)", &cl, &ch)
-		}
-
-		n.NPtr.Class = cl
-		n.NPtr.CPtr = ClassedNodePtr(ch)
-
-		row.Close()
-	}
-
+	// ret_cptr column is filled from Chan; ret_channel from CPtr (see migration).
+	n.NPtr.Class = int(row.Chan)
+	n.NPtr.CPtr = ClassedNodePtr(row.Cptr)
 	return n
 }
 
@@ -132,16 +112,52 @@ func IdempDBAddLink(sst *PoSST, from Node, link Link, to Node) {
 
 func AppendDBLinkToNode(sst *PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 
-	qstr := AppendDBLinkToNodeCommand(sst, n1ptr, lnk, sttype)
+	if sttype < -EXPRESS || sttype > EXPRESS {
+		fmt.Println(ERR_ST_OUT_OF_BOUNDS, sttype)
+		os.Exit(-1)
+	}
 
-	row, err := sst.query(qstr)
+	if n1ptr == lnk.Dst {
+		return true
+	}
 
-	if err != nil {
-		fmt.Println("Failed to append", err, qstr)
+	if sst.Q == nil {
 		return false
 	}
 
-	row.Close()
+	// Params: cptr, chan, arr, wgt, ctx, dst.chan, dst.cptr
+	cptr := int32(n1ptr.CPtr)
+	chan_ := int32(n1ptr.Class)
+	arr := int32(lnk.Arr)
+	wgt := float32(lnk.Wgt)
+	ctx := int32(lnk.Ctx)
+	dch := int32(lnk.Dst.Class)
+	dcp := int32(lnk.Dst.CPtr)
+
+	var err error
+	switch sttype {
+	case -EXPRESS:
+		err = sst.Q.AppendLinkIm3(sst.ctx(), sqlc.AppendLinkIm3Params{Column1: cptr, Column2: chan_, Column3: arr, Column4: wgt, Column5: ctx, Column6: dch, Column7: dcp})
+	case -CONTAINS:
+		err = sst.Q.AppendLinkIm2(sst.ctx(), sqlc.AppendLinkIm2Params{Column1: cptr, Column2: chan_, Column3: arr, Column4: wgt, Column5: ctx, Column6: dch, Column7: dcp})
+	case -LEADSTO:
+		err = sst.Q.AppendLinkIm1(sst.ctx(), sqlc.AppendLinkIm1Params{Column1: cptr, Column2: chan_, Column3: arr, Column4: wgt, Column5: ctx, Column6: dch, Column7: dcp})
+	case NEAR:
+		err = sst.Q.AppendLinkIn0(sst.ctx(), sqlc.AppendLinkIn0Params{Column1: cptr, Column2: chan_, Column3: arr, Column4: wgt, Column5: ctx, Column6: dch, Column7: dcp})
+	case LEADSTO:
+		err = sst.Q.AppendLinkIl1(sst.ctx(), sqlc.AppendLinkIl1Params{Column1: cptr, Column2: chan_, Column3: arr, Column4: wgt, Column5: ctx, Column6: dch, Column7: dcp})
+	case CONTAINS:
+		err = sst.Q.AppendLinkIc2(sst.ctx(), sqlc.AppendLinkIc2Params{Column1: cptr, Column2: chan_, Column3: arr, Column4: wgt, Column5: ctx, Column6: dch, Column7: dcp})
+	case EXPRESS:
+		err = sst.Q.AppendLinkIe3(sst.ctx(), sqlc.AppendLinkIe3Params{Column1: cptr, Column2: chan_, Column3: arr, Column4: wgt, Column5: ctx, Column6: dch, Column7: dcp})
+	default:
+		fmt.Println(ERR_ILLEGAL_LINK_CLASS, sttype)
+		os.Exit(-1)
+	}
+	if err != nil {
+		fmt.Println("Failed to append", err)
+		return false
+	}
 	return true
 }
 
@@ -149,7 +165,7 @@ func AppendDBLinkToNode(sst *PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 
 func AppendDBLinkToNodeCommand(sst *PoSST, n1ptr NodePtr, lnk Link, sttype int) string {
 
-	// Want to make this idempotent, because SQL is not (and not clause)
+	// Legacy string form kept for batch tools; prefer AppendDBLinkToNode.
 
 	if sttype < -EXPRESS || sttype > EXPRESS {
 		fmt.Println(ERR_ST_OUT_OF_BOUNDS, sttype)
@@ -160,24 +176,12 @@ func AppendDBLinkToNodeCommand(sst *PoSST, n1ptr NodePtr, lnk Link, sttype int) 
 		return ""
 	}
 
-	//                       Arr,Wgt,Ctx,  Dst
 	linkval := fmt.Sprintf("(%d, %f, %d, (%d,%d)::NodePtr)", lnk.Arr, lnk.Wgt, lnk.Ctx, lnk.Dst.Class, lnk.Dst.CPtr)
-
 	literal := fmt.Sprintf("%s::Link", linkval)
-
 	link_table := STTypeDBChannel(sttype)
 
-	qstr := fmt.Sprintf("UPDATE NODE SET %s=array_append(%s,%s) WHERE (NPtr).CPtr = '%d' AND (NPtr).Chan = '%d' AND (%s IS NULL OR NOT %s = ANY(%s));\n",
-		link_table,
-		link_table,
-		literal,
-		n1ptr.CPtr,
-		n1ptr.Class,
-		link_table,
-		literal,
-		link_table)
-
-	return qstr
+	return fmt.Sprintf("UPDATE NODE SET %s=array_append(%s,%s) WHERE (NPtr).CPtr = '%d' AND (NPtr).Chan = '%d' AND (%s IS NULL OR NOT %s = ANY(%s));\n",
+		link_table, link_table, literal, n1ptr.CPtr, n1ptr.Class, link_table, literal, link_table)
 }
 
 // **************************************************************************
@@ -191,15 +195,40 @@ func AppendDBLinkArrayToNode(sst *PoSST, nptr NodePtr, array string, sttype int)
 		os.Exit(-1)
 	}
 
+	if sst.Q != nil {
+		cptr := int32(nptr.CPtr)
+		chan_ := int32(nptr.Class)
+		// FormatSQLLinkArray returns {...} without outer quotes sometimes with braces
+		arr := array
+		if !strings.HasPrefix(arr, "{") {
+			arr = "{" + arr + "}"
+		}
+		var err error
+		switch sttype {
+		case -EXPRESS:
+			err = sst.Q.SetLinkArrayIm3(sst.ctx(), sqlc.SetLinkArrayIm3Params{Column1: cptr, Column2: chan_, Column3: arr})
+		case -CONTAINS:
+			err = sst.Q.SetLinkArrayIm2(sst.ctx(), sqlc.SetLinkArrayIm2Params{Column1: cptr, Column2: chan_, Column3: arr})
+		case -LEADSTO:
+			err = sst.Q.SetLinkArrayIm1(sst.ctx(), sqlc.SetLinkArrayIm1Params{Column1: cptr, Column2: chan_, Column3: arr})
+		case NEAR:
+			err = sst.Q.SetLinkArrayIn0(sst.ctx(), sqlc.SetLinkArrayIn0Params{Column1: cptr, Column2: chan_, Column3: arr})
+		case LEADSTO:
+			err = sst.Q.SetLinkArrayIl1(sst.ctx(), sqlc.SetLinkArrayIl1Params{Column1: cptr, Column2: chan_, Column3: arr})
+		case CONTAINS:
+			err = sst.Q.SetLinkArrayIc2(sst.ctx(), sqlc.SetLinkArrayIc2Params{Column1: cptr, Column2: chan_, Column3: arr})
+		case EXPRESS:
+			err = sst.Q.SetLinkArrayIe3(sst.ctx(), sqlc.SetLinkArrayIe3Params{Column1: cptr, Column2: chan_, Column3: arr})
+		}
+		if err != nil {
+			fmt.Println("SetLinkArray failed", err)
+		}
+		return ""
+	}
+
 	link_table := STTypeDBChannel(sttype)
-
-	qstr := fmt.Sprintf("UPDATE NODE SET %s='%s' WHERE (NPtr).CPtr = '%d' AND (NPtr).Chan = '%d';\n",
-		link_table,
-		array,
-		nptr.CPtr,
-		nptr.Class)
-
-	return qstr
+	return fmt.Sprintf("UPDATE NODE SET %s='%s' WHERE (NPtr).CPtr = '%d' AND (NPtr).Chan = '%d';\n",
+		link_table, array, nptr.CPtr, nptr.Class)
 }
 
 //

@@ -8,8 +8,9 @@ package sst
 
 import (
 	"fmt"
-	"os"
 	"strings"
+
+	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 )
 
 //**************************************************************
@@ -45,16 +46,9 @@ func GraphToDB(sst PoSST, wait_counter bool) {
 	fmt.Println(".  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  ")
 	fmt.Println("Storing Arrows...")
 
-	_, _ = sst.exec("drop table ArrowDirectory")
-	_, _ = sst.exec("drop table ArrowInverses")
-
-	if !CreateTable(sst, ARROW_INVERSES_TABLE) {
-		fmt.Println("Unable to create table as, ", ARROW_INVERSES_TABLE)
-		os.Exit(-1)
-	}
-	if !CreateTable(sst, ARROW_DIRECTORY_TABLE) {
-		fmt.Println("Unable to create table as, ", ARROW_DIRECTORY_TABLE)
-		os.Exit(-1)
+	if sst.Q != nil {
+		_ = sst.Q.TruncateArrowDirectory(sst.ctx())
+		_ = sst.Q.TruncateArrowInverses(sst.ctx())
 	}
 
 	UploadArrowsToDB(sst)
@@ -78,13 +72,15 @@ func GraphToDB(sst PoSST, wait_counter bool) {
 
 	Waiting()
 
-	_, _ = sst.exec("CREATE INDEX IF NOT EXISTS sst_gin on Node USING GIN (to_tsvector('english',Search))")
-	_, _ = sst.exec("CREATE INDEX IF NOT EXISTS sst_ungin on Node USING GIN (to_tsvector('english',UnSearch))")
-	_, _ = sst.exec("CREATE INDEX IF NOT EXISTS sst_s on Node USING GIN (S)")
-	_, _ = sst.exec("CREATE INDEX IF NOT EXISTS sst_n on Node USING GIN (NPtr)")
-	_, _ = sst.exec("CREATE INDEX IF NOT EXISTS sst_cnt on ContextDirectory USING GIN (Context)")
-	_, _ = sst.exec("ALTER TABLE Node SET LOGGED")
-	_, _ = sst.exec("ALTER TABLE PageMap SET LOGGED")
+	if sst.Q != nil {
+		_ = sst.Q.CreateNodeIndexes(sst.ctx())
+		_ = sst.Q.CreateNodeIndexes2(sst.ctx())
+		_ = sst.Q.CreateNodeIndexes3(sst.ctx())
+		_ = sst.Q.CreateNodeIndexes4(sst.ctx())
+		_ = sst.Q.CreateContextIndex(sst.ctx())
+		_ = sst.Q.AlterNodeLogged(sst.ctx())
+		_ = sst.Q.AlterPageMapLogged(sst.ctx())
+	}
 
 }
 
@@ -92,14 +88,17 @@ func GraphToDB(sst PoSST, wait_counter bool) {
 
 func BookmarksToDB(sst PoSST, marks map[string]string) {
 
-	qstr := ""
-
-	for b, q := range marks {
-
-		qstr += fmt.Sprintf("INSERT INTO Bookmarks (Bookmark,Query) VALUES ('%s','%s');\n", SQLEscape(b), SQLEscape(q))
+	if sst.Q == nil {
+		return
 	}
-
-	DBCommit(&sst, qstr)
+	for b, q := range marks {
+		if err := sst.Q.InsertBookmark(sst.ctx(), sqlc.InsertBookmarkParams{
+			Bookmark: strPtr(b),
+			Query:    strPtr(q),
+		}); err != nil && !strings.Contains(err.Error(), "duplicate") {
+			fmt.Println("Failed to insert bookmark", err)
+		}
+	}
 }
 
 // **************************************************************************
@@ -108,21 +107,14 @@ func BookmarksToDB(sst PoSST, marks map[string]string) {
 
 func UploadNodesBatch(sst *PoSST, nodes []Node) {
 
-	const chunk = 200
-
-	var qstr string
-
 	for i := 0; i < len(nodes); i++ {
-
-		if i > 0 && i%chunk == 0 {
-			DBCommit(sst, qstr)
-			qstr = ""
+		if err := insertNodeRow(sst, nodes[i]); err != nil {
+			s := fmt.Sprint("Failed to insert", err)
+			if !strings.Contains(s, "duplicate key") {
+				fmt.Println(s, "FAILED", err)
+			}
 		}
-
-		qstr += UploadNodeToDB(sst, nodes[i])
 	}
-
-	DBCommit(sst, qstr)
 }
 
 // **************************************************************************
@@ -149,68 +141,78 @@ func DBCommit(sst *PoSST, qstr string) {
 
 // **************************************************************************
 
-func UploadNodeToDB(sst *PoSST, n Node) string {
-
-	const nodecols = "(NPtr.Chan,NPtr.Cptr,L,S,Chap,Seq," +
-		I_MEXPR + "," + I_MCONT + "," + I_MLEAD + "," + I_NEAR + "," + I_PLEAD + "," + I_PCONT + "," + I_PEXPR + ")"
-
-	seq := "false"
-
-	if n.Seq {
-		seq = "true"
+func insertNodeRow(sst *PoSST, n Node) error {
+	if sst.Q == nil {
+		return fmt.Errorf("no querier")
 	}
-
-	// Im3, Im2, Im1, In0, Il1, Ic2, Ie3.
-
 	cols := [7]string{"{}", "{}", "{}", "{}", "{}", "{}", "{}"}
-
 	for stindex := 0; stindex < len(n.I) && stindex < ST_TOP; stindex++ {
 		cols[stindex] = FormatSQLLinkArray(n.I[stindex])
 	}
+	s := n.S
+	chap := n.Chap
+	return sst.Q.InsertNodeRow(sst.ctx(), sqlc.InsertNodeRowParams{
+		Column1:  int32(n.NPtr.Class),
+		Column2:  int32(n.NPtr.CPtr),
+		Column3:  int32(n.L),
+		S:        &s,
+		Chap:     &chap,
+		Column6:  n.Seq,
+		Column7:  cols[0],
+		Column8:  cols[1],
+		Column9:  cols[2],
+		Column10: cols[3],
+		Column11: cols[4],
+		Column12: cols[5],
+		Column13: cols[6],
+	})
+}
 
-	vals := fmt.Sprintf("(%d,%d,%d,'%s','%s',%s,'%s','%s','%s','%s','%s','%s','%s')",
-		n.NPtr.Class, n.NPtr.CPtr, n.L,
-		SQLEscape(n.S), SQLEscape(n.Chap), seq,
-		cols[0], cols[1], cols[2], cols[3], cols[4], cols[5], cols[6])
-
-	qstr := "INSERT INTO Node " + nodecols + " VALUES " + vals + ";\n"
-
-	return qstr
+func UploadNodeToDB(sst *PoSST, n Node) string {
+	// Legacy string form; prefer insertNodeRow.
+	_ = insertNodeRow(sst, n)
+	return ""
 }
 
 // **************************************************************************
 
 func UploadArrowsToDB(sst PoSST) {
 
-	var qstr string
-
-	for arrow := range sst.ARROW_DIRECTORY {
-
-		staidx := sst.ARROW_DIRECTORY[arrow].STAindex
-		long := SQLEscape(sst.ARROW_DIRECTORY[arrow].Long)
-		short := SQLEscape(sst.ARROW_DIRECTORY[arrow].Short)
-
-		qstr += fmt.Sprintf("INSERT INTO ArrowDirectory (STAindex,Long,Short,ArrPtr) SELECT %d,'%s','%s',%d WHERE NOT EXISTS (SELECT Long,Short,ArrPtr FROM ArrowDirectory WHERE lower(Long) = lower('%s') OR lower(Short) = lower('%s') OR ArrPtr = %d);\n", staidx, long, short, arrow, long, short, arrow)
-
+	if sst.Q == nil {
+		return
 	}
-
-	DBCommit(&sst, qstr)
+	for arrow := range sst.ARROW_DIRECTORY {
+		staidx := int32(sst.ARROW_DIRECTORY[arrow].STAindex)
+		long := sst.ARROW_DIRECTORY[arrow].Long
+		short := sst.ARROW_DIRECTORY[arrow].Short
+		if err := sst.Q.InsertArrowDirectory(sst.ctx(), sqlc.InsertArrowDirectoryParams{
+			Staindex: &staidx,
+			Long:     &long,
+			Short:    &short,
+			Arrptr:   int32(arrow),
+		}); err != nil && !strings.Contains(err.Error(), "duplicate") {
+			fmt.Println("Failed to insert arrow", err)
+		}
+	}
 }
 
 // **************************************************************************
 
 func UploadInverseArrowsToDB(sst PoSST) {
 
-	var qstr string
-
-	for arrow := range sst.INVERSE_ARROWS {
-		plus := arrow
-		minus := sst.INVERSE_ARROWS[arrow]
-
-		qstr += fmt.Sprintf("INSERT INTO ArrowInverses (Plus,Minus) SELECT %d,%d WHERE NOT EXISTS (SELECT Plus,Minus FROM ArrowInverses WHERE Plus = %d OR minus = %d);\n", plus, minus, plus, minus)
+	if sst.Q == nil {
+		return
 	}
-
-	DBCommit(&sst, qstr)
+	for arrow := range sst.INVERSE_ARROWS {
+		plus := int32(arrow)
+		minus := int32(sst.INVERSE_ARROWS[arrow])
+		if err := sst.Q.InsertArrowInverse(sst.ctx(), sqlc.InsertArrowInverseParams{
+			Plus:  plus,
+			Minus: minus,
+		}); err != nil && !strings.Contains(err.Error(), "duplicate") {
+			fmt.Println("Failed to insert inverse", err)
+		}
+	}
 }
 
 // **************************************************************************
@@ -218,7 +220,7 @@ func UploadInverseArrowsToDB(sst PoSST) {
 func UploadContextsToDB(sst *PoSST) {
 
 	for ctxdir := range sst.CONTEXT_DIRECTORY {
-		UploadContextToDB(sst, SQLEscape(sst.CONTEXT_DIRECTORY[ctxdir].Context), sst.CONTEXT_DIRECTORY[ctxdir].Ptr)
+		UploadContextToDB(sst, sst.CONTEXT_DIRECTORY[ctxdir].Context, sst.CONTEXT_DIRECTORY[ctxdir].Ptr)
 	}
 }
 
@@ -226,53 +228,40 @@ func UploadContextsToDB(sst *PoSST) {
 
 func UploadContextToDB(sst *PoSST, contextstring string, ptr ContextPtr) ContextPtr {
 
-	a := SQLEscape(contextstring)
-	b := ptr
+	if sst.Q == nil {
+		return ptr
+	}
 
-	// Make sure neither a nor b are previously defined
-
-	qstr := fmt.Sprintf("SELECT IdempInsertContext('%s',%d)", a, b)
-
-	row, err := sst.query(qstr)
-
+	cptr, err := sst.Q.IdempInsertContext(sst.ctx(), sqlc.IdempInsertContextParams{
+		Constr: contextstring,
+		Conptr: int32(ptr),
+	})
 	if err != nil {
-		fmt.Println("FAILED \n", qstr, err)
+		fmt.Println("FAILED IdempInsertContext", err)
+		return ptr
 	}
-
-	var cptr ContextPtr
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&cptr)
-		}
-		row.Close()
-	}
-
-	return cptr
+	return ContextPtr(cptr)
 }
 
 //**************************************************************
 
 func UploadPageMapBatch(sst *PoSST, lines []PageMap) {
 
-	const chunk = 200
-	var qstr string
-
-	for i := 0; i < len(lines); i++ {
-
-		if i%chunk == 0 {
-			DBCommit(sst, qstr)
-			qstr = ""
-		}
-
-		line := lines[i]
-		qstr += fmt.Sprintf("INSERT INTO PageMap (Chap,Alias,Ctx,Line,Path) VALUES ('%s','%s',%d,%d,'%s');\n",
-			SQLEscape(line.Chapter), line.Alias, line.Context, line.Line,
-			FormatSQLLinkArray(line.Path))
+	if sst.Q == nil {
+		return
 	}
-
-	DBCommit(sst, qstr)
-
+	for _, line := range lines {
+		path := FormatSQLLinkArray(line.Path)
+		if err := sst.Q.InsertPageMap(sst.ctx(), sqlc.InsertPageMapParams{
+			Chap:    strPtr(line.Chapter),
+			Alias:   strPtr(line.Alias),
+			Column3: int32(line.Context),
+			Column4: int32(line.Line),
+			Column5: path,
+		}); err != nil && !strings.Contains(err.Error(), "duplicate") {
+			fmt.Println("Failed to insert pagemap", err)
+		}
+	}
 }
 
 //

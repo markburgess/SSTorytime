@@ -11,6 +11,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 )
 
 //******************************************************************
@@ -43,77 +45,66 @@ func ContextIntentAnalysis(spectrum map[string]int) ([]string, []string) {
 
 func GetChaptersByChapContext(sst PoSST, chap string, cn []string, limit int) map[string][]string {
 
-	qstr := ""
-	chap_col := ""
-
-	chap = strings.Trim(chap, "\"")
-
-	if chap != "any" && chap != "" {
-
-		remove_chap_accents, chap_stripped := IsBracketedSearchTerm(chap)
-
-		if remove_chap_accents {
-			chap_search := "%" + chap_stripped + "%"
-			chap_col = fmt.Sprintf("AND lower(unaccent(chap)) LIKE lower('%s')", chap_search)
-		} else {
-			chap_search := "%" + chap + "%"
-			chap_col = fmt.Sprintf("AND lower(chap) LIKE lower('%s')", chap_search)
-		}
+	if sst.Q == nil {
+		return nil
 	}
 
-	if chap == "TableOfContents" {
-		chap_col = ""
+	chap = strings.Trim(chap, "\"")
+	anyChap := chap == "" || chap == "any" || chap == "TableOfContents"
+	chapUnaccent := false
+	chapPat := ""
+	if !anyChap {
+		rm, stripped := IsBracketedSearchTerm(chap)
+		chapUnaccent = rm
+		if rm {
+			chapPat = "%" + stripped + "%"
+		} else {
+			chapPat = "%" + chap + "%"
+		}
 	}
 
 	_, cn_stripped := IsBracketedSearchList(cn)
-	context := FormatSQLStringArray(cn_stripped)
-
-	qstr = fmt.Sprintf("SELECT DISTINCT chap,ctx FROM PageMap WHERE match_context(ctx,%s) %s ORDER BY Chap", context, chap_col)
-
-	row, err := sst.query(qstr)
-
-	if err != nil {
-		fmt.Println("QUERY GetChaptersByChapContext Failed", err, qstr)
+	if cn_stripped == nil {
+		cn_stripped = []string{}
 	}
 
-	var rchap string
-	var rcontext ContextPtr
-	var toc = make(map[string][]string)
+	rows, err := sst.Q.ListPageMapChapters(sst.ctx(), sqlc.ListPageMapChaptersParams{
+		Column1: cn_stripped,
+		Column2: anyChap,
+		Column3: chapUnaccent,
+		Lower:   chapPat,
+	})
+	if err != nil {
+		fmt.Println("QUERY GetChaptersByChapContext Failed", err)
+		return nil
+	}
 
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&rchap, &rcontext)
+	toc := make(map[string][]string)
+	for _, row := range rows {
+		rchap := derefStr(row.Chap)
+		rcontext := ContextPtr(derefInt32(row.Ctx))
 
-			// Each chapter can be a comma separated list
+		// Each chapter can be a comma separated list
+		chps := SplitChapters(rchap)
 
-			chps := SplitChapters(rchap)
+		for c := 0; c < len(chps); c++ {
+			if limit > 0 && len(toc) == limit {
+				return toc
+			}
 
-			for c := 0; c < len(chps); c++ {
-
-				if len(toc) == limit {
-					row.Close()
-					return toc
-				}
-
-				rc := chps[c]
-
-				cn := strings.Split(GetContext(&sst, rcontext), ",")
-				ctx_grp := ""
-
-				for s := 0; s < len(cn); s++ {
-					ctx_grp += cn[s]
-					if s < len(cn)-1 {
-						ctx_grp += ", "
-					}
-				}
-
-				if len(ctx_grp) > 0 {
-					toc[rc] = append(toc[rc], ctx_grp)
+			rc := chps[c]
+			cnParts := strings.Split(GetContext(&sst, rcontext), ",")
+			ctx_grp := ""
+			for s := 0; s < len(cnParts); s++ {
+				ctx_grp += cnParts[s]
+				if s < len(cnParts)-1 {
+					ctx_grp += ", "
 				}
 			}
+			if len(ctx_grp) > 0 {
+				toc[rc] = append(toc[rc], ctx_grp)
+			}
 		}
-
-		row.Close()
 	}
 
 	return toc

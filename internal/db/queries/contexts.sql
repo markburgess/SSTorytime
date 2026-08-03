@@ -17,3 +17,7 @@ WHERE context = $1;
 SELECT context, ctxptr
 FROM contextdirectory
 WHERE unaccent(context) = unaccent($1);
+
+-- name: IdempInsertContext :one
+SELECT ideminsertcontext(sqlc.arg(constr)::text, sqlc.arg(conptr)::int)::int AS ctxptr;
+

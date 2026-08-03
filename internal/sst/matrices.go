@@ -8,6 +8,8 @@ package sst
 
 import (
 	"fmt"
+
+	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 )
 
 // **************************************************************************
@@ -18,113 +20,91 @@ func GetDBAdjacentNodePtrBySTType(sst PoSST, sttypes []int, chap string, cn []st
 	// Returns a connected adjacency matrix for the subgraph and a lookup table
 	// A bit memory intensive, but possibly unavoidable
 
-	var qstr, qwhere, qsearch string
-	var dim = len(sttypes)
-
-	context := FormatSQLStringArray(cn)
-	chapter := "%" + SQLEscape(chap) + "%"
+	dim := len(sttypes)
 
 	if dim > 4 {
 		fmt.Println("Maximum 4 sttypes in GetDBAdjacentNodePtrBySTType")
 		return nil, nil
 	}
-
-	for st := 0; st < len(sttypes); st++ {
-
-		stname := STTypeDBChannel(sttypes[st])
-		qwhere += fmt.Sprintf("array_length(%s::text[],1) IS NOT NULL AND match_context((%s)[0].Ctx,%s)", stname, stname, context)
-
-		if st != dim-1 {
-			qwhere += " OR "
-		}
-
-		qsearch += "," + stname
-
+	if sst.Q == nil {
+		return nil, nil
 	}
 
-	qstr = fmt.Sprintf("SELECT NPtr%s FROM Node WHERE lower(Chap) LIKE lower('%s') AND (%s)", qsearch, chapter, qwhere)
+	_, cnStripped := IsBracketedSearchList(cn)
+	if cnStripped == nil {
+		cnStripped = []string{}
+	}
+	chapter := "%" + SQLEscape(chap) + "%"
+	im3, im2, im1, in0, il1, ic2, ie3 := stChannelFlags(sttypes)
 
-	row, err := sst.query(qstr)
-
+	rows, err := sst.Q.ListAdjacentNodes(sst.ctx(), sqlc.ListAdjacentNodesParams{
+		Lower:   chapter,
+		Column2: im3,
+		Column3: im2,
+		Column4: im1,
+		Column5: in0,
+		Column6: il1,
+		Column7: ic2,
+		Column8: ie3,
+		Column9: cnStripped,
+	})
 	if err != nil {
 		fmt.Println("QUERY GetDBAdjacentNodePtrBySTType Failed", err)
 		return nil, nil
 	}
 
-	var linkstr = make([]string, dim+1)
+	// Map requested ST types onto im3..ie3 columns in ListAdjacentNodes rows.
+	stCols := make([]int, dim)
+	for i, st := range sttypes {
+		switch st {
+		case -EXPRESS:
+			stCols[i] = 0
+		case -CONTAINS:
+			stCols[i] = 1
+		case -LEADSTO:
+			stCols[i] = 2
+		case NEAR:
+			stCols[i] = 3
+		case LEADSTO:
+			stCols[i] = 4
+		case CONTAINS:
+			stCols[i] = 5
+		case EXPRESS:
+			stCols[i] = 6
+		}
+	}
+
 	var protoadj = make(map[int][]Link)
 	var lookup = make(map[NodePtr]int)
 	var rowindex int
 	var nodekey []NodePtr
 	var counter int
 
-	if row != nil {
-		for row.Next() {
+	for _, row := range rows {
+		n := NodePtr{Class: int(row.Chan), CPtr: ClassedNodePtr(row.Cptr)}
+		linkTexts := [7]string{row.Im3, row.Im2, row.Im1, row.In0, row.Il1, row.Ic2, row.Ie3}
 
-			var n NodePtr
-			var nstr string
-
-			switch dim {
-
-			case 1:
-				err = row.Scan(&nstr, &linkstr[0])
-			case 2:
-				err = row.Scan(&nstr, &linkstr[0], &linkstr[1])
-			case 3:
-				err = row.Scan(&nstr, &linkstr[0], &linkstr[1], &linkstr[2])
-			case 4:
-				err = row.Scan(&nstr, &linkstr[0], &linkstr[1], &linkstr[2], &linkstr[3])
-
-			default:
-				fmt.Println("Maximum 4 sttypes in GetDBAdjacentNodePtrBySTType - shouldn't happen")
-				row.Close()
-				return nil, nil
-			}
-
-			if err != nil {
-				fmt.Println("Error scanning sql data case", dim, "gave error", err, qstr)
-				row.Close()
-				return nil, nil
-			}
-
-			fmt.Sscanf(nstr, "(%d,%d)", &n.Class, &n.CPtr)
-
-			// idempotently gather nptrs into a map, keeping linked nodes close in order
-
-			index, already := lookup[n]
-
-			if already {
-				rowindex = index
-			} else {
-				rowindex = counter
-				lookup[n] = counter
-				counter++
-				nodekey = append(nodekey, n)
-			}
-
-			// Run through the nodes linked and add them now
-
-			for lnks := range linkstr {
-
-				links := ParseMapLinkArray(linkstr[lnks])
-
-				// we have to go through one by one to avoid duplicates
-				// and keep adjacent nodes closer in order
-
-				for l := range links {
-					_, already := lookup[links[l].Dst]
-
-					if !already {
-						lookup[links[l].Dst] = counter
-						counter++
-						nodekey = append(nodekey, links[l].Dst)
-					}
-				}
-				// Now we have a vector row for each NPtr, with a list of links
-				protoadj[rowindex] = append(protoadj[rowindex], links...)
-			}
+		index, already := lookup[n]
+		if already {
+			rowindex = index
+		} else {
+			rowindex = counter
+			lookup[n] = counter
+			counter++
+			nodekey = append(nodekey, n)
 		}
-		row.Close()
+
+		for d := 0; d < dim; d++ {
+			links := ParseMapLinkArray(linkTexts[stCols[d]])
+			for l := range links {
+				if _, ok := lookup[links[l].Dst]; !ok {
+					lookup[links[l].Dst] = counter
+					counter++
+					nodekey = append(nodekey, links[l].Dst)
+				}
+			}
+			protoadj[rowindex] = append(protoadj[rowindex], links...)
+		}
 	}
 
 	// Now we know the dimension of the square matrix = counter
@@ -137,11 +117,11 @@ func GetDBAdjacentNodePtrBySTType(sst PoSST, sttypes []int, chap string, cn []st
 
 		adj[r] = make([]float32, counter)
 
-		row := protoadj[r]
+		prow := protoadj[r]
 
-		for l := 0; l < len(row); l++ {
+		for l := 0; l < len(prow); l++ {
 
-			lnk := row[l]
+			lnk := prow[l]
 			c := lookup[lnk.Dst]
 
 			if transpose {

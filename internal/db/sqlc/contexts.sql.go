@@ -48,6 +48,22 @@ func (q *Queries) GetContextByTextUnaccent(ctx context.Context, unaccent string)
 	return i, err
 }
 
+const idempInsertContext = `-- name: IdempInsertContext :one
+SELECT ideminsertcontext($1::text, $2::int)::int AS ctxptr
+`
+
+type IdempInsertContextParams struct {
+	Constr string `json:"constr"`
+	Conptr int32  `json:"conptr"`
+}
+
+func (q *Queries) IdempInsertContext(ctx context.Context, arg IdempInsertContextParams) (int32, error) {
+	row := q.db.QueryRow(ctx, idempInsertContext, arg.Constr, arg.Conptr)
+	var ctxptr int32
+	err := row.Scan(&ctxptr)
+	return ctxptr, err
+}
+
 const listContexts = `-- name: ListContexts :many
 SELECT context, ctxptr
 FROM contextdirectory

@@ -28,20 +28,19 @@ END ;
 $fn$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION IdempInsertContext(constr text,conptr int)
-RETURNS int AS $fn$ DECLARE 
+RETURNS int AS $fn$ DECLARE
     cptr INT = 0;
-    found int=-99;
 BEGIN
 IF conptr=-1 THEN
-   SELECT Context,CtxPtr INTO found FROM ContextDirectory WHERE Context=constr AND CtxPtr=conptr;
-   SELECT max(CtxPtr) INTO cptr FROM ContextDirectory;
+   SELECT COALESCE(max(CtxPtr), 0) INTO cptr FROM ContextDirectory;
    INSERT INTO ContextDirectory (Context,CtxPtr) VALUES (constr,cptr+1);
    RETURN cptr+1;
 END IF;
 IF NOT EXISTS (SELECT CtxPtr FROM ContextDirectory WHERE CtxPtr=conptr OR Context=constr) THEN
    INSERT INTO ContextDirectory (Context,CtxPtr) VALUES (constr,conptr);
    RETURN conptr;
-END IF;SELECT CtxPtr INTO cptr FROM ContextDirectory WHERE CtxPtr=conptr OR Context=constr;
+END IF;
+SELECT CtxPtr INTO cptr FROM ContextDirectory WHERE CtxPtr=conptr OR Context=constr;
 RETURN cptr;
 END ;
 $fn$ LANGUAGE plpgsql;

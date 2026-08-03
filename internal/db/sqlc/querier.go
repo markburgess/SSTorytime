@@ -9,15 +9,51 @@ import (
 )
 
 type Querier interface {
+	// $1 = text literal of nodeptr[] e.g. {"(1,0)","(2,1)"}
+	AllNCPathsAsLinks(ctx context.Context, arg AllNCPathsAsLinksParams) (string, error)
+	AllPathsAsLinks(ctx context.Context, arg AllPathsAsLinksParams) (string, error)
+	AlterNodeLogged(ctx context.Context) error
+	AlterPageMapLogged(ctx context.Context) error
+	AppendLinkIc2(ctx context.Context, arg AppendLinkIc2Params) error
+	AppendLinkIe3(ctx context.Context, arg AppendLinkIe3Params) error
+	AppendLinkIl1(ctx context.Context, arg AppendLinkIl1Params) error
+	AppendLinkIm1(ctx context.Context, arg AppendLinkIm1Params) error
+	AppendLinkIm2(ctx context.Context, arg AppendLinkIm2Params) error
+	// Append link into one ST channel (dynamic column avoided via separate queries).
+	AppendLinkIm3(ctx context.Context, arg AppendLinkIm3Params) error
+	AppendLinkIn0(ctx context.Context, arg AppendLinkIn0Params) error
 	CallLastSawNPtr(ctx context.Context, arg CallLastSawNPtrParams) error
 	CallLastSawSection(ctx context.Context, this string) error
+	ConstraintPathsAsLinks(ctx context.Context, arg ConstraintPathsAsLinksParams) (string, error)
+	CreateContextIndex(ctx context.Context) error
+	CreateNodeIndexes(ctx context.Context) error
+	CreateNodeIndexes2(ctx context.Context) error
+	CreateNodeIndexes3(ctx context.Context) error
+	CreateNodeIndexes4(ctx context.Context) error
+	FwdConeAsLinks(ctx context.Context, arg FwdConeAsLinksParams) ([]string, error)
+	// Graph PL/pgSQL wrappers (functions from 000002_functions).
+	// Composite / array results as text for existing Go parsers.
+	// nodeptr[] / int[] inputs often passed as text casts so sqlc's analyzer stays happy.
+	FwdConeAsNodes(ctx context.Context, arg FwdConeAsNodesParams) ([]FwdConeAsNodesRow, error)
+	FwdPathsAsLinks(ctx context.Context, arg FwdPathsAsLinksParams) (string, error)
+	GetAppointments(ctx context.Context, arg GetAppointmentsParams) ([]string, error)
+	GetConstrainedFwdLinks(ctx context.Context, arg GetConstrainedFwdLinksParams) (string, error)
 	GetContextByPtr(ctx context.Context, ctxptr int32) (Contextdirectory, error)
 	GetContextByText(ctx context.Context, argContext *string) (Contextdirectory, error)
 	GetContextByTextUnaccent(ctx context.Context, unaccent string) (Contextdirectory, error)
 	GetLastSeenByNPtr(ctx context.Context, arg GetLastSeenByNPtrParams) (GetLastSeenByNPtrRow, error)
+	GetNodeByNPtr(ctx context.Context, arg GetNodeByNPtrParams) (GetNodeByNPtrRow, error)
+	// Body fills ret_cptr/ret_channel from (Chan, CPtr) respectively.
+	IdempAppendNode(ctx context.Context, arg IdempAppendNodeParams) (IdempAppendNodeRow, error)
+	IdempInsertContext(ctx context.Context, arg IdempInsertContextParams) (int32, error)
 	InsertArrowDirectory(ctx context.Context, arg InsertArrowDirectoryParams) error
 	InsertArrowInverse(ctx context.Context, arg InsertArrowInverseParams) error
 	InsertBookmark(ctx context.Context, arg InsertBookmarkParams) error
+	InsertNodeFn(ctx context.Context, arg InsertNodeFnParams) error
+	InsertNodeRow(ctx context.Context, arg InsertNodeRowParams) error
+	InsertPageMap(ctx context.Context, arg InsertPageMapParams) error
+	// Adjacency: always return all link channels as text; Go picks which ST types matter.
+	ListAdjacentNodes(ctx context.Context, arg ListAdjacentNodesParams) ([]ListAdjacentNodesRow, error)
 	ListAllLastSeenNPtrs(ctx context.Context) ([]ListAllLastSeenNPtrsRow, error)
 	ListArrowDirectory(ctx context.Context) ([]Arrowdirectory, error)
 	ListArrowInverses(ctx context.Context) ([]Arrowinverse, error)
@@ -26,8 +62,25 @@ type Querier interface {
 	ListChaptersLikeUnaccent(ctx context.Context, lower string) ([]*string, error)
 	ListContexts(ctx context.Context) ([]Contextdirectory, error)
 	ListLastSeen(ctx context.Context) ([]ListLastSeenRow, error)
+	ListPageMap(ctx context.Context, arg ListPageMapParams) ([]ListPageMapRow, error)
+	ListPageMapChapters(ctx context.Context, arg ListPageMapChaptersParams) ([]ListPageMapChaptersRow, error)
 	ListRecentLastSeenNPtrs(ctx context.Context, hours int32) ([]ListRecentLastSeenNPtrsRow, error)
-	MaxCPtrForChan(ctx context.Context, nptr interface{}) (int32, error)
+	ListSingletonSinks(ctx context.Context, arg ListSingletonSinksParams) ([]ListSingletonSinksRow, error)
+	// Singleton sources/sinks: flags enable each ST channel (positive ST = out).
+	ListSingletonSources(ctx context.Context, arg ListSingletonSourcesParams) ([]ListSingletonSourcesRow, error)
+	MaxCPtrForChan(ctx context.Context, dollar_1 int32) (int32, error)
+	// $1 any_chapter, $2 chap_unaccent, $3 chap_pattern
+	// $4 name_mode: any|exact|like|fts|ufts, $5 name_arg
+	// $6 exclude_paths, $7 seq_only
+	// $8 context text[], $9 arrows int[], $10 sttypes int[], $11 limit
+	SearchNodePtrs(ctx context.Context, arg SearchNodePtrsParams) ([]SearchNodePtrsRow, error)
+	SetLinkArrayIc2(ctx context.Context, arg SetLinkArrayIc2Params) error
+	SetLinkArrayIe3(ctx context.Context, arg SetLinkArrayIe3Params) error
+	SetLinkArrayIl1(ctx context.Context, arg SetLinkArrayIl1Params) error
+	SetLinkArrayIm1(ctx context.Context, arg SetLinkArrayIm1Params) error
+	SetLinkArrayIm2(ctx context.Context, arg SetLinkArrayIm2Params) error
+	SetLinkArrayIm3(ctx context.Context, arg SetLinkArrayIm3Params) error
+	SetLinkArrayIn0(ctx context.Context, arg SetLinkArrayIn0Params) error
 	TruncateAllData(ctx context.Context) error
 	TruncateArrowDirectory(ctx context.Context) error
 	TruncateArrowInverses(ctx context.Context) error

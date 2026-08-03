@@ -9,6 +9,8 @@ package sst
 import (
 	"fmt"
 	"sync"
+
+	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 )
 
 // **************************************************************************
@@ -119,44 +121,37 @@ func IncConstraintConeLinks(sst *PoSST, cone [][]Link, chapter string, context [
 func GetConstrainedFwdLinks(sst *PoSST, start []NodePtr, chapter string, context []string, sttypes []int, arrows []ArrowPtr, maxlimit int) []Link {
 
 	var ret []Link
+	if sst.Q == nil || len(start) == 0 {
+		return ret
+	}
 
 	remove_accents, stripped := IsBracketedSearchTerm(chapter)
 	chapter = "%" + stripped + "%"
-	rm_acc := "false"
-
-	if remove_accents {
-		rm_acc = "true"
+	if context == nil {
+		context = []string{}
 	}
 
-	start = append(start, NONODE)
-	excl := FormatSQLNodePtrArray(start)
-	arr := FormatSQLIntArray(Arrow2Int(arrows))
-	cnt := FormatSQLStringArray(context)
-
-	startnode := fmt.Sprintf("(%d,%d)", start[0].Class, start[0].CPtr)
+	// exclude includes start set + NONODE sentinel (upstream)
+	excl := append(append([]NodePtr{}, start...), NONODE)
 
 	for _, st := range sttypes {
-
-		qstr := fmt.Sprintf("select GetConstrainedFwdLinks('%s','%s',%s,%s,%s,%d,%s,%d);", startnode, chapter, rm_acc, cnt, excl, st, arr, maxlimit)
-
-		row, err := sst.query(qstr)
-
+		whole, err := sst.Q.GetConstrainedFwdLinks(sst.ctx(), sqlc.GetConstrainedFwdLinksParams{
+			Column1: int32(start[0].Class),
+			Column2: int32(start[0].CPtr),
+			Column3: chapter,
+			Column4: remove_accents,
+			Column5: context,
+			Column6: nodePtrArrayLiteral(excl),
+			Column7: int32(st),
+			Column8: toInt32s(Arrow2Int(arrows)),
+			Column9: int32(maxlimit),
+		})
 		if err != nil {
-			fmt.Println("QUERY to ConstraintPathsAsLinks Failed", err, qstr)
+			fmt.Println("QUERY to GetConstrainedFwdLinks Failed", err)
 			return ret
 		}
-
-		var whole string
-
-		if row != nil {
-			for row.Next() {
-				err = row.Scan(&whole)
-				orbit := ParseLinkArray(whole)
-				for _, lnk := range orbit {
-					ret = append(ret, lnk)
-				}
-			}
-			row.Close()
+		for _, lnk := range ParseLinkArray(whole) {
+			ret = append(ret, lnk)
 		}
 	}
 

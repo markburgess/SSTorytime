@@ -12,6 +12,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 )
 
 // **************************************************************************
@@ -62,71 +64,64 @@ func SolveNodePtrs(sst PoSST, nodenames []string, search SearchParameters, arr [
 
 func GetBookmarksFromDB(sst PoSST) []Bookmark {
 
-	// Order by L to favour exact matches
-
-	qstr := fmt.Sprintf("SELECT Bookmark,Query FROM Bookmarks;")
-
-	row, err := sst.query(qstr)
-
+	if sst.Q == nil {
+		return nil
+	}
+	rows, err := sst.Q.ListBookmarks(sst.ctx())
 	if err != nil {
-		fmt.Println("QUERY BegBookmarksFromDB Failed", err, qstr)
+		fmt.Println("QUERY BegBookmarksFromDB Failed", err)
+		return nil
 	}
 
-	var b Bookmark
 	var chaps []string
 	var sorts = make(map[string][]Bookmark)
 	var retval []Bookmark
 
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&b.Bookmark, &b.Query)
+	for _, row := range rows {
+		var b Bookmark
+		b.Bookmark = derefStr(row.Bookmark)
+		b.Query = derefStr(row.Query)
 
-			line := strings.Split(b.Bookmark, ",")
+		line := strings.Split(b.Bookmark, ",")
 
-			if len(line) > 1 {
-				// Chop chapter from line
-				var bp Bookmark
-				chapter := strings.TrimSpace(line[0])
-				section := strings.TrimSpace(b.Bookmark[len(line[0])+1:])
-				bp.Bookmark = section
-				bp.Query = b.Query
-				sorts[chapter] = append(sorts[chapter], bp)
-			} else {
-				sorts["misc"] = append(sorts["misc"], b)
-			}
-		}
-
-		row.Close()
-
-		for key := range sorts {
-			chaps = append(chaps, key)
-		}
-
-		sort.Strings(chaps)
-
-		for _, k := range chaps {
-
-			// Empty query is title
-
-			const dunbar_limit = 30
-			var note_added string = ""
-
-			if len(sorts[k]) > dunbar_limit {
-				note_added = " ... (list exceeds Dunbar limit for learning)"
-			}
-
+		if len(line) > 1 {
 			var bp Bookmark
-			bp.Bookmark = k + note_added
-			bp.Query = ""
-			retval = append(retval, bp)
+			chapter := strings.TrimSpace(line[0])
+			section := strings.TrimSpace(b.Bookmark[len(line[0])+1:])
+			bp.Bookmark = section
+			bp.Query = b.Query
+			sorts[chapter] = append(sorts[chapter], bp)
+		} else {
+			sorts["misc"] = append(sorts["misc"], b)
+		}
+	}
 
-			sort.Slice(sorts[k], func(i, j int) bool {
-				return sorts[k][i].Bookmark < sorts[k][j].Bookmark
-			})
+	for key := range sorts {
+		chaps = append(chaps, key)
+	}
 
-			for _, sorted := range sorts[k] {
-				retval = append(retval, sorted)
-			}
+	sort.Strings(chaps)
+
+	for _, k := range chaps {
+
+		const dunbar_limit = 30
+		var note_added string = ""
+
+		if len(sorts[k]) > dunbar_limit {
+			note_added = " ... (list exceeds Dunbar limit for learning)"
+		}
+
+		var bp Bookmark
+		bp.Bookmark = k + note_added
+		bp.Query = ""
+		retval = append(retval, bp)
+
+		sort.Slice(sorts[k], func(i, j int) bool {
+			return sorts[k][i].Bookmark < sorts[k][j].Bookmark
+		})
+
+		for _, sorted := range sorts[k] {
+			retval = append(retval, sorted)
 		}
 	}
 
@@ -146,171 +141,127 @@ func GetDBNodePtrMatchingName(sst PoSST, name, chap string) []NodePtr {
 
 func GetDBNodePtrMatchingNCCS(sst PoSST, nm, chap string, cn []string, arrow []ArrowPtr, seq bool, limit int) []NodePtr {
 
-	// Order by L to favour exact matches
+	if sst.Q == nil {
+		return nil
+	}
 
-	nm = SQLEscape(nm)
-	chap = SQLEscape(chap)
-
-	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY S ASC,(CARDINALITY(Ie3)+CARDINALITY(Im3)+CARDINALITY(Il1)) DESC LIMIT %d", NodeWhereString(sst, nm, chap, cn, arrow, seq), limit)
-
-	row, err := sst.query(qstr)
-
+	arg := searchNodePtrsArg(sst, nm, chap, cn, arrow, seq, limit)
+	rows, err := sst.Q.SearchNodePtrs(sst.ctx(), arg)
 	if err != nil {
-		fmt.Println("QUERY GetNodePtrMatchingNCC Failed", err, qstr)
+		fmt.Println("QUERY GetNodePtrMatchingNCC Failed", err)
+		return nil
 	}
 
-	var whole string
-	var n NodePtr
-	var retval []NodePtr
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&whole)
-			fmt.Sscanf(whole, "(%d,%d)", &n.Class, &n.CPtr)
-			retval = append(retval, n)
-		}
-
-		row.Close()
+	retval := make([]NodePtr, 0, len(rows))
+	for _, r := range rows {
+		retval = append(retval, NodePtr{Class: int(r.Chan), CPtr: ClassedNodePtr(r.Cptr)})
 	}
-
 	return retval
 }
 
-// **************************************************************************
+// searchNodePtrsArg builds sqlc SearchNodePtrs params (replaces NodeWhereString injection).
+func searchNodePtrsArg(sst PoSST, name, chap string, context []string, arrow []ArrowPtr, seq bool, limit int) sqlc.SearchNodePtrsParams {
+	name = SQLEscape(name)
+	chap = SQLEscape(chap)
 
-func NodeWhereString(sst PoSST, name, chap string, context []string, arrow []ArrowPtr, seq bool) string {
-
-	var chap_col, nm_col string
-	var ctx_col string
-	var qstr string
-
-	// Format a WHERE clause for a Node search satisfying constraints
-
-	// Chapter first to limit search by block
-
-	if chap != "any" && chap != "" {
-
-		remove_chap_accents, chap_stripped := IsBracketedSearchTerm(chap)
-
-		if remove_chap_accents {
-			chap_search := "%" + chap_stripped + "%"
-			chap_col = fmt.Sprintf("lower(unaccent(Chap)) LIKE lower('%s')", chap_search)
+	anyChap := chap == "any" || chap == ""
+	chapUnaccent := false
+	chapPat := ""
+	if !anyChap {
+		rm, stripped := IsBracketedSearchTerm(chap)
+		chapUnaccent = rm
+		if rm {
+			chapPat = "%" + stripped + "%"
 		} else {
-			chap_search := "%" + chap + "%"
-			chap_col = fmt.Sprintf("lower(Chap) LIKE lower('%s')", chap_search)
+			chapPat = "%" + chap + "%"
 		}
-	} else {
-		chap_col = "true"
 	}
 
-	// Name search using tsquery for wildcards and additional S = exact_constraint for !exact!
+	outerExact, nopling := IsExactMatch(name)
+	rmName, nobrack := IsBracketedSearchTerm(nopling)
+	innerExact, bare := IsExactMatch(nobrack)
+	exact := outerExact || innerExact
 
-	outer_exact_match, nopling := IsExactMatch(name)
-	remove_name_accents, nobrack := IsBracketedSearchTerm(nopling)
-	inner_exact_match, bare_name := IsExactMatch(nobrack)
+	mode := "any"
+	nameArg := bare
+	excludePaths := !strings.HasPrefix(bare, "/")
 
-	is_exact_match := outer_exact_match || inner_exact_match
-
-	// First ignore technical references from ad hoc search results, like img paths
-
-	if !strings.HasPrefix(bare_name, "/") {
-		nm_col = "AND S NOT LIKE '/%'"
-	}
-
-	if is_exact_match {
-
-		nm_col += fmt.Sprintf(" AND lower(S) = '%s'", bare_name)
-
-	} else if IsStringFragment(bare_name) {
-
+	if name == "any" || name == "%%" {
+		mode = "any"
+		nameArg = ""
+		excludePaths = false
+	} else if exact {
+		mode = "exact"
+	} else if IsStringFragment(bare) {
+		mode = "like"
 		if name == "any" || name == "%%" {
-			nm_col = fmt.Sprintf(" AND lower(S) LIKE '%%%%'")
+			nameArg = "%%"
 		} else {
-			nm_col = fmt.Sprintf(" AND lower(S) LIKE '%%%s%%'", bare_name)
+			nameArg = "%" + bare + "%"
 		}
+	} else if rmName {
+		mode = "ufts"
 	} else {
-
-		if name == "any" || name == "%%" {
-			nm_col = ""
-		} else {
-			if remove_name_accents {
-				nm_col = fmt.Sprintf(" AND Unsearch @@ to_tsquery('english', '%s')", bare_name)
-			} else {
-				nm_col = fmt.Sprintf(" AND Search @@ to_tsquery('english', '%s')", bare_name)
-			}
-		}
+		mode = "fts"
 	}
 
-	var seq_col string
-
-	if seq {
-		seq_col = "AND Seq=true"
+	_, cnStripped := IsBracketedSearchList(context)
+	if cnStripped == nil {
+		cnStripped = []string{}
 	}
 
-	// context and arrows
-
-	_, cn_stripped := IsBracketedSearchList(context)
-	ctx_col = FormatSQLStringArray(cn_stripped)
-
-	arrows := FormatSQLIntArray(Arrow2Int(arrow))
-	sttypes := FormatSQLIntArray(GetSTtypesFromArrows(sst, arrow))
-
-	dbcols := I_MEXPR + "," + I_MCONT + "," + I_MLEAD + "," + I_NEAR + "," + I_PLEAD + "," + I_PCONT + "," + I_PEXPR
-
-	qstr = fmt.Sprintf("%s %s %s AND NCC_match(NPtr,%s,%s,%s,%s)",
-		chap_col, nm_col, seq_col, ctx_col, arrows, sttypes, dbcols)
-
-	return qstr
+	return sqlc.SearchNodePtrsParams{
+		Column1:  anyChap,
+		Column2:  chapUnaccent,
+		Lower:    chapPat,
+		Column4:  mode,
+		Lower_2:  nameArg,
+		Column6:  excludePaths,
+		Column7:  seq,
+		Column8:  cnStripped,
+		Column9:  arrowToInt32s(arrow),
+		Column10: toInt32s(GetSTtypesFromArrows(sst, arrow)),
+		Limit:    int32(limit),
+	}
 }
 
 // **************************************************************************
 
 func GetDBChaptersMatchingName(sst PoSST, src string) []string {
 
-	var qstr string
+	if sst.Q == nil {
+		return nil
+	}
 
 	remove_accents, stripped := IsBracketedSearchTerm(SQLEscape(src))
-
+	var (
+		rows []*string
+		err  error
+	)
 	if remove_accents {
-		search := "%" + stripped + "%"
-		qstr = fmt.Sprintf("SELECT DISTINCT Chap FROM Node WHERE lower(unaccent(Chap)) LIKE lower('%s')", search)
+		rows, err = sst.Q.ListChaptersLikeUnaccent(sst.ctx(), "%"+stripped+"%")
 	} else {
-		search := "%" + src + "%"
-		qstr = fmt.Sprintf("SELECT DISTINCT Chap FROM Node WHERE lower(Chap) LIKE lower('%s')", search)
+		rows, err = sst.Q.ListChaptersLike(sst.ctx(), "%"+src+"%")
 	}
-
-	row, err := sst.query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY GetDBChaptersMatchingName", err)
+		return nil
 	}
 
-	var whole string
-	var chapters = make(map[string]int)
+	chapters := make(map[string]int)
 	var retval []string
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&whole)
-			several := strings.Split(whole, ",")
-
-			for s := range several {
-				chapters[several[s]]++
-			}
+	for _, p := range rows {
+		whole := derefStr(p)
+		for _, part := range strings.Split(whole, ",") {
+			chapters[part]++
 		}
-
-		for c := range chapters {
-			if strings.Contains(c, src) {
-				if len(c) > 0 {
-					retval = append(retval, c)
-				}
-			}
-		}
-
-		sort.Strings(retval)
-		row.Close()
 	}
-
+	for c := range chapters {
+		if strings.Contains(c, src) && len(c) > 0 {
+			retval = append(retval, c)
+		}
+	}
+	sort.Strings(retval)
 	return retval
 }
 
@@ -318,66 +269,38 @@ func GetDBChaptersMatchingName(sst PoSST, src string) []string {
 
 func GetDBContextByName(sst *PoSST, src string) (string, ContextPtr) {
 
-	var qstr string
+	if sst.Q == nil {
+		return "", 0
+	}
 
 	remove_accents, stripped := IsBracketedSearchTerm(src)
-
+	var (
+		row sqlc.Contextdirectory
+		err error
+	)
 	if remove_accents {
-		search := stripped
-		qstr = fmt.Sprintf("SELECT DISTINCT Context,CtxPtr FROM ContextDirectory WHERE unaccent(Context)='%s'", search)
+		row, err = sst.Q.GetContextByTextUnaccent(sst.ctx(), stripped)
 	} else {
-		search := src
-		qstr = fmt.Sprintf("SELECT DISTINCT Context,CtxPtr FROM ContextDirectory WHERE Context='%s'", search)
+		row, err = sst.Q.GetContextByText(sst.ctx(), strPtr(src))
 	}
-
-	row, err := sst.query(qstr)
-
 	if err != nil {
-		fmt.Println("QUERY GetDBContextByName", err)
+		return "", 0
 	}
-
-	var whole string
-	var ptr int
-
-	// Assume unique match for this, to be fixed elsewhere
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&whole, &ptr)
-		}
-		row.Close()
-	}
-
-	return whole, ContextPtr(ptr)
-
+	return derefStr(row.Context), ContextPtr(row.Ctxptr)
 }
 
 // **************************************************************************
 
 func GetDBContextByPtr(sst *PoSST, ptr ContextPtr) (string, ContextPtr) {
 
-	qstr := fmt.Sprintf("SELECT DISTINCT Context,CtxPtr FROM ContextDirectory WHERE CtxPtr=%d", ptr)
-
-	row, err := sst.query(qstr)
-
+	if sst.Q == nil {
+		return "", ptr
+	}
+	row, err := sst.Q.GetContextByPtr(sst.ctx(), int32(ptr))
 	if err != nil {
-		fmt.Println("QUERY GetDBContextssByPtr", err)
+		return "", ptr
 	}
-
-	var retctx string
-	var retptr int
-
-	// Assume unique match for this, to be fixed elsewhere
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&retctx, &retptr)
-		}
-
-		row.Close()
-	}
-
-	return retctx, ContextPtr(retptr)
+	return derefStr(row.Context), ContextPtr(row.Ctxptr)
 }
 
 // **************************************************************************
@@ -405,60 +328,32 @@ func GetDBNodeByNodePtr(sst *PoSST, db_nptr NodePtr) Node {
 		return GetMemoryNodeFromPtr(sst, im_nptr)
 	}
 
-	// This ony works if we insert non-null arrays like '[]' during initialization
-	cols := I_MEXPR + "," + I_MCONT + "," + I_MLEAD + "," + I_NEAR + "," + I_PLEAD + "," + I_PCONT + "," + I_PEXPR
-	qstr := fmt.Sprintf("select L,S,Chap,%s from Node where NPtr='(%d,%d)'::NodePtr AND NOT L=0", cols, db_nptr.Class, db_nptr.CPtr)
-
-	row, err := sst.query(qstr)
-
 	var n Node
-	var matches []Node
-	var count int = 0
-
-	if err != nil {
-		fmt.Println("GetDBNodeByNodePointer Failed:", err)
+	if sst.Q == nil {
 		return n
 	}
 
-	var whole [ST_TOP]string
+	row, err := sst.Q.GetNodeByNPtr(sst.ctx(), sqlc.GetNodeByNPtrParams{
+		Column1: int32(db_nptr.Class),
+		Column2: int32(db_nptr.CPtr),
+	})
+	if err != nil {
+		// no rows is normal for missing
+		return n
+	}
 
-	// NB, there seems to be a "bug" in the SQL package, which cannot always populate the links, so try not to
-	//     rely on this and work around when needed using GetEntireCone(any,2..) separately
+	if row.L != nil {
+		n.L = int(*row.L)
+	}
+	n.S = derefStr(row.S)
+	n.Chap = derefStr(row.Chap)
+	whole := [ST_TOP]string{row.Im3, row.Im2, row.Im1, row.In0, row.Il1, row.Ic2, row.Ie3}
+	for i := 0; i < ST_TOP; i++ {
+		n.I[i] = ParseLinkArray(whole[i])
+	}
 
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&n.L, &n.S, &n.Chap, &whole[0], &whole[1], &whole[2], &whole[3], &whole[4], &whole[5], &whole[6])
-
-			for i := 0; i < ST_TOP; i++ {
-				n.I[i] = ParseLinkArray(whole[i])
-			}
-
-			matches = append(matches, n)
-			count++
-		}
-
-		if count > 1 {
-			fmt.Println("\nWARNING !\nGetDBNodeByNodePtr returned too many matches (this shouldn't happen):", count, "for ptr", db_nptr)
-
-			for _, val := range matches {
-				fmt.Println(" - Value: ", val)
-			}
-
-			if !cached {
-				CacheNode(sst, matches[0])
-			}
-
-			n = matches[0]
-			fmt.Println("Selected first match: ", matches[0], "\n")
-		}
-
-		// Expand any dynamic inbuilt functions
-
-		if strings.HasPrefix(n.S, "Dynamic: ") {
-			n.S = ExpandDynamicFunctions(n.S)
-		}
-
-		row.Close()
+	if strings.HasPrefix(n.S, "Dynamic: ") {
+		n.S = ExpandDynamicFunctions(n.S)
 	}
 
 	n.NPtr = db_nptr
@@ -471,112 +366,61 @@ func GetDBSingletonBySTType(sst PoSST, sttypes []int, chap string, cn []string) 
 
 	// Used in graph report, analysis
 
-	var qstr, qwhere string
-	var dim = len(sttypes)
-
-	context := FormatSQLStringArray(cn)
-	chapter := "%" + SQLEscape(chap) + "%"
-
+	dim := len(sttypes)
 	if dim == 0 || dim > 4 {
 		fmt.Println("Maximum 4 sttypes in GetDBSingletonBySTType")
 		return nil, nil
 	}
-
-	for st := 0; st < len(sttypes); st++ {
-
-		if sttypes[st] < 0 {
+	for _, st := range sttypes {
+		if st < 0 {
 			fmt.Println("WARNING! Only give positive STType arguments to GetDBSingletonBySTType as both signs are returned as sources (+) and sinks (-)")
 			return nil, nil
 		}
-
-		stname := STTypeDBChannel(sttypes[st])
-		stinv := STTypeDBChannel(-sttypes[st])
-		qwhere += fmt.Sprintf("(array_length(%s::text[],1) IS NOT NULL AND array_length(%s::text[],1) IS NULL AND match_context((%s)[0].Ctx,%s))", stname, stinv, stname, context)
-
-		if st != dim-1 {
-			qwhere += " OR "
-		}
 	}
-
-	qstr = fmt.Sprintf("SELECT NPtr FROM Node WHERE lower(Chap) LIKE lower('%s') AND (%s)", chapter, qwhere)
-
-	row, err := sst.query(qstr)
-
-	if err != nil {
-		fmt.Println("QUERY GetDBSingletonBySTType Failed", err, "IN", qstr)
+	if sst.Q == nil {
 		return nil, nil
 	}
 
+	_, cnStripped := IsBracketedSearchList(cn)
+	if cnStripped == nil {
+		cnStripped = []string{}
+	}
+	chapter := "%" + SQLEscape(chap) + "%"
+	lead, cont, expr, near := stPosFlags(sttypes)
+
+	srcRows, err := sst.Q.ListSingletonSources(sst.ctx(), sqlc.ListSingletonSourcesParams{
+		Lower:   chapter,
+		Column2: lead,
+		Column3: cont,
+		Column4: expr,
+		Column5: near,
+		Column6: cnStripped,
+	})
+	if err != nil {
+		fmt.Println("QUERY GetDBSingletonBySTType Failed", err)
+		return nil, nil
+	}
 	var src_nptrs, snk_nptrs []NodePtr
-
-	if row != nil {
-		for row.Next() {
-
-			var n NodePtr
-			var nstr string
-
-			err = row.Scan(&nstr)
-
-			if err != nil {
-				fmt.Println("Error scanning sql data case", dim, "gave error", err, qstr)
-				row.Close()
-				return nil, nil
-			}
-
-			fmt.Sscanf(nstr, "(%d,%d)", &n.Class, &n.CPtr)
-
-			src_nptrs = append(src_nptrs, n)
-		}
-		row.Close()
+	for _, r := range srcRows {
+		src_nptrs = append(src_nptrs, NodePtr{Class: int(r.Chan), CPtr: ClassedNodePtr(r.Cptr)})
 	}
 
-	// and sinks  -> -
-
-	qwhere = ""
-
-	for st := 0; st < len(sttypes); st++ {
-
-		stname := STTypeDBChannel(-sttypes[st])
-		stinv := STTypeDBChannel(sttypes[st])
-		qwhere += fmt.Sprintf("(array_length(%s::text[],1) IS NOT NULL AND array_length(%s::text[],1) IS NULL AND match_context((%s)[0].Ctx,%s))", stname, stinv, stname, context)
-
-		if st != dim-1 {
-			qwhere += " OR "
-		}
-	}
-
-	qstr = fmt.Sprintf("SELECT NPtr FROM Node WHERE lower(Chap) LIKE lower('%s') AND (%s)", chapter, qwhere)
-
-	row, err = sst.query(qstr)
-
+	snkRows, err := sst.Q.ListSingletonSinks(sst.ctx(), sqlc.ListSingletonSinksParams{
+		Lower:   chapter,
+		Column2: lead,
+		Column3: cont,
+		Column4: expr,
+		Column5: near,
+		Column6: cnStripped,
+	})
 	if err != nil {
-		fmt.Println("QUERY GetDBSingletonBySTType 2 Failed", err, "IN", qstr)
+		fmt.Println("QUERY GetDBSingletonBySTType 2 Failed", err)
 		return nil, nil
 	}
-
-	if row != nil {
-		for row.Next() {
-
-			var n NodePtr
-			var nstr string
-
-			err = row.Scan(&nstr)
-
-			if err != nil {
-				fmt.Println("Error scanning sql data case", dim, "gave error", err, qstr)
-				row.Close()
-				return nil, nil
-			}
-
-			fmt.Sscanf(nstr, "(%d,%d)", &n.Class, &n.CPtr)
-
-			snk_nptrs = append(snk_nptrs, n)
-		}
-		row.Close()
+	for _, r := range snkRows {
+		snk_nptrs = append(snk_nptrs, NodePtr{Class: int(r.Chan), CPtr: ClassedNodePtr(r.Cptr)})
 	}
-
 	return src_nptrs, snk_nptrs
-
 }
 
 // **************************************************************************
@@ -856,12 +700,18 @@ func GetAppointedNodesByArrow(sst *PoSST, arrow ArrowPtr, cn []string, chap stri
 	// return a map of all the nodes in chap,context that are pointed to by the same type of arrow
 	// grouped by arrow
 
+	if sst.Q == nil {
+		return nil
+	}
+
 	reverse_arrow := sst.INVERSE_ARROWS[arrow]
 	arr := GetDBArrowByPtr(sst, reverse_arrow)
 	sttype := STIndexToSTType(arr.STAindex)
 
 	_, cn_stripped := IsBracketedSearchList(cn)
-	context := FormatSQLStringArray(cn_stripped)
+	if cn_stripped == nil {
+		cn_stripped = []string{}
+	}
 
 	var chap_col, chap_stripped string
 	var remove_chap_accents bool
@@ -876,29 +726,23 @@ func GetAppointedNodesByArrow(sst *PoSST, arrow ArrowPtr, cn []string, chap stri
 		}
 	}
 
-	qstr := fmt.Sprintf("SELECT unnest(GetAppointments(%d,%d,%d,'%s',%s,%v))", int(reverse_arrow), sttype, size, chap_col, context, remove_chap_accents)
-
-	row, err := sst.query(qstr)
-
+	rows, err := sst.Q.GetAppointments(sst.ctx(), sqlc.GetAppointmentsParams{
+		Column1: int32(reverse_arrow),
+		Column2: int32(sttype),
+		Column3: int32(size),
+		Column4: chap_col,
+		Column5: cn_stripped,
+		Column6: remove_chap_accents,
+	})
 	if err != nil {
-		fmt.Println("QUERY GetAppointedNodesByArrow Failed", err, qstr)
+		fmt.Println("QUERY GetAppointedNodesByArrow Failed", err)
+		return nil
 	}
-
-	var whole string
-
-	var retval = make(map[ArrowPtr][]Appointment)
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
-
-			next := ParseAppointedNodeCluster(sst, whole)
-			retval[next.Arr] = append(retval[next.Arr], next)
-		}
-
-		row.Close()
+	retval := make(map[ArrowPtr][]Appointment)
+	for _, whole := range rows {
+		next := ParseAppointedNodeCluster(sst, whole)
+		retval[next.Arr] = append(retval[next.Arr], next)
 	}
-
 	return retval
 }
 
@@ -909,8 +753,14 @@ func GetAppointedNodesBySTType(sst *PoSST, sttype int, cn []string, chap string,
 	// return a map of all the nodes in chap,context that are pointed to by the same type of arrow
 	// grouped by arrow
 
+	if sst.Q == nil {
+		return nil
+	}
+
 	_, cn_stripped := IsBracketedSearchList(cn)
-	context := FormatSQLStringArray(cn_stripped)
+	if cn_stripped == nil {
+		cn_stripped = []string{}
+	}
 
 	var chap_col, chap_stripped string
 	var remove_chap_accents bool
@@ -925,28 +775,23 @@ func GetAppointedNodesBySTType(sst *PoSST, sttype int, cn []string, chap string,
 		}
 	}
 
-	qstr := fmt.Sprintf("SELECT unnest(GetAppointments(%d,%d,%d,'%s',%s,%v))", -1, sttype, size, chap_col, context, remove_chap_accents)
-
-	row, err := sst.query(qstr)
-
+	rows, err := sst.Q.GetAppointments(sst.ctx(), sqlc.GetAppointmentsParams{
+		Column1: -1,
+		Column2: int32(sttype),
+		Column3: int32(size),
+		Column4: chap_col,
+		Column5: cn_stripped,
+		Column6: remove_chap_accents,
+	})
 	if err != nil {
-		fmt.Println("QUERY GetAppointedNodesByArrow Failed", err, qstr)
+		fmt.Println("QUERY GetAppointedNodesBySTType Failed", err)
+		return nil
 	}
-
-	var whole string
-
-	var retval = make(map[ArrowPtr][]Appointment)
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
-
-			next := ParseAppointedNodeCluster(sst, whole)
-			retval[next.Arr] = append(retval[next.Arr], next)
-		}
-		row.Close()
+	retval := make(map[ArrowPtr][]Appointment)
+	for _, whole := range rows {
+		next := ParseAppointedNodeCluster(sst, whole)
+		retval[next.Arr] = append(retval[next.Arr], next)
 	}
-
 	return retval
 }
 
@@ -1030,53 +875,42 @@ func ScoreContext(i, j int) bool {
 
 func GetDBPageMap(sst PoSST, chap string, cn []string, page int, limit int) []PageMap {
 
-	var qstr string
+	if sst.Q == nil {
+		return nil
+	}
 
 	chap = strings.Trim(chap, "\"")
-
-	context := FormatSQLStringArray(cn)
+	_, cnStripped := IsBracketedSearchList(cn)
+	if cnStripped == nil {
+		cnStripped = []string{}
+	}
 	chapter := "%" + chap + "%"
-
 	hits_per_page := limit
 	offset := (page - 1) * hits_per_page
+	if offset < 0 {
+		offset = 0
+	}
 
-	qstr = fmt.Sprintf("SELECT DISTINCT Chap,Ctx,Line,Path FROM PageMap "+
-		"WHERE match_context(Ctx,%s)=true AND lower(Chap) LIKE lower('%s') ORDER BY Chap,Line OFFSET %d LIMIT %d", context, chapter, offset, hits_per_page)
-
-	row, err := sst.query(qstr)
-
+	rows, err := sst.Q.ListPageMap(sst.ctx(), sqlc.ListPageMapParams{
+		Column1: cnStripped,
+		Lower:   chapter,
+		Offset:  int32(offset),
+		Limit:   int32(hits_per_page),
+	})
 	if err != nil {
-		fmt.Println("GetDBPageMap Failed:", err, qstr)
+		fmt.Println("GetDBPageMap Failed:", err)
+		return nil
 	}
 
-	var path string
 	var pagemap []PageMap
-	var line int
-	var ctxptr ContextPtr
-
-	if row != nil {
-		for row.Next() {
-
-			var event PageMap
-
-			err = row.Scan(&chap, &ctxptr, &line, &path)
-
-			if err != nil {
-				fmt.Println("Error reading GetDBPageMap", err)
-			}
-
-			event.Path = ParseMapLinkArray(path)
-
-			event.Chapter = chap
-			event.Context = ctxptr
-			event.Line = line
-
-			pagemap = append(pagemap, event)
-		}
-
-		row.Close()
+	for _, row := range rows {
+		var event PageMap
+		event.Path = ParseMapLinkArray(row.Path)
+		event.Chapter = derefStr(row.Chap)
+		event.Context = ContextPtr(derefInt32(row.Ctx))
+		event.Line = derefInt32(row.Line)
+		pagemap = append(pagemap, event)
 	}
-
 	return pagemap
 }
 
@@ -1084,28 +918,24 @@ func GetDBPageMap(sst PoSST, chap string, cn []string, page int, limit int) []Pa
 
 func GetFwdConeAsNodes(sst *PoSST, start NodePtr, sttype, depth int, limit int) []NodePtr {
 
-	qstr := fmt.Sprintf("select unnest(fwdconeasnodes) from FwdConeAsNodes('(%d,%d)',%d,%d,%d);", start.Class, start.CPtr, sttype, depth, limit)
-
-	row, err := sst.query(qstr)
-
+	if sst.Q == nil {
+		return nil
+	}
+	rows, err := sst.Q.FwdConeAsNodes(sst.ctx(), sqlc.FwdConeAsNodesParams{
+		Column1: int32(start.Class),
+		Column2: int32(start.CPtr),
+		Column3: int32(sttype),
+		Column4: int32(depth),
+		Column5: int32(limit),
+	})
 	if err != nil {
 		fmt.Println("QUERY to FwdConeAsNodes Failed", err)
+		return nil
 	}
-
-	var whole string
-	var n NodePtr
-	var retval []NodePtr
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&whole)
-			fmt.Sscanf(whole, "(%d,%d)", &n.Class, &n.CPtr)
-			retval = append(retval, n)
-		}
-
-		row.Close()
+	retval := make([]NodePtr, 0, len(rows))
+	for _, r := range rows {
+		retval = append(retval, NodePtr{Class: int(r.Chan), CPtr: ClassedNodePtr(r.Cptr)})
 	}
-
 	return retval
 }
 
@@ -1115,27 +945,25 @@ func GetFwdConeAsLinks(sst *PoSST, start NodePtr, sttype, depth int) []Link {
 
 	// This function may be misleading as it doesn't respect paths, may be deprecated in future
 
-	qstr := fmt.Sprintf("select unnest(fwdconeaslinks) from FwdConeAsLinks('(%d,%d)',%d,%d);", start.Class, start.CPtr, sttype, depth)
-
-	row, err := sst.query(qstr)
-
+	if sst.Q == nil {
+		return nil
+	}
+	// maxlimit mirrors depth when callers omit a separate limit (upstream 3-arg form).
+	rows, err := sst.Q.FwdConeAsLinks(sst.ctx(), sqlc.FwdConeAsLinksParams{
+		Column1: int32(start.Class),
+		Column2: int32(start.CPtr),
+		Column3: int32(sttype),
+		Column4: int32(depth),
+		Column5: int32(depth),
+	})
 	if err != nil {
 		fmt.Println("QUERY to FwdConeAsLinks Failed", err)
+		return nil
 	}
-
-	var whole string
-	var retval []Link
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&whole)
-			l := ParseSQLLinkString(whole)
-			retval = append(retval, l)
-		}
-
-		row.Close()
+	retval := make([]Link, 0, len(rows))
+	for _, whole := range rows {
+		retval = append(retval, ParseSQLLinkString(whole))
 	}
-
 	return retval
 }
 
@@ -1143,26 +971,21 @@ func GetFwdConeAsLinks(sst *PoSST, start NodePtr, sttype, depth int) []Link {
 
 func GetFwdPathsAsLinks(sst *PoSST, start NodePtr, sttype, depth int, maxlimit int) ([][]Link, int) {
 
-	qstr := fmt.Sprintf("SELECT FwdPathsAsLinks from FwdPathsAsLinks('(%d,%d)',%d,%d,%d);", start.Class, start.CPtr, sttype, depth, maxlimit)
-
-	row, err := sst.query(qstr)
-
+	if sst.Q == nil {
+		return nil, 0
+	}
+	whole, err := sst.Q.FwdPathsAsLinks(sst.ctx(), sqlc.FwdPathsAsLinksParams{
+		Column1: int32(start.Class),
+		Column2: int32(start.CPtr),
+		Column3: int32(sttype),
+		Column4: int32(depth),
+		Column5: int32(maxlimit),
+	})
 	if err != nil {
 		fmt.Println("QUERY to FwdPathsAsLinks Failed", err)
+		return nil, 0
 	}
-
-	var whole string
-	var retval [][]Link
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&whole)
-			retval = ParseLinkPath(whole)
-		}
-
-		row.Close()
-	}
-
+	retval := ParseLinkPath(whole)
 	return retval, len(retval)
 }
 
@@ -1172,28 +995,21 @@ func GetEntireConePathsAsLinks(sst *PoSST, orientation string, start NodePtr, de
 
 	// orientation should be "fwd" or "bwd" else "both"
 
-	// Todo: how to limit path search? Usually solutions are small..?
-
-	qstr := fmt.Sprintf("select AllPathsAsLinks from AllPathsAsLinks('(%d,%d)','%s',%d, %d);",
-		start.Class, start.CPtr, orientation, depth, limit)
-
-	row, err := sst.query(qstr)
-
+	if sst.Q == nil {
+		return nil, 0
+	}
+	whole, err := sst.Q.AllPathsAsLinks(sst.ctx(), sqlc.AllPathsAsLinksParams{
+		Column1: int32(start.Class),
+		Column2: int32(start.CPtr),
+		Column3: orientation,
+		Column4: int32(depth),
+		Column5: int32(limit),
+	})
 	if err != nil {
-		fmt.Println("QUERY to AllPathsAsLinks Failed", err, qstr)
+		fmt.Println("QUERY to AllPathsAsLinks Failed", err)
+		return nil, 0
 	}
-
-	var whole string
-	var retval [][]Link
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&whole)
-			retval = ParseLinkPath(whole)
-		}
-
-		row.Close()
-	}
+	retval := ParseLinkPath(whole)
 
 	sort.Slice(retval, func(i, j int) bool {
 		return len(retval[i]) < len(retval[j])
@@ -1209,35 +1025,30 @@ func GetEntireNCConePathsAsLinks(sst *PoSST, orientation string, start []NodePtr
 	// See also GetConstraintConePathsAsLinks for an interface with arrow matching
 	// orientation should be "fwd" or "bwd" else "both"
 
+	if sst.Q == nil {
+		return nil, 0
+	}
+
 	remove_accents, stripped := IsBracketedSearchTerm(chapter)
 	chapter = "%" + stripped + "%"
-	rm_acc := "false"
-
-	if remove_accents {
-		rm_acc = "true"
+	if context == nil {
+		context = []string{}
 	}
 
-	qstr := fmt.Sprintf("select AllNCPathsAsLinks(%s,'%s',%s,%s,'%s',%d,%d);", FormatSQLNodePtrArray(start), chapter, rm_acc, FormatSQLStringArray(context), orientation, depth, limit)
-
-	row, err := sst.query(qstr)
-
+	whole, err := sst.Q.AllNCPathsAsLinks(sst.ctx(), sqlc.AllNCPathsAsLinksParams{
+		Column1: nodePtrArrayLiteral(start),
+		Column2: chapter,
+		Column3: remove_accents,
+		Column4: context,
+		Column5: orientation,
+		Column6: int32(depth),
+		Column7: int32(limit),
+	})
 	if err != nil {
-		fmt.Println("QUERY to AllNCPathsAsLinks Failed", err, qstr)
+		fmt.Println("QUERY to AllNCPathsAsLinks Failed", err)
 		os.Exit(-1)
 	}
-
-	var whole string
-	var retval [][]Link
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&whole)
-			retval = ParseLinkPath(whole)
-		}
-
-		row.Close()
-	}
-
+	retval := ParseLinkPath(whole)
 	return retval, len(retval)
 }
 
@@ -1248,41 +1059,31 @@ func GetConstraintConePathsAsLinks(sst *PoSST, start []NodePtr, depth int, chapt
 	// See also GetEntireNCConePathsAsLinks() for a differently optimized interface
 	// orientation should be "fwd" or "bwd" else "both"
 
+	if sst.Q == nil {
+		return nil, 0
+	}
+
 	remove_accents, stripped := IsBracketedSearchTerm(chapter)
 	chapter = "%" + stripped + "%"
-	rm_acc := "false"
-
-	if remove_accents {
-		rm_acc = "true"
+	if context == nil {
+		context = []string{}
 	}
 
-	nod := FormatSQLNodePtrArray(start)
-	arr := FormatSQLIntArray(Arrow2Int(arrowptrs))
-	stt := FormatSQLIntArray(sttypes)
-	cnt := FormatSQLStringArray(context)
-
-	qstr := fmt.Sprintf("select ConstraintPathsAsLinks(%s,'%s',%s,%s,%s,%s,%d,%d);", nod, chapter, rm_acc, cnt, arr, stt, depth, limit)
-
-	row, err := sst.query(qstr)
-
+	whole, err := sst.Q.ConstraintPathsAsLinks(sst.ctx(), sqlc.ConstraintPathsAsLinksParams{
+		Column1: nodePtrArrayLiteral(start),
+		Column2: chapter,
+		Column3: remove_accents,
+		Column4: context,
+		Column5: toInt32s(Arrow2Int(arrowptrs)),
+		Column6: toInt32s(sttypes),
+		Column7: int32(depth),
+		Column8: int32(limit),
+	})
 	if err != nil {
-		fmt.Println("QUERY to ConstraintPathsAsLinks Failed", err, qstr)
+		fmt.Println("QUERY to ConstraintPathsAsLinks Failed", err)
 		os.Exit(-1)
 	}
-
-	var whole string
-	var retval [][]Link
-
-	if row != nil {
-		for row.Next() {
-			err = row.Scan(&whole)
-			retval = ParseLinkPath(whole)
-			break
-		}
-
-		row.Close()
-	}
-
+	retval := ParseLinkPath(whole)
 	return retval, len(retval)
 }
 

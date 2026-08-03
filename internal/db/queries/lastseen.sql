@@ -6,8 +6,8 @@ SELECT LastSawNPtr(ROW($1::int, $2::int)::nodeptr, $3);
 
 -- name: ListLastSeen :many
 SELECT section,
-       (nptr).chan AS chan,
-       (nptr).cptr AS cptr,
+       (nptr).chan::int AS chan,
+       (nptr).cptr::int AS cptr,
        EXTRACT(EPOCH FROM first)::float8 AS first_epoch,
        EXTRACT(EPOCH FROM last)::float8 AS last_epoch,
        delta,
@@ -27,10 +27,10 @@ FROM lastseen
 WHERE nptr = ROW($1::int, $2::int)::nodeptr;
 
 -- name: ListRecentLastSeenNPtrs :many
-SELECT (nptr).chan AS chan, (nptr).cptr AS cptr
+SELECT (nptr).chan::int AS chan, (nptr).cptr::int AS cptr
 FROM lastseen
 WHERE last > NOW() - make_interval(hours => $1);
 
 -- name: ListAllLastSeenNPtrs :many
-SELECT (nptr).chan AS chan, (nptr).cptr AS cptr
+SELECT (nptr).chan::int AS chan, (nptr).cptr::int AS cptr
 FROM lastseen;

@@ -73,13 +73,13 @@ func (q *Queries) GetLastSeenByNPtr(ctx context.Context, arg GetLastSeenByNPtrPa
 }
 
 const listAllLastSeenNPtrs = `-- name: ListAllLastSeenNPtrs :many
-SELECT (nptr).chan AS chan, (nptr).cptr AS cptr
+SELECT (nptr).chan::int AS chan, (nptr).cptr::int AS cptr
 FROM lastseen
 `
 
 type ListAllLastSeenNPtrsRow struct {
-	Chan interface{} `json:"chan"`
-	Cptr interface{} `json:"cptr"`
+	Chan int32 `json:"chan"`
+	Cptr int32 `json:"cptr"`
 }
 
 func (q *Queries) ListAllLastSeenNPtrs(ctx context.Context) ([]ListAllLastSeenNPtrsRow, error) {
@@ -104,8 +104,8 @@ func (q *Queries) ListAllLastSeenNPtrs(ctx context.Context) ([]ListAllLastSeenNP
 
 const listLastSeen = `-- name: ListLastSeen :many
 SELECT section,
-       (nptr).chan AS chan,
-       (nptr).cptr AS cptr,
+       (nptr).chan::int AS chan,
+       (nptr).cptr::int AS cptr,
        EXTRACT(EPOCH FROM first)::float8 AS first_epoch,
        EXTRACT(EPOCH FROM last)::float8 AS last_epoch,
        delta,
@@ -116,14 +116,14 @@ ORDER BY section
 `
 
 type ListLastSeenRow struct {
-	Section    *string     `json:"section"`
-	Chan       interface{} `json:"chan"`
-	Cptr       interface{} `json:"cptr"`
-	FirstEpoch float64     `json:"first_epoch"`
-	LastEpoch  float64     `json:"last_epoch"`
-	Delta      *float32    `json:"delta"`
-	Freq       *int32      `json:"freq"`
-	Ndelta     float64     `json:"ndelta"`
+	Section    *string  `json:"section"`
+	Chan       int32    `json:"chan"`
+	Cptr       int32    `json:"cptr"`
+	FirstEpoch float64  `json:"first_epoch"`
+	LastEpoch  float64  `json:"last_epoch"`
+	Delta      *float32 `json:"delta"`
+	Freq       *int32   `json:"freq"`
+	Ndelta     float64  `json:"ndelta"`
 }
 
 func (q *Queries) ListLastSeen(ctx context.Context) ([]ListLastSeenRow, error) {
@@ -156,14 +156,14 @@ func (q *Queries) ListLastSeen(ctx context.Context) ([]ListLastSeenRow, error) {
 }
 
 const listRecentLastSeenNPtrs = `-- name: ListRecentLastSeenNPtrs :many
-SELECT (nptr).chan AS chan, (nptr).cptr AS cptr
+SELECT (nptr).chan::int AS chan, (nptr).cptr::int AS cptr
 FROM lastseen
 WHERE last > NOW() - make_interval(hours => $1)
 `
 
 type ListRecentLastSeenNPtrsRow struct {
-	Chan interface{} `json:"chan"`
-	Cptr interface{} `json:"cptr"`
+	Chan int32 `json:"chan"`
+	Cptr int32 `json:"cptr"`
 }
 
 func (q *Queries) ListRecentLastSeenNPtrs(ctx context.Context, hours int32) ([]ListRecentLastSeenNPtrsRow, error) {

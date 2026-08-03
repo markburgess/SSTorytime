@@ -10,8 +10,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	_ "github.com/lib/pq"
-
 )
 
 //**************************************************************
@@ -21,10 +19,10 @@ func FormDBNode(sst *PoSST, n Node) string {
 	// Add node version setting explicit CPtr value, note different function call
 	// We use this function when we ARE managing/counting CPtr values ourselves
 
-	var qstr,seqstr string
+	var qstr, seqstr string
 
-        n.L,n.NPtr.Class = StorageClass(n.S)
-	
+	n.L, n.NPtr.Class = StorageClass(n.S)
+
 	cptr := n.NPtr.CPtr
 
 	es := SQLEscape(n.S)
@@ -36,13 +34,13 @@ func FormDBNode(sst *PoSST, n Node) string {
 		seqstr = "false"
 	}
 
-	qstr = fmt.Sprintf("SELECT InsertNode(%d,%d,%d,'%s','%s',%s);\n",n.L,n.NPtr.Class,cptr,es,ec,seqstr)
+	qstr = fmt.Sprintf("SELECT InsertNode(%d,%d,%d,'%s','%s',%s);\n", n.L, n.NPtr.Class, cptr, es, ec, seqstr)
 	return qstr
 }
 
 // **************************************************************************
 
-func IdempDBAddNode(sst *PoSST,n Node) Node {
+func IdempDBAddNode(sst *PoSST, n Node) Node {
 
 	// We use this function when we aren't counting CPtr values
 	// This functon may be deprecated in future
@@ -51,39 +49,39 @@ func IdempDBAddNode(sst *PoSST,n Node) Node {
 
 	// No need to trust the values, ignore/overwrite CPtr
 
-        n.L,n.NPtr.Class = StorageClass(n.S)
+	n.L, n.NPtr.Class = StorageClass(n.S)
 
 	es := SQLEscape(n.S)
 	ec := SQLEscape(n.Chap)
 
 	// Wrap BEGIN/END a single transaction
 
-	qstr = fmt.Sprintf("SELECT IdempAppendNode(%d,%d,'%s','%s')",n.L,n.NPtr.Class,es,ec)
+	qstr = fmt.Sprintf("SELECT IdempAppendNode(%d,%d,'%s','%s')", n.L, n.NPtr.Class, es, ec)
 
-	row,err := sst.DB.Query(qstr)
-	
+	row, err := sst.query(qstr)
+
 	if err != nil {
-		s := fmt.Sprint("Failed to add node",err)
-		
-		if strings.Contains(s,"duplicate key") {
+		s := fmt.Sprint("Failed to add node", err)
+
+		if strings.Contains(s, "duplicate key") {
 		} else {
-			fmt.Println(s,"FAILED \n",qstr,err)
+			fmt.Println(s, "FAILED \n", qstr, err)
 		}
 		return n
 	}
 
 	var whole string
-	var cl,ch int
+	var cl, ch int
 
 	if row != nil {
-		for row.Next() {		
+		for row.Next() {
 			err = row.Scan(&whole)
-			fmt.Sscanf(whole,"(%d,%d)",&cl,&ch)
+			fmt.Sscanf(whole, "(%d,%d)", &cl, &ch)
 		}
-		
+
 		n.NPtr.Class = cl
 		n.NPtr.CPtr = ClassedNodePtr(ch)
-		
+
 		row.Close()
 	}
 
@@ -92,7 +90,7 @@ func IdempDBAddNode(sst *PoSST,n Node) Node {
 
 // **************************************************************************
 
-func IdempDBAddLink(sst *PoSST,from Node,link Link,to Node) {
+func IdempDBAddLink(sst *PoSST, from Node, link Link, to Node) {
 
 	// API Entry point for registering links
 
@@ -102,7 +100,7 @@ func IdempDBAddLink(sst *PoSST,from Node,link Link,to Node) {
 	link.Dst = toptr // it might have changed, so override
 
 	if frptr == toptr {
-		fmt.Println("Self-loops are not allowed",from.S,from,link,to)
+		fmt.Println("Self-loops are not allowed", from.S, from, link, to)
 		os.Exit(-1)
 	}
 
@@ -118,7 +116,7 @@ func IdempDBAddLink(sst *PoSST,from Node,link Link,to Node) {
 
 	sttype := STIndexToSTType(sst.ARROW_DIRECTORY[link.Arr].STAindex)
 
-	AppendDBLinkToNode(sst,frptr,link,sttype)
+	AppendDBLinkToNode(sst, frptr, link, sttype)
 
 	// Double up the reverse definition for easy indexing of both in/out arrows
 	// But be careful not the make the graph undirected by mistake
@@ -127,20 +125,20 @@ func IdempDBAddLink(sst *PoSST,from Node,link Link,to Node) {
 	invlink.Arr = sst.INVERSE_ARROWS[link.Arr]
 	invlink.Wgt = link.Wgt
 	invlink.Dst = frptr
-	AppendDBLinkToNode(sst,toptr,invlink,-sttype)
+	AppendDBLinkToNode(sst, toptr, invlink, -sttype)
 }
 
 // **************************************************************************
 
 func AppendDBLinkToNode(sst *PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 
-	qstr := AppendDBLinkToNodeCommand(sst,n1ptr,lnk,sttype)
+	qstr := AppendDBLinkToNodeCommand(sst, n1ptr, lnk, sttype)
 
-	row,err := sst.DB.Query(qstr)
+	row, err := sst.query(qstr)
 
 	if err != nil {
-		fmt.Println("Failed to append",err,qstr)
-	       return false
+		fmt.Println("Failed to append", err, qstr)
+		return false
 	}
 
 	row.Close()
@@ -154,7 +152,7 @@ func AppendDBLinkToNodeCommand(sst *PoSST, n1ptr NodePtr, lnk Link, sttype int) 
 	// Want to make this idempotent, because SQL is not (and not clause)
 
 	if sttype < -EXPRESS || sttype > EXPRESS {
-		fmt.Println(ERR_ST_OUT_OF_BOUNDS,sttype)
+		fmt.Println(ERR_ST_OUT_OF_BOUNDS, sttype)
 		os.Exit(-1)
 	}
 
@@ -163,9 +161,9 @@ func AppendDBLinkToNodeCommand(sst *PoSST, n1ptr NodePtr, lnk Link, sttype int) 
 	}
 
 	//                       Arr,Wgt,Ctx,  Dst
-	linkval := fmt.Sprintf("(%d, %f, %d, (%d,%d)::NodePtr)",lnk.Arr,lnk.Wgt,lnk.Ctx,lnk.Dst.Class,lnk.Dst.CPtr)
+	linkval := fmt.Sprintf("(%d, %f, %d, (%d,%d)::NodePtr)", lnk.Arr, lnk.Wgt, lnk.Ctx, lnk.Dst.Class, lnk.Dst.CPtr)
 
-	literal := fmt.Sprintf("%s::Link",linkval)
+	literal := fmt.Sprintf("%s::Link", linkval)
 
 	link_table := STTypeDBChannel(sttype)
 
@@ -189,7 +187,7 @@ func AppendDBLinkArrayToNode(sst *PoSST, nptr NodePtr, array string, sttype int)
 	// Want to make this idempotent, because SQL is not (and not clause)
 
 	if sttype < -EXPRESS || sttype > EXPRESS {
-		fmt.Println(ERR_ST_OUT_OF_BOUNDS,sttype)
+		fmt.Println(ERR_ST_OUT_OF_BOUNDS, sttype)
 		os.Exit(-1)
 	}
 
@@ -204,10 +202,6 @@ func AppendDBLinkArrayToNode(sst *PoSST, nptr NodePtr, array string, sttype int)
 	return qstr
 }
 
-
 //
 // db_insertion.go
 //
-
-
-

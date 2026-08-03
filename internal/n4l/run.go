@@ -99,7 +99,7 @@ func Run(ctx context.Context, opt Options) error {
 			return err
 		}
 	}
-	if sst.DB != nil {
+	if sst.Pool != nil {
 		SST.Close(sst)
 	}
 	return nil

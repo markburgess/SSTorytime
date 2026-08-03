@@ -8,58 +8,56 @@ package sst
 
 import (
 	"fmt"
-	"strings"
 	"sort"
+	"strings"
 	"time"
-	_ "github.com/lib/pq"
 )
 
 //******************************************************************
 
-func ContextIntentAnalysis(spectrum map[string]int) ([]string,[]string) {
+func ContextIntentAnalysis(spectrum map[string]int) ([]string, []string) {
 
-        // Used in table of contents.
+	// Used in table of contents.
 	// Split a list of contexts into mutex intentional and ambient
 
 	var intentional []string
 	var ambient []string
-	
-	const intent_limit = 2  // policy from research
+
+	const intent_limit = 2 // policy from research
 
 	// The spectrum is the number of times a DNA fragment appears in N4L classifications
-	
+
 	for f := range spectrum {
 
 		if spectrum[f] < intent_limit {
-			intentional = append(intentional,f)
+			intentional = append(intentional, f)
 		} else {
-			ambient = append(ambient,f)
+			ambient = append(ambient, f)
 		}
 	}
 
-	return intentional,ambient
+	return intentional, ambient
 }
-
 
 // **************************************************************************
 
-func GetChaptersByChapContext(sst PoSST,chap string,cn []string,limit int) map[string][]string {
+func GetChaptersByChapContext(sst PoSST, chap string, cn []string, limit int) map[string][]string {
 
 	qstr := ""
 	chap_col := ""
 
-	chap = strings.Trim(chap,"\"")
+	chap = strings.Trim(chap, "\"")
 
 	if chap != "any" && chap != "" {
 
-		remove_chap_accents,chap_stripped := IsBracketedSearchTerm(chap)
+		remove_chap_accents, chap_stripped := IsBracketedSearchTerm(chap)
 
 		if remove_chap_accents {
-			chap_search := "%"+chap_stripped+"%"
-			chap_col = fmt.Sprintf("AND lower(unaccent(chap)) LIKE lower('%s')",chap_search)
+			chap_search := "%" + chap_stripped + "%"
+			chap_col = fmt.Sprintf("AND lower(unaccent(chap)) LIKE lower('%s')", chap_search)
 		} else {
-			chap_search := "%"+chap+"%"
-			chap_col = fmt.Sprintf("AND lower(chap) LIKE lower('%s')",chap_search)
+			chap_search := "%" + chap + "%"
+			chap_col = fmt.Sprintf("AND lower(chap) LIKE lower('%s')", chap_search)
 		}
 	}
 
@@ -67,15 +65,15 @@ func GetChaptersByChapContext(sst PoSST,chap string,cn []string,limit int) map[s
 		chap_col = ""
 	}
 
-	_,cn_stripped := IsBracketedSearchList(cn)
+	_, cn_stripped := IsBracketedSearchList(cn)
 	context := FormatSQLStringArray(cn_stripped)
 
-	qstr = fmt.Sprintf("SELECT DISTINCT chap,ctx FROM PageMap WHERE match_context(ctx,%s) %s ORDER BY Chap",context,chap_col)
+	qstr = fmt.Sprintf("SELECT DISTINCT chap,ctx FROM PageMap WHERE match_context(ctx,%s) %s ORDER BY Chap", context, chap_col)
 
-	row, err := sst.DB.Query(qstr)
-	
+	row, err := sst.query(qstr)
+
 	if err != nil {
-		fmt.Println("QUERY GetChaptersByChapContext Failed",err,qstr)
+		fmt.Println("QUERY GetChaptersByChapContext Failed", err, qstr)
 	}
 
 	var rchap string
@@ -83,8 +81,8 @@ func GetChaptersByChapContext(sst PoSST,chap string,cn []string,limit int) map[s
 	var toc = make(map[string][]string)
 
 	if row != nil {
-		for row.Next() {		
-			err = row.Scan(&rchap,&rcontext)
+		for row.Next() {
+			err = row.Scan(&rchap, &rcontext)
 
 			// Each chapter can be a comma separated list
 
@@ -99,7 +97,7 @@ func GetChaptersByChapContext(sst PoSST,chap string,cn []string,limit int) map[s
 
 				rc := chps[c]
 
-				cn := strings.Split(GetContext(&sst,rcontext),",")
+				cn := strings.Split(GetContext(&sst, rcontext), ",")
 				ctx_grp := ""
 
 				for s := 0; s < len(cn); s++ {
@@ -110,7 +108,7 @@ func GetChaptersByChapContext(sst PoSST,chap string,cn []string,limit int) map[s
 				}
 
 				if len(ctx_grp) > 0 {
-					toc[rc] = append(toc[rc],ctx_grp)
+					toc[rc] = append(toc[rc], ctx_grp)
 				}
 			}
 		}
@@ -123,31 +121,31 @@ func GetChaptersByChapContext(sst PoSST,chap string,cn []string,limit int) map[s
 
 // *********************************************************************
 
-func UpdateSTMContext(sst *PoSST,ambient,key string,now int64,params SearchParameters) string {
+func UpdateSTMContext(sst *PoSST, ambient, key string, now int64, params SearchParameters) string {
 
 	var context []string
 
 	if params.Sequence || params.From != nil || params.To != nil {
 		// path / cone are intended
-		context = append(context,params.Name...)
-		context = append(context,params.From...)
-		context = append(context,params.To...)
-		return AddContext(sst,ambient,key,now,context)
+		context = append(context, params.Name...)
+		context = append(context, params.From...)
+		context = append(context, params.To...)
+		return AddContext(sst, ambient, key, now, context)
 	} else {
 		// ongoing / adhoc are ambient
-		context = append(context,params.Name...)
+		context = append(context, params.Name...)
 
-		for _,ct := range params.Context {
+		for _, ct := range params.Context {
 			if ct != "" {
-				context = append(context,ct)
+				context = append(context, ct)
 			}
 		}
 
 		if params.Chapter != "" {
-			context = append(context,"Chapter:"+params.Chapter)
+			context = append(context, "Chapter:"+params.Chapter)
 		}
 
-		return AddContext(sst,ambient,key,now,context)
+		return AddContext(sst, ambient, key, now, context)
 	}
 
 	return ""
@@ -155,7 +153,7 @@ func UpdateSTMContext(sst *PoSST,ambient,key string,now int64,params SearchParam
 
 // *********************************************************************
 
-func AddContext(sst *PoSST,ambient,key string,now int64,tokens []string) string {
+func AddContext(sst *PoSST, ambient, key string, now int64, tokens []string) string {
 
 	for t := range tokens {
 
@@ -169,10 +167,10 @@ func AddContext(sst *PoSST,ambient,key string,now int64,tokens []string) string 
 
 		if token[0] == '(' {
 			var nptr NodePtr
-			fmt.Sscanf(token,"(%d,%d)",&nptr.Class,&nptr.CPtr)
+			fmt.Sscanf(token, "(%d,%d)", &nptr.Class, &nptr.CPtr)
 
 			if nptr.Class > 0 {
-				node := GetDBNodeByNodePtr(sst,nptr)
+				node := GetDBNodeByNodePtr(sst, nptr)
 				if node.L < TEXT_SIZE_LIMIT {
 					token = node.S
 				} else {
@@ -182,7 +180,7 @@ func AddContext(sst *PoSST,ambient,key string,now int64,tokens []string) string 
 				continue
 			}
 		}
-		CommitContextToken(token,now,ambient)
+		CommitContextToken(token, now, ambient)
 	}
 
 	var format = make(map[string]int)
@@ -190,9 +188,9 @@ func AddContext(sst *PoSST,ambient,key string,now int64,tokens []string) string 
 	for fr := range STM_AMB_FRAG {
 
 		if STM_AMB_FRAG[fr].Delta > FORGOTTEN {
-			delete(STM_AMB_FRAG,fr)
+			delete(STM_AMB_FRAG, fr)
 			continue
-		} 
+		}
 
 		format[fr]++
 	}
@@ -200,9 +198,9 @@ func AddContext(sst *PoSST,ambient,key string,now int64,tokens []string) string 
 	for fr := range STM_INT_FRAG {
 
 		if STM_INT_FRAG[fr].Delta > FORGOTTEN {
-			delete(STM_INT_FRAG,fr)
+			delete(STM_INT_FRAG, fr)
 			continue
-		} 
+		}
 
 		format[fr]++
 	}
@@ -214,34 +212,34 @@ func AddContext(sst *PoSST,ambient,key string,now int64,tokens []string) string 
 
 // *********************************************************************
 
-func CommitContextToken(token string,now int64,key string) {
-	
-	var last,obs History
-	
+func CommitContextToken(token string, now int64, key string) {
+
+	var last, obs History
+
 	// Check if already known ambient
-	last,already := STM_AMB_FRAG[token]
-	
+	last, already := STM_AMB_FRAG[token]
+
 	// if not, then check if already seen
 	if !already {
-		last,already = STM_INT_FRAG[token]
+		last, already = STM_INT_FRAG[token]
 	}
-	
+
 	if !already {
 		last.Last = now
 	}
-	
+
 	obs.Freq = last.Freq + 1
 	obs.Last = now
 	obs.Time = key
 	obs.Delta = now - last.Last
-	
+
 	if obs.Freq > 1 {
-		pr,okey := DoNowt(time.Unix(last.Last,0))
-		fmt.Printf("    - last saw \"%s\" at %s (%s)\n",token,pr,okey)
+		pr, okey := DoNowt(time.Unix(last.Last, 0))
+		fmt.Printf("    - last saw \"%s\" at %s (%s)\n", token, pr, okey)
 	}
-	
+
 	if already {
-		delete(STM_INT_FRAG,token)
+		delete(STM_INT_FRAG, token)
 		STM_AMB_FRAG[token] = obs
 	} else {
 		STM_INT_FRAG[token] = obs
@@ -250,7 +248,7 @@ func CommitContextToken(token string,now int64,key string) {
 
 // **************************************************************************
 
-func IntersectContextParts(context_clusters []string) ([]string,[][]int)  {
+func IntersectContextParts(context_clusters []string) ([]string, [][]int) {
 
 	// return a weighted upper triangular matrix of overlaps between frags,
 	// and an idempotent list of fragments
@@ -263,7 +261,7 @@ func IntersectContextParts(context_clusters []string) ([]string,[][]int)  {
 	}
 
 	for each_unique_cluster := range idemp {
-		cluster_list = append(cluster_list,each_unique_cluster)
+		cluster_list = append(cluster_list, each_unique_cluster)
 	}
 
 	sort.Strings(cluster_list)
@@ -274,15 +272,15 @@ func IntersectContextParts(context_clusters []string) ([]string,[][]int)  {
 
 		var row []int
 
-		for cj := ci+1; cj < len(cluster_list); cj++ {			
-			s,_ := DiffClusters(cluster_list[ci],cluster_list[cj])
-			row = append(row,len(s))
+		for cj := ci + 1; cj < len(cluster_list); cj++ {
+			s, _ := DiffClusters(cluster_list[ci], cluster_list[cj])
+			row = append(row, len(s))
 		}
 
-		adj = append(adj,row)
+		adj = append(adj, row)
 	}
 
-	return cluster_list,adj
+	return cluster_list, adj
 }
 
 // **************************************************************************
@@ -291,13 +289,13 @@ func IntersectContextParts(context_clusters []string) ([]string,[][]int)  {
 // on a much smaller scale. Still looking for "mass spectrum" of fragments ..
 // **************************************************************************
 
-func DiffClusters(l1,l2 string) (string,string) {
+func DiffClusters(l1, l2 string) (string, string) {
 
 	// The fragments arrive as comma separated strings that are
-        // already composed or ordered n-grams
+	// already composed or ordered n-grams
 
-	spectrum1 := strings.Split(l1,", ")
-	spectrum2 := strings.Split(l2,", ")
+	spectrum1 := strings.Split(l1, ", ")
+	spectrum2 := strings.Split(l2, ", ")
 
 	// Get orderless idempotent directory of all 1-grams
 
@@ -306,12 +304,12 @@ func DiffClusters(l1,l2 string) (string,string) {
 
 	// split the lists into words into directories for common and individual ngrams
 
-	return OverlapMatrix(m1,m2)
+	return OverlapMatrix(m1, m2)
 }
 
 // **************************************************************************
 
-func OverlapMatrix(m1,m2 map[string]int) (string,string) {
+func OverlapMatrix(m1, m2 map[string]int) (string, string) {
 
 	var common = make(map[string]int)
 	var separate = make(map[string]int)
@@ -328,17 +326,17 @@ func OverlapMatrix(m1,m2 map[string]int) (string,string) {
 
 	for ng := range m2 {
 		if m1[ng] > 0 {
-			delete(separate,ng)
+			delete(separate, ng)
 			common[ng]++
 		} else {
-			_,exists := common[ng]
-			if  !exists {
+			_, exists := common[ng]
+			if !exists {
 				separate[ng]++
 			}
 		}
 	}
 
-	return List2String(Map2List(common)),List2String(Map2List(separate))
+	return List2String(Map2List(common)), List2String(Map2List(separate))
 }
 
 // **************************************************************************
@@ -346,11 +344,11 @@ func OverlapMatrix(m1,m2 map[string]int) (string,string) {
 func GetContextTokenFrequencies(fraglist []string) map[string]int {
 
 	// Count up the occurrences of different context fragments
-	
+
 	var spectrum = make(map[string]int)
 
 	for l := range fraglist {
-		fragments := strings.Split(fraglist[l],", ")
+		fragments := strings.Split(fraglist[l], ", ")
 		partial := List2Map(fragments)
 
 		// Merge all strands

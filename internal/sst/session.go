@@ -6,8 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/jackc/pgx/v5/stdlib"
-	_ "github.com/lib/pq"
 	"github.com/markburgess/SSTorytime/internal/db"
 )
 
@@ -21,27 +19,39 @@ func Open(load_arrows bool) PoSST {
 	return OpenWithDSN(context.Background(), "", load_arrows)
 }
 
-// OpenWithDSN opens the DB (migrate base schema, then exact upstream Configure).
+// OpenWithDSN migrates schema/functions then loads arrow/context caches.
+// load_arrows is kept for API compatibility (arrows always loaded from DB when present).
 func OpenWithDSN(ctx context.Context, dsn string, load_arrows bool) PoSST {
-
 	var sst PoSST
-	var err error
+	sst.Ctx = ctx
 
-	pool, _, err := db.OpenDSN(ctx, dsn)
+	if WIPE_DB {
+		// Full reset: drop dirty migrate state by truncating app data after migrate.
+		// Schema comes only from migrations; PL/pgSQL is in 000002.
+	}
+
+	pool, q, err := db.OpenDSN(ctx, dsn)
 	if err != nil {
 		fmt.Println("Error connecting/migrating the database: ", err)
 		os.Exit(-1)
 	}
-	sst.DB = stdlib.OpenDBFromPool(pool)
+	sst.Pool = pool
+	sst.Q = q
 
-	err = sst.DB.Ping()
-	if err != nil {
-		fmt.Println("Error pinging the database: ", err)
-		os.Exit(-1)
+	if WIPE_DB {
+		if err := q.TruncateAllData(ctx); err != nil {
+			fmt.Println("wipe truncate:", err)
+			os.Exit(-1)
+		}
+		fmt.Println("***********************")
+		fmt.Println("* WIPED DB DATA")
+		fmt.Println("***********************")
+		WIPE_DB = false
 	}
 
 	MemoryInit(&sst)
-	Configure(sst, load_arrows)
+	// Schema+functions: migrations only. No runtime DefineStoredFunctions.
+	_ = load_arrows
 
 	DownloadArrowsFromDB(&sst)
 	DownloadContextsFromDB(&sst)
@@ -174,132 +184,13 @@ func MemoryInit(sst *PoSST) {
 // **************************************************************************
 
 func Configure(sst PoSST, load_arrows bool) {
-
-	// Tmp reset
-
-	if WIPE_DB {
-
-		fmt.Println("***********************")
-		fmt.Println("* WIPING DB")
-		fmt.Println("***********************")
-
-		sst.DB.QueryRow("DROP INDEX sst_nan")
-		sst.DB.QueryRow("DROP INDEX sst_type")
-		sst.DB.QueryRow("DROP INDEX sst_gin")
-		sst.DB.QueryRow("DROP INDEX sst_ungin")
-		sst.DB.QueryRow("DROP INDEX sst_s")
-		sst.DB.QueryRow("DROP INDEX sst_n")
-		sst.DB.QueryRow("DROP INDEX sst_cnt")
-
-		sst.DB.QueryRow("drop function fwdconeaslinks")
-		sst.DB.QueryRow("drop function fwdconeasnodes")
-		sst.DB.QueryRow("drop function fwdpathsaslinks")
-		sst.DB.QueryRow("drop function getfwdlinks")
-		sst.DB.QueryRow("drop function getfwdnodes")
-		sst.DB.QueryRow("drop function getneighboursbytype")
-		sst.DB.QueryRow("drop function getsingletonaslink")
-		sst.DB.QueryRow("drop function AllNCPathsAsLinks")
-		sst.DB.QueryRow("drop function AllSuperNCPathsAsLinks")
-		sst.DB.QueryRow("drop function SumAllNCPaths")
-		sst.DB.QueryRow("drop function GetNCFwdLinks")
-		sst.DB.QueryRow("drop function GetNCCLinks")
-
-		sst.DB.QueryRow("drop function getsingletonaslinkarray")
-		sst.DB.QueryRow("drop function idempinsertnode")
-		sst.DB.QueryRow("drop function sumfwdpaths")
-		sst.DB.QueryRow("drop function match_context")
-		sst.DB.QueryRow("drop function empty_path")
-		sst.DB.QueryRow("drop function match_arrows")
-		sst.DB.QueryRow("drop function ArrowInList")
-		sst.DB.QueryRow("drop function GetNCCStoryStartNodes")
-		sst.DB.QueryRow("drop function GetStoryStartNodes")
-		sst.DB.QueryRow("drop function GetAppointments")
-		sst.DB.QueryRow("drop function UnCmp")
-		sst.DB.QueryRow("drop function DeleteChapter")
-
-		sst.DB.QueryRow("drop function lastsawsection(text)")
-		sst.DB.QueryRow("drop function lastsawnptr(nodeptr)")
-
-		sst.DB.QueryRow("drop type NodePtr")
-		sst.DB.QueryRow("drop type Link")
-		sst.DB.QueryRow("drop type Appointment")
-
-		sst.DB.QueryRow("drop table Node")
-		sst.DB.QueryRow("drop table PageMap")
-		sst.DB.QueryRow("drop table NodeArrowNode")
-		sst.DB.QueryRow("drop table ArrowDirectory")
-		sst.DB.QueryRow("drop table ArrowInverses")
-		sst.DB.QueryRow("drop table ContextDirectory")
-		sst.DB.QueryRow("drop table LastSeen")
-		sst.DB.QueryRow("drop table Bookmarks")
-
-	}
-
-	// Create functions, some we use in autocreating index columns
-
-	sst.DB.QueryRow("CREATE EXTENSION unaccent")
-
-	if !CreateType(sst, NODEPTR_TYPE) {
-		fmt.Println("Unable to create type as, ", NODEPTR_TYPE)
-		os.Exit(-1)
-	}
-
-	if !CreateType(sst, LINK_TYPE) {
-		fmt.Println("Unable to create type as, ", LINK_TYPE)
-		os.Exit(-1)
-	}
-
-	if !CreateType(sst, APPOINTMENT_TYPE) {
-		fmt.Println("Unable to create type as, ", APPOINTMENT_TYPE)
-		os.Exit(-1)
-	}
-
-	if !CreateTable(sst, CONTEXT_DIRECTORY_TABLE) {
-		fmt.Println("Unable to create table as, ", CONTEXT_DIRECTORY_TABLE)
-		os.Exit(-1)
-	}
-
-	if !CreateTable(sst, BOOKMARK_TABLE) {
-		fmt.Println("Unable to create table as, ", CONTEXT_DIRECTORY_TABLE)
-		os.Exit(-1)
-	}
-
-	DefineStoredFunctions(sst)
-
-	if !CreateTable(sst, PAGEMAP_TABLE) {
-		fmt.Println("Unable to create table as, ", PAGEMAP_TABLE)
-		os.Exit(-1)
-	}
-
-	if !CreateTable(sst, NODE_TABLE) {
-		fmt.Println("Unable to create table as, ", NODE_TABLE)
-		os.Exit(-1)
-	}
-
-	if !CreateTable(sst, ARROW_INVERSES_TABLE) {
-		fmt.Println("Unable to create table as, ", ARROW_INVERSES_TABLE)
-		os.Exit(-1)
-	}
-
-	if !CreateTable(sst, ARROW_DIRECTORY_TABLE) {
-		fmt.Println("Unable to create table as, ", ARROW_DIRECTORY_TABLE)
-		os.Exit(-1)
-	}
-
-	if !CreateTable(sst, LASTSEEN_TABLE) {
-		fmt.Println("Unable to create table as, ", LASTSEEN_TABLE)
-		os.Exit(-1)
-	}
-
-	// Find ignorable arrows
+	// No-op: schema and PL/pgSQL come from golang-migrate (000001 + 000002).
+	_ = sst
+	_ = load_arrows
 }
 
-// **************************************************************************
-
 func Close(sst PoSST) {
-	if sst.DB != nil {
-		sst.DB.Close()
-	}
+	// Shared process pool; sessions do not close it.
 }
 
 //

@@ -9,8 +9,24 @@ import (
 	"context"
 )
 
+const insertBookmark = `-- name: InsertBookmark :exec
+INSERT INTO bookmarks (bookmark, query)
+VALUES ($1, $2)
+`
+
+type InsertBookmarkParams struct {
+	Bookmark *string `json:"bookmark"`
+	Query    *string `json:"query"`
+}
+
+func (q *Queries) InsertBookmark(ctx context.Context, arg InsertBookmarkParams) error {
+	_, err := q.db.Exec(ctx, insertBookmark, arg.Bookmark, arg.Query)
+	return err
+}
+
 const listBookmarks = `-- name: ListBookmarks :many
-SELECT Bookmark, Query FROM Bookmarks
+SELECT bookmark, query
+FROM bookmarks
 `
 
 type ListBookmarksRow struct {

@@ -8,34 +8,31 @@ package sst
 
 import (
 	"fmt"
-	_ "github.com/lib/pq"
-
 )
-
 
 // **************************************************************************
 
-func GetDBAdjacentNodePtrBySTType(sst PoSST,sttypes []int,chap string,cn []string,transpose bool) ([][]float32,[]NodePtr) {
+func GetDBAdjacentNodePtrBySTType(sst PoSST, sttypes []int, chap string, cn []string, transpose bool) ([][]float32, []NodePtr) {
 
 	// Return a weighted adjacency matrix by nptr, and an index:nptr lookup table
 	// Returns a connected adjacency matrix for the subgraph and a lookup table
 	// A bit memory intensive, but possibly unavoidable
-	
-	var qstr,qwhere,qsearch string
+
+	var qstr, qwhere, qsearch string
 	var dim = len(sttypes)
 
 	context := FormatSQLStringArray(cn)
-	chapter := "%"+SQLEscape(chap)+"%"
+	chapter := "%" + SQLEscape(chap) + "%"
 
 	if dim > 4 {
 		fmt.Println("Maximum 4 sttypes in GetDBAdjacentNodePtrBySTType")
-		return nil,nil
+		return nil, nil
 	}
 
 	for st := 0; st < len(sttypes); st++ {
 
 		stname := STTypeDBChannel(sttypes[st])
-		qwhere += fmt.Sprintf("array_length(%s::text[],1) IS NOT NULL AND match_context((%s)[0].Ctx,%s)",stname,stname,context)
+		qwhere += fmt.Sprintf("array_length(%s::text[],1) IS NOT NULL AND match_context((%s)[0].Ctx,%s)", stname, stname, context)
 
 		if st != dim-1 {
 			qwhere += " OR "
@@ -45,16 +42,16 @@ func GetDBAdjacentNodePtrBySTType(sst PoSST,sttypes []int,chap string,cn []strin
 
 	}
 
-	qstr = fmt.Sprintf("SELECT NPtr%s FROM Node WHERE lower(Chap) LIKE lower('%s') AND (%s)",qsearch,chapter,qwhere)
+	qstr = fmt.Sprintf("SELECT NPtr%s FROM Node WHERE lower(Chap) LIKE lower('%s') AND (%s)", qsearch, chapter, qwhere)
 
-	row, err := sst.DB.Query(qstr)
+	row, err := sst.query(qstr)
 
 	if err != nil {
-		fmt.Println("QUERY GetDBAdjacentNodePtrBySTType Failed",err)
-		return nil,nil
+		fmt.Println("QUERY GetDBAdjacentNodePtrBySTType Failed", err)
+		return nil, nil
 	}
 
-	var linkstr = make([]string,dim+1)
+	var linkstr = make([]string, dim+1)
 	var protoadj = make(map[int][]Link)
 	var lookup = make(map[NodePtr]int)
 	var rowindex int
@@ -62,43 +59,47 @@ func GetDBAdjacentNodePtrBySTType(sst PoSST,sttypes []int,chap string,cn []strin
 	var counter int
 
 	if row != nil {
-		for row.Next() {		
+		for row.Next() {
 
 			var n NodePtr
 			var nstr string
 
 			switch dim {
 
-			case 1: err = row.Scan(&nstr,&linkstr[0])
-			case 2: err = row.Scan(&nstr,&linkstr[0],&linkstr[1])
-			case 3: err = row.Scan(&nstr,&linkstr[0],&linkstr[1],&linkstr[2])
-			case 4: err = row.Scan(&nstr,&linkstr[0],&linkstr[1],&linkstr[2],&linkstr[3])
+			case 1:
+				err = row.Scan(&nstr, &linkstr[0])
+			case 2:
+				err = row.Scan(&nstr, &linkstr[0], &linkstr[1])
+			case 3:
+				err = row.Scan(&nstr, &linkstr[0], &linkstr[1], &linkstr[2])
+			case 4:
+				err = row.Scan(&nstr, &linkstr[0], &linkstr[1], &linkstr[2], &linkstr[3])
 
 			default:
 				fmt.Println("Maximum 4 sttypes in GetDBAdjacentNodePtrBySTType - shouldn't happen")
 				row.Close()
-				return nil,nil
+				return nil, nil
 			}
 
 			if err != nil {
-				fmt.Println("Error scanning sql data case",dim,"gave error",err,qstr)
+				fmt.Println("Error scanning sql data case", dim, "gave error", err, qstr)
 				row.Close()
-				return nil,nil
+				return nil, nil
 			}
 
-			fmt.Sscanf(nstr,"(%d,%d)",&n.Class,&n.CPtr)
+			fmt.Sscanf(nstr, "(%d,%d)", &n.Class, &n.CPtr)
 
 			// idempotently gather nptrs into a map, keeping linked nodes close in order
 
-			index,already := lookup[n]
-			
+			index, already := lookup[n]
+
 			if already {
 				rowindex = index
 			} else {
 				rowindex = counter
 				lookup[n] = counter
 				counter++
-				nodekey = append(nodekey,n)
+				nodekey = append(nodekey, n)
 			}
 
 			// Run through the nodes linked and add them now
@@ -109,18 +110,18 @@ func GetDBAdjacentNodePtrBySTType(sst PoSST,sttypes []int,chap string,cn []strin
 
 				// we have to go through one by one to avoid duplicates
 				// and keep adjacent nodes closer in order
-			
-				for l := range links {	
-					_,already := lookup[links[l].Dst]
-					
+
+				for l := range links {
+					_, already := lookup[links[l].Dst]
+
 					if !already {
 						lookup[links[l].Dst] = counter
 						counter++
-						nodekey = append(nodekey,links[l].Dst)
+						nodekey = append(nodekey, links[l].Dst)
 					}
 				}
 				// Now we have a vector row for each NPtr, with a list of links
-				protoadj[rowindex] = append(protoadj[rowindex],links...)
+				protoadj[rowindex] = append(protoadj[rowindex], links...)
 			}
 		}
 		row.Close()
@@ -129,15 +130,15 @@ func GetDBAdjacentNodePtrBySTType(sst PoSST,sttypes []int,chap string,cn []strin
 	// Now we know the dimension of the square matrix = counter
 	// and an ordered directory vector[index] ->  NPtr, as well as lookup table
 	// So we assemble the adjacency matrix (or its transpose on request)
-	
-	adj := make([][]float32,counter)
+
+	adj := make([][]float32, counter)
 
 	for r := 0; r < counter; r++ {
 
-		adj[r] = make([]float32,counter)
+		adj[r] = make([]float32, counter)
 
 		row := protoadj[r]
-		
+
 		for l := 0; l < len(row); l++ {
 
 			lnk := row[l]
@@ -150,37 +151,37 @@ func GetDBAdjacentNodePtrBySTType(sst PoSST,sttypes []int,chap string,cn []strin
 			}
 		}
 	}
-	return adj,nodekey
+	return adj, nodekey
 }
 
 // **************************************************************************
 
 func SymbolMatrix(m [][]float32) [][]string {
-	
+
 	var symbol [][]string
 	dim := len(m)
 
 	for r := 0; r < dim; r++ {
 
 		var srow []string
-		
+
 		for c := 0; c < dim; c++ {
 
 			var sym string = ""
 
 			if m[r][c] != 0 {
-				sym = fmt.Sprintf("%d*%d",r,c)
+				sym = fmt.Sprintf("%d*%d", r, c)
 			}
-			srow = append(srow,sym)
+			srow = append(srow, sym)
 		}
-		symbol = append(symbol,srow)
+		symbol = append(symbol, srow)
 	}
 	return symbol
 }
 
 //**************************************************************
 
-func SymbolicMultiply(m1,m2 [][]float32,s1,s2 [][]string) ([][]float32,[][]string) {
+func SymbolicMultiply(m1, m2 [][]float32, s1, s2 [][]string) ([][]float32, [][]string) {
 
 	// trace the elements in a multiplication for path mapping
 
@@ -201,31 +202,31 @@ func SymbolicMultiply(m1,m2 [][]float32,s1,s2 [][]string) ([][]float32,[][]strin
 
 			for j := 0; j < dim; j++ {
 
-				if  m1[r][j] != 0 && m2[j][c] != 0 {
+				if m1[r][j] != 0 && m2[j][c] != 0 {
 					value += m1[r][j] * m2[j][c]
-					symbols += fmt.Sprintf("%s*%s",s1[r][j],s2[j][c])
+					symbols += fmt.Sprintf("%s*%s", s1[r][j], s2[j][c])
 				}
 			}
-			newrow = append(newrow,value)
-			symrow = append(symrow,symbols)
+			newrow = append(newrow, value)
+			symrow = append(symrow, symbols)
 
 		}
-		m  = append(m,newrow)
-		sym  = append(sym,symrow)
+		m = append(m, newrow)
+		sym = append(sym, symrow)
 	}
 
-	return m,sym
+	return m, sym
 }
 
 //**************************************************************
 
-func GetSparseOccupancy(m [][]float32,dim int) []int {
+func GetSparseOccupancy(m [][]float32, dim int) []int {
 
-	var sparse_count = make([]int,dim)
+	var sparse_count = make([]int, dim)
 
 	for r := 0; r < dim; r++ {
 		for c := 0; c < dim; c++ {
-			sparse_count[r]+= int(m[r][c])
+			sparse_count[r] += int(m[r][c])
 		}
 	}
 
@@ -241,16 +242,16 @@ func SymmetrizeMatrix(m [][]float32) [][]float32 {
 	// workaround seems to be stable
 
 	var dim int = len(m)
-	var symm [][]float32 = make([][]float32,dim)
+	var symm [][]float32 = make([][]float32, dim)
 
 	for r := 0; r < dim; r++ {
-		var row []float32 = make([]float32,dim)
+		var row []float32 = make([]float32, dim)
 		symm[r] = row
 	}
-	
+
 	for r := 0; r < dim; r++ {
 		for c := r; c < dim; c++ {
-			v := m[r][c]+m[c][r]
+			v := m[r][c] + m[c][r]
 			symm[r][c] = v
 			symm[c][r] = v
 		}
@@ -264,10 +265,10 @@ func SymmetrizeMatrix(m [][]float32) [][]float32 {
 func TransposeMatrix(m [][]float32) [][]float32 {
 
 	var dim int = len(m)
-	var mt [][]float32 = make([][]float32,dim)
+	var mt [][]float32 = make([][]float32, dim)
 
 	for r := 0; r < dim; r++ {
-		var row []float32 = make([]float32,dim)
+		var row []float32 = make([]float32, dim)
 		mt[r] = row
 	}
 
@@ -286,9 +287,9 @@ func TransposeMatrix(m [][]float32) [][]float32 {
 
 //**************************************************************
 
-func MakeInitVector(dim int,init_value float32) []float32 {
+func MakeInitVector(dim int, init_value float32) []float32 {
 
-	var v = make([]float32,dim)
+	var v = make([]float32, dim)
 
 	for r := 0; r < dim; r++ {
 		v[r] = init_value
@@ -301,7 +302,7 @@ func MakeInitVector(dim int,init_value float32) []float32 {
 
 func MatrixOpVector(m [][]float32, v []float32) []float32 {
 
-	var vp = make([]float32,len(m))
+	var vp = make([]float32, len(m))
 
 	for r := 0; r < len(m); r++ {
 		for c := 0; c < len(m); c++ {
@@ -318,29 +319,29 @@ func MatrixOpVector(m [][]float32, v []float32) []float32 {
 
 func ComputeEVC(adj [][]float32) []float32 {
 
-	v := MakeInitVector(len(adj),1.0)
+	v := MakeInitVector(len(adj), 1.0)
 	vlast := v
 
 	const several = 10
 
 	for i := 0; i < several; i++ {
 
-		v = MatrixOpVector(adj,vlast)
+		v = MatrixOpVector(adj, vlast)
 
-		if CompareVec(v,vlast) < 0.01 {
+		if CompareVec(v, vlast) < 0.01 {
 			break
 		}
 		vlast = v
 	}
 
-	maxval,_ := GetVecMax(v)
-	v = NormalizeVec(v,maxval)
+	maxval, _ := GetVecMax(v)
+	v = NormalizeVec(v, maxval)
 	return v
 }
 
 //**************************************************************
 
-func GetVecMax(v []float32) (float32,int) {
+func GetVecMax(v []float32) (float32, int) {
 
 	var max float32 = -1
 	var index int
@@ -352,7 +353,7 @@ func GetVecMax(v []float32) (float32,int) {
 		}
 	}
 
-	return max,index
+	return max, index
 }
 
 //**************************************************************
@@ -372,12 +373,12 @@ func NormalizeVec(v []float32, div float32) []float32 {
 
 //**************************************************************
 
-func CompareVec(v1,v2 []float32) float32 {
+func CompareVec(v1, v2 []float32) float32 {
 
 	var max float32 = -1
 
 	for r := range v1 {
-		diff := v1[r]-v2[r]
+		diff := v1[r] - v2[r]
 
 		if diff < 0 {
 			diff = -diff
@@ -393,7 +394,7 @@ func CompareVec(v1,v2 []float32) float32 {
 
 //**************************************************************
 
-func FindGradientFieldTop(sadj [][]float32,evc []float32) (map[int][]int,[]int,[][]int) {
+func FindGradientFieldTop(sadj [][]float32, evc []float32) (map[int][]int, []int, [][]int) {
 
 	// Hill climbing gradient search
 
@@ -407,19 +408,19 @@ func FindGradientFieldTop(sadj [][]float32,evc []float32) (map[int][]int,[]int,[
 
 		// foreach neighbour
 
-		ltop,path := GetHillTop(index,sadj,evc)
+		ltop, path := GetHillTop(index, sadj, evc)
 
-		regions[ltop] = append(regions[ltop],index)
-		localtop = append(localtop,ltop)
-		paths = append(paths,path)
+		regions[ltop] = append(regions[ltop], index)
+		localtop = append(localtop, ltop)
+		paths = append(paths, path)
 	}
 
-	return regions,localtop,paths
+	return regions, localtop, paths
 }
 
 //**************************************************************
 
-func GetHillTop(index int,sadj [][]float32,evc []float32) (int,[]int) {
+func GetHillTop(index int, sadj [][]float32, evc []float32) (int, []int) {
 
 	topnode := index
 	visited := make(map[int]bool)
@@ -429,17 +430,17 @@ func GetHillTop(index int,sadj [][]float32,evc []float32) (int,[]int) {
 
 	dim := len(evc)
 	finished := false
-	path = append(path,index)
+	path = append(path, index)
 
 	for {
 		finished = true
 		winner := topnode
-		
+
 		for ngh := 0; ngh < dim; ngh++ {
-			
+
 			if (sadj[topnode][ngh] > 0) && !visited[ngh] {
 				visited[ngh] = true
-				
+
 				if evc[ngh] > evc[topnode] {
 					winner = ngh
 					finished = false
@@ -451,17 +452,17 @@ func GetHillTop(index int,sadj [][]float32,evc []float32) (int,[]int) {
 		}
 
 		topnode = winner
-		path = append(path,topnode)
+		path = append(path, topnode)
 	}
 
-	return topnode,path
+	return topnode, path
 }
 
 // **************************************************************************
 // Matrix/Path tools
 // **************************************************************************
 
-func AdjointLinkPath(sst *PoSST,LL []Link) []Link {
+func AdjointLinkPath(sst *PoSST, LL []Link) []Link {
 
 	var adjoint []Link
 
@@ -470,11 +471,11 @@ func AdjointLinkPath(sst *PoSST,LL []Link) []Link {
 
 	var prevarrow ArrowPtr = sst.INVERSE_ARROWS[0]
 
-	for j := len(LL)-1; j >= 0; j-- {
+	for j := len(LL) - 1; j >= 0; j-- {
 
 		var lnk Link = LL[j]
 		lnk.Arr = sst.INVERSE_ARROWS[prevarrow]
-		adjoint = append(adjoint,lnk)
+		adjoint = append(adjoint, lnk)
 		prevarrow = LL[j].Arr
 	}
 
@@ -483,7 +484,7 @@ func AdjointLinkPath(sst *PoSST,LL []Link) []Link {
 
 // **************************************************************************
 
-func NextLinkArrow(sst *PoSST,path []Link,arrows []ArrowPtr) string {
+func NextLinkArrow(sst *PoSST, path []Link, arrows []ArrowPtr) string {
 
 	var rstring string
 
@@ -491,18 +492,18 @@ func NextLinkArrow(sst *PoSST,path []Link,arrows []ArrowPtr) string {
 
 		for l := 1; l < len(path); l++ {
 
-			if !MatchArrows(arrows,path[l].Arr) {
+			if !MatchArrows(arrows, path[l].Arr) {
 				break
 			}
 
-			nextnode := GetDBNodeByNodePtr(sst,path[l].Dst)
-			
-			arr := GetDBArrowByPtr(sst,path[l].Arr)
-			
+			nextnode := GetDBNodeByNodePtr(sst, path[l].Dst)
+
+			arr := GetDBArrowByPtr(sst, path[l].Arr)
+
 			if l < len(path) {
-				rstring += fmt.Sprint("  -(",arr.Long,")->  ")
+				rstring += fmt.Sprint("  -(", arr.Long, ")->  ")
 			}
-			
+
 			rstring += fmt.Sprint(nextnode.S)
 		}
 	}
@@ -510,9 +511,6 @@ func NextLinkArrow(sst *PoSST,path []Link,arrows []ArrowPtr) string {
 	return rstring
 }
 
-
 //
 // matrices.go
 //
-
-

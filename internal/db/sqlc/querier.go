@@ -9,8 +9,28 @@ import (
 )
 
 type Querier interface {
+	CallLastSawNPtr(ctx context.Context, arg CallLastSawNPtrParams) error
+	CallLastSawSection(ctx context.Context, this string) error
+	GetContextByPtr(ctx context.Context, ctxptr int32) (Contextdirectory, error)
+	GetContextByText(ctx context.Context, argContext *string) (Contextdirectory, error)
+	GetContextByTextUnaccent(ctx context.Context, unaccent string) (Contextdirectory, error)
+	GetLastSeenByNPtr(ctx context.Context, arg GetLastSeenByNPtrParams) (GetLastSeenByNPtrRow, error)
+	InsertArrowDirectory(ctx context.Context, arg InsertArrowDirectoryParams) error
+	InsertArrowInverse(ctx context.Context, arg InsertArrowInverseParams) error
+	InsertBookmark(ctx context.Context, arg InsertBookmarkParams) error
+	ListAllLastSeenNPtrs(ctx context.Context) ([]ListAllLastSeenNPtrsRow, error)
+	ListArrowDirectory(ctx context.Context) ([]Arrowdirectory, error)
+	ListArrowInverses(ctx context.Context) ([]Arrowinverse, error)
 	ListBookmarks(ctx context.Context) ([]ListBookmarksRow, error)
 	ListChaptersLike(ctx context.Context, lower string) ([]*string, error)
+	ListChaptersLikeUnaccent(ctx context.Context, lower string) ([]*string, error)
+	ListContexts(ctx context.Context) ([]Contextdirectory, error)
+	ListLastSeen(ctx context.Context) ([]ListLastSeenRow, error)
+	ListRecentLastSeenNPtrs(ctx context.Context, hours int32) ([]ListRecentLastSeenNPtrsRow, error)
+	MaxCPtrForChan(ctx context.Context, nptr interface{}) (int32, error)
+	TruncateAllData(ctx context.Context) error
+	TruncateArrowDirectory(ctx context.Context) error
+	TruncateArrowInverses(ctx context.Context) error
 }
 
 var _ Querier = (*Queries)(nil)

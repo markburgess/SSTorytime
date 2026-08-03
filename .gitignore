@@ -69,3 +69,6 @@ conceptualize
 # mkdocs build output
 /pages/site/
 /site/
+
+/bin/
+

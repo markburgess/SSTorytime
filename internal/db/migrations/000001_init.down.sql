@@ -1,0 +1,14 @@
+DROP FUNCTION IF EXISTS match_context(int, text[]);
+DROP FUNCTION IF EXISTS get_neighbours_by_type(int, int, int, int);
+DROP TABLE IF EXISTS bookmarks;
+DROP TABLE IF EXISTS last_seen;
+DROP TABLE IF EXISTS page_map;
+DROP TABLE IF EXISTS context_directory;
+DROP TABLE IF EXISTS arrow_inverses;
+DROP TABLE IF EXISTS arrow_directory;
+DROP TABLE IF EXISTS edge;
+DROP TABLE IF EXISTS node;
+DROP FUNCTION IF EXISTS sst_unaccent(text);
+DROP FUNCTION IF EXISTS st_type_to_int(st_type);
+DROP FUNCTION IF EXISTS st_type_from_int(int);
+DROP TYPE IF EXISTS st_type;

@@ -5,9 +5,9 @@
 # For now, as things are changing, tests need to be run manually
 #
 
-PASS_PROG="../src/bin/N4L -adj=all"
-FAIL_PROG="../src/bin/N4L"
-WARN_PROG="../src/bin/N4L"
+PASS_PROG="../bin/sstorytime n4l -adj=all"
+FAIL_PROG="../bin/sstorytime n4l"
+WARN_PROG="../bin/sstorytime n4l"
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -25,7 +25,7 @@ echo ""
 BINARIES="N4L searchN4L notes pathsolve graph_report http_server API_EXAMPLE_1  API_EXAMPLE_2 API_EXAMPLE_3 API_EXAMPLE_4"
 
 for prog in $BINARIES; do
-   if ../src/bin/$prog -h > /dev/null 2>&1; then 
+   if ../bin/sstorytime -h > /dev/null 2>&1; then 
        echo -e "Testing $prog ${GREEN} ok ${END}"
    else 
        echo -e "Testing $prog ${RED} NOT yet ok, no data? ${END}"

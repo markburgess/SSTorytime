@@ -15,11 +15,9 @@ import (
 	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 )
 
-// Package-level error table.
 var (
-	// ErrNoQuerier is returned when a PoSST has no sqlc querier bound.
-	ErrNoQuerier         = errors.New("no querier")
-	ErrIllegalLinkClass  = errors.New(ERR_ILLEGAL_LINK_CLASS)
+	ErrNoQuerier        = errors.New("no querier")
+	ErrIllegalLinkClass = errors.New(ERR_ILLEGAL_LINK_CLASS)
 )
 
 //**************************************************************

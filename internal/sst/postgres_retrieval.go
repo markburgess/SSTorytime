@@ -176,7 +176,7 @@ type nodeSearchSpec struct {
 	Limit   int
 }
 
-// searchNodePtrsArg builds sqlc SearchNodePtrs params (replaces NodeWhereString injection).
+// searchNodePtrsArg builds sqlc SearchNodePtrs params from a nodeSearchSpec.
 func searchNodePtrsArg(sst PoSST, spec nodeSearchSpec) sqlc.SearchNodePtrsParams {
 	name := SQLEscape(spec.Name)
 	chap := SQLEscape(spec.Chap)

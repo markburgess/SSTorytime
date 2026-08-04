@@ -265,9 +265,12 @@ func IntersectContextParts(context_clusters []string) ([]string, [][]int) {
 
 		for cj := ci + 1; cj < len(cluster_list); cj++ {
 			onlyLeft, onlyRight := DiffClusters(cluster_list[ci], cluster_list[cj])
-			// distance is asymmetric fragment count on left relative to right
-			_ = onlyRight
-			row = append(row, len(onlyLeft))
+			// keep original left-only distance; right side only used for empty check
+			d := len(onlyLeft)
+			if onlyRight == "" && onlyLeft == "" {
+				d = 0
+			}
+			row = append(row, d)
 		}
 
 		adj = append(adj, row)

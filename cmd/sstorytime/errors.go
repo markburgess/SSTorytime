@@ -2,7 +2,6 @@ package main
 
 import "errors"
 
-// Package-level error table for CLI commands (catalog: go/error-prefer-err-tables).
 var (
 	ErrQueryRequired   = errors.New("search: query required")
 	ErrChapterRequired = errors.New("remove: chapter name required")

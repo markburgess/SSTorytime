@@ -14,7 +14,6 @@ import (
 	"github.com/markburgess/SSTorytime/internal/css"
 )
 
-// Package-level error table.
 var (
 	ErrNoThemeVars = errors.New("no theme vars")
 	ErrNoGoMod     = errors.New("go.mod not found")

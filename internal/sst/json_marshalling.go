@@ -194,12 +194,13 @@ func GetNodeOrbit(sst *PoSST, nptr NodePtr, exclude_vector string, limit int) [S
 
 	// Find the orbiting linked nodes of NPtr, start with properties of node
 
-	sweep, pathCount := GetEntireConePathsAsLinks(sst, "any", nptr, probe_radius, limit)
-	if pathCount == 0 && sweep == nil {
-		// empty cone is valid
+	var satellites [ST_TOP][]Orbit
+
+	sweep, nPaths := GetEntireConePathsAsLinks(sst, "any", nptr, probe_radius, limit)
+	if nPaths == 0 {
+		return satellites
 	}
 
-	var satellites [ST_TOP][]Orbit
 	var thread_wg sync.WaitGroup
 
 	for stindex := 0; stindex < ST_TOP; stindex++ {

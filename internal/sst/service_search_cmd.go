@@ -609,10 +609,14 @@ func AllExact(list []string) bool {
 
 	for _, s := range list {
 		is, bare := IsExactMatch(s)
-		if bare == "" && is {
-			// exact empty match still counts
+		if !is {
+			continue
 		}
-		is_exact = is_exact || is
+		// require a non-empty payload when the match stripped markers
+		if bare == "" && s != "" {
+			continue
+		}
+		is_exact = true
 	}
 
 	return is_exact
@@ -689,10 +693,10 @@ func CheckRemindQuery(name string) string {
 
 	if len(name) == 0 || name == "\\remind" {
 		ambient, key, epoch := GetTimeContext()
-		if epoch == 0 {
-			// still build query; time context empty is unusual
-		}
 		name = "any \\chapter reminders \\context any, " + key + " " + ambient + " \\limit 20"
+		if epoch < 0 {
+			name = "any \\chapter reminders \\limit 20"
+		}
 	}
 
 	return name

@@ -1,8 +1,5 @@
-// Package sstconfig provides the arrow/annotation configuration tree as an fs.FS.
-//
-// Canonical defaults live only under this package (*.sst next to fs.go) and are
-// embedded into the binary. Callers may pass a different fs.FS (e.g. os.DirFS)
-// only when the user opts in explicitly via --config.
+// Package sstconfig embeds default arrow/annotation config (*.sst next to this
+// file). Pass a different fs.FS only when the user sets --config.
 package sstconfig
 
 import (
@@ -29,7 +26,6 @@ var DefaultFiles = []string{
 // BookmarksFile is optional bookmark definitions.
 const BookmarksFile = "bookmarks.sst"
 
-// Package-level error table.
 var (
 	ErrStat   = errors.New("sstconfig")
 	ErrNotDir = errors.New("sstconfig: not a directory")

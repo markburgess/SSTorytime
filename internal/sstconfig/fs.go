@@ -7,6 +7,7 @@ package sstconfig
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -28,6 +29,12 @@ var DefaultFiles = []string{
 // BookmarksFile is optional bookmark definitions.
 const BookmarksFile = "bookmarks.sst"
 
+// Package-level error table.
+var (
+	ErrStat   = errors.New("sstconfig")
+	ErrNotDir = errors.New("sstconfig: not a directory")
+)
+
 // Default returns the embedded default configuration filesystem.
 func Default() fs.FS {
 	return embedded
@@ -37,10 +44,10 @@ func Default() fs.FS {
 func Dir(path string) (fs.FS, error) {
 	info, err := os.Stat(path)
 	if err != nil {
-		return nil, fmt.Errorf("sstconfig: %w", err)
+		return nil, fmt.Errorf("%w: %w", ErrStat, err)
 	}
 	if !info.IsDir() {
-		return nil, fmt.Errorf("sstconfig: %s is not a directory", path)
+		return nil, fmt.Errorf("%w: %s", ErrNotDir, path)
 	}
 	return os.DirFS(path), nil
 }

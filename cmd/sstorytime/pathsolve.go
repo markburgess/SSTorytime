@@ -18,9 +18,9 @@ var pathsolveCmd = &cobra.Command{
 	Short: "Solve paths between begin and end nodes",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if psBegin == "" || psEnd == "" {
-			return fmt.Errorf("pathsolve: --begin and --end required")
+			return ErrPathsolveArgs
 		}
-		return fmt.Errorf("pathsolve: not fully wired yet — begin=%q end=%q chapter=%q bwd=%v", psBegin, psEnd, psChapter, psBwd)
+		return fmt.Errorf("%w: begin=%q end=%q chapter=%q bwd=%v", ErrPathsolve, psBegin, psEnd, psChapter, psBwd)
 	},
 }
 

@@ -314,7 +314,10 @@ func ComputeEVC(adj [][]float32) []float32 {
 		vlast = v
 	}
 
-	maxval, _ := GetVecMax(v)
+	maxval, maxIdx := GetVecMax(v)
+	if maxIdx < 0 {
+		return v
+	}
 	v = NormalizeVec(v, maxval)
 	return v
 }

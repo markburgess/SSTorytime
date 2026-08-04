@@ -16,7 +16,7 @@ var graphReportCmd = &cobra.Command{
 	Use:   "graph-report",
 	Short: "Print a graph analytics report",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return fmt.Errorf("graph-report: not fully wired yet — chapter=%q sttype=%q depth=%d", grChapter, grSTType, grDepth)
+		return fmt.Errorf("%w: chapter=%q sttype=%q depth=%d", ErrGraphReport, grChapter, grSTType, grDepth)
 	},
 }
 

@@ -43,7 +43,7 @@ var examplesLoadCmd = &cobra.Command{
 		if len(args) == 1 {
 			target = args[0]
 		}
-		return fmt.Errorf("examples load: not fully wired yet — target=%q (will call n4l -u)", target)
+		return fmt.Errorf("%w: target=%q (will call n4l -u)", ErrExamplesLoad, target)
 	},
 }
 
@@ -52,7 +52,7 @@ var examplesRunCmd = &cobra.Command{
 	Short: "Run a Go API demo (api-1, api-2, api-3, api-4, …)",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return fmt.Errorf("examples run: not fully wired yet — demo=%q", args[0])
+		return fmt.Errorf("%w: demo=%q", ErrExamplesRun, args[0])
 	},
 }
 

@@ -608,7 +608,10 @@ func AllExact(list []string) bool {
 	is_exact := false
 
 	for _, s := range list {
-		is, _ := IsExactMatch(s)
+		is, bare := IsExactMatch(s)
+		if bare == "" && is {
+			// exact empty match still counts
+		}
 		is_exact = is_exact || is
 	}
 
@@ -685,7 +688,10 @@ func CheckNPtrQuery(name, nclass, ncptr string) string {
 func CheckRemindQuery(name string) string {
 
 	if len(name) == 0 || name == "\\remind" {
-		ambient, key, _ := GetTimeContext()
+		ambient, key, epoch := GetTimeContext()
+		if epoch == 0 {
+			// still build query; time context empty is unusual
+		}
 		name = "any \\chapter reminders \\context any, " + key + " " + ambient + " \\limit 20"
 	}
 

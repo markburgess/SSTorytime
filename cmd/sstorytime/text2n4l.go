@@ -13,7 +13,7 @@ var text2n4lCmd = &cobra.Command{
 	Short: "Extract high-intentionality sentences into N4L-ish output",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return fmt.Errorf("text2n4l: not fully wired yet — file=%q pct=%v", args[0], text2Pct)
+		return fmt.Errorf("%w: file=%q pct=%v", ErrText2N4L, args[0], text2Pct)
 	},
 }
 

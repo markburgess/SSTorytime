@@ -13,8 +13,8 @@ var searchCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		q := strings.Join(args, " ")
 		if q == "" {
-			return fmt.Errorf("search: query required")
+			return ErrQueryRequired
 		}
-		return fmt.Errorf("search: not fully wired yet — query=%q", q)
+		return fmt.Errorf("%w: query=%q", ErrSearch, q)
 	},
 }

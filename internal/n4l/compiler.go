@@ -2218,13 +2218,24 @@ func LinkUpStorySequence(sst *SST.PoSST,this string) {
 			var last_iptr SST.NodePtr
 
 			if SEQUENCE_START {
-				last_iptr,_ = IdempAddNode(sst,LAST_IN_SEQUENCE,SEQ_START)
+				var cleaned string
+				last_iptr, cleaned = IdempAddNode(sst, LAST_IN_SEQUENCE, SEQ_START)
+				if cleaned == "" {
+					ParseError("empty cleaned sequence start node")
+				}
 				SEQUENCE_START = false
 			} else {
-				last_iptr,_ = IdempAddNode(sst,LAST_IN_SEQUENCE,SEQ_UNKNOWN)
+				var cleaned string
+				last_iptr, cleaned = IdempAddNode(sst, LAST_IN_SEQUENCE, SEQ_UNKNOWN)
+				if cleaned == "" {
+					ParseError("empty cleaned sequence node")
+				}
 			}
 
-			this_iptr,_ := IdempAddNode(sst,this,SEQ_UNKNOWN)
+			this_iptr, thisCleaned := IdempAddNode(sst, this, SEQ_UNKNOWN)
+			if thisCleaned == "" {
+				ParseError("empty cleaned sequence destination")
+			}
 			link := GetLinkArrowByName(sst,"(then)")
 			SST.AppendLinkToNode(sst,last_iptr,link,this_iptr)
 
@@ -2295,9 +2306,12 @@ func AddBackAnnotations(sst *SST.PoSST,cleantext string,cleanptr SST.NodePtr,ann
 						ParseError(err)
 					}
 
-					this_iptr,_ := IdempAddNode(sst,this_item,SEQ_UNKNOWN)
+					this_iptr, cleanedItem := IdempAddNode(sst, this_item, SEQ_UNKNOWN)
+					if cleanedItem == "" {
+						ParseError("empty cleaned annotation item")
+					}
 					const is_annotation = true
-					IdempAddLink(sst,reminder,cleanptr,link,this_item,this_iptr,is_annotation)
+					IdempAddLink(sst, reminder, cleanptr, link, this_item, this_iptr, is_annotation)
 					r += skip-1
 					continue
 				}
@@ -2789,7 +2803,10 @@ func ReadUTF8FileBuffered(filename string) []rune {
 
 		// Decode the string (which contains one rune) to a rune value
 
-		r, _ := utf8.DecodeRuneInString(runeText)
+		r, size := utf8.DecodeRuneInString(runeText)
+		if size == 0 {
+			continue
+		}
 
 		unicode = append(unicode, r)
 	}

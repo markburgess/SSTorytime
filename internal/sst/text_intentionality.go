@@ -264,8 +264,10 @@ func IntersectContextParts(context_clusters []string) ([]string, [][]int) {
 		var row []int
 
 		for cj := ci + 1; cj < len(cluster_list); cj++ {
-			s, _ := DiffClusters(cluster_list[ci], cluster_list[cj])
-			row = append(row, len(s))
+			onlyLeft, onlyRight := DiffClusters(cluster_list[ci], cluster_list[cj])
+			// distance is asymmetric fragment count on left relative to right
+			_ = onlyRight
+			row = append(row, len(onlyLeft))
 		}
 
 		adj = append(adj, row)

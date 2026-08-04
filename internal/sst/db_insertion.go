@@ -15,8 +15,12 @@ import (
 	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 )
 
-// ErrNoQuerier is returned when a PoSST has no sqlc querier bound.
-var ErrNoQuerier = errors.New("no querier")
+// Package-level error table.
+var (
+	// ErrNoQuerier is returned when a PoSST has no sqlc querier bound.
+	ErrNoQuerier         = errors.New("no querier")
+	ErrIllegalLinkClass  = errors.New(ERR_ILLEGAL_LINK_CLASS)
+)
 
 //**************************************************************
 
@@ -199,7 +203,7 @@ func AppendDBLinkArrayToNode(sst *PoSST, nptr NodePtr, array string, sttype int)
 	case EXPRESS:
 		return sst.Q.SetLinkArrayIe3(sst.ctx(), sqlc.SetLinkArrayIe3Params{Column1: cptr, Column2: chan_, Column3: arr})
 	default:
-		return fmt.Errorf("%s: %d", ERR_ILLEGAL_LINK_CLASS, sttype)
+		return fmt.Errorf("%w: %d", ErrIllegalLinkClass, sttype)
 	}
 }
 

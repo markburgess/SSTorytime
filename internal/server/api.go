@@ -158,7 +158,10 @@ func UploadURI(w http.ResponseWriter, r *http.Request) {
 
 	// cache node = 3 words + date pattern
 
-	c1, c2, _ := SST.GetTimeContext() // ambient, key; epoch unused here
+	c1, c2, epoch := SST.GetTimeContext()
+	if epoch == 0 {
+		log.Printf("upload: GetTimeContext returned zero epoch")
+	}
 
 	target := fmt.Sprintf("%s%s", SST.SanitizePath(c1), SST.SanitizePath(c2))
 	target = strings.ReplaceAll(target, "__", "_")
@@ -233,7 +236,10 @@ func UploadInline(w http.ResponseWriter, r *http.Request) {
 
 	// cache node = 3 words + date pattern
 
-	c1, c2, _ := SST.GetTimeContext() // ambient, key; epoch unused here
+	c1, c2, epoch := SST.GetTimeContext()
+	if epoch == 0 {
+		log.Printf("upload: GetTimeContext returned zero epoch")
+	}
 
 	target := fmt.Sprintf("%s%s", SST.SanitizePath(c1), SST.SanitizePath(c2))
 	target = strings.ReplaceAll(target, "__", "_")

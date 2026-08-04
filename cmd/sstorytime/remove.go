@@ -15,9 +15,9 @@ var removeCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		chap := strings.Join(args, " ")
 		if chap == "" {
-			return fmt.Errorf("remove: chapter name required")
+			return ErrChapterRequired
 		}
-		return fmt.Errorf("remove: not fully wired yet — chapter=%q force=%v", chap, removeForce)
+		return fmt.Errorf("%w: chapter=%q force=%v", ErrRemove, chap, removeForce)
 	},
 }
 

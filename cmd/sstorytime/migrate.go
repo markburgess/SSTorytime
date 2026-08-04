@@ -31,7 +31,7 @@ var migrateUpCmd = &cobra.Command{
 		}
 		v, dirty, err := m.Version()
 		if err != nil && !errors.Is(err, migrate.ErrNilVersion) {
-			return fmt.Errorf("migrate version: %w", err)
+			return fmt.Errorf("%w: %w", ErrMigrateVersion, err)
 		}
 		fmt.Printf("ok version=%d dirty=%v\n", v, dirty)
 		return nil
@@ -48,7 +48,7 @@ var migrateDownCmd = &cobra.Command{
 			var err error
 			n, err = strconv.Atoi(args[0])
 			if err != nil || n < 1 {
-				return fmt.Errorf("n must be a positive integer")
+				return ErrPositiveN
 			}
 		}
 		m, err := newMigrate()

@@ -14,7 +14,7 @@ var notesCmd = &cobra.Command{
 	Short: "Browse notes by chapter (former notes tool)",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		chap := strings.Join(args, " ")
-		return fmt.Errorf("notes: not fully wired yet — chapter=%q page=%d", chap, notesPage)
+		return fmt.Errorf("%w: chapter=%q page=%d", ErrNotes, chap, notesPage)
 	},
 }
 

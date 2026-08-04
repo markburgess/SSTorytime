@@ -30,7 +30,7 @@ type Options struct {
 // Run compiles N4L files and optionally uploads to the database.
 func Run(ctx context.Context, opt Options) error {
 	if len(opt.Files) < 1 {
-		return fmt.Errorf("n4l: at least one input file required")
+		return ErrNoInputFiles
 	}
 
 	fsys := opt.ConfigFS
@@ -119,7 +119,7 @@ func upload(sst SST.PoSST) error {
 	}
 	if conflict && !FORCE_UPLOAD {
 		fmt.Println("\nUploading to a pre-existing chapter might corrupt the data. You can remove it first with remove or force using --force.")
-		return fmt.Errorf("chapter conflict; use --force to override")
+		return ErrChapterConflict
 	}
 	fmt.Println("\n\nUploading nodes..")
 	SST.GraphToDB(sst, true)

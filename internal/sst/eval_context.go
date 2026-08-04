@@ -323,7 +323,10 @@ func GetTimeFromSemantics(speclist []string, now time.Time) time.Time {
 			if hasweekday {
 				intended := weekday
 				todayis := fmt.Sprintf("%s", now.Weekday())
-				actual, _ := InList(todayis, GR_DAY_TEXT)
+				actual, found := InList(todayis, GR_DAY_TEXT)
+				if !found {
+					actual = 0
+				}
 				days_to_next = (intended - actual + 7) % 7
 				continue
 			}

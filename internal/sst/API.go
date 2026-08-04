@@ -90,7 +90,11 @@ func HubJoin(sst *PoSST, name, chap string, nptrs []NodePtr, arrow string, conte
 
 	container := IdempDBAddNode(sst, to)
 
-	arrowptr, _ := GetDBArrowsWithArrowName(sst, arrow)
+	arrowptr, sttype := GetDBArrowsWithArrowName(sst, arrow)
+	if arrowptr == 0 && sttype == 0 {
+		fmt.Println("HubJoin: no such arrow", arrow)
+		os.Exit(-1)
+	}
 
 	for nptr := range nptrs {
 

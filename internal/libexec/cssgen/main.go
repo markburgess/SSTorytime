@@ -5,12 +5,19 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/markburgess/SSTorytime/internal/css"
+)
+
+// Package-level error table.
+var (
+	ErrNoThemeVars = errors.New("no theme vars")
+	ErrNoGoMod     = errors.New("go.mod not found")
 )
 
 func main() {
@@ -33,7 +40,7 @@ func main() {
 	for _, name := range css.ThemeNames {
 		v, ok := vars[name]
 		if !ok {
-			fail(fmt.Errorf("no theme vars for %q", name))
+			fail(fmt.Errorf("%w: %q", ErrNoThemeVars, name))
 		}
 		out := expand(raw, v)
 		outPath := filepath.Join(outDir, name+".css")
@@ -78,7 +85,7 @@ func moduleRoot() (string, error) {
 		}
 		parent := filepath.Dir(dir)
 		if parent == dir {
-			return "", fmt.Errorf("go.mod not found from %s", wd)
+			return "", fmt.Errorf("%w: from %s", ErrNoGoMod, wd)
 		}
 		dir = parent
 	}

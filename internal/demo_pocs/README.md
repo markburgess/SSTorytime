@@ -9,4 +9,7 @@ sstorytime examples run definecontext
 sstorytime examples run postgres_testdb
 sstorytime examples run dotest_getnodes   # needs suitable graph data (e.g. chinese.n4l)
 sstorytime examples run dotest_entirecone # needs maze-style nodes a7/i6
+sstorytime examples run --help            # lists all registered demos
 ```
+
+Registration is a `map[string]func(context.Context) error` in `cmd/sstorytime` (`registerDemo` from init).

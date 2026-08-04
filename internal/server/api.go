@@ -69,7 +69,7 @@ func EnableCORS(next http.Handler) http.Handler {
 func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
-	sst := SST.Open(ctx, true)
+	sst := Session()
 
 	switch r.Method {
 
@@ -101,8 +101,6 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
 	}
-
-	SST.Close(sst)
 }
 
 // *********************************************************************

@@ -8,7 +8,8 @@
 // Some MathJax settings
 //
 
-MathJax = {
+// Safe under classic or module scripts; merge with config from index.html if present.
+globalThis.MathJax = Object.assign(globalThis.MathJax || {}, {
 	output: {
 		scale: 1, // global scaling factor for all expressions
 		minScale: 0.4, // smallest scaling factor to use
@@ -46,7 +47,7 @@ MathJax = {
       scopepromise: ["\\xrightarrow[#2]{#1}",2],
     }
   }
-};
+});
 
 // *****************************************************
 // The entire handler is wrapped in this one function (to the EOF)

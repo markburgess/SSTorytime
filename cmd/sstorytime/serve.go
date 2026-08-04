@@ -61,6 +61,8 @@ func runServe(cmd *cobra.Command, args []string) error {
 	if _, _, err := db.OpenDSN(ctx, databaseURL); err != nil {
 		return fmt.Errorf("database: %w", err)
 	}
+	// One graph session for all HTTP handlers (avoids per-request Open + cache reload hang).
+	server.WarmSession(ctx)
 
 	publicFS, err := server.PublicFS()
 	if err != nil {
@@ -71,7 +73,9 @@ func runServe(cmd *cobra.Command, args []string) error {
 	server.VERBOSE = verbose
 	server.RegisterRoutes(mux, publicFS, serveResources)
 
-	baseCtx := func(net.Listener) context.Context { return ctx }
+	// Do not tie request contexts to the process signal ctx as BaseContext parent
+	// for cancellation semantics of in-flight work; Shutdown still stops the server.
+	baseCtx := func(net.Listener) context.Context { return context.Background() }
 
 	if !serveTLS {
 		return ServePlainHTTP(ctx, serveAddr, mux, baseCtx)
@@ -90,7 +94,14 @@ func ServePlainHTTP(ctx context.Context, addr string, mux http.Handler, baseCtx 
 	if err != nil {
 		return fmt.Errorf("listen %s: %w", addr, err)
 	}
-	srv := &http.Server{Handler: mux, BaseContext: baseCtx}
+	srv := &http.Server{
+		Handler:           mux,
+		BaseContext:       baseCtx,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       60 * time.Second,
+		WriteTimeout:      120 * time.Second,
+		IdleTimeout:       120 * time.Second,
+	}
 	log.Printf("listening on http://%s", ln.Addr())
 
 	g, gctx := errgroup.WithContext(ctx)
@@ -132,8 +143,16 @@ func ServeLocalTLS(ctx context.Context, httpAddr, httpsAddr string, mux http.Han
 		return fmt.Errorf("listen http %s: %w", httpAddr, err)
 	}
 
-	httpsSrv := &http.Server{Handler: mux, BaseContext: baseCtx}
+	httpsSrv := &http.Server{
+		Handler:           mux,
+		BaseContext:       baseCtx,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       60 * time.Second,
+		WriteTimeout:      120 * time.Second,
+		IdleTimeout:       120 * time.Second,
+	}
 	httpSrv := &http.Server{
+		ReadHeaderTimeout: 10 * time.Second,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			host := r.Host
 			if h, _, err := net.SplitHostPort(host); err == nil {

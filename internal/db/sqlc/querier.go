@@ -22,6 +22,7 @@ type Querier interface {
 	// Append link into one ST channel (dynamic column avoided via separate queries).
 	AppendLinkIm3(ctx context.Context, arg AppendLinkIm3Params) error
 	AppendLinkIn0(ctx context.Context, arg AppendLinkIn0Params) error
+	CallDeleteChapter(ctx context.Context, chapter string) error
 	CallLastSawNPtr(ctx context.Context, arg CallLastSawNPtrParams) error
 	CallLastSawSection(ctx context.Context, this string) error
 	ConstraintPathsAsLinks(ctx context.Context, arg ConstraintPathsAsLinksParams) (string, error)

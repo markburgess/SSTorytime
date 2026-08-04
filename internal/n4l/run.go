@@ -56,7 +56,7 @@ func Run(ctx context.Context, opt Options) error {
 	}
 
 	if ctx == nil {
-		return fmt.Errorf("n4l: nil context")
+		return ErrNilContext
 	}
 
 	var sst SST.PoSST

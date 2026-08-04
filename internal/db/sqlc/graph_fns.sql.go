@@ -72,6 +72,15 @@ func (q *Queries) AllPathsAsLinks(ctx context.Context, arg AllPathsAsLinksParams
 	return paths, err
 }
 
+const callDeleteChapter = `-- name: CallDeleteChapter :exec
+SELECT deletechapter($1)
+`
+
+func (q *Queries) CallDeleteChapter(ctx context.Context, chapter string) error {
+	_, err := q.db.Exec(ctx, callDeleteChapter, chapter)
+	return err
+}
+
 const constraintPathsAsLinks = `-- name: ConstraintPathsAsLinks :one
 SELECT constraintpathsaslinks(
   $1::text::nodeptr[],

@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-
+	SST "github.com/markburgess/SSTorytime/internal/sst"
 	"github.com/spf13/cobra"
 )
 
@@ -17,10 +16,16 @@ var pathsolveCmd = &cobra.Command{
 	Use:   "pathsolve",
 	Short: "Solve paths between begin and end nodes",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx := cmd.Context()
 		if psBegin == "" || psEnd == "" {
 			return ErrPathsolveArgs
 		}
-		return fmt.Errorf("%w: begin=%q end=%q chapter=%q bwd=%v", ErrPathsolve, psBegin, psEnd, psChapter, psBwd)
+		// Upstream stores FWD/BWD labels from -bwd; PathSolve itself uses begin/end sets.
+		_ = psBwd
+		sst := SST.Open(ctx, true)
+		defer SST.Close(sst)
+		PathSolveCLI(ctx, sst, psChapter, "", psBegin, psEnd)
+		return nil
 	},
 }
 

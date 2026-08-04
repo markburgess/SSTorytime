@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 
+	SST "github.com/markburgess/SSTorytime/internal/sst"
 	"github.com/spf13/cobra"
 )
 
@@ -13,8 +13,15 @@ var notesCmd = &cobra.Command{
 	Use:   "notes [chapter words...]",
 	Short: "Browse notes by chapter (former notes tool)",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		chap := strings.Join(args, " ")
-		return fmt.Errorf("%w: chapter=%q page=%d", ErrNotes, chap, notesPage)
+		ctx := cmd.Context()
+		if len(args) == 0 {
+			return ErrNotes
+		}
+		chapter := strings.Join(args, " ")
+		sst := SST.Open(ctx, true)
+		defer SST.Close(sst)
+		Page(ctx, sst, chapter, []string{""}, notesPage)
+		return nil
 	},
 }
 

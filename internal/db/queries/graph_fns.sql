@@ -62,3 +62,6 @@ FROM unnest(getappointments(
   COALESCE($5::text[], ARRAY[]::text[]),
   $6::boolean
 )) AS x;
+
+-- name: CallDeleteChapter :exec
+SELECT deletechapter($1);

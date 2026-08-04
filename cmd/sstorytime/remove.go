@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	SST "github.com/markburgess/SSTorytime/internal/sst"
 	"github.com/spf13/cobra"
 )
 
@@ -13,11 +14,21 @@ var removeCmd = &cobra.Command{
 	Use:   "remove [chapter...]",
 	Short: "Remove a chapter from the database",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx := cmd.Context()
 		chap := strings.Join(args, " ")
 		if chap == "" {
 			return ErrChapterRequired
 		}
-		return fmt.Errorf("%w: chapter=%q force=%v", ErrRemove, chap, removeForce)
+		if !removeForce {
+			return fmt.Errorf("%w: pass --force to confirm removing %q", ErrRemove, chap)
+		}
+		sst := SST.Open(ctx, false)
+		defer SST.Close(sst)
+		if err := SST.DeleteChapter(ctx, sst, chap); err != nil {
+			return fmt.Errorf("%w: %w", ErrRemove, err)
+		}
+		fmt.Println("Deleted", chap)
+		return nil
 	},
 }
 

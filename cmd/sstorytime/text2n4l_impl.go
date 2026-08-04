@@ -1,0 +1,356 @@
+// text2n4l CLI logic (ported from upstream text2N4L).
+package main
+
+import (
+	"fmt"
+	"os"
+	"sort"
+	"strings"
+
+	SST "github.com/markburgess/SSTorytime/internal/sst"
+)
+
+func RipFile2File(filename string, percentage float64) {
+
+	for i := 1; i < SST.N_GRAM_MAX; i++ {
+
+		SST.STM_NGRAM_FREQ[i] = make(map[string]float64)
+		SST.STM_NGRAM_LOCA[i] = make(map[string][]int)
+		SST.STM_NGRAM_LAST[i] = make(map[string]int)
+	}
+
+	fmt.Println("Fractionating file...", filename)
+	psf, L := SST.FractionateTextFile(filename)
+
+	fmt.Println("Analyzing longitudinal patterns")
+	ranking1 := SelectByRunningIntent(psf, L, percentage)
+	fmt.Println("Analyzing statistical patterns")
+	ranking2 := SelectByStaticIntent(psf, L, percentage)
+	fmt.Println("Merging selections")
+	selection := MergeSelections(ranking1, ranking2)
+
+	fmt.Println("Extracting ambient phrases for context")
+
+	// We only want short fragments for context, else we're repeating
+	// significant context info from teh actual samples
+
+	const minN = 1 // >= N_GRAM_MIN
+	const maxN = 4 // <= N_GRAM_MAX
+
+	f, s, ff, ss := SST.ExtractIntentionalTokens(L, selection, minN, maxN)
+
+	WriteOutput(filename, selection, L, percentage, f, s, ff, ss)
+}
+
+//*******************************************************************
+
+func WriteOutput(filename string, selection []SST.TextRank, L int, percentage float64, anom_by_part [][]string, ambi_by_part [][]string, all_anom []string, all_ambi []string) {
+
+	// See AddMandatory() in N4L.go for reserved names (TBD, collect these one day as const)
+
+	var collected_fragments = make(map[string][]string)
+
+	outputfile := filename + "_edit_me.n4l"
+
+	fp, err := os.Create(outputfile)
+
+	if err != nil {
+		fmt.Println("Failed to open file for writing: ", outputfile)
+		os.Exit(-1)
+	}
+
+	defer fp.Close()
+
+	fmt.Fprintf(fp, " - Samples from %s\n", filename)
+
+	fmt.Fprintf(fp, "\n # TABLE OF CONTENTS ...")
+	fmt.Fprintf(fp, "\n # themes and topics ")
+	fmt.Fprintf(fp, "\n # selected samples ")
+	fmt.Fprintf(fp, "\n # final fraction %.2f of requested %.2f\n", float64(len(selection)*100)/float64(L), percentage)
+	fmt.Fprintf(fp, "\n # selected samples ")
+	fmt.Fprintf(fp, "\n # concepts by part/region \n")
+
+	fmt.Fprintf(fp, "\n# (begin) ************\n")
+
+	filealias := strings.Split(filename, ".")[0]
+	fmt.Fprintf(fp, "\n :: _sequence_ , %s::\n", filealias)
+
+	var partcheck = make(map[string]bool)
+	var parts []string
+	var lastpart string
+	var already = make(map[string]bool)
+
+	for i := range selection {
+
+		context := SpliceSet(ambi_by_part[selection[i].Partition])
+
+		part := PartName(selection[i].Partition, filealias, context)
+
+		// Add context from n = 2,3 fractions
+
+		if part != lastpart {
+			if len(context) > 0 {
+				fmt.Fprintf(fp, "\n :: %s ::\n", context)
+				lastpart = part
+			}
+		}
+
+		fmt.Fprintf(fp, "\n@sen%d   %s\n\n", selection[i].Order, Sanitize(selection[i].Fragment))
+
+		fmt.Fprintf(fp, "              \" (%s) %s\n", SST.INV_CONT_FOUND_IN_S, part)
+
+		AddIntentionalContext(collected_fragments, part, anom_by_part[selection[i].Partition], already)
+
+		if !partcheck[part] {
+			parts = append(parts, part)
+			partcheck[part] = true
+		}
+	}
+
+	fmt.Fprintf(fp, "\n -:: _sequence_ , %s::\n", filealias)
+	fmt.Fprintf(fp, "\n# (end) ************\n")
+
+	// some stats
+
+	fmt.Fprintf(fp, "\n# Final fraction %.2f of requested %.2f\n", float64(len(selection)*100)/float64(L), percentage)
+
+	WriteSampleSelections(fp, selection, L)
+
+	// add the parts' fragments
+
+	fmt.Fprintf(fp, "\n #\n # Concepts by part / region \n #\n")
+
+	for key := range collected_fragments {
+
+		fmt.Fprintf(fp, "\n\n %s\n", key)
+		for _, s := range collected_fragments[key] {
+			fmt.Fprintf(fp, "              \" (%s) %s\n", SST.CONT_FRAG_S, s)
+		}
+	}
+
+	// document the parts
+
+	fmt.Fprintf(fp, "\n #\n # SUMMARY OF CONTEXT AND SIGNIFICANT FRAGMENTS\n #\n")
+
+	fmt.Fprintf(fp, "\n :: themes and topics you might want to annotate/replace ::\n")
+
+	fmt.Fprintf(fp, "\n :: parts, sections ::\n")
+
+	for p := range parts {
+
+		fmt.Fprintf(fp, "\n %s\n", parts[p])
+
+		for w := range ambi_by_part[p] {
+			fmt.Fprintf(fp, "  #AMBI %s\n", ambi_by_part[p][w])
+		}
+
+		for w := range anom_by_part[p] {
+			fmt.Fprintf(fp, "   #INTENT %s\n", anom_by_part[p][w])
+		}
+	}
+
+	/* whole document summary
+
+	for w := range all_ambi {
+		fmt.Fprintf(fp," # %s\n",all_ambi[w])
+	}
+
+	for w := range all_anom {
+		fmt.Fprintf(fp,"  # %s\n",all_anom[w])
+	} */
+
+	fmt.Println("Wrote file", outputfile)
+	fmt.Printf("Final fraction %.2f of requested %.2f sampled\n", float64(len(selection)*100)/float64(L), percentage)
+
+}
+
+//*******************************************************************
+
+func WriteSampleSelections(fp *os.File, selection []SST.TextRank, L int) {
+
+	fmt.Fprintf(fp, "\n# Selected %d samples of %d: ", len(selection), L)
+
+	for i := range selection {
+		fmt.Fprintf(fp, "%d ", selection[i].Order)
+	}
+
+	fmt.Fprintf(fp, "\n#\n")
+}
+
+//*******************************************************************
+
+func PartName(p int, file string, context string) string {
+
+	basename := fmt.Sprintf("part %d of %s", p, file)
+
+	// include ambient context in the section name
+
+	if len(context) > 0 {
+		return fmt.Sprintf("%s about: %s", basename, context)
+	} else {
+		return basename
+	}
+}
+
+//*******************************************************************
+
+func SpliceSet(ctx []string) string {
+
+	return strings.Join(ctx, ", ")
+}
+
+//*******************************************************************
+
+func AddIntentionalContext(collected map[string][]string, key string, ctx []string, already map[string]bool) {
+
+	for w := 0; w < len(ctx); w++ {
+
+		if !already[ctx[w]] {
+			collected[key] = append(collected[key], ctx[w])
+			already[ctx[w]] = true
+		}
+	}
+}
+
+//*******************************************************************
+
+func Sanitize(s string) string {
+
+	replacer := strings.NewReplacer("(", "[", ")", "]")
+	return replacer.Replace(s)
+}
+
+//*******************************************************************
+
+func SelectByRunningIntent(psf [][]SST.Sentence, L int, percentage float64) []SST.TextRank {
+
+	// Rank sentences
+
+	const coherence_length = SST.DUNBAR_30 // approx narrative range or #sentences before new point/topic
+
+	var sentences []SST.TextRank
+	var sentence_counter int
+
+	for p := range psf {
+
+		for s := range psf[p] {
+
+			score := 0.0
+
+			for f := 0; f < len(psf[p][s].Frags); f++ {
+
+				score += SST.RunningIntentionality(sentence_counter, psf[p][s].Frags[f])
+			}
+
+			var this SST.TextRank
+			this.Fragment = psf[p][s].S
+			this.Significance = score
+			this.Order = sentence_counter
+			this.Partition = sentence_counter / coherence_length
+			sentences = append(sentences, this)
+			sentence_counter++
+		}
+	}
+
+	skimmed := OrderAndRank(sentences, percentage)
+
+	return skimmed
+}
+
+// ***************************************************
+
+func SelectByStaticIntent(psf [][]SST.Sentence, L int, percentage float64) []SST.TextRank {
+
+	// Rank sentences
+
+	const coherence_length = SST.DUNBAR_30 // approx narrative range or #sentences before new point/topic
+
+	var sentences []SST.TextRank
+	var sentence_counter int
+
+	for p := range psf {
+
+		for s := range psf[p] {
+
+			score := 0.0
+
+			for f := 0; f < len(psf[p][s].Frags); f++ {
+
+				score += SST.AssessStaticIntent(psf[p][s].Frags[f], L, SST.STM_NGRAM_FREQ, 1)
+			}
+
+			var this SST.TextRank
+			this.Fragment = psf[p][s].S
+			this.Significance = score
+			this.Order = sentence_counter
+			this.Partition = sentence_counter / coherence_length
+			sentences = append(sentences, this)
+			sentence_counter++
+		}
+	}
+
+	skimmed := OrderAndRank(sentences, percentage)
+
+	return skimmed
+}
+
+//*********************************************************************************
+
+func OrderAndRank(sentences []SST.TextRank, percentage float64) []SST.TextRank {
+
+	var selections []SST.TextRank
+
+	// Order by intentionality first to skim cream
+
+	sort.Slice(sentences, func(i, j int) bool {
+		return sentences[i].Significance > sentences[j].Significance
+	})
+
+	// Measure relative threshold for percentage of document
+	// the lower the threshold, the lower the significance of the document
+
+	threshold := percentage / 100.0
+
+	limit := int(threshold * float64(len(sentences)))
+
+	// Skim
+
+	for i := 0; i < limit; i++ {
+		selections = append(selections, sentences[i])
+	}
+
+	// Order by line number again to restore causal order
+
+	sort.Slice(selections, func(i, j int) bool {
+		return selections[i].Order < selections[j].Order
+	})
+
+	return selections
+}
+
+//*********************************************************************************
+
+func MergeSelections(one []SST.TextRank, two []SST.TextRank) []SST.TextRank {
+
+	var merge []SST.TextRank
+	var already_selected = make(map[int]bool)
+
+	for i := range one {
+		merge = append(merge, one[i])
+		already_selected[one[i].Order] = true
+	}
+
+	for i := range two {
+		if !already_selected[two[i].Order] {
+			merge = append(merge, two[i])
+		}
+	}
+
+	// Order by line number again to restore causal order
+
+	sort.Slice(merge, func(i, j int) bool {
+		return merge[i].Order < merge[j].Order
+	})
+
+	return merge
+}

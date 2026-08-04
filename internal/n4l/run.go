@@ -55,6 +55,10 @@ func Run(ctx context.Context, opt Options) error {
 		SST.WIPE_DB = true
 	}
 
+	if ctx == nil {
+		return fmt.Errorf("n4l: nil context")
+	}
+
 	var sst SST.PoSST
 	if UPLOAD || opt.Wipe {
 		// Exact upstream always opens DB for upload; wipe handled inside Configure.
@@ -65,6 +69,7 @@ func Run(ctx context.Context, opt Options) error {
 	} else {
 		// Parse-only: in-memory only (no DB), same graph compile path as upstream
 		// before upload. Upstream always opened DB; we allow offline parse.
+		sst.Ctx = ctx
 		SST.MemoryInit(&sst)
 	}
 	AddMandatory(&sst)

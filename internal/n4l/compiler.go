@@ -7,6 +7,7 @@
 package n4l
 
 import (
+	"context"
 	"io/fs"
 	"strings"
 	"os"
@@ -177,7 +178,9 @@ var (
 // BEGIN
 //**************************************************************
 
-func unusedMainDoNotUse() {
+// unusedMainDoNotUse is the pre-cobra entry point (kept for reference; not called).
+// Callers must supply a non-nil ctx (e.g. from main's signal tree).
+func unusedMainDoNotUse(ctx context.Context) {
 
 	load_arrows := false
 	args := Init()
@@ -190,7 +193,7 @@ func unusedMainDoNotUse() {
 		}
 	}
 
-	sst := SST.Open(load_arrows)
+	sst := SST.Open(ctx, load_arrows)
 	AddMandatory(&sst)
 
 	// Load arrow configurations

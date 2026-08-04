@@ -67,7 +67,7 @@ func EnableCORS(next http.Handler) http.Handler {
 
 func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 
-	sst := SST.Open(true)
+	sst := SST.Open(r.Context(), true)
 
 	switch r.Method {
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -37,9 +38,9 @@ func init() {
 	rootCmd.AddCommand(examplesCmd)
 }
 
-// Execute runs the root command.
-func Execute() error {
-	if err := rootCmd.Execute(); err != nil {
+// Execute runs the root command under ctx (from main's signal.NotifyContext).
+func Execute(ctx context.Context) error {
+	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return err
 	}

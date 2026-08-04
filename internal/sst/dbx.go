@@ -8,12 +8,12 @@ import (
 	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 )
 
-// ctx returns the session context or background.
+// ctx returns the session context. Sessions must always be opened with a non-nil ctx.
 func (sst *PoSST) ctx() context.Context {
-	if sst.Ctx != nil {
-		return sst.Ctx
+	if sst.Ctx == nil {
+		panic("sst: session has nil context")
 	}
-	return context.Background()
+	return sst.Ctx
 }
 
 // ensureQ returns sqlc querier (shared).

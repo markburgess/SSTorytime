@@ -5,10 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/markburgess/SSTorytime/internal/db"
@@ -26,9 +24,6 @@ var serveCmd = &cobra.Command{
 	Short: "HTTP UI and JSON API (TLS deferred — HTTP only for now)",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
-		if ctx == nil {
-			ctx = context.Background()
-		}
 
 		// Ensure schema is applied before handlers open sessions.
 		if _, _, err := db.OpenDSN(ctx, databaseURL); err != nil {
@@ -44,7 +39,12 @@ var serveCmd = &cobra.Command{
 		server.VERBOSE = verbose
 		server.RegisterRoutes(mux, publicFS, serveResources)
 
-		srv := &http.Server{Addr: serveAddr, Handler: mux}
+		srv := &http.Server{
+			Addr:    serveAddr,
+			Handler: mux,
+			// Inherit process lifetime so request contexts cancel on SIGINT/SIGTERM.
+			BaseContext: func(net.Listener) context.Context { return ctx },
+		}
 		go func() {
 			log.Printf("listening on http://%s (TLS deferred)", serveAddr)
 			if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -52,10 +52,10 @@ var serveCmd = &cobra.Command{
 			}
 		}()
 
-		sig := make(chan os.Signal, 1)
-		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-		<-sig
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		// Wait for process signal (main's NotifyContext) or parent cancel.
+		<-ctx.Done()
+		// Grace period must outlive the canceled process ctx.
+		shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
 		defer cancel()
 		return srv.Shutdown(shutdownCtx)
 	},

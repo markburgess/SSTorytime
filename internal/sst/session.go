@@ -15,13 +15,19 @@ import (
 //
 //**************************************************************
 
-func Open(load_arrows bool) PoSST {
-	return OpenWithDSN(context.Background(), "", load_arrows)
+// Open migrates and opens a session using the default DSN resolution.
+// ctx must be non-nil (callers pass cmd.Context() or r.Context()).
+func Open(ctx context.Context, load_arrows bool) PoSST {
+	return OpenWithDSN(ctx, "", load_arrows)
 }
 
 // OpenWithDSN migrates schema/functions then loads arrow/context caches.
 // load_arrows is kept for API compatibility (arrows always loaded from DB when present).
+// ctx must be non-nil.
 func OpenWithDSN(ctx context.Context, dsn string, load_arrows bool) PoSST {
+	if ctx == nil {
+		panic("sst: OpenWithDSN called with nil context")
+	}
 	var sst PoSST
 	sst.Ctx = ctx
 

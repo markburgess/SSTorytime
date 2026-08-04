@@ -177,10 +177,11 @@ func JSONPage(sst PoSST, maplines []PageMap) string {
 		webnotes.Notes = append(webnotes.Notes, path)
 	}
 
-	encoded, _ := json.Marshal(webnotes)
-	jstr := fmt.Sprintf("%s", string(encoded))
-
-	return jstr
+	encoded, err := json.Marshal(webnotes)
+	if err != nil {
+		return "null"
+	}
+	return string(encoded)
 }
 
 // **************************************************************************

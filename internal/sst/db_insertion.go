@@ -7,6 +7,7 @@
 package sst
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -14,13 +15,16 @@ import (
 	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 )
 
+// ErrNoQuerier is returned when a PoSST has no sqlc querier bound.
+var ErrNoQuerier = errors.New("no querier")
+
 //**************************************************************
 
 // FormDBNode inserts a node with an explicit CPtr via the InsertNode PL/pgSQL function.
 func FormDBNode(sst *PoSST, n Node) error {
 	n.L, n.NPtr.Class = StorageClass(n.S)
 	if sst.Q == nil {
-		return fmt.Errorf("no querier")
+		return ErrNoQuerier
 	}
 	return sst.Q.InsertNodeFn(sst.ctx(), sqlc.InsertNodeFnParams{
 		Column1: int32(n.L),
@@ -169,7 +173,7 @@ func AppendDBLinkArrayToNode(sst *PoSST, nptr NodePtr, array string, sttype int)
 	}
 
 	if sst.Q == nil {
-		return fmt.Errorf("no querier")
+		return ErrNoQuerier
 	}
 
 	cptr := int32(nptr.CPtr)
@@ -195,7 +199,7 @@ func AppendDBLinkArrayToNode(sst *PoSST, nptr NodePtr, array string, sttype int)
 	case EXPRESS:
 		return sst.Q.SetLinkArrayIe3(sst.ctx(), sqlc.SetLinkArrayIe3Params{Column1: cptr, Column2: chan_, Column3: arr})
 	default:
-		return fmt.Errorf("illegal link class %d", sttype)
+		return fmt.Errorf("%s: %d", ERR_ILLEGAL_LINK_CLASS, sttype)
 	}
 }
 

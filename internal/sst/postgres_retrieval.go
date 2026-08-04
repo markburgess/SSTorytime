@@ -145,7 +145,14 @@ func GetDBNodePtrMatchingNCCS(sst PoSST, nm, chap string, cn []string, arrow []A
 		return nil
 	}
 
-	arg := searchNodePtrsArg(sst, nm, chap, cn, arrow, seq, limit)
+	arg := searchNodePtrsArg(sst, nodeSearchSpec{
+		Name:    nm,
+		Chap:    chap,
+		Context: cn,
+		Arrows:  arrow,
+		Seq:     seq,
+		Limit:   limit,
+	})
 	rows, err := sst.Q.SearchNodePtrs(sst.ctx(), arg)
 	if err != nil {
 		fmt.Println("QUERY GetNodePtrMatchingNCC Failed", err)
@@ -159,10 +166,20 @@ func GetDBNodePtrMatchingNCCS(sst PoSST, nm, chap string, cn []string, arrow []A
 	return retval
 }
 
+// nodeSearchSpec groups search filters for SearchNodePtrs.
+type nodeSearchSpec struct {
+	Name    string
+	Chap    string
+	Context []string
+	Arrows  []ArrowPtr
+	Seq     bool
+	Limit   int
+}
+
 // searchNodePtrsArg builds sqlc SearchNodePtrs params (replaces NodeWhereString injection).
-func searchNodePtrsArg(sst PoSST, name, chap string, context []string, arrow []ArrowPtr, seq bool, limit int) sqlc.SearchNodePtrsParams {
-	name = SQLEscape(name)
-	chap = SQLEscape(chap)
+func searchNodePtrsArg(sst PoSST, spec nodeSearchSpec) sqlc.SearchNodePtrsParams {
+	name := SQLEscape(spec.Name)
+	chap := SQLEscape(spec.Chap)
 
 	anyChap := chap == "any" || chap == ""
 	chapUnaccent := false
@@ -205,7 +222,7 @@ func searchNodePtrsArg(sst PoSST, name, chap string, context []string, arrow []A
 		mode = "fts"
 	}
 
-	_, cnStripped := IsBracketedSearchList(context)
+	_, cnStripped := IsBracketedSearchList(spec.Context)
 	if cnStripped == nil {
 		cnStripped = []string{}
 	}
@@ -217,11 +234,11 @@ func searchNodePtrsArg(sst PoSST, name, chap string, context []string, arrow []A
 		Column4:  mode,
 		Lower_2:  nameArg,
 		Column6:  excludePaths,
-		Column7:  seq,
+		Column7:  spec.Seq,
 		Column8:  cnStripped,
-		Column9:  arrowToInt32s(arrow),
-		Column10: toInt32s(GetSTtypesFromArrows(sst, arrow)),
-		Limit:    int32(limit),
+		Column9:  arrowToInt32s(spec.Arrows),
+		Column10: toInt32s(GetSTtypesFromArrows(sst, spec.Arrows)),
+		Limit:    int32(spec.Limit),
 	}
 }
 

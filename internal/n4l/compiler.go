@@ -1704,12 +1704,12 @@ func GetBookMarks() map[string]string {
 		if len(line) <= silly {
 			continue
 		}
-		s := strings.SplitN(line, ":", 2)
-		if len(s) < 2 {
+		key, value, ok := strings.Cut(line, ":")
+		if !ok {
 			continue
 		}
-		key := strings.TrimSpace(s[0])
-		value := strings.TrimSpace(s[1])
+		key = strings.TrimSpace(key)
+		value = strings.TrimSpace(value)
 		if len(key) > 0 && len(value) > 0 {
 			marks[key] = value
 		}
@@ -2817,7 +2817,7 @@ func Usage() {
 
 //**************************************************************
 
-func Verbose(a ...interface{}) {
+func Verbose(a ...any) {
 
 	line := fmt.Sprintln(a...)
 
@@ -2832,7 +2832,7 @@ func Verbose(a ...interface{}) {
 
 //**************************************************************
 
-func PVerbose(a ...interface{}) {
+func PVerbose(a ...any) {
 
 	const green = "\x1b[36m"
 	const endgreen = "\x1b[0m"
@@ -2846,7 +2846,7 @@ func PVerbose(a ...interface{}) {
 
 //**************************************************************
 
-func Box(a ...interface{}) {
+func Box(a ...any) {
 
 	if VERBOSE {
 
@@ -2866,7 +2866,7 @@ func DiagnosticName(filename string) string {
 
 //**************************************************************
 
-func Diag(a ...interface{}) {
+func Diag(a ...any) {
 
 	// Log diagnostic output for self-diagnostic tests
 

@@ -31,7 +31,9 @@ func RegisterRoutes(mux *http.ServeMux, publicFS fs.FS, resources string) {
 	mux.HandleFunc("/SearchAssets", AssetsHandler)
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("ok"))
+		if _, err := w.Write([]byte("ok")); err != nil {
+			log.Printf("healthz write: %v", err)
+		}
 	})
 	log.Printf("resources=%s (override with --resources)", resources)
 }
@@ -156,7 +158,7 @@ func UploadURI(w http.ResponseWriter, r *http.Request) {
 
 	// cache node = 3 words + date pattern
 
-	c1, c2, _ := SST.GetTimeContext()
+	c1, c2, _ := SST.GetTimeContext() // ambient, key; epoch unused here
 
 	target := fmt.Sprintf("%s%s", SST.SanitizePath(c1), SST.SanitizePath(c2))
 	target = strings.ReplaceAll(target, "__", "_")
@@ -168,7 +170,9 @@ func UploadURI(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("3. Upload failed making", dir, "\n", err, "\n")
 		w.WriteHeader(http.StatusInternalServerError)
 		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }", err)
-		w.Write([]byte(response))
+		if _, werr := w.Write([]byte(response)); werr != nil {
+			log.Printf("upload error write: %v", werr)
+		}
 		return
 	}
 
@@ -229,7 +233,7 @@ func UploadInline(w http.ResponseWriter, r *http.Request) {
 
 	// cache node = 3 words + date pattern
 
-	c1, c2, _ := SST.GetTimeContext()
+	c1, c2, _ := SST.GetTimeContext() // ambient, key; epoch unused here
 
 	target := fmt.Sprintf("%s%s", SST.SanitizePath(c1), SST.SanitizePath(c2))
 	target = strings.ReplaceAll(target, "__", "_")
@@ -241,7 +245,9 @@ func UploadInline(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("3. Upload failed making", dir, "\n", err, "\n")
 		w.WriteHeader(http.StatusInternalServerError)
 		response := fmt.Sprintf("{ \"Response\" : \"Failed\",\n \"Content\" : \"Error: %s\" }", err)
-		w.Write([]byte(response))
+		if _, werr := w.Write([]byte(response)); werr != nil {
+			log.Printf("upload error write: %v", werr)
+		}
 		return
 	}
 
@@ -1081,8 +1087,14 @@ func PackageResponse(sst SST.PoSST, search SST.SearchParameters, kind string, js
 	ambien, key, now := SST.GetTimeContext()
 	now_ctx := SST.UpdateSTMContext(&sst, ambien, key, now, search)
 
-	intent, _ := json.Marshal(now_ctx)
-	ambient, _ := json.Marshal(ambien)
+	intent, err := json.Marshal(now_ctx)
+	if err != nil {
+		intent = []byte(`""`)
+	}
+	ambient, err := json.Marshal(ambien)
+	if err != nil {
+		ambient = []byte(`""`)
+	}
 
 	response := fmt.Sprintf("{ \"Response\" : \"%s\",\n \"Content\" : %s,\n \"Time\" : \"%s\", \"Intent\" : %s, \"Ambient\" : %s }", kind, jstr, key, intent, ambient)
 

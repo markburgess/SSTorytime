@@ -29,7 +29,10 @@ var migrateUpCmd = &cobra.Command{
 		if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 			return err
 		}
-		v, dirty, _ := m.Version()
+		v, dirty, err := m.Version()
+		if err != nil && !errors.Is(err, migrate.ErrNilVersion) {
+			return fmt.Errorf("migrate version: %w", err)
+		}
 		fmt.Printf("ok version=%d dirty=%v\n", v, dirty)
 		return nil
 	},

@@ -7,9 +7,11 @@
 package sst
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 )
 
@@ -47,8 +49,12 @@ func GraphToDB(sst PoSST, wait_counter bool) {
 	fmt.Println("Storing Arrows...")
 
 	if sst.Q != nil {
-		_ = sst.Q.TruncateArrowDirectory(sst.ctx())
-		_ = sst.Q.TruncateArrowInverses(sst.ctx())
+		if err := sst.Q.TruncateArrowDirectory(sst.ctx()); err != nil {
+			fmt.Println("truncate arrowdirectory:", err)
+		}
+		if err := sst.Q.TruncateArrowInverses(sst.ctx()); err != nil {
+			fmt.Println("truncate arrowinverses:", err)
+		}
 	}
 
 	UploadArrowsToDB(sst)
@@ -73,13 +79,19 @@ func GraphToDB(sst PoSST, wait_counter bool) {
 	Waiting()
 
 	if sst.Q != nil {
-		_ = sst.Q.CreateNodeIndexes(sst.ctx())
-		_ = sst.Q.CreateNodeIndexes2(sst.ctx())
-		_ = sst.Q.CreateNodeIndexes3(sst.ctx())
-		_ = sst.Q.CreateNodeIndexes4(sst.ctx())
-		_ = sst.Q.CreateContextIndex(sst.ctx())
-		_ = sst.Q.AlterNodeLogged(sst.ctx())
-		_ = sst.Q.AlterPageMapLogged(sst.ctx())
+		for name, fn := range map[string]func() error{
+			"sst_gin":      func() error { return sst.Q.CreateNodeIndexes(sst.ctx()) },
+			"sst_ungin":    func() error { return sst.Q.CreateNodeIndexes2(sst.ctx()) },
+			"sst_s":        func() error { return sst.Q.CreateNodeIndexes3(sst.ctx()) },
+			"sst_n":        func() error { return sst.Q.CreateNodeIndexes4(sst.ctx()) },
+			"sst_cnt":      func() error { return sst.Q.CreateContextIndex(sst.ctx()) },
+			"node logged":  func() error { return sst.Q.AlterNodeLogged(sst.ctx()) },
+			"pagemap logged": func() error { return sst.Q.AlterPageMapLogged(sst.ctx()) },
+		} {
+			if err := fn(); err != nil {
+				fmt.Println("index/alter", name, ":", err)
+			}
+		}
 	}
 
 }
@@ -95,7 +107,7 @@ func BookmarksToDB(sst PoSST, marks map[string]string) {
 		if err := sst.Q.InsertBookmark(sst.ctx(), sqlc.InsertBookmarkParams{
 			Bookmark: strPtr(b),
 			Query:    strPtr(q),
-		}); err != nil && !strings.Contains(err.Error(), "duplicate") {
+		}); err != nil && !isUniqueViolation(err) {
 			fmt.Println("Failed to insert bookmark", err)
 		}
 	}
@@ -109,10 +121,10 @@ func UploadNodesBatch(sst *PoSST, nodes []Node) {
 
 	for i := 0; i < len(nodes); i++ {
 		if err := UploadNodeToDB(sst, nodes[i]); err != nil {
-			s := fmt.Sprint("Failed to insert", err)
-			if !strings.Contains(s, "duplicate key") {
-				fmt.Println(s, "FAILED", err)
+			if isUniqueViolation(err) {
+				continue
 			}
+			fmt.Println("Failed to insert", err, "FAILED")
 		}
 	}
 }
@@ -122,7 +134,7 @@ func UploadNodesBatch(sst *PoSST, nodes []Node) {
 // UploadNodeToDB inserts one in-memory node (with link arrays) via sqlc.
 func UploadNodeToDB(sst *PoSST, n Node) error {
 	if sst.Q == nil {
-		return fmt.Errorf("no querier")
+		return ErrNoQuerier
 	}
 	cols := [7]string{"{}", "{}", "{}", "{}", "{}", "{}", "{}"}
 	for stindex := 0; stindex < len(n.I) && stindex < ST_TOP; stindex++ {
@@ -163,7 +175,7 @@ func UploadArrowsToDB(sst PoSST) {
 			Long:     &long,
 			Short:    &short,
 			Arrptr:   int32(arrow),
-		}); err != nil && !strings.Contains(err.Error(), "duplicate") {
+		}); err != nil && !isUniqueViolation(err) {
 			fmt.Println("Failed to insert arrow", err)
 		}
 	}
@@ -182,7 +194,7 @@ func UploadInverseArrowsToDB(sst PoSST) {
 		if err := sst.Q.InsertArrowInverse(sst.ctx(), sqlc.InsertArrowInverseParams{
 			Plus:  plus,
 			Minus: minus,
-		}); err != nil && !strings.Contains(err.Error(), "duplicate") {
+		}); err != nil && !isUniqueViolation(err) {
 			fmt.Println("Failed to insert inverse", err)
 		}
 	}
@@ -231,10 +243,24 @@ func UploadPageMapBatch(sst *PoSST, lines []PageMap) {
 			Column3: int32(line.Context),
 			Column4: int32(line.Line),
 			Column5: path,
-		}); err != nil && !strings.Contains(err.Error(), "duplicate") {
+		}); err != nil && !isUniqueViolation(err) {
 			fmt.Println("Failed to insert pagemap", err)
 		}
 	}
+}
+
+// isUniqueViolation reports Postgres unique_violation (23505) or common duplicate wording.
+func isUniqueViolation(err error) bool {
+	if err == nil {
+		return false
+	}
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		return true
+	}
+	// Fallback when drivers wrap without PgError
+	msg := err.Error()
+	return strings.Contains(msg, "duplicate key") || strings.Contains(msg, "unique constraint")
 }
 
 //

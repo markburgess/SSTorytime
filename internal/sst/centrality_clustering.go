@@ -7,18 +7,19 @@
 package sst
 
 import (
+	"context"
 	"fmt"
 	"sort"
 )
 
 // **************************************************************************
 
-func TallyPath(sst PoSST, path []Link, between map[string]int) map[string]int {
+func TallyPath(ctx context.Context, sst PoSST, path []Link, between map[string]int) map[string]int {
 
 	// count how often each node appears in the different path solutions
 
 	for leg := range path {
-		n := GetDBNodeByNodePtr(&sst, path[leg].Dst)
+		n := GetDBNodeByNodePtr(ctx, &sst, path[leg].Dst)
 		between[n.S]++
 	}
 
@@ -27,12 +28,12 @@ func TallyPath(sst PoSST, path []Link, between map[string]int) map[string]int {
 
 // **************************************************************************
 
-func BetweenNessCentrality(sst PoSST, solutions [][]Link) []string {
+func BetweenNessCentrality(ctx context.Context, sst PoSST, solutions [][]Link) []string {
 
 	var betweenness = make(map[string]int)
 
 	for s := 0; s < len(solutions); s++ {
-		betweenness = TallyPath(sst, solutions[s], betweenness)
+		betweenness = TallyPath(ctx, sst, solutions[s], betweenness)
 	}
 
 	var inv = make(map[int][]string)
@@ -107,7 +108,7 @@ func SuperNodesByConicPath(solutions [][]Link, maxdepth int) [][]NodePtr {
 
 // **************************************************************************
 
-func SuperNodes(sst PoSST, solutions [][]Link, maxdepth int) []string {
+func SuperNodes(ctx context.Context, sst PoSST, solutions [][]Link, maxdepth int) []string {
 
 	supernodes := SuperNodesByConicPath(solutions, maxdepth)
 
@@ -118,7 +119,7 @@ func SuperNodes(sst PoSST, solutions [][]Link, maxdepth int) []string {
 		super := ""
 
 		for n := range supernodes[g] {
-			node := GetDBNodeByNodePtr(&sst, supernodes[g][n])
+			node := GetDBNodeByNodePtr(ctx, &sst, supernodes[g][n])
 			super += fmt.Sprintf("%s", node.S)
 			if n < len(supernodes[g])-1 {
 				super += ", "

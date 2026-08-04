@@ -1,25 +1,26 @@
 package sst
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 )
 
-func UpdateLastSawSection(sst PoSST, name string) {
+func UpdateLastSawSection(ctx context.Context, sst PoSST, name string) {
 	if sst.Q == nil {
 		return
 	}
-	if err := sst.Q.CallLastSawSection(sst.ctx(), name); err != nil {
+	if err := sst.Q.CallLastSawSection(ctx, name); err != nil {
 		fmt.Println("LastSawSection failed", err)
 	}
 }
 
-func UpdateLastSawNPtr(sst PoSST, class, cptr int, name string) {
+func UpdateLastSawNPtr(ctx context.Context, sst PoSST, class, cptr int, name string) {
 	if sst.Q == nil {
 		return
 	}
-	if err := sst.Q.CallLastSawNPtr(sst.ctx(), sqlc.CallLastSawNPtrParams{
+	if err := sst.Q.CallLastSawNPtr(ctx, sqlc.CallLastSawNPtrParams{
 		Column1: int32(class),
 		Column2: int32(cptr),
 		Name:    name,
@@ -28,11 +29,11 @@ func UpdateLastSawNPtr(sst PoSST, class, cptr int, name string) {
 	}
 }
 
-func GetLastSawSection(sst PoSST) []LastSeen {
+func GetLastSawSection(ctx context.Context, sst PoSST) []LastSeen {
 	if sst.Q == nil {
 		return nil
 	}
-	rows, err := sst.Q.ListLastSeen(sst.ctx())
+	rows, err := sst.Q.ListLastSeen(ctx)
 	if err != nil {
 		fmt.Println("GetLastSawSection failed", err)
 		return nil
@@ -60,13 +61,13 @@ func GetLastSawSection(sst PoSST) []LastSeen {
 	return ret
 }
 
-func GetLastSawNPtr(sst PoSST, nptr NodePtr) LastSeen {
+func GetLastSawNPtr(ctx context.Context, sst PoSST, nptr NodePtr) LastSeen {
 	var ls LastSeen
 	ls.NPtr = nptr
 	if sst.Q == nil {
 		return ls
 	}
-	row, err := sst.Q.GetLastSeenByNPtr(sst.ctx(), sqlc.GetLastSeenByNPtrParams{
+	row, err := sst.Q.GetLastSeenByNPtr(ctx, sqlc.GetLastSeenByNPtrParams{
 		Column1: int32(nptr.Class),
 		Column2: int32(nptr.CPtr),
 	})
@@ -86,7 +87,7 @@ func GetLastSawNPtr(sst PoSST, nptr NodePtr) LastSeen {
 	return ls
 }
 
-func GetNewlySeenNPtrs(sst PoSST, search SearchParameters) map[NodePtr]bool {
+func GetNewlySeenNPtrs(ctx context.Context, sst PoSST, search SearchParameters) map[NodePtr]bool {
 	nptrs := make(map[NodePtr]bool)
 	if sst.Q == nil {
 		return nptrs
@@ -100,7 +101,7 @@ func GetNewlySeenNPtrs(sst PoSST, search SearchParameters) map[NodePtr]bool {
 	)
 	switch search.Horizon {
 	case RECENT:
-		r, e := sst.Q.ListRecentLastSeenNPtrs(sst.ctx(), int32(search.Horizon))
+		r, e := sst.Q.ListRecentLastSeenNPtrs(ctx, int32(search.Horizon))
 		err = e
 		for _, x := range r {
 			rows = append(rows, struct {
@@ -109,7 +110,7 @@ func GetNewlySeenNPtrs(sst PoSST, search SearchParameters) map[NodePtr]bool {
 			}{x.Chan, x.Cptr})
 		}
 	case NEVER:
-		r, e := sst.Q.ListAllLastSeenNPtrs(sst.ctx())
+		r, e := sst.Q.ListAllLastSeenNPtrs(ctx)
 		err = e
 		for _, x := range r {
 			rows = append(rows, struct {

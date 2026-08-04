@@ -7,23 +7,22 @@
 package n4l
 
 import (
-	"context"
-	"io/fs"
-	"strings"
-	"os"
 	"bufio"
+	"context"
 	"flag"
 	"fmt"
-	"unicode/utf8"
-	"unicode"
+	"io/fs"
+	"os"
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	SST "github.com/markburgess/SSTorytime/internal/sst"
 	"github.com/markburgess/SSTorytime/internal/sstconfig"
 )
-
 
 // configFS is the active arrow/annotation config tree (embedded by default).
 var configFS fs.FS = sstconfig.Default()
@@ -45,62 +44,62 @@ func ConfigFS() fs.FS { return configFS }
 //**************************************************************
 
 const (
-	ALPHATEXT = 'x'
+	ALPHATEXT        = 'x'
 	NON_ASCII_LQUOTE = '“'
 	NON_ASCII_RQUOTE = '”'
-        HAVE_PLUS = 11
-        HAVE_MINUS = 22
-	ROLE_ABBR = 33
-	LARGE_FILE = 500000
+	HAVE_PLUS        = 11
+	HAVE_MINUS       = 22
+	ROLE_ABBR        = 33
+	LARGE_FILE       = 500000
 
 	SEQ_UNKNOWN = false
-	SEQ_START = true
+	SEQ_START   = true
 
-	ROLE_EVENT = 1
-	ROLE_RELATION = 2
-	ROLE_SECTION = 3
-	ROLE_CONTEXT = 4
-	ROLE_CONTEXT_ADD = 5
+	ROLE_EVENT            = 1
+	ROLE_RELATION         = 2
+	ROLE_SECTION          = 3
+	ROLE_CONTEXT          = 4
+	ROLE_CONTEXT_ADD      = 5
 	ROLE_CONTEXT_SUBTRACT = 6
-	ROLE_BLANK_LINE = 7
-	ROLE_LINE_ALIAS = 8
-	ROLE_LOOKUP = 9
+	ROLE_BLANK_LINE       = 7
+	ROLE_LINE_ALIAS       = 8
+	ROLE_LOOKUP           = 9
 
 	ROLE_COMPOSITION = 11
-	ROLE_RESULT = 12
+	ROLE_RESULT      = 12
 
 	WORD_MISTAKE_LEN = 2 // a string shorter than this is probably a mistake
 
-	WARN_NOTE_TO_SELF = "WARNING: Found a possible note to self in the text"
+	WARN_NOTE_TO_SELF                   = "WARNING: Found a possible note to self in the text"
 	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
-	WARN_CHAPTER_CLASS_MIXUP="WARNING: possible space between class cancellation -:: <class> :: ambiguous chapter name, in: "
-	ERR_CHAPTER_COMMA="You shouldn't use commas in the chapter title (ambiguous separator): "
+	WARN_CHAPTER_CLASS_MIXUP            = "WARNING: possible space between class cancellation -:: <class> :: ambiguous chapter name, in: "
+	ERR_CHAPTER_COMMA                   = "You shouldn't use commas in the chapter title (ambiguous separator): "
 
-	ERR_NO_SUCH_FILE_FOUND = "No file found in the name "
-	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
-	ERR_MISSING_SECTION = "Declarations outside a section or chapter"
-	ERR_NO_SUCH_ALIAS = "No such alias or \" reference exists to fill in - aborting"
-	ERR_MISSING_ITEM_SOMEWHERE = "Missing item, empty string, perhaps a missing ditto or variable reference"
-	ERR_MISSING_ITEM_RELN = "Missing item or double relation"
-	ERR_MISMATCH_QUOTE = "Apparent missing or mismatch in ', \" or ( )"
-	ERR_ILLEGAL_CONFIGURATION = "Error in configuration, no such section"
-	ERR_BAD_LABEL_OR_REF = "Badly formed label or reference (@label becomes $label.n) in "
-	ERR_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference. Double-quoted strings should not have a space after leading quote, as it can be confused with \" ditto symbol"
-	ERR_ANNOTATION_BAD = "Annotation marker should be short mark of non-space, non-alphanumeric character "
-	ERR_BAD_ABBRV = "abbreviation out of place"
-	ERR_BAD_ALIAS_REFERENCE = "Alias references start from $name.1"
-	ERR_ANNOTATION_MISSING = "Missing non-alphnumeric annotation marker or stray relation"
-	ERR_ANNOTATION_REDEFINE = "Redefinition of annotation character"
-	ERR_SIMILAR_NO_SIGN = "Arrows for similarity do not have signs, they are directionless"
-	ERR_ARROW_SELFLOOP = "Arrow's origin points to itself"
-	ERR_ARR_REDEFINITION="Warning: Redefinition of arrow "
-	ERR_NEGATIVE_WEIGHT = "Arrow relation has a negative weight, which is disallowed. Use a NOT relation if you want to signify inhibition: "
-	ERR_TOO_MANY_WEIGHTS = "More than one weight value in the arrow relation "
-        ERR_STRAY_PAREN="Stray ) in an event/item - illegal character"
-	ERR_MISSING_LINE_LABEL_IN_REFERENCE="Missing a line label in reference, should be in the form $label.n"
-	ERR_NON_WORD_WHITE="Non word (whitespace) character after an annotation: "
-	ERR_SHORT_WORD="Short word, possible mistake or mistaken annotation (try spaces around symbol): "
-	ERR_ILLEGAL_ANNOT_CHAR="Cannot use +/- reserved tokens for annotation"
+	ERR_NO_SUCH_FILE_FOUND              = "No file found in the name "
+	ERR_MISSING_EVENT                   = "Missing item? Dangling section, relation, or context"
+	ERR_MISSING_SECTION                 = "Declarations outside a section or chapter"
+	ERR_NO_SUCH_ALIAS                   = "No such alias or \" reference exists to fill in - aborting"
+	ERR_MISSING_ITEM_SOMEWHERE          = "Missing item, empty string, perhaps a missing ditto or variable reference"
+	ERR_MISSING_ITEM_RELN               = "Missing item or double relation"
+	ERR_MISMATCH_QUOTE                  = "Apparent missing or mismatch in ', \" or ( )"
+	ERR_ILLEGAL_CONFIGURATION           = "Error in configuration, no such section"
+	ERR_BAD_LABEL_OR_REF                = "Badly formed label or reference (@label becomes $label.n) in "
+	ERR_ILLEGAL_QUOTED_STRING_OR_REF    = "WARNING: Something wrong, bad quoted string or mistaken back reference. Double-quoted strings should not have a space after leading quote, as it can be confused with \" ditto symbol"
+	ERR_ANNOTATION_BAD                  = "Annotation marker should be short mark of non-space, non-alphanumeric character "
+	ERR_BAD_ABBRV                       = "abbreviation out of place"
+	ERR_BAD_ALIAS_REFERENCE             = "Alias references start from $name.1"
+	ERR_ANNOTATION_MISSING              = "Missing non-alphnumeric annotation marker or stray relation"
+	ERR_ANNOTATION_REDEFINE             = "Redefinition of annotation character"
+	ERR_SIMILAR_NO_SIGN                 = "Arrows for similarity do not have signs, they are directionless"
+	ERR_ARROW_SELFLOOP                  = "Arrow's origin points to itself"
+	ERR_ARR_REDEFINITION                = "Warning: Redefinition of arrow "
+	ERR_NEGATIVE_WEIGHT                 = "Arrow relation has a negative weight, which is disallowed. Use a NOT relation if you want to signify inhibition: "
+	ERR_TOO_MANY_WEIGHTS                = "More than one weight value in the arrow relation "
+	ERR_STRAY_PAREN                     = "Stray ) in an event/item - illegal character"
+	ERR_MISSING_LINE_LABEL_IN_REFERENCE = "Missing a line label in reference, should be in the form $label.n"
+	ERR_NON_WORD_WHITE                  = "Non word (whitespace) character after an annotation: "
+	ERR_SHORT_WORD                      = "Short word, possible mistake or mistaken annotation (try spaces around symbol): "
+	ERR_ILLEGAL_ANNOT_CHAR              = "Cannot use +/- reserved tokens for annotation"
 )
 
 //**************************************************************
@@ -108,13 +107,11 @@ const (
 //**************************************************************
 
 type RCtype struct {
-
 	Row SST.NodePtr
 	Col SST.NodePtr
 }
 
 type Closure struct {
-
 	Sequence []SST.ArrowPtr
 	Result   SST.ArrowPtr
 	Sum      int
@@ -123,20 +120,20 @@ type Closure struct {
 //**************************************************************
 
 var (
-	LINE_NUM int = 1
-	LINE_ITEM_CACHE = make(map[string][]string)  // contains current and labelled line elements
-	LINE_ITEM_REFS []SST.NodePtr                     // contains current line integer references
-	LINE_RELN_CACHE = make(map[string][]SST.Link)
-	LINE_ITEM_STATE int = ROLE_BLANK_LINE
-	LINE_ALIAS string = ""
-	LINE_ITEM_COUNTER int = 1
-	LINE_RELN_COUNTER int = 0
-	LINE_PATH []SST.Link
+	LINE_NUM          int           = 1
+	LINE_ITEM_CACHE                 = make(map[string][]string) // contains current and labelled line elements
+	LINE_ITEM_REFS    []SST.NodePtr                             // contains current line integer references
+	LINE_RELN_CACHE                 = make(map[string][]SST.Link)
+	LINE_ITEM_STATE   int           = ROLE_BLANK_LINE
+	LINE_ALIAS        string        = ""
+	LINE_ITEM_COUNTER int           = 1
+	LINE_RELN_COUNTER int           = 0
+	LINE_PATH         []SST.Link
 
-	FWD_ARROW string
-	BWD_ARROW string
-	FWD_INDEX SST.ArrowPtr
-	BWD_INDEX SST.ArrowPtr
+	FWD_ARROW  string
+	BWD_ARROW  string
+	FWD_INDEX  SST.ArrowPtr
+	BWD_INDEX  SST.ArrowPtr
 	ANNOTATION = make(map[string]string)
 
 	CONTEXT_STATE = make(map[string]bool)
@@ -144,29 +141,29 @@ var (
 
 	// Sequence mode state
 
-	SEQUENCE_MODE bool = false
-	SEQUENCE_START bool = false
-	SEQUENCE_RELN string = "then"
-	SEQUENCE_RELN_INV string = "from"
-	SEQUENCE_RELN_LONG string = "then followed by"
+	SEQUENCE_MODE          bool   = false
+	SEQUENCE_START         bool   = false
+	SEQUENCE_RELN          string = "then"
+	SEQUENCE_RELN_INV      string = "from"
+	SEQUENCE_RELN_LONG     string = "then followed by"
 	SEQUENCE_RELN_INV_LONG string = "follows on from"
 
 	LAST_IN_SEQUENCE string = ""
 
 	// Flags
 
-	VERBOSE bool = false
-	SIGN_OF_LIFE int
-	GIVE_SIGNS_OF_LIFE = false
-	DIAGNOSTIC bool = false
-	UPLOAD bool = false
-	FORCE_UPLOAD bool = false
-	SUMMARIZE bool = false
-	CREATE_ADJACENCY bool = false
-	ADJ_LIST string
+	VERBOSE            bool = false
+	SIGN_OF_LIFE       int
+	GIVE_SIGNS_OF_LIFE      = false
+	DIAGNOSTIC         bool = false
+	UPLOAD             bool = false
+	FORCE_UPLOAD       bool = false
+	SUMMARIZE          bool = false
+	CREATE_ADJACENCY   bool = false
+	ADJ_LIST           string
 
-	CONFIGURING bool
-	CURRENT_FILE string
+	CONFIGURING    bool
+	CURRENT_FILE   string
 	TEST_DIAG_FILE string
 
 	RELN_BY_SST [4][]SST.ArrowPtr // From an EventItemNode
@@ -184,7 +181,7 @@ func unusedMainDoNotUse(ctx context.Context) {
 
 	load_arrows := false
 	args := Init()
-	
+
 	if UPLOAD {
 		load_arrows = true
 
@@ -205,7 +202,7 @@ func unusedMainDoNotUse(ctx context.Context) {
 	for input := 0; input < len(config); input++ {
 		NewFile(config[input])
 		con := ReadFile(CURRENT_FILE)
-		ParseConfig(&sst,con)
+		ParseConfig(&sst, con)
 	}
 
 	CONFIGURING = false
@@ -215,7 +212,7 @@ func unusedMainDoNotUse(ctx context.Context) {
 	for input := 0; input < len(args); input++ {
 		NewFile(args[input])
 		input := ReadFile(CURRENT_FILE)
-		ParseN4L(&sst,input)
+		ParseN4L(&sst, input)
 	}
 
 	// Post process, complete NEAR cliques
@@ -229,17 +226,17 @@ func unusedMainDoNotUse(ctx context.Context) {
 	}
 
 	if CREATE_ADJACENCY {
-		dim, key, d_adj, u_adj := CreateAdjacencyMatrix(sst,ADJ_LIST)
-		PrintMatrix(sst,"directed adjacency sub-matrix",dim,key,d_adj)
-		PrintMatrix(sst,"undirected adjacency sub-matrix",dim,key,u_adj)
-		evc := ComputeEVC(dim,u_adj)
-		PrintNZVector(sst,"Eigenvector centrality (EVC) score for symmetrized graph",dim,key,evc)
+		dim, key, d_adj, u_adj := CreateAdjacencyMatrix(sst, ADJ_LIST)
+		PrintMatrix(sst, "directed adjacency sub-matrix", dim, key, d_adj)
+		PrintMatrix(sst, "undirected adjacency sub-matrix", dim, key, u_adj)
+		evc := ComputeEVC(dim, u_adj)
+		PrintNZVector(sst, "Eigenvector centrality (EVC) score for symmetrized graph", dim, key, evc)
 	}
 
 	if UPLOAD {
-		Upload(sst)
+		Upload(ctx, sst)
 	}
-	
+
 	SST.Close(sst)
 }
 
@@ -248,12 +245,12 @@ func unusedMainDoNotUse(ctx context.Context) {
 func Init() []string {
 
 	flag.Usage = Usage
-	verbosePtr := flag.Bool("v", false,"verbose")
-	diagPtr := flag.Bool("d", false,"diagnostic mode")
-	uploadPtr := flag.Bool("u", false,"upload")
-	forcePtr := flag.Bool("force", false,"force upload")
-	wipePtr := flag.Bool("wipe", false,"wipe and reset")
-	incidencePtr := flag.Bool("s", false,"summary (node,links...)")
+	verbosePtr := flag.Bool("v", false, "verbose")
+	diagPtr := flag.Bool("d", false, "diagnostic mode")
+	uploadPtr := flag.Bool("u", false, "upload")
+	forcePtr := flag.Bool("force", false, "force upload")
+	wipePtr := flag.Bool("wipe", false, "wipe and reset")
+	incidencePtr := flag.Bool("s", false, "summary (node,links...)")
 	adjacencyPtr := flag.String("adj", "none", "a quoted, comma-separated list of short link names")
 
 	flag.Parse()
@@ -261,7 +258,7 @@ func Init() []string {
 
 	if len(args) < 1 {
 		Usage()
-		os.Exit(1);
+		os.Exit(1)
 	}
 
 	if *verbosePtr {
@@ -299,9 +296,9 @@ func Init() []string {
 
 //**************************************************************
 
-func Upload(sst SST.PoSST) {
+func Upload(ctx context.Context, sst SST.PoSST) {
 
-	dbchapters := SST.GetDBChaptersMatchingName(sst,"")
+	dbchapters := SST.GetDBChaptersMatchingName(ctx, sst, "")
 	memchapters := GetMemChapters(sst)
 
 	conflict := false
@@ -310,7 +307,7 @@ func Upload(sst SST.PoSST) {
 		for d := range dbchapters {
 			if memchapters[m] == dbchapters[d] {
 
-				fmt.Println(" Database already contains a chapter: ",dbchapters[d])
+				fmt.Println(" Database already contains a chapter: ", dbchapters[d])
 				conflict = true
 			}
 		}
@@ -322,10 +319,10 @@ func Upload(sst SST.PoSST) {
 
 	} else {
 		fmt.Println("\n\nUploading nodes..")
-		SST.GraphToDB(sst,true)
+		SST.GraphToDB(ctx, sst, true)
 		marks := GetBookMarks()
 		fmt.Println("\n\nUploading bookmarks..")
-		SST.BookmarksToDB(sst,marks)
+		SST.BookmarksToDB(ctx, sst, marks)
 	}
 }
 
@@ -384,22 +381,22 @@ func resetParseState() {
 	ContextEval("any", "=")
 }
 
-func ParseConfig(sst *SST.PoSST,src []rune) {
+func ParseConfig(sst *SST.PoSST, src []rune) {
 
 	var token string
 
 	for pos := 0; pos < len(src); {
 
-		pos = SkipWhiteSpace(sst,src,pos)
-		token,pos = GetConfigToken(src,pos)
+		pos = SkipWhiteSpace(sst, src, pos)
+		token, pos = GetConfigToken(src, pos)
 
-		ClassifyConfigRole(sst,token)
+		ClassifyConfigRole(sst, token)
 	}
 }
 
 //**************************************************************
 
-func GetConfigToken(src []rune, pos int) (string,int) {
+func GetConfigToken(src []rune, pos int) (string, int) {
 
 	// Handle concatenation of words/lines and separation of types
 
@@ -409,27 +406,27 @@ func GetConfigToken(src []rune, pos int) (string,int) {
 		return "", pos
 	}
 
-	switch (src[pos]) {
+	switch src[pos] {
 
 	case '+':
-		token,pos = ReadToLast(src,pos,ALPHATEXT)
+		token, pos = ReadToLast(src, pos, ALPHATEXT)
 
 	case '-':
-		token,pos = ReadToLast(src,pos,ALPHATEXT)
+		token, pos = ReadToLast(src, pos, ALPHATEXT)
 
 	case '(':
-		token,pos = ReadToLast(src,pos,')')  // alias
+		token, pos = ReadToLast(src, pos, ')') // alias
 
 	case '#':
-		return "",pos
+		return "", pos
 
 	case '/':
 		if src[pos+1] == '/' {
-			return "",pos
+			return "", pos
 		}
 
 	default: // similarity
-		token,pos = ReadToLast(src,pos,ALPHATEXT)
+		token, pos = ReadToLast(src, pos, ALPHATEXT)
 
 	}
 
@@ -438,7 +435,7 @@ func GetConfigToken(src []rune, pos int) (string,int) {
 
 //**************************************************************
 
-func ClassifyConfigRole(sst *SST.PoSST,token string) {
+func ClassifyConfigRole(sst *SST.PoSST, token string) {
 
 	if len(token) == 0 {
 		return
@@ -448,40 +445,40 @@ func ClassifyConfigRole(sst *SST.PoSST,token string) {
 
 	if token[0] == '-' && LINE_ITEM_STATE == ROLE_BLANK_LINE {
 		SECTION_STATE = strings.TrimSpace(token[1:])
-		Box("Configuration of",SECTION_STATE)
+		Box("Configuration of", SECTION_STATE)
 		LINE_ITEM_STATE = ROLE_SECTION
 		return
 	}
 
 	switch SECTION_STATE {
 
-	case "leadsto","contains","properties":
+	case "leadsto", "contains", "properties":
 
 		switch token[0] {
 
 		case '+':
 			FWD_ARROW = strings.TrimSpace(token[1:])
 			LINE_ITEM_STATE = HAVE_PLUS
-			Diag("fwd arrow in",SECTION_STATE, token)
+			Diag("fwd arrow in", SECTION_STATE, token)
 
 		case '-':
 			BWD_ARROW = strings.TrimSpace(token[1:])
 			LINE_ITEM_STATE = HAVE_MINUS
-			Diag("bwd arrow in",SECTION_STATE, token)
+			Diag("bwd arrow in", SECTION_STATE, token)
 
 		case '(':
-			reln := token[1:len(token)-1]
+			reln := token[1 : len(token)-1]
 			reln = strings.TrimSpace(reln)
 
 			if LINE_ITEM_STATE == HAVE_MINUS {
-				BWD_INDEX = SST.InsertArrowDirectory(sst,SECTION_STATE,reln,BWD_ARROW,"-")
-				ArrowCollision(BWD_INDEX,reln,BWD_ARROW)
-				SST.InsertInverseArrowDirectory(sst,FWD_INDEX,BWD_INDEX)
-				PVerbose("In",SECTION_STATE,"short name",reln,"for",BWD_ARROW,", direction","-")
+				BWD_INDEX = SST.InsertArrowDirectory(sst, SECTION_STATE, reln, BWD_ARROW, "-")
+				ArrowCollision(BWD_INDEX, reln, BWD_ARROW)
+				SST.InsertInverseArrowDirectory(sst, FWD_INDEX, BWD_INDEX)
+				PVerbose("In", SECTION_STATE, "short name", reln, "for", BWD_ARROW, ", direction", "-")
 			} else if LINE_ITEM_STATE == HAVE_PLUS {
-				FWD_INDEX = SST.InsertArrowDirectory(sst,SECTION_STATE,reln,FWD_ARROW,"+")
-				ArrowCollision(FWD_INDEX,reln,FWD_ARROW)
-				PVerbose("In",SECTION_STATE,"short name",reln,"for",FWD_ARROW,", direction","+")
+				FWD_INDEX = SST.InsertArrowDirectory(sst, SECTION_STATE, reln, FWD_ARROW, "+")
+				ArrowCollision(FWD_INDEX, reln, FWD_ARROW)
+				PVerbose("In", SECTION_STATE, "short name", reln, "for", FWD_ARROW, ", direction", "+")
 			} else {
 				ParseError(ERR_BAD_ABBRV)
 				os.Exit(-1)
@@ -493,18 +490,18 @@ func ClassifyConfigRole(sst *SST.PoSST,token string) {
 		switch token[0] {
 
 		case '(':
-			reln := token[1:len(token)-1]
+			reln := token[1 : len(token)-1]
 			reln = strings.TrimSpace(reln)
 
 			if LINE_ITEM_STATE == HAVE_MINUS {
-				index := SST.InsertArrowDirectory(sst,SECTION_STATE,reln,BWD_ARROW,"both")
-				SST.InsertInverseArrowDirectory(sst,index,index)
-				PVerbose("In",SECTION_STATE,reln,"for",BWD_ARROW,", direction","both")
+				index := SST.InsertArrowDirectory(sst, SECTION_STATE, reln, BWD_ARROW, "both")
+				SST.InsertInverseArrowDirectory(sst, index, index)
+				PVerbose("In", SECTION_STATE, reln, "for", BWD_ARROW, ", direction", "both")
 			} else {
-				PVerbose(SECTION_STATE,"abbreviation out of place")
+				PVerbose(SECTION_STATE, "abbreviation out of place")
 			}
 
-		case '+','-':
+		case '+', '-':
 			ParseError(ERR_SIMILAR_NO_SIGN)
 			os.Exit(-1)
 
@@ -525,9 +522,9 @@ func ClassifyConfigRole(sst *SST.PoSST,token string) {
 			}
 
 			FWD_ARROW = StripParen(token)
-			PVerbose("Annotation marker",LAST_IN_SEQUENCE,"defined as arrow:",FWD_ARROW)
+			PVerbose("Annotation marker", LAST_IN_SEQUENCE, "defined as arrow:", FWD_ARROW)
 
-			value,defined := ANNOTATION[LAST_IN_SEQUENCE]
+			value, defined := ANNOTATION[LAST_IN_SEQUENCE]
 
 			if defined && value != FWD_ARROW {
 				ParseError(ERR_ANNOTATION_REDEFINE)
@@ -550,7 +547,7 @@ func ClassifyConfigRole(sst *SST.PoSST,token string) {
 				os.Exit(-1)
 			}
 
-			Diag("Markup character defined in",SECTION_STATE, token)
+			Diag("Markup character defined in", SECTION_STATE, token)
 			LINE_ITEM_STATE = HAVE_PLUS
 			LAST_IN_SEQUENCE = token
 
@@ -564,21 +561,21 @@ func ClassifyConfigRole(sst *SST.PoSST,token string) {
 
 			if LINE_ITEM_STATE == ROLE_RESULT {
 
-				AddArrowClosure(sst,LINE_ITEM_CACHE["THIS"],token)
+				AddArrowClosure(sst, LINE_ITEM_CACHE["THIS"], token)
 			} else {
 				LINE_ITEM_COUNTER++
-				LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
+				LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"], token)
 				LINE_ITEM_STATE = ROLE_COMPOSITION
 			}
 
-		case '+',',':
+		case '+', ',':
 			LINE_ITEM_STATE = ROLE_COMPOSITION
 
 		case '=':
 			LINE_ITEM_STATE = ROLE_RESULT
 
 		default:
-			ParseError(ERR_ILLEGAL_CONFIGURATION+" "+SECTION_STATE)
+			ParseError(ERR_ILLEGAL_CONFIGURATION + " " + SECTION_STATE)
 			os.Exit(-1)
 		}
 
@@ -590,17 +587,17 @@ func ClassifyConfigRole(sst *SST.PoSST,token string) {
 
 //**************************************************************
 
-func ArrowCollision(arr SST.ArrowPtr,short,long string) {
+func ArrowCollision(arr SST.ArrowPtr, short, long string) {
 
 	if arr < 0 {
-		ParseError(ERR_ARR_REDEFINITION+"long \""+long+"\", "+"short \""+short+"\" seems to be previously used somewhere")
+		ParseError(ERR_ARR_REDEFINITION + "long \"" + long + "\", " + "short \"" + short + "\" seems to be previously used somewhere")
 		//os.Exit(-1)
 	}
 }
 
 //**************************************************************
 
-func GetLinkArrowByName(sst *SST.PoSST,token string) SST.Link {
+func GetLinkArrowByName(sst *SST.PoSST, token string) SST.Link {
 
 	// Return a preregistered link/arrow ptr bythe name of a link
 
@@ -611,15 +608,15 @@ func GetLinkArrowByName(sst *SST.PoSST,token string) SST.Link {
 	var name string
 
 	if token[0] == '(' {
-		name = token[1:len(token)-1]
+		name = token[1 : len(token)-1]
 	} else {
 		name = token
 	}
 
 	name = strings.TrimSpace(name)
 
-	if strings.Contains(name,",") {
-		reln = strings.Split(name,",")
+	if strings.Contains(name, ",") {
+		reln = strings.Split(name, ",")
 		name = reln[0]
 
 		// look at any comma separated notes after the arrow name
@@ -629,17 +626,17 @@ func GetLinkArrowByName(sst *SST.PoSST,token string) SST.Link {
 
 			if err == nil {
 				if weight < 0 {
-					ParseError(ERR_NEGATIVE_WEIGHT+token)
+					ParseError(ERR_NEGATIVE_WEIGHT + token)
 					os.Exit(-1)
 				}
 				if weightcount > 1 {
-					ParseError(ERR_TOO_MANY_WEIGHTS+token)
+					ParseError(ERR_TOO_MANY_WEIGHTS + token)
 					os.Exit(-1)
 				}
 				weight = float32(v)
 				weightcount++
 			} else {
-				ctx = append(ctx,reln[i])
+				ctx = append(ctx, reln[i])
 			}
 		}
 	}
@@ -654,7 +651,7 @@ func GetLinkArrowByName(sst *SST.PoSST,token string) SST.Link {
 		ptr, ok = sst.ARROW_LONG_DIR[name]
 
 		if !ok {
-			ParseError(SST.ERR_NO_SUCH_ARROW+"("+name+")")
+			ParseError(SST.ERR_NO_SUCH_ARROW + "(" + name + ")")
 			os.Exit(-1)
 		}
 	}
@@ -662,7 +659,7 @@ func GetLinkArrowByName(sst *SST.PoSST,token string) SST.Link {
 	var link SST.Link
 	link.Arr = ptr
 	link.Wgt = weight
-	link.Ctx = SST.RegisterContext(sst,CONTEXT_STATE,ctx)
+	link.Ctx = SST.RegisterContext(sst, CONTEXT_STATE, ctx)
 	return link
 }
 
@@ -670,7 +667,7 @@ func GetLinkArrowByName(sst *SST.PoSST,token string) SST.Link {
 
 func LookupAlias(alias string, counter int) string {
 
-	value,ok := LINE_ITEM_CACHE[alias]
+	value, ok := LINE_ITEM_CACHE[alias]
 
 	if !ok || counter > len(value) {
 		ParseError(ERR_NO_SUCH_ALIAS)
@@ -687,13 +684,13 @@ func ResolveAliasedItem(token string) string {
 
 	// split $alias.n into (alias string,n int)
 
-	if! strings.Contains(token,".") {
+	if !strings.Contains(token, ".") {
 		// just a dollar amount
 		return token
 	}
 
 	var contig string
-	fmt.Sscanf(token,"%s",&contig)
+	fmt.Sscanf(token, "%s", &contig)
 
 	if len(contig) == 1 {
 		return token
@@ -703,7 +700,7 @@ func ResolveAliasedItem(token string) string {
 		return token
 	}
 
-	split := strings.Split(token[1:],".")
+	split := strings.Split(token[1:], ".")
 
 	if len(split) < 2 {
 		ParseError(ERR_MISSING_LINE_LABEL_IN_REFERENCE)
@@ -713,33 +710,33 @@ func ResolveAliasedItem(token string) string {
 	name := strings.TrimSpace(split[0])
 
 	var number int = 0
-	fmt.Sscanf(split[1],"%d",&number)
+	fmt.Sscanf(split[1], "%d", &number)
 
 	if number < 1 {
 		ParseError(ERR_BAD_ALIAS_REFERENCE)
 		os.Exit(-1)
 	}
 
-	return LookupAlias(name,number)
+	return LookupAlias(name, number)
 }
 
 //**************************************************************
 
-func AddArrowClosure(sst *SST.PoSST,sequence []string,result string) {
+func AddArrowClosure(sst *SST.PoSST, sequence []string, result string) {
 
 	var closure Closure
 
-	for _,arrow := range sequence {
-		arr := GetLinkArrowByName(sst,arrow).Arr
+	for _, arrow := range sequence {
+		arr := GetLinkArrowByName(sst, arrow).Arr
 		closure.Sum += int(arr)
-		closure.Sequence = append(closure.Sequence,arr)
+		closure.Sequence = append(closure.Sequence, arr)
 	}
 
-	closure.Result = GetLinkArrowByName(sst,result).Arr
+	closure.Result = GetLinkArrowByName(sst, result).Arr
 
-	ARROW_CLOSURES = append(ARROW_CLOSURES,closure)
+	ARROW_CLOSURES = append(ARROW_CLOSURES, closure)
 
-	PVerbose("Arrow sequences",sequence,"to be closed with cyclic",result)
+	PVerbose("Arrow sequences", sequence, "to be closed with cyclic", result)
 }
 
 //**************************************************************
@@ -748,38 +745,38 @@ func CompleteInferences(sst *SST.PoSST) {
 
 	for class := SST.N1GRAM; class <= SST.GT1024; class++ {
 
-		header := fmt.Sprintf("Completing node inferences and cliques.....for class %d",class)
+		header := fmt.Sprintf("Completing node inferences and cliques.....for class %d", class)
 		Box(header)
 
 		switch class {
 
 		case SST.N1GRAM:
-			for _,node := range sst.NODE_DIRECTORY.N1directory {
-				CompleteNode(sst,node)
-				SST.CheckAltCaps(sst,node,ParseError)
+			for _, node := range sst.NODE_DIRECTORY.N1directory {
+				CompleteNode(sst, node)
+				SST.CheckAltCaps(sst, node, ParseError)
 			}
 		case SST.N2GRAM:
-			for _,node := range sst.NODE_DIRECTORY.N2directory {
-				CompleteNode(sst,node)
-				SST.CheckAltCaps(sst,node,ParseError)
+			for _, node := range sst.NODE_DIRECTORY.N2directory {
+				CompleteNode(sst, node)
+				SST.CheckAltCaps(sst, node, ParseError)
 			}
 		case SST.N3GRAM:
-			for _,node := range sst.NODE_DIRECTORY.N3directory {
-				CompleteNode(sst,node)
-				SST.CheckAltCaps(sst,node,ParseError)
+			for _, node := range sst.NODE_DIRECTORY.N3directory {
+				CompleteNode(sst, node)
+				SST.CheckAltCaps(sst, node, ParseError)
 			}
 		case SST.LT128:
-			for _,node := range sst.NODE_DIRECTORY.LT128directory {
-				CompleteNode(sst,node)
-				SST.CheckAltCaps(sst,node,ParseError)
+			for _, node := range sst.NODE_DIRECTORY.LT128directory {
+				CompleteNode(sst, node)
+				SST.CheckAltCaps(sst, node, ParseError)
 			}
 		case SST.LT1024:
-			for _,node := range sst.NODE_DIRECTORY.LT1024 {
-				CompleteNode(sst,node)
+			for _, node := range sst.NODE_DIRECTORY.LT1024 {
+				CompleteNode(sst, node)
 			}
 		case SST.GT1024:
-			for _,node := range sst.NODE_DIRECTORY.GT1024 {
-				CompleteNode(sst,node)
+			for _, node := range sst.NODE_DIRECTORY.GT1024 {
+				CompleteNode(sst, node)
 			}
 		}
 	}
@@ -787,12 +784,12 @@ func CompleteInferences(sst *SST.PoSST) {
 
 //**************************************************************
 
-func CompleteNode(sst *SST.PoSST,node SST.Node) {
+func CompleteNode(sst *SST.PoSST, node SST.Node) {
 
-	CompleteCloseness(sst,node)
-	CompleteSequences(sst,node)
+	CompleteCloseness(sst, node)
+	CompleteSequences(sst, node)
 
-	mesg := SST.CompleteETCTypes(sst,node)
+	mesg := SST.CompleteETCTypes(sst, node)
 
 	if len(mesg) > 1 {
 		Verbose(mesg)
@@ -801,13 +798,13 @@ func CompleteNode(sst *SST.PoSST,node SST.Node) {
 
 //**************************************************************
 
-func CompleteCloseness(sst *SST.PoSST,node SST.Node) {
+func CompleteCloseness(sst *SST.PoSST, node SST.Node) {
 
 	var equivalences = make(map[SST.ArrowPtr]int)
 
 	// Only NEAR links can be completed by inference
 
-	near_nodes := node.I[SST.ST_ZERO + SST.NEAR]
+	near_nodes := node.I[SST.ST_ZERO+SST.NEAR]
 
 	if len(near_nodes) == 0 {
 		return
@@ -815,7 +812,7 @@ func CompleteCloseness(sst *SST.PoSST,node SST.Node) {
 
 	// Count references with same NEAR arrow type
 
-	for _,link := range near_nodes {
+	for _, link := range near_nodes {
 		equivalences[link.Arr]++
 	}
 
@@ -826,30 +823,30 @@ func CompleteCloseness(sst *SST.PoSST,node SST.Node) {
 
 			// Get the semamntically NEAR neighbours
 
-			for _,link := range near_nodes {
+			for _, link := range near_nodes {
 				if link.Arr == arrow {
-					neighbours = append(neighbours,link.Dst)
+					neighbours = append(neighbours, link.Dst)
 				}
 			}
 
 			// complete the subgraph
 			for n := 0; n < len(neighbours); n++ {
-				for o := n+1; o < len(neighbours); o++{
+				for o := n + 1; o < len(neighbours); o++ {
 
 					var link SST.Link
 					link.Arr = arrow
 					link.Wgt = 1
 
-					t1 := SST.GetNodeTxtFromPtr(sst,neighbours[n])
-					t2 := SST.GetNodeTxtFromPtr(sst,neighbours[o])
+					t1 := SST.GetNodeTxtFromPtr(sst, neighbours[n])
+					t2 := SST.GetNodeTxtFromPtr(sst, neighbours[o])
 					arrname := sst.ARROW_DIRECTORY[arrow].Short
 
 					// NOTs are not close
 
-					if !strings.HasPrefix(arrname,"!") {
-						m := fmt.Sprintf("   Complete: %s -(%s)-> %s",t1,arrname,t2)
+					if !strings.HasPrefix(arrname, "!") {
+						m := fmt.Sprintf("   Complete: %s -(%s)-> %s", t1, arrname, t2)
 						Verbose(m)
-						SST.AppendLinkToNode(sst,neighbours[n],link,neighbours[o])
+						SST.AppendLinkToNode(sst, neighbours[n], link, neighbours[o])
 					}
 				}
 			}
@@ -859,17 +856,17 @@ func CompleteCloseness(sst *SST.PoSST,node SST.Node) {
 
 //**************************************************************
 
-func CompleteSequences(sst *SST.PoSST,node SST.Node) {
+func CompleteSequences(sst *SST.PoSST, node SST.Node) {
 
-	for _,cl := range ARROW_CLOSURES {
+	for _, cl := range ARROW_CLOSURES {
 
-		nptr,found := GetNodePointedTo(sst,node,cl.Sequence)
+		nptr, found := GetNodePointedTo(sst, node, cl.Sequence)
 
 		if found {
 			// Link nptr to node.NPtr with cl.Result arrow
 
 			t2 := node.S
-			t1 := SST.GetNodeTxtFromPtr(sst,nptr)
+			t1 := SST.GetNodeTxtFromPtr(sst, nptr)
 
 			var link SST.Link
 			link.Arr = cl.Result
@@ -878,9 +875,9 @@ func CompleteSequences(sst *SST.PoSST,node SST.Node) {
 
 			arrname := sst.ARROW_DIRECTORY[link.Arr].Short
 
-			m := fmt.Sprintf("   Complete: %s -(%s)-> %s",t1,arrname,t2)
+			m := fmt.Sprintf("   Complete: %s -(%s)-> %s", t1, arrname, t2)
 			Verbose(m)
-			SST.AppendLinkToNode(sst,nptr,link,node.NPtr)
+			SST.AppendLinkToNode(sst, nptr, link, node.NPtr)
 		}
 	}
 }
@@ -898,34 +895,34 @@ func SummarizeGraph(sst SST.PoSST) {
 	for class := SST.N1GRAM; class <= SST.GT1024; class++ {
 		switch class {
 		case SST.N1GRAM:
-			for n,org := range sst.NODE_DIRECTORY.N1directory {
+			for n, org := range sst.NODE_DIRECTORY.N1directory {
 				count_nodes++
-				PrintNodeSystem(sst,n,org,&count_links)
+				PrintNodeSystem(sst, n, org, &count_links)
 			}
 		case SST.N2GRAM:
-			for n,org := range sst.NODE_DIRECTORY.N2directory {
+			for n, org := range sst.NODE_DIRECTORY.N2directory {
 				count_nodes++
-				PrintNodeSystem(sst,n,org,&count_links)
+				PrintNodeSystem(sst, n, org, &count_links)
 			}
 		case SST.N3GRAM:
-			for n,org := range sst.NODE_DIRECTORY.N3directory {
+			for n, org := range sst.NODE_DIRECTORY.N3directory {
 				count_nodes++
-				PrintNodeSystem(sst,n,org,&count_links)
+				PrintNodeSystem(sst, n, org, &count_links)
 			}
 		case SST.LT128:
-			for n,org := range sst.NODE_DIRECTORY.LT128directory {
+			for n, org := range sst.NODE_DIRECTORY.LT128directory {
 				count_nodes++
-				PrintNodeSystem(sst,n,org,&count_links)
+				PrintNodeSystem(sst, n, org, &count_links)
 			}
 		case SST.LT1024:
-			for n,org := range sst.NODE_DIRECTORY.LT1024 {
+			for n, org := range sst.NODE_DIRECTORY.LT1024 {
 				count_nodes++
-				PrintNodeSystem(sst,n,org,&count_links)
+				PrintNodeSystem(sst, n, org, &count_links)
 			}
 		case SST.GT1024:
-			for n,org := range sst.NODE_DIRECTORY.GT1024 {
+			for n, org := range sst.NODE_DIRECTORY.GT1024 {
 				count_nodes++
-				PrintNodeSystem(sst,n,org,&count_links)
+				PrintNodeSystem(sst, n, org, &count_links)
 			}
 		}
 	}
@@ -934,39 +931,39 @@ func SummarizeGraph(sst SST.PoSST) {
 	fmt.Println("Incidence summary of raw declarations")
 	fmt.Println("-------------------------------------")
 
-	fmt.Println("Total nodes",count_nodes)
+	fmt.Println("Total nodes", count_nodes)
 
 	for st := 0; st < 4; st++ {
 		total += count_links[st]
-		fmt.Println("Total directed links of type",SST.STTypeName(st),count_links[st])
+		fmt.Println("Total directed links of type", SST.STTypeName(st), count_links[st])
 	}
 
-	complete := count_nodes * (count_nodes-1)
-	fmt.Println("Total links",total,"sparseness (fraction of completeness)",float32(total)/float32(complete))
+	complete := count_nodes * (count_nodes - 1)
+	fmt.Println("Total links", total, "sparseness (fraction of completeness)", float32(total)/float32(complete))
 }
 
 //**************************************************************
 
-func CreateAdjacencyMatrix(sst SST.PoSST,searchlist string) (int,[]SST.NodePtr,[][]float32,[][]float32) {
+func CreateAdjacencyMatrix(sst SST.PoSST, searchlist string) (int, []SST.NodePtr, [][]float32, [][]float32) {
 
-	search_list := ValidateLinkArgs(sst,searchlist)
+	search_list := ValidateLinkArgs(sst, searchlist)
 
 	// the matrix is dim x dim
 
-	filtered_node_list,path_weights := AssembleInvolvedNodes(sst,search_list)
+	filtered_node_list, path_weights := AssembleInvolvedNodes(sst, search_list)
 
 	dim := len(filtered_node_list)
 
 	for f := 0; f < len(filtered_node_list); f++ {
-		Verbose("    - row/col key [",f,"/",dim,"]",SST.GetNodeTxtFromPtr(&sst,filtered_node_list[f]))
+		Verbose("    - row/col key [", f, "/", dim, "]", SST.GetNodeTxtFromPtr(&sst, filtered_node_list[f]))
 	}
 
-	var subadj_matrix [][]float32 = make([][]float32,dim)
-	var symadj_matrix [][]float32 = make([][]float32,dim)
+	var subadj_matrix [][]float32 = make([][]float32, dim)
+	var symadj_matrix [][]float32 = make([][]float32, dim)
 
 	for row := 0; row < dim; row++ {
-		subadj_matrix [row] = make([]float32,dim)
-		symadj_matrix [row] = make([]float32,dim)
+		subadj_matrix[row] = make([]float32, dim)
+		symadj_matrix[row] = make([]float32, dim)
 	}
 
 	for row := 0; row < dim; row++ {
@@ -991,15 +988,14 @@ func CreateAdjacencyMatrix(sst SST.PoSST,searchlist string) (int,[]SST.NodePtr,[
 
 //**************************************************************
 
-func PrintMatrix(sst SST.PoSST,name string, dim int, key []SST.NodePtr, matrix [][]float32) {
+func PrintMatrix(sst SST.PoSST, name string, dim int, key []SST.NodePtr, matrix [][]float32) {
 
-
-	s := fmt.Sprintln("\n",name,"...\n")
+	s := fmt.Sprintln("\n", name, "...\n")
 	Verbose(s)
 
 	for row := 0; row < dim; row++ {
 
-		s = fmt.Sprintf("%20.15s ..\r\t\t\t(",SST.GetNodeTxtFromPtr(&sst,key[row]))
+		s = fmt.Sprintf("%20.15s ..\r\t\t\t(", SST.GetNodeTxtFromPtr(&sst, key[row]))
 
 		for col := 0; col < dim; col++ {
 
@@ -1009,7 +1005,7 @@ func PrintMatrix(sst SST.PoSST,name string, dim int, key []SST.NodePtr, matrix [
 				s += fmt.Sprint("\t...")
 				break
 			} else {
-				s += fmt.Sprintf("  %4.1f",matrix[row][col])
+				s += fmt.Sprintf("  %4.1f", matrix[row][col])
 			}
 
 		}
@@ -1020,21 +1016,21 @@ func PrintMatrix(sst SST.PoSST,name string, dim int, key []SST.NodePtr, matrix [
 
 //**************************************************************
 
-func PrintNZVector(sst SST.PoSST,name string, dim int, key []SST.NodePtr, vector[]float32) {
+func PrintNZVector(sst SST.PoSST, name string, dim int, key []SST.NodePtr, vector []float32) {
 
-	s := fmt.Sprintln("\n",name,"...\n")
+	s := fmt.Sprintln("\n", name, "...\n")
 
 	Verbose(s)
 
 	type KV struct {
-		Key string
+		Key   string
 		Value float32
 	}
 
-	var vec []KV = make([]KV,dim)
+	var vec []KV = make([]KV, dim)
 
 	for row := 0; row < dim; row++ {
-		vec[row].Key = SST.GetNodeTxtFromPtr(&sst,key[row])
+		vec[row].Key = SST.GetNodeTxtFromPtr(&sst, key[row])
 		vec[row].Value = vector[row]
 	}
 
@@ -1044,8 +1040,8 @@ func PrintNZVector(sst SST.PoSST,name string, dim int, key []SST.NodePtr, vector
 
 	for row := 0; row < dim; row++ {
 		if vec[row].Value > 0.1 {
-			s = fmt.Sprintf("ordered by EVC:  (%4.1f)  ",vec[row].Value)
-			s += fmt.Sprintf("%-80.79s",vec[row].Key)
+			s = fmt.Sprintf("ordered by EVC:  (%4.1f)  ", vec[row].Value)
+			s += fmt.Sprintf("%-80.79s", vec[row].Key)
 			Verbose(s)
 		}
 	}
@@ -1053,25 +1049,25 @@ func PrintNZVector(sst SST.PoSST,name string, dim int, key []SST.NodePtr, vector
 
 //**************************************************************
 
-func ComputeEVC(dim int,adj [][]float32) []float32 {
+func ComputeEVC(dim int, adj [][]float32) []float32 {
 
-	v := MakeInitVector(dim,1.0)
+	v := MakeInitVector(dim, 1.0)
 	vlast := v
 
 	const several = 6
 
 	for i := 0; i < several; i++ {
 
-		v = MatrixOpVector(dim,adj,vlast)
+		v = MatrixOpVector(dim, adj, vlast)
 
-		if CompareVec(v,vlast) < 0.1 {
+		if CompareVec(v, vlast) < 0.1 {
 			break
 		}
 		vlast = v
 	}
 
 	maxval := GetVecMax(v)
-	v = NormalizeVec(v,maxval)
+	v = NormalizeVec(v, maxval)
 
 	return v
 }
@@ -1080,7 +1076,7 @@ func ComputeEVC(dim int,adj [][]float32) []float32 {
 
 func MakeInitVector(dim int, init_value float32) []float32 {
 
-	var v = make([]float32,dim)
+	var v = make([]float32, dim)
 
 	for r := 0; r < dim; r++ {
 		v[r] = init_value
@@ -1091,9 +1087,9 @@ func MakeInitVector(dim int, init_value float32) []float32 {
 
 //**************************************************************
 
-func MatrixOpVector(dim int,m [][]float32, v []float32) []float32 {
+func MatrixOpVector(dim int, m [][]float32, v []float32) []float32 {
 
-	var vp = make([]float32,dim)
+	var vp = make([]float32, dim)
 
 	for r := 0; r < dim; r++ {
 		for c := 0; c < dim; c++ {
@@ -1133,12 +1129,12 @@ func NormalizeVec(v []float32, div float32) []float32 {
 
 //**************************************************************
 
-func CompareVec(v1,v2 []float32) float32 {
+func CompareVec(v1, v2 []float32) float32 {
 
 	var max float32 = -1
 
 	for r := range v1 {
-		diff := v1[r]-v2[r]
+		diff := v1[r] - v2[r]
 
 		if diff < 0 {
 			diff = -diff
@@ -1166,9 +1162,9 @@ func FlatSTType(i int) int {
 
 //**************************************************************
 
-func ValidateLinkArgs(sst SST.PoSST,s string) []SST.ArrowPtr {
+func ValidateLinkArgs(sst SST.PoSST, s string) []SST.ArrowPtr {
 
-	list := strings.Split(s,",")
+	list := strings.Split(s, ",")
 	var search_list []SST.ArrowPtr
 
 	if s == "" || s == "all" {
@@ -1176,7 +1172,7 @@ func ValidateLinkArgs(sst SST.PoSST,s string) []SST.ArrowPtr {
 	}
 
 	for i := range list {
-		v,ok := sst.ARROW_SHORT_DIR[list[i]]
+		v, ok := sst.ARROW_SHORT_DIR[list[i]]
 
 		if ok {
 			typ := sst.ARROW_DIRECTORY[v].STAindex - SST.ST_ZERO
@@ -1187,16 +1183,16 @@ func ValidateLinkArgs(sst SST.PoSST,s string) []SST.ArrowPtr {
 			name := sst.ARROW_DIRECTORY[v].Long
 			ptr := sst.ARROW_DIRECTORY[v].Ptr
 
-			fmt.Println(" - including search pathway STtype",SST.STTypeName(typ),"->",name)
-			search_list = append(search_list,ptr)
+			fmt.Println(" - including search pathway STtype", SST.STTypeName(typ), "->", name)
+			search_list = append(search_list, ptr)
 
 			if typ != SST.NEAR {
 				inverse := sst.INVERSE_ARROWS[ptr]
-				fmt.Println("   including inverse meaning",sst.ARROW_DIRECTORY[inverse].Long)
-				search_list = append(search_list,inverse)
+				fmt.Println("   including inverse meaning", sst.ARROW_DIRECTORY[inverse].Long)
+				search_list = append(search_list, inverse)
 			}
 		} else {
-			fmt.Println("\nThere is no link abbreviation called ",list[i])
+			fmt.Println("\nThere is no link abbreviation called ", list[i])
 			os.Exit(-1)
 		}
 	}
@@ -1206,7 +1202,7 @@ func ValidateLinkArgs(sst SST.PoSST,s string) []SST.ArrowPtr {
 
 //**************************************************************
 
-func AssembleInvolvedNodes(sst SST.PoSST,search_list []SST.ArrowPtr) ([]SST.NodePtr,map[RCtype]float32) {
+func AssembleInvolvedNodes(sst SST.PoSST, search_list []SST.ArrowPtr) ([]SST.NodePtr, map[RCtype]float32) {
 
 	var node_list []SST.NodePtr
 	var weights = make(map[RCtype]float32)
@@ -1216,50 +1212,50 @@ func AssembleInvolvedNodes(sst SST.PoSST,search_list []SST.ArrowPtr) ([]SST.Node
 		switch class {
 		case SST.N1GRAM:
 			for n := range sst.NODE_DIRECTORY.N1directory {
-				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.N1directory[n],search_list,node_list,weights)
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.N1directory[n], search_list, node_list, weights)
 			}
 		case SST.N2GRAM:
 			for n := range sst.NODE_DIRECTORY.N2directory {
-				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.N2directory[n],search_list,node_list,weights)
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.N2directory[n], search_list, node_list, weights)
 			}
 		case SST.N3GRAM:
 			for n := range sst.NODE_DIRECTORY.N3directory {
-				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.N3directory[n],search_list,node_list,weights)
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.N3directory[n], search_list, node_list, weights)
 			}
 		case SST.LT128:
 			for n := range sst.NODE_DIRECTORY.LT128directory {
-				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.LT128directory[n],search_list,node_list,weights)
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.LT128directory[n], search_list, node_list, weights)
 			}
 		case SST.LT1024:
 			for n := range sst.NODE_DIRECTORY.LT1024 {
-				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.LT1024[n],search_list,node_list,weights)
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.LT1024[n], search_list, node_list, weights)
 			}
 		case SST.GT1024:
 			for n := range sst.NODE_DIRECTORY.GT1024 {
-				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.GT1024[n],search_list,node_list,weights)
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.GT1024[n], search_list, node_list, weights)
 			}
 		}
 	}
 
-	return node_list,weights
+	return node_list, weights
 }
 
 //**************************************************************
 
-func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr,node_list []SST.NodePtr,ret_weights map[RCtype]float32) []SST.NodePtr {
+func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr, node_list []SST.NodePtr, ret_weights map[RCtype]float32) []SST.NodePtr {
 
 	var row_nodes = make(map[SST.NodePtr]bool)
 	var ret_nodes []SST.NodePtr
 
-        var rc,cr RCtype
+	var rc, cr RCtype
 
 	rc.Row = node.NPtr // transposes
-        cr.Col = node.NPtr
+	cr.Col = node.NPtr
 
 	// flip backward facing arrows
 	const inverse_flip_arrow = SST.ST_ZERO
 
-        // Only sum over outgoing (+) links
+	// Only sum over outgoing (+) links
 
 	for sttype := SST.ST_ZERO; sttype < len(node.I); sttype++ {
 
@@ -1273,7 +1269,7 @@ func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr,node_list
 				cr.Row = match.Dst
 
 				if sttype < inverse_flip_arrow {
-					ret_weights[cr] += match.Wgt  // flip arrow
+					ret_weights[cr] += match.Wgt // flip arrow
 				} else {
 					ret_weights[rc] += match.Wgt
 				}
@@ -1285,7 +1281,7 @@ func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr,node_list
 						rc.Col = match.Dst
 						cr.Row = match.Dst
 						if sttype < inverse_flip_arrow {
-							ret_weights[cr] += match.Wgt  // flip arrow
+							ret_weights[cr] += match.Wgt // flip arrow
 						} else {
 							ret_weights[rc] += match.Wgt
 						}
@@ -1307,7 +1303,7 @@ func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr,node_list
 	// Merge idempotently
 
 	for nptr := range row_nodes {
-		ret_nodes = append(ret_nodes,nptr)
+		ret_nodes = append(ret_nodes, nptr)
 	}
 
 	return ret_nodes
@@ -1317,16 +1313,16 @@ func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr,node_list
 // N4L language
 //**************************************************************
 
-func ParseN4L(sst *SST.PoSST,src []rune) {
+func ParseN4L(sst *SST.PoSST, src []rune) {
 
 	var token string
 
 	for pos := 0; pos < len(src); {
 
-		pos = SkipWhiteSpace(sst,src,pos)
-		token,pos = GetToken(sst,src,pos)
+		pos = SkipWhiteSpace(sst, src, pos)
+		token, pos = GetToken(sst, src, pos)
 
-		ClassifyTokenRole(sst,token)
+		ClassifyTokenRole(sst, token)
 	}
 
 	if Dangler() {
@@ -1336,9 +1332,9 @@ func ParseN4L(sst *SST.PoSST,src []rune) {
 
 //**************************************************************
 
-func SkipWhiteSpace(sst *SST.PoSST,src []rune, pos int) int {
+func SkipWhiteSpace(sst *SST.PoSST, src []rune, pos int) int {
 
-	for ; pos < len(src) && IsWhiteSpace(src[pos],src[pos]); pos++ {
+	for ; pos < len(src) && IsWhiteSpace(src[pos], src[pos]); pos++ {
 
 		if src[pos] == '\n' {
 			UpdateLastLineCache(sst)
@@ -1361,48 +1357,48 @@ func SkipWhiteSpace(sst *SST.PoSST,src []rune, pos int) int {
 
 func AddMandatory(sst *SST.PoSST) {
 
-	SST.RegisterContext(sst,nil,[]string{"any"})
+	SST.RegisterContext(sst, nil, []string{"any"})
 
 	// empty link for orphans to retain context - NB, this convention is used a lot in context handling EMPTY == LEADSTO
 
-	arr := SST.InsertArrowDirectory(sst,"leadsto","empty","debug","+")
-	inv := SST.InsertArrowDirectory(sst,"leadsto","void","unbug","-")
-	SST.InsertInverseArrowDirectory(sst,arr,inv)
+	arr := SST.InsertArrowDirectory(sst, "leadsto", "empty", "debug", "+")
+	inv := SST.InsertArrowDirectory(sst, "leadsto", "void", "unbug", "-")
+	SST.InsertInverseArrowDirectory(sst, arr, inv)
 
-	arr = SST.InsertArrowDirectory(sst,"near",SST.NEAR_CAPS_S,SST.NEAR_CAPS_L,"both")
-	SST.InsertInverseArrowDirectory(sst,arr,arr)
+	arr = SST.InsertArrowDirectory(sst, "near", SST.NEAR_CAPS_S, SST.NEAR_CAPS_L, "both")
+	SST.InsertInverseArrowDirectory(sst, arr, arr)
 
 	// reserved for text2N4L
 
-	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_FINDS_S,SST.CONT_FINDS_L,"+")
-        inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_FOUND_IN_S,SST.INV_CONT_FOUND_IN_L,"-")
-	SST.InsertInverseArrowDirectory(sst,arr,inv)
+	arr = SST.InsertArrowDirectory(sst, "contains", SST.CONT_FINDS_S, SST.CONT_FINDS_L, "+")
+	inv = SST.InsertArrowDirectory(sst, "contains", SST.INV_CONT_FOUND_IN_S, SST.INV_CONT_FOUND_IN_L, "-")
+	SST.InsertInverseArrowDirectory(sst, arr, inv)
 
-	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_FRAG_S,SST.CONT_FRAG_L,"+")
-        inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_FRAG_IN_S,SST.INV_CONT_FRAG_IN_L,"-")
-	SST.InsertInverseArrowDirectory(sst,arr,inv)
+	arr = SST.InsertArrowDirectory(sst, "contains", SST.CONT_FRAG_S, SST.CONT_FRAG_L, "+")
+	inv = SST.InsertArrowDirectory(sst, "contains", SST.INV_CONT_FRAG_IN_S, SST.INV_CONT_FRAG_IN_L, "-")
+	SST.InsertInverseArrowDirectory(sst, arr, inv)
 
-	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_INTENT_S,SST.EXPR_INTENT_L,"+")
-        inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_INTENT_S,SST.INV_EXPR_INTENT_L,"-")
-	SST.InsertInverseArrowDirectory(sst,arr,inv)
+	arr = SST.InsertArrowDirectory(sst, "properties", SST.EXPR_INTENT_S, SST.EXPR_INTENT_L, "+")
+	inv = SST.InsertArrowDirectory(sst, "properties", SST.INV_EXPR_INTENT_S, SST.INV_EXPR_INTENT_L, "-")
+	SST.InsertInverseArrowDirectory(sst, arr, inv)
 
-	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_AMBIENT_S,SST.EXPR_AMBIENT_L,"+")
-        inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_AMBIENT_S,SST.INV_EXPR_AMBIENT_L,"-")
-	SST.InsertInverseArrowDirectory(sst,arr,inv)
+	arr = SST.InsertArrowDirectory(sst, "properties", SST.EXPR_AMBIENT_S, SST.EXPR_AMBIENT_L, "+")
+	inv = SST.InsertArrowDirectory(sst, "properties", SST.INV_EXPR_AMBIENT_S, SST.INV_EXPR_AMBIENT_L, "-")
+	SST.InsertInverseArrowDirectory(sst, arr, inv)
 
 	// Reserved for special UX handling
 
-	arr = SST.InsertArrowDirectory(sst,"leadsto",SEQUENCE_RELN,SEQUENCE_RELN_LONG,"+")
-	inv = SST.InsertArrowDirectory(sst,"leadsto",SEQUENCE_RELN_INV,SEQUENCE_RELN_INV_LONG,"-")
-	SST.InsertInverseArrowDirectory(sst,arr,inv)
+	arr = SST.InsertArrowDirectory(sst, "leadsto", SEQUENCE_RELN, SEQUENCE_RELN_LONG, "+")
+	inv = SST.InsertArrowDirectory(sst, "leadsto", SEQUENCE_RELN_INV, SEQUENCE_RELN_INV_LONG, "-")
+	SST.InsertInverseArrowDirectory(sst, arr, inv)
 
-	arr = SST.InsertArrowDirectory(sst,"properties","url","has URL","+")
-	inv = SST.InsertArrowDirectory(sst,"properties","isurl","is a URL for","-")
-	SST.InsertInverseArrowDirectory(sst,arr,inv)
+	arr = SST.InsertArrowDirectory(sst, "properties", "url", "has URL", "+")
+	inv = SST.InsertArrowDirectory(sst, "properties", "isurl", "is a URL for", "-")
+	SST.InsertInverseArrowDirectory(sst, arr, inv)
 
-	arr = SST.InsertArrowDirectory(sst,"properties","img","has image","+")
-	inv = SST.InsertArrowDirectory(sst,"properties","isimg","is an image for","-")
-	SST.InsertInverseArrowDirectory(sst,arr,inv)
+	arr = SST.InsertArrowDirectory(sst, "properties", "img", "has image", "+")
+	inv = SST.InsertArrowDirectory(sst, "properties", "isimg", "is an image for", "-")
+	SST.InsertInverseArrowDirectory(sst, arr, inv)
 
 }
 
@@ -1425,74 +1421,74 @@ func ReadConfigData(name string) []rune {
 
 //**************************************************************
 
-func GetToken(sst *SST.PoSST,src []rune, pos int) (string,int) {
+func GetToken(sst *SST.PoSST, src []rune, pos int) (string, int) {
 
 	// Handle concatenation of words/lines and separation of types
 
 	var token string
 
-	if pos >= len(src) {	    // end of file
+	if pos >= len(src) { // end of file
 		UpdateLastLineCache(sst)
 		return "", pos
 	}
 
-	switch (src[pos]) {
+	switch src[pos] {
 
-	case '+':  // could be +::
+	case '+': // could be +::
 
-		switch (src[pos+1]) {
+		switch src[pos+1] {
 
 		case ':':
-			token,pos = ReadToLast(src,pos,':')
+			token, pos = ReadToLast(src, pos, ':')
 		default:
-			token,pos = ReadToLast(src,pos,ALPHATEXT)
+			token, pos = ReadToLast(src, pos, ALPHATEXT)
 		}
 
-	case '-':  // could -:: or -section
+	case '-': // could -:: or -section
 
-		switch (src[pos+1]) {
+		switch src[pos+1] {
 
 		case ':':
-			token,pos = ReadToLast(src,pos,':')
+			token, pos = ReadToLast(src, pos, ':')
 		default:
-			token,pos = ReadToLast(src,pos,ALPHATEXT)
+			token, pos = ReadToLast(src, pos, ALPHATEXT)
 		}
 
 	case ':':
-		token,pos = ReadToLast(src,pos,':')
+		token, pos = ReadToLast(src, pos, ':')
 
 	case '(':
-		token,pos = ReadToLast(src,pos,')')
+		token, pos = ReadToLast(src, pos, ')')
 
-        case '"','\'':
+	case '"', '\'':
 		quote := src[pos]
 
-		if IsQuote(quote) && IsBackReference(src,pos) {
+		if IsQuote(quote) && IsBackReference(src, pos) {
 			token = "\""
 			pos++
 		} else {
-			if quote == '"' && pos+2 < len(src) && IsWhiteSpace(src[pos+1],src[pos+2]) {
+			if quote == '"' && pos+2 < len(src) && IsWhiteSpace(src[pos+1], src[pos+2]) {
 				ParseError(ERR_ILLEGAL_QUOTED_STRING_OR_REF)
 				os.Exit(-1)
 			}
-			token,pos = ReadToLast(src,pos,quote)
-			strip := strings.Split(token,string(quote))
+			token, pos = ReadToLast(src, pos, quote)
+			strip := strings.Split(token, string(quote))
 			token = strip[1]
 		}
 
 	case '#':
-		return "",pos
+		return "", pos
 
 	case '/':
 		if src[pos+1] == '/' {
-			return "",pos
+			return "", pos
 		}
 
 	case '@':
-		token,pos = ReadToLast(src,pos,' ')
+		token, pos = ReadToLast(src, pos, ' ')
 
 	default: // a text item that could end with any of the above
-		token,pos = ReadToLast(src,pos,ALPHATEXT)
+		token, pos = ReadToLast(src, pos, ALPHATEXT)
 
 	}
 
@@ -1501,7 +1497,7 @@ func GetToken(sst *SST.PoSST,src []rune, pos int) (string,int) {
 
 //**************************************************************
 
-func ClassifyTokenRole(sst *SST.PoSST,token string) {
+func ClassifyTokenRole(sst *SST.PoSST, token string) {
 
 	if len(token) == 0 {
 		return
@@ -1511,31 +1507,31 @@ func ClassifyTokenRole(sst *SST.PoSST,token string) {
 
 	case ':':
 		expression := ExtractContextExpression(token)
-		CheckSequenceMode(expression,'+')
+		CheckSequenceMode(expression, '+')
 		LINE_ITEM_STATE = ROLE_CONTEXT
-		AssessGrammarCompletions(sst,expression,LINE_ITEM_STATE)
+		AssessGrammarCompletions(sst, expression, LINE_ITEM_STATE)
 
 	case '+':
 		expression := ExtractContextExpression(token)
-		CheckSequenceMode(expression,'+')
+		CheckSequenceMode(expression, '+')
 		LINE_ITEM_STATE = ROLE_CONTEXT_ADD
-		AssessGrammarCompletions(sst,expression,LINE_ITEM_STATE)
+		AssessGrammarCompletions(sst, expression, LINE_ITEM_STATE)
 
 	case '-':
 		if token[len(token)-1:] == string(':') {
 			expression := ExtractContextExpression(token)
-			CheckSequenceMode(expression,'-')
+			CheckSequenceMode(expression, '-')
 			LINE_ITEM_STATE = ROLE_CONTEXT_SUBTRACT
-			AssessGrammarCompletions(sst,expression,LINE_ITEM_STATE)
+			AssessGrammarCompletions(sst, expression, LINE_ITEM_STATE)
 		} else if len(SECTION_STATE) == 0 {
 			section := strings.TrimSpace(token[1:])
 			LINE_ITEM_STATE = ROLE_SECTION
-			AssessGrammarCompletions(sst,section,LINE_ITEM_STATE)
+			AssessGrammarCompletions(sst, section, LINE_ITEM_STATE)
 		} else {
 			// The line starts with a -, but it's not a new chapter
-			LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
+			LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"], token)
 			StoreAlias(token)
-			AssessGrammarCompletions(sst,token,LINE_ITEM_STATE)
+			AssessGrammarCompletions(sst, token, LINE_ITEM_STATE)
 
 			LINE_ITEM_STATE = ROLE_EVENT
 			LINE_ITEM_COUNTER++
@@ -1548,38 +1544,38 @@ func ClassifyTokenRole(sst *SST.PoSST,token string) {
 			ParseError(ERR_MISSING_ITEM_RELN)
 			os.Exit(-1)
 		}
-		link := GetLinkArrowByName(sst,token)
+		link := GetLinkArrowByName(sst, token)
 		LINE_ITEM_STATE = ROLE_RELATION
-		LINE_RELN_CACHE["THIS"] = append(LINE_RELN_CACHE["THIS"],link)
+		LINE_RELN_CACHE["THIS"] = append(LINE_RELN_CACHE["THIS"], link)
 		LINE_RELN_COUNTER++
 
 	case '"': // prior reference
-		result := LookupAlias("PREV",LINE_ITEM_COUNTER)
-		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],result)
+		result := LookupAlias("PREV", LINE_ITEM_COUNTER)
+		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"], result)
 		StoreAlias(result)
-		AssessGrammarCompletions(sst,result,LINE_ITEM_STATE)
+		AssessGrammarCompletions(sst, result, LINE_ITEM_STATE)
 		LINE_ITEM_STATE = ROLE_EVENT
 		LINE_ITEM_COUNTER++
 
 	case '@':
 		LINE_ITEM_STATE = ROLE_LINE_ALIAS
-		token  = strings.TrimSpace(token)
+		token = strings.TrimSpace(token)
 		LINE_ALIAS = token[1:]
 		CheckLineAlias(token)
 
 	case '$':
 		CheckLineAlias(token)
 		actual := ResolveAliasedItem(token)
-		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],actual)
-		PVerbose("fyi, line reference",token,"resolved to",actual)
-		AssessGrammarCompletions(sst,actual,LINE_ITEM_STATE)
+		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"], actual)
+		PVerbose("fyi, line reference", token, "resolved to", actual)
+		AssessGrammarCompletions(sst, actual, LINE_ITEM_STATE)
 		LINE_ITEM_STATE = ROLE_LOOKUP
 		LINE_ITEM_COUNTER++
 
 	default:
-		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
+		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"], token)
 		StoreAlias(token)
-		AssessGrammarCompletions(sst,token,LINE_ITEM_STATE)
+		AssessGrammarCompletions(sst, token, LINE_ITEM_STATE)
 
 		LINE_ITEM_STATE = ROLE_EVENT
 		LINE_ITEM_COUNTER++
@@ -1588,7 +1584,7 @@ func ClassifyTokenRole(sst *SST.PoSST,token string) {
 
 //**************************************************************
 
-func AssessGrammarCompletions(sst *SST.PoSST,token string, prior_state int) {
+func AssessGrammarCompletions(sst *SST.PoSST, token string, prior_state int) {
 
 	if len(token) == 0 {
 		return
@@ -1608,32 +1604,32 @@ func AssessGrammarCompletions(sst *SST.PoSST,token string, prior_state int) {
 
 	case ROLE_RELATION:
 
-		CheckNonNegative(LINE_ITEM_COUNTER-2)
+		CheckNonNegative(LINE_ITEM_COUNTER - 2)
 		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
 		last_iptr := LINE_ITEM_REFS[LINE_ITEM_COUNTER-2]
-		this_iptr := HandleNode(sst,this_item)
+		this_iptr := HandleNode(sst, this_item)
 		const annotation = false
-		IdempAddLink(sst,last_item,last_iptr,last_reln,this_item,this_iptr,annotation)
+		IdempAddLink(sst, last_item, last_iptr, last_reln, this_item, this_iptr, annotation)
 		CheckSection(this_item)
 
 	case ROLE_CONTEXT:
-		Box("Reset context: ->",this_item)
-		ContextEval(this_item,"=")
+		Box("Reset context: ->", this_item)
+		ContextEval(this_item, "=")
 		CheckSection(this_item)
 
 	case ROLE_CONTEXT_ADD:
-		Box("Add to context:",this_item)
-		ContextEval(this_item,"+")
+		Box("Add to context:", this_item)
+		ContextEval(this_item, "+")
 		CheckSection(this_item)
 
 	case ROLE_CONTEXT_SUBTRACT:
-		Box("Remove from context:",this_item)
-		ContextEval(this_item,"-")
+		Box("Remove from context:", this_item)
+		ContextEval(this_item, "-")
 		CheckSection(this_item)
 
 	case ROLE_SECTION:
-		Box("Set chapter/section: ->",this_item)
+		Box("Set chapter/section: ->", this_item)
 		CheckChapter(this_item)
 		SECTION_STATE = this_item
 
@@ -1641,11 +1637,11 @@ func AssessGrammarCompletions(sst *SST.PoSST,token string, prior_state int) {
 		CheckSection(this_item)
 
 		if NoteToSelf(token) {
-			ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
+			ParseError(WARN_NOTE_TO_SELF + " (" + token + ")")
 		}
 
-		HandleNode(sst,this_item)
-		LinkUpStorySequence(sst,this_item)
+		HandleNode(sst, this_item)
+		LinkUpStorySequence(sst, this_item)
 	}
 }
 
@@ -1654,10 +1650,10 @@ func AssessGrammarCompletions(sst *SST.PoSST,token string, prior_state int) {
 func CheckLineAlias(token string) {
 
 	var contig string
-	fmt.Sscanf(token,"%s",&contig)
+	fmt.Sscanf(token, "%s", &contig)
 
 	if token[0] == '@' && len(contig) == 1 {
-		ParseError(ERR_BAD_LABEL_OR_REF+token)
+		ParseError(ERR_BAD_LABEL_OR_REF + token)
 		os.Exit(-1)
 	}
 }
@@ -1667,12 +1663,12 @@ func CheckLineAlias(token string) {
 func CheckChapter(name string) {
 
 	if name[0] == ':' {
-		ParseError(WARN_CHAPTER_CLASS_MIXUP+name)
+		ParseError(WARN_CHAPTER_CLASS_MIXUP + name)
 		os.Exit(-1)
 	}
 
-	if strings.Contains(name,",") {
-		ParseError(ERR_CHAPTER_COMMA+name)
+	if strings.Contains(name, ",") {
+		ParseError(ERR_CHAPTER_COMMA + name)
 		os.Exit(-1)
 	}
 
@@ -1685,8 +1681,8 @@ func CheckChapter(name string) {
 func StoreAlias(name string) {
 
 	if LINE_ALIAS != "" {
-		PVerbose("-- Storing alias",LINE_ITEM_CACHE[LINE_ALIAS],name,"as",LINE_ALIAS)
-		LINE_ITEM_CACHE[LINE_ALIAS] = append(LINE_ITEM_CACHE[LINE_ALIAS],name)
+		PVerbose("-- Storing alias", LINE_ITEM_CACHE[LINE_ALIAS], name, "as", LINE_ALIAS)
+		LINE_ITEM_CACHE[LINE_ALIAS] = append(LINE_ITEM_CACHE[LINE_ALIAS], name)
 	}
 }
 
@@ -1724,7 +1720,7 @@ func GetBookMarks() map[string]string {
 // Memory representation
 //**************************************************************
 
-func IdempAddLink(sst *SST.PoSST,from string, frptr SST.NodePtr, link SST.Link,to string, toptr SST.NodePtr, is_annotation bool) {
+func IdempAddLink(sst *SST.PoSST, from string, frptr SST.NodePtr, link SST.Link, to string, toptr SST.NodePtr, is_annotation bool) {
 
 	// Add a link index cache pointer directly to a from node
 
@@ -1734,17 +1730,17 @@ func IdempAddLink(sst *SST.PoSST,from string, frptr SST.NodePtr, link SST.Link,t
 	}
 
 	if link.Wgt != 1 {
-		PVerbose("... Relation:",from,"--(",sst.ARROW_DIRECTORY[link.Arr].Long,",",link.Wgt,")->",to,sst.CONTEXT_DIRECTORY[link.Ctx])
+		PVerbose("... Relation:", from, "--(", sst.ARROW_DIRECTORY[link.Arr].Long, ",", link.Wgt, ")->", to, sst.CONTEXT_DIRECTORY[link.Ctx])
 	} else {
-		PVerbose("... Relation:",from,"--",sst.ARROW_DIRECTORY[link.Arr].Long,"->",to,sst.CONTEXT_DIRECTORY[link.Ctx])
+		PVerbose("... Relation:", from, "--", sst.ARROW_DIRECTORY[link.Arr].Long, "->", to, sst.CONTEXT_DIRECTORY[link.Ctx])
 	}
 
-        // Build PageMap
+	// Build PageMap
 
 	link.Dst = toptr
 
 	if !is_annotation {
-		LINE_PATH = append(LINE_PATH,link)
+		LINE_PATH = append(LINE_PATH, link)
 	}
 
 	if from == "" || to == "" {
@@ -1752,45 +1748,45 @@ func IdempAddLink(sst *SST.PoSST,from string, frptr SST.NodePtr, link SST.Link,t
 		os.Exit(-1)
 	}
 
-	SST.AppendLinkToNode(sst,frptr,link,toptr)
+	SST.AppendLinkToNode(sst, frptr, link, toptr)
 
 	// Double up the reverse definition for easy indexing of both in/out arrows
 	// But be careful not the make the graph undirected by mistake
 
-	invlink := GetLinkArrowByName(sst,sst.ARROW_DIRECTORY[sst.INVERSE_ARROWS[link.Arr]].Short)
+	invlink := GetLinkArrowByName(sst, sst.ARROW_DIRECTORY[sst.INVERSE_ARROWS[link.Arr]].Short)
 
 	invlink.Ctx = link.Ctx
 
-	SST.AppendLinkToNode(sst,toptr,invlink,frptr)
+	SST.AppendLinkToNode(sst, toptr, invlink, frptr)
 
 }
 
 //**************************************************************
 
-func HandleNode(sst *SST.PoSST,annotated string) SST.NodePtr {
+func HandleNode(sst *SST.PoSST, annotated string) SST.NodePtr {
 
-	clean_ptr,clean_version := IdempAddNode(sst,annotated,SEQ_UNKNOWN)
+	clean_ptr, clean_version := IdempAddNode(sst, annotated, SEQ_UNKNOWN)
 
-	PVerbose("Event/item/node: \"",clean_version,"\" in chapter",SECTION_STATE)
+	PVerbose("Event/item/node: \"", clean_version, "\" in chapter", SECTION_STATE)
 
-	LINE_ITEM_REFS = append(LINE_ITEM_REFS,clean_ptr)
+	LINE_ITEM_REFS = append(LINE_ITEM_REFS, clean_ptr)
 
 	if len(clean_version) != len(annotated) {
-		AddBackAnnotations(sst,clean_version,clean_ptr,annotated)
+		AddBackAnnotations(sst, clean_version, clean_ptr, annotated)
 	}
 
-	IdempAddContextToNode(sst,clean_ptr)
+	IdempAddContextToNode(sst, clean_ptr)
 
 	return clean_ptr
 }
 
 //**************************************************************
 
-func IdempAddNode(sst *SST.PoSST,s string,intended_sequence bool) (SST.NodePtr,string) {
+func IdempAddNode(sst *SST.PoSST, s string, intended_sequence bool) (SST.NodePtr, string) {
 
 	clean_version := StripAnnotations(s)
 
-	l,c := SST.StorageClass(s)
+	l, c := SST.StorageClass(s)
 
 	var new_nodetext SST.Node
 	new_nodetext.S = clean_version
@@ -1799,33 +1795,33 @@ func IdempAddNode(sst *SST.PoSST,s string,intended_sequence bool) (SST.NodePtr,s
 	new_nodetext.Chap = SECTION_STATE
 	new_nodetext.NPtr.Class = c
 
-	iptr := SST.AppendTextToDirectory(sst,new_nodetext,ParseError)
+	iptr := SST.AppendTextToDirectory(sst, new_nodetext, ParseError)
 
 	// Build page map
 
 	if LINE_PATH == nil {
 		var leg SST.Link
 		leg.Dst = iptr
-		LINE_PATH = append(LINE_PATH,leg)
+		LINE_PATH = append(LINE_PATH, leg)
 	}
 
-	return iptr,clean_version
+	return iptr, clean_version
 }
 
 //**************************************************************
 
-func IdempAddContextToNode(sst *SST.PoSST,nptr SST.NodePtr) {
+func IdempAddContextToNode(sst *SST.PoSST, nptr SST.NodePtr) {
 
 	// add a nullpotent link containing root node for
 	// context membership, in case it's a singleton
 
 	var nowhere SST.NodePtr
 	var empty SST.Link
-	empty.Ctx = SST.RegisterContext(sst,CONTEXT_STATE,nil)
+	empty.Ctx = SST.RegisterContext(sst, CONTEXT_STATE, nil)
 	empty.Arr = 0
 	empty.Wgt = 1
 
-	SST.AppendLinkToNode(sst,nptr,empty,nowhere)
+	SST.AppendLinkToNode(sst, nptr, empty, nowhere)
 }
 
 //**************************************************************
@@ -1840,7 +1836,7 @@ func ReadFile(filename string) []rune {
 
 	for r := range text {
 		switch text[r] {
-		case NON_ASCII_LQUOTE,NON_ASCII_RQUOTE:
+		case NON_ASCII_LQUOTE, NON_ASCII_RQUOTE:
 			text[r] = '"'
 		}
 	}
@@ -1848,10 +1844,9 @@ func ReadFile(filename string) []rune {
 	return text
 }
 
-
 //**************************************************************
 
-func ReadToLast(src []rune,pos int, stop rune) (string,int) {
+func ReadToLast(src []rune, pos int, stop rune) (string, int) {
 
 	// Read until we find a terminator for this kind of token
 	// determined by "stop" signal - watch out for embedded quotes
@@ -1863,15 +1858,15 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 	// We have to read the string in rune form to handle unicode
 	// rune by rune to handle special cases and aggregated into cpy
 
-	for ; Collect(src,pos,stop,cpy) && pos < len(src); pos++ {
+	for ; Collect(src, pos, stop, cpy) && pos < len(src); pos++ {
 
-		cpy = append(cpy,src[pos])
+		cpy = append(cpy, src[pos])
 
 		// if there's an embedded " quote, treat quoted section as a single character
 
 		if pos+1 < len(src) && src[pos] == '"' {
-			for p := pos+1; p < len(src); p++ {
-				cpy = append(cpy,src[p])
+			for p := pos + 1; p < len(src); p++ {
+				cpy = append(cpy, src[p])
 				if src[p] == '"' {
 					pos = p
 					break
@@ -1881,7 +1876,7 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 	}
 
 	if IsQuote(stop) && src[pos-1] != stop {
-		e := fmt.Sprintf("%s starting at line %d (found token %s)",ERR_MISMATCH_QUOTE,starting_at,string(cpy))
+		e := fmt.Sprintf("%s starting at line %d (found token %s)", ERR_MISMATCH_QUOTE, starting_at, string(cpy))
 		ParseError(e)
 		os.Exit(-1)
 	}
@@ -1890,14 +1885,14 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 
 	token := string(cpy)
 	token = strings.TrimSpace(token)
-	count := strings.Count(token,"\n")
+	count := strings.Count(token, "\n")
 	LINE_NUM += count
-	return token,pos
+	return token, pos
 }
 
 //**************************************************************
 
-func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
+func Collect(src []rune, pos int, stop rune, cpy []rune) bool {
 
 	// Generalize the stop-condition for for-loop accumulating runes
 	// when we receive the "stop" rune signal, that's the end by policy
@@ -1910,9 +1905,9 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 		var is_end bool
 
 		if pos+1 >= len(src) {
-			is_end= true
+			is_end = true
 		} else {
-			is_end = IsWhiteSpace(src[pos],src[pos+1])
+			is_end = IsWhiteSpace(src[pos], src[pos+1])
 		}
 
 		if src[pos-1] == stop && is_end {
@@ -1931,12 +1926,12 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 	// ordinary text strings are signalled by ALPHATEXT policy
 
 	if stop == ALPHATEXT {
-		collect = IsGeneralString(src,pos)
+		collect = IsGeneralString(src, pos)
 	} else {
 		// a ::: cluster is special, we don't care how many
 
 		if stop != ':' && !IsQuote(stop) {
-			return !LastSpecialChar(src,pos,stop)
+			return !LastSpecialChar(src, pos, stop)
 		} else {
 			var groups int = 0
 
@@ -1952,7 +1947,7 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 			}
 
 			if groups > 1 {
-				collect = !LastSpecialChar(src,pos,stop)
+				collect = !LastSpecialChar(src, pos, stop)
 			}
 		}
 	}
@@ -1962,30 +1957,30 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 
 //**************************************************************
 
-func IsGeneralString(src []rune,pos int) bool {
+func IsGeneralString(src []rune, pos int) bool {
 
 	// Plain text should terminate like this, but
 	// beware of quotes inside
 
 	switch src[pos] {
 
-        case ')':
-		var before,after int
+	case ')':
+		var before, after int
 
 		if pos-20 > 0 {
-			before = pos-20
+			before = pos - 20
 		} else {
 			before = 0
 		}
 
-		if pos + 20 < len(src) {
-			after = pos+20
+		if pos+20 < len(src) {
+			after = pos + 20
 		} else {
-			after = len(src)-1
+			after = len(src) - 1
 		}
 
-		msg := fmt.Sprintf("%s at position %d near '...%s...'",ERR_STRAY_PAREN,pos,string(src[before:after]))
-	        ParseError(msg)
+		msg := fmt.Sprintf("%s at position %d near '...%s...'", ERR_STRAY_PAREN, pos, string(src[before:after]))
+		ParseError(msg)
 		os.Exit(-1)
 	case '(':
 		return false
@@ -2008,7 +2003,7 @@ func IsGeneralString(src []rune,pos int) bool {
 func IsQuote(r rune) bool {
 
 	switch r {
-	case '"','\'',NON_ASCII_LQUOTE,NON_ASCII_RQUOTE:
+	case '"', '\'', NON_ASCII_LQUOTE, NON_ASCII_RQUOTE:
 		return true
 	}
 
@@ -2017,7 +2012,7 @@ func IsQuote(r rune) bool {
 
 //**************************************************************
 
-func LastSpecialChar(src []rune,pos int, stop rune) bool {
+func LastSpecialChar(src []rune, pos int, stop rune) bool {
 
 	if src[pos] == '\n' {
 		if stop != '"' {
@@ -2040,14 +2035,14 @@ func LastSpecialChar(src []rune,pos int, stop rune) bool {
 
 //**************************************************************
 
-func UpdateLastLineCache(sst *SST.PoSST,) {
+func UpdateLastLineCache(sst *SST.PoSST) {
 
 	if Dangler() {
 		ParseError(ERR_MISSING_EVENT)
 	}
 
 	if !CONFIGURING {
-		PageMap(sst,SECTION_STATE,CONTEXT_STATE,LINE_PATH,LINE_NUM,LINE_ALIAS)
+		PageMap(sst, SECTION_STATE, CONTEXT_STATE, LINE_PATH, LINE_NUM, LINE_ALIAS)
 	}
 
 	LINE_NUM++
@@ -2078,18 +2073,18 @@ func UpdateLastLineCache(sst *SST.PoSST,) {
 
 //**************************************************************
 
-func PageMap(sst *SST.PoSST,chapter string,ctxmap map[string]bool,path []SST.Link,line int,alias string) {
+func PageMap(sst *SST.PoSST, chapter string, ctxmap map[string]bool, path []SST.Link, line int, alias string) {
 
 	if len(path) == 0 {
 		return
 	}
 
-	var page_event SST.PageMap;
+	var page_event SST.PageMap
 	var context []string
 	var contextstr string
 
 	for c := range ctxmap {
-		context = append(context,c)
+		context = append(context, c)
 	}
 
 	sort.Strings(context)
@@ -2103,23 +2098,23 @@ func PageMap(sst *SST.PoSST,chapter string,ctxmap map[string]bool,path []SST.Lin
 
 	page_event.Chapter = chapter
 	page_event.Alias = alias
-	page_event.Context = SST.RegisterContext(sst,CONTEXT_STATE,nil)
+	page_event.Context = SST.RegisterContext(sst, CONTEXT_STATE, nil)
 	page_event.Line = line
 	page_event.Path = path
 
-	sst.PAGE_MAP = append(sst.PAGE_MAP,page_event)
+	sst.PAGE_MAP = append(sst.PAGE_MAP, page_event)
 }
 
 //**************************************************************
 
-func IsWhiteSpace(r,rn rune) bool {
+func IsWhiteSpace(r, rn rune) bool {
 
 	return (unicode.IsSpace(r) || r == '#' || r == '/' && rn == '/')
 }
 
 //**************************************************************
 
-func IsBackReference(src []rune,pos int) bool {
+func IsBackReference(src []rune, pos int) bool {
 
 	// Any non-whitespace before \n or ( means it's not a back reference
 
@@ -2188,7 +2183,7 @@ func ExtractContextExpression(token string) string {
 
 func CheckSequenceMode(context string, mode rune) {
 
-	if (strings.Contains(context,"_sequence_")) {
+	if strings.Contains(context, "_sequence_") {
 
 		switch mode {
 		case '+':
@@ -2208,7 +2203,7 @@ func CheckSequenceMode(context string, mode rune) {
 
 //**************************************************************
 
-func LinkUpStorySequence(sst *SST.PoSST,this string) {
+func LinkUpStorySequence(sst *SST.PoSST, this string) {
 
 	// Join together a sequence of nodes using default "(then)"
 
@@ -2216,7 +2211,7 @@ func LinkUpStorySequence(sst *SST.PoSST,this string) {
 
 		if LINE_ITEM_COUNTER == 1 && LAST_IN_SEQUENCE != "" {
 
-			PVerbose("* ... Sequence addition: ",LAST_IN_SEQUENCE,"-(",SEQUENCE_RELN,")->",this,"\n")
+			PVerbose("* ... Sequence addition: ", LAST_IN_SEQUENCE, "-(", SEQUENCE_RELN, ")->", this, "\n")
 
 			var last_iptr SST.NodePtr
 
@@ -2239,11 +2234,11 @@ func LinkUpStorySequence(sst *SST.PoSST,this string) {
 			if thisCleaned == "" {
 				ParseError("empty cleaned sequence destination")
 			}
-			link := GetLinkArrowByName(sst,"(then)")
-			SST.AppendLinkToNode(sst,last_iptr,link,this_iptr)
+			link := GetLinkArrowByName(sst, "(then)")
+			SST.AppendLinkToNode(sst, last_iptr, link, this_iptr)
 
-			invlink := GetLinkArrowByName(sst,sst.ARROW_DIRECTORY[sst.INVERSE_ARROWS[link.Arr]].Short)
-			SST.AppendLinkToNode(sst,this_iptr,invlink,last_iptr)
+			invlink := GetLinkArrowByName(sst, sst.ARROW_DIRECTORY[sst.INVERSE_ARROWS[link.Arr]].Short)
+			SST.AppendLinkToNode(sst, this_iptr, invlink, last_iptr)
 
 		}
 
@@ -2266,18 +2261,18 @@ func StripAnnotations(fulltext string) string {
 		}
 
 		if !protected {
-			skip,symb := EmbeddedSymbol(preserve_unicode,r)
+			skip, symb := EmbeddedSymbol(preserve_unicode, r)
 
 			if skip > 0 {
-				r += skip-1
+				r += skip - 1
 				if unicode.IsSpace(preserve_unicode[r]) {
-					ParseError(ERR_NON_WORD_WHITE+symb)
+					ParseError(ERR_NON_WORD_WHITE + symb)
 				}
 				continue
 			}
 		}
 
-		deloused = append(deloused,preserve_unicode[r])
+		deloused = append(deloused, preserve_unicode[r])
 	}
 
 	return string(deloused)
@@ -2285,12 +2280,12 @@ func StripAnnotations(fulltext string) string {
 
 //**************************************************************
 
-func AddBackAnnotations(sst *SST.PoSST,cleantext string,cleanptr SST.NodePtr,annotated string) {
+func AddBackAnnotations(sst *SST.PoSST, cleantext string, cleanptr SST.NodePtr, annotated string) {
 
 	var protected bool = false
 
-	reminder := fmt.Sprintf("%.30s...",cleantext)
-	PVerbose("\n        Checking annotations from \""+reminder+"\"")
+	reminder := fmt.Sprintf("%.30s...", cleantext)
+	PVerbose("\n        Checking annotations from \"" + reminder + "\"")
 
 	for r := 0; r < len(annotated); r++ {
 
@@ -2298,14 +2293,14 @@ func AddBackAnnotations(sst *SST.PoSST,cleantext string,cleanptr SST.NodePtr,ann
 			protected = !protected
 		} else {
 			if !protected {
-				skip,symb := EmbeddedSymbol([]rune(annotated),r)
+				skip, symb := EmbeddedSymbol([]rune(annotated), r)
 
 				if skip > 0 {
-					link := GetLinkArrowByName(sst,ANNOTATION[symb])
-					this_item := ExtractWord(annotated,r+skip)
+					link := GetLinkArrowByName(sst, ANNOTATION[symb])
+					this_item := ExtractWord(annotated, r+skip)
 
 					if len(this_item) <= WORD_MISTAKE_LEN {
-						err := fmt.Sprintf("%s \"%s\"  after annotation %s, len %d",ERR_SHORT_WORD,this_item,symb,skip)
+						err := fmt.Sprintf("%s \"%s\"  after annotation %s, len %d", ERR_SHORT_WORD, this_item, symb, skip)
 						ParseError(err)
 					}
 
@@ -2315,7 +2310,7 @@ func AddBackAnnotations(sst *SST.PoSST,cleantext string,cleanptr SST.NodePtr,ann
 					}
 					const is_annotation = true
 					IdempAddLink(sst, reminder, cleanptr, link, this_item, this_iptr, is_annotation)
-					r += skip-1
+					r += skip - 1
 					continue
 				}
 			}
@@ -2325,10 +2320,10 @@ func AddBackAnnotations(sst *SST.PoSST,cleantext string,cleanptr SST.NodePtr,ann
 
 //**************************************************************
 
-func EmbeddedSymbol(runetext []rune,offset int) (int,string) {
+func EmbeddedSymbol(runetext []rune, offset int) (int, string) {
 
 	if offset >= len(runetext) {
-		return 0,"end of string"
+		return 0, "end of string"
 	}
 
 	var found_len int
@@ -2370,15 +2365,15 @@ func EmbeddedSymbol(runetext []rune,offset int) (int,string) {
 	}
 
 	if len(found) > 0 {
-		return found_len,found
+		return found_len, found
 	}
 
-	return 0,"UNKNOWN SYMBOL"
+	return 0, "UNKNOWN SYMBOL"
 }
 
 //**************************************************************
 
-func ExtractWord(fulltext string,offset int) string {
+func ExtractWord(fulltext string, offset int) string {
 
 	var protected bool = false
 
@@ -2396,17 +2391,17 @@ func ExtractWord(fulltext string,offset int) string {
 
 		if !protected && !unicode.IsLetter(rune(runetext[r])) {
 
-			sword := strings.Trim(strings.TrimSpace(string(word)),pair_quote)
+			sword := strings.Trim(strings.TrimSpace(string(word)), pair_quote)
 			return sword
 		}
 
-		word = append(word,runetext[r])
+		word = append(word, runetext[r])
 	}
 
-	sword := strings.Trim(strings.TrimSpace(string(word)),pair_quote)
+	sword := strings.Trim(strings.TrimSpace(string(word)), pair_quote)
 
 	if len(sword) <= WORD_MISTAKE_LEN {
-		ParseError(ERR_SHORT_WORD+"\""+sword+"\"")
+		ParseError(ERR_SHORT_WORD + "\"" + sword + "\"")
 	}
 
 	return sword
@@ -2453,27 +2448,27 @@ func GetMemChapters(sst SST.PoSST) []string {
 
 //**************************************************************
 
-func GetNodePointedTo(sst *SST.PoSST,node SST.Node,sequence []SST.ArrowPtr) (SST.NodePtr,bool) {
+func GetNodePointedTo(sst *SST.PoSST, node SST.Node, sequence []SST.ArrowPtr) (SST.NodePtr, bool) {
 
-	for _,s_arr := range sequence {
+	for _, s_arr := range sequence {
 
 		found := false
 		arrow := sst.ARROW_DIRECTORY[s_arr]
 		stindex := arrow.STAindex
 
-		for _,lnk := range node.I[stindex] {
+		for _, lnk := range node.I[stindex] {
 			if lnk.Arr == s_arr {
 				found = true
-				node = SST.GetMemoryNodeFromPtr(sst,lnk.Dst)
+				node = SST.GetMemoryNodeFromPtr(sst, lnk.Dst)
 			}
 		}
 
 		if !found {
-			return node.NPtr,false
+			return node.NPtr, false
 		}
 	}
 
-	return node.NPtr,true
+	return node.NPtr, true
 }
 
 //**************************************************************
@@ -2487,13 +2482,13 @@ func ResetContextState() {
 
 //**************************************************************
 
-func ContextEval(s,op string) {
+func ContextEval(s, op string) {
 
 	expr := CleanExpression(s)
 
-	or_parts := SplitWithParensIntact(expr,'|')
+	or_parts := SplitWithParensIntact(expr, '|')
 
-	if strings.Contains(s,"(") {
+	if strings.Contains(s, "(") {
 		ParseError(WARN_INADVISABLE_CONTEXT_EXPRESSION)
 	}
 
@@ -2503,9 +2498,9 @@ func ContextEval(s,op string) {
 
 	case "=":
 		ResetContextState()
-		ModContext(or_parts,"+")
+		ModContext(or_parts, "+")
 	default:
-		ModContext(or_parts,op)
+		ModContext(or_parts, op)
 	}
 }
 
@@ -2515,18 +2510,18 @@ func CleanExpression(s string) string {
 
 	s = TrimParen(s)
 	r1 := regexp.MustCompile("[|,]+")
-	s = r1.ReplaceAllString(s,"|")
+	s = r1.ReplaceAllString(s, "|")
 	r2 := regexp.MustCompile("[&]+")
-	s = r2.ReplaceAllString(s,".")
+	s = r2.ReplaceAllString(s, ".")
 	r3 := regexp.MustCompile("[.]+")
-	s = r3.ReplaceAllString(s,".")
+	s = r3.ReplaceAllString(s, ".")
 
 	return s
 }
 
 // ***********************************************************************
 
-func SplitWithParensIntact(expr string,split_ch rune) []string {
+func SplitWithParensIntact(expr string, split_ch rune) []string {
 
 	var token string = ""
 	var set []string
@@ -2538,13 +2533,13 @@ func SplitWithParensIntact(expr string,split_ch rune) []string {
 		switch unicode[c] {
 
 		case split_ch:
-			set = append(set,token)
+			set = append(set, token)
 			token = ""
 
 		case '(':
-			subtoken,offset := Paren(unicode,c)
+			subtoken, offset := Paren(unicode, c)
 			token += subtoken
-			c = offset-1
+			c = offset - 1
 
 		default:
 			token += string(unicode[c])
@@ -2552,7 +2547,7 @@ func SplitWithParensIntact(expr string,split_ch rune) []string {
 	}
 
 	if len(token) > 0 {
-		set = append(set,token)
+		set = append(set, token)
 	}
 
 	return set
@@ -2560,7 +2555,7 @@ func SplitWithParensIntact(expr string,split_ch rune) []string {
 
 // ***********************************************************************
 
-func Paren(s []rune, offset int) (string,int) {
+func Paren(s []rune, offset int) (string, int) {
 
 	var level int = 0
 
@@ -2574,8 +2569,8 @@ func Paren(s []rune, offset int) (string,int) {
 		if s[c] == ')' {
 			level--
 			if level == 0 {
-				token := s[offset:c+1]
-				return string(token), c+1
+				token := s[offset : c+1]
+				return string(token), c + 1
 			}
 		}
 	}
@@ -2619,7 +2614,7 @@ func TrimParen(s string) string {
 				var token string
 
 				if trim {
-					token = s[1:len(s)-1]
+					token = s[1 : len(s)-1]
 				} else {
 					token = s
 				}
@@ -2633,7 +2628,7 @@ func TrimParen(s string) string {
 
 //**************************************************************
 
-func ModContext(list []string,op string) {
+func ModContext(list []string, op string) {
 
 	for or_frag := range list {
 
@@ -2649,12 +2644,12 @@ func ModContext(list []string,op string) {
 
 		case "-": // to remove, we also need to look at children
 			for cand := range CONTEXT_STATE {
-				and_parts := SplitWithParensIntact(cand,'.')
+				and_parts := SplitWithParensIntact(cand, '.')
 
 				for part := range and_parts {
 
-					if strings.Contains(and_parts[part],frag) {
-						delete(CONTEXT_STATE,cand)
+					if strings.Contains(and_parts[part], frag) {
+						delete(CONTEXT_STATE, cand)
 					}
 				}
 			}
@@ -2687,7 +2682,7 @@ func CheckSection(item string) {
 
 func NoteToSelf(s string) bool {
 
-	if len(s) <= 2 * WORD_MISTAKE_LEN {
+	if len(s) <= 2*WORD_MISTAKE_LEN {
 		return false
 	}
 
@@ -2719,14 +2714,14 @@ func NoteToSelf(s string) bool {
 
 func StripParen(token string) string {
 
-	token =	strings.TrimSpace(token[1:])
+	token = strings.TrimSpace(token[1:])
 
 	if token[0] == '(' {
-		token =	strings.TrimSpace(token[1:])
+		token = strings.TrimSpace(token[1:])
 	}
 
 	if token[len(token)-1] == ')' {
-		token =	token[:len(token)-1]
+		token = token[:len(token)-1]
 	}
 
 	return token
@@ -2736,14 +2731,14 @@ func StripParen(token string) string {
 // Tools
 //**************************************************************
 
-func PrintNodeSystem(sst SST.PoSST,n int,org SST.Node, count_links *[4]int) {
+func PrintNodeSystem(sst SST.PoSST, n int, org SST.Node, count_links *[4]int) {
 
-	fmt.Println(n,"\t",org.S)
+	fmt.Println(n, "\t", org.S)
 
 	for sttype := range org.I {
 		for lnk := range org.I[sttype] {
 			count_links[FlatSTType(sttype)]++
-			PrintLink(sst,org.I[sttype][lnk])
+			PrintLink(sst, org.I[sttype][lnk])
 		}
 	}
 	fmt.Println()
@@ -2751,11 +2746,11 @@ func PrintNodeSystem(sst SST.PoSST,n int,org SST.Node, count_links *[4]int) {
 
 //**************************************************************
 
-func PrintLink(sst SST.PoSST,l SST.Link) {
+func PrintLink(sst SST.PoSST, l SST.Link) {
 
-	to := SST.GetNodeTxtFromPtr(&sst,l.Dst)
+	to := SST.GetNodeTxtFromPtr(&sst, l.Dst)
 	arrow := sst.ARROW_DIRECTORY[l.Arr]
-	Verbose("\t ... --(",arrow.Long,",",l.Wgt,")->",to,l.Ctx," \t . . .",SST.PrintSTAIndex(arrow.STAindex))
+	Verbose("\t ... --(", arrow.Long, ",", l.Wgt, ")->", to, l.Ctx, " \t . . .", SST.PrintSTAIndex(arrow.STAindex))
 }
 
 // **************************************************************************
@@ -2765,9 +2760,9 @@ func ParseError(message string) {
 	const red = "\033[31;1;1m"
 	const endred = "\033[0m"
 
-	fmt.Print("\n",LINE_NUM,":",red)
-	fmt.Println("N4L",CURRENT_FILE,message,"at line", LINE_NUM,endred)
-	Diag("N4L",CURRENT_FILE,message,"at line", LINE_NUM)
+	fmt.Print("\n", LINE_NUM, ":", red)
+	fmt.Println("N4L", CURRENT_FILE, message, "at line", LINE_NUM, endred)
+	Diag("N4L", CURRENT_FILE, message, "at line", LINE_NUM)
 
 }
 
@@ -2842,7 +2837,7 @@ func Verbose(a ...any) {
 	line := fmt.Sprintln(a...)
 
 	if DIAGNOSTIC {
-		AppendStringToFile(TEST_DIAG_FILE,line)
+		AppendStringToFile(TEST_DIAG_FILE, line)
 	}
 
 	if VERBOSE {
@@ -2858,7 +2853,7 @@ func PVerbose(a ...any) {
 	const endgreen = "\x1b[0m"
 
 	if VERBOSE {
-		fmt.Print(LINE_NUM,":\t",green)
+		fmt.Print(LINE_NUM, ":\t", green)
 		fmt.Println(a...)
 		fmt.Print(endgreen)
 	}
@@ -2880,7 +2875,7 @@ func Box(a ...any) {
 
 func DiagnosticName(filename string) string {
 
-	return "test_output/"+filename+"_test_log"
+	return "test_output/" + filename + "_test_log"
 
 }
 
@@ -2892,8 +2887,8 @@ func Diag(a ...any) {
 
 	if DIAGNOSTIC {
 		s := fmt.Sprintln(a...)
-		prefix := fmt.Sprint(LINE_NUM,":")
-		AppendStringToFile(TEST_DIAG_FILE,prefix+s)
+		prefix := fmt.Sprint(LINE_NUM, ":")
+		AppendStringToFile(TEST_DIAG_FILE, prefix+s)
 	}
 }
 
@@ -2903,12 +2898,12 @@ func AppendStringToFile(name string, s string) {
 
 	// strip out \r that mess up the file format but are useful for term
 
-	san := strings.Replace(s,"\r","",-1)
+	san := strings.Replace(s, "\r", "", -1)
 
-	f, err := os.OpenFile(name,os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
 	if err != nil {
-		fmt.Println("Couldn't open for write/append to",name,err)
+		fmt.Println("Couldn't open for write/append to", name, err)
 		f.Close()
 		return
 	}
@@ -2916,7 +2911,7 @@ func AppendStringToFile(name string, s string) {
 	_, err = f.WriteString(san)
 
 	if err != nil {
-		fmt.Println("Couldn't write/append to",name,err)
+		fmt.Println("Couldn't write/append to", name, err)
 	}
 
 	f.Close()

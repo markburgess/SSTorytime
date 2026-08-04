@@ -1,20 +1,11 @@
 package sst
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
 	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 )
-
-// ctx returns the session context. Sessions must always be opened with a non-nil ctx.
-func (sst *PoSST) ctx() context.Context {
-	if sst.Ctx == nil {
-		panic("sst: session has nil context")
-	}
-	return sst.Ctx
-}
 
 // ensureQ returns sqlc querier (shared).
 func (sst *PoSST) ensureQ() *sqlc.Queries {

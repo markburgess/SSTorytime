@@ -7,6 +7,7 @@
 package sst
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/markburgess/SSTorytime/internal/db/sqlc"
@@ -14,7 +15,7 @@ import (
 
 // **************************************************************************
 
-func GetDBAdjacentNodePtrBySTType(sst PoSST, sttypes []int, chap string, cn []string, transpose bool) ([][]float32, []NodePtr) {
+func GetDBAdjacentNodePtrBySTType(ctx context.Context, sst PoSST, sttypes []int, chap string, cn []string, transpose bool) ([][]float32, []NodePtr) {
 
 	// Return a weighted adjacency matrix by nptr, and an index:nptr lookup table
 	// Returns a connected adjacency matrix for the subgraph and a lookup table
@@ -37,7 +38,7 @@ func GetDBAdjacentNodePtrBySTType(sst PoSST, sttypes []int, chap string, cn []st
 	chapter := "%" + SQLEscape(chap) + "%"
 	im3, im2, im1, in0, il1, ic2, ie3 := stChannelFlags(sttypes)
 
-	rows, err := sst.Q.ListAdjacentNodes(sst.ctx(), sqlc.ListAdjacentNodesParams{
+	rows, err := sst.Q.ListAdjacentNodes(ctx, sqlc.ListAdjacentNodesParams{
 		Lower:   chapter,
 		Column2: im3,
 		Column3: im2,
@@ -467,7 +468,7 @@ func AdjointLinkPath(sst *PoSST, LL []Link) []Link {
 
 // **************************************************************************
 
-func NextLinkArrow(sst *PoSST, path []Link, arrows []ArrowPtr) string {
+func NextLinkArrow(ctx context.Context, sst *PoSST, path []Link, arrows []ArrowPtr) string {
 
 	var rstring string
 
@@ -479,9 +480,9 @@ func NextLinkArrow(sst *PoSST, path []Link, arrows []ArrowPtr) string {
 				break
 			}
 
-			nextnode := GetDBNodeByNodePtr(sst, path[l].Dst)
+			nextnode := GetDBNodeByNodePtr(ctx, sst, path[l].Dst)
 
-			arr := GetDBArrowByPtr(sst, path[l].Arr)
+			arr := GetDBArrowByPtr(ctx, sst, path[l].Arr)
 
 			if l < len(path) {
 				rstring += fmt.Sprint("  -(", arr.Long, ")->  ")

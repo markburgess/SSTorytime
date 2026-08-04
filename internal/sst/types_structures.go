@@ -7,8 +7,6 @@
 package sst
 
 import (
-	"context"
-
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/markburgess/SSTorytime/internal/db/sqlc"
 )
@@ -18,7 +16,6 @@ import (
 type PoSST struct {
 	Pool *pgxpool.Pool
 	Q    *sqlc.Queries
-	Ctx  context.Context
 	// Session globals
 
 	NODE_DIRECTORY        NodeDirectory // Internal histo-representations

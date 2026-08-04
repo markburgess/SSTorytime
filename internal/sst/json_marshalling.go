@@ -7,6 +7,7 @@
 package sst
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sync"
@@ -14,15 +15,15 @@ import (
 
 // **************************************************************************
 
-func JSONNodeEvent(sst PoSST, nptr NodePtr, xyz Coords, orbits [ST_TOP][]Orbit) NodeEvent {
+func JSONNodeEvent(ctx context.Context, sst PoSST, nptr NodePtr, xyz Coords, orbits [ST_TOP][]Orbit) NodeEvent {
 
-	node := GetDBNodeByNodePtr(&sst, nptr)
+	node := GetDBNodeByNodePtr(ctx, &sst, nptr)
 
 	var event NodeEvent
 	event.Text = node.S
 	event.L = node.L
 	event.Chap = node.Chap
-	event.Context = GetNodeContextString(&sst, node)
+	event.Context = GetNodeContextString(ctx, &sst, node)
 	event.NPtr = nptr
 	event.XYZ = xyz
 	event.Orbits = orbits
@@ -31,7 +32,7 @@ func JSONNodeEvent(sst PoSST, nptr NodePtr, xyz Coords, orbits [ST_TOP][]Orbit) 
 
 // **************************************************************************
 
-func LinkWebPaths(sst *PoSST, cone [][]Link, nth int, chapter string, context []string, swimlanes, limit int) [][]WebPath {
+func LinkWebPaths(ctx context.Context, sst *PoSST, cone [][]Link, nth int, chapter string, context []string, swimlanes, limit int) [][]WebPath {
 
 	// This is dealing in good faith with one of swimlanes cones, assigning equal width to all
 	// The cone is a flattened array, we can assign spatial coordinates for visualization
@@ -44,7 +45,7 @@ func LinkWebPaths(sst *PoSST, cone [][]Link, nth int, chapter string, context []
 
 	for p := 0; p < len(cone); p++ {
 
-		path_start := GetDBNodeByNodePtr(sst, cone[p][0].Dst)
+		path_start := GetDBNodeByNodePtr(ctx, sst, cone[p][0].Dst)
 
 		start_shown := false
 
@@ -56,7 +57,7 @@ func LinkWebPaths(sst *PoSST, cone [][]Link, nth int, chapter string, context []
 				break
 			}
 
-			nextnode := GetDBNodeByNodePtr(sst, cone[p][l].Dst)
+			nextnode := GetDBNodeByNodePtr(ctx, sst, cone[p][l].Dst)
 
 			if !SimilarString(nextnode.Chap, chapter) {
 				break
@@ -73,7 +74,7 @@ func LinkWebPaths(sst *PoSST, cone [][]Link, nth int, chapter string, context []
 				start_shown = true
 			}
 
-			arr := GetDBArrowByPtr(sst, cone[p][l].Arr)
+			arr := GetDBArrowByPtr(ctx, sst, cone[p][l].Arr)
 
 			if l < len(cone[p]) {
 				var wl WebPath
@@ -101,7 +102,7 @@ func LinkWebPaths(sst *PoSST, cone [][]Link, nth int, chapter string, context []
 
 // **************************************************************************
 
-func JSONPage(sst PoSST, maplines []PageMap) string {
+func JSONPage(ctx context.Context, sst PoSST, maplines []PageMap) string {
 
 	var webnotes PageView
 	var lastchap, lastctx string
@@ -144,7 +145,7 @@ func JSONPage(sst PoSST, maplines []PageMap) string {
 
 		for lnk := 0; lnk < len(maplines[n].Path); lnk++ {
 
-			text := GetDBNodeByNodePtr(&sst, maplines[n].Path[lnk].Dst)
+			text := GetDBNodeByNodePtr(ctx, &sst, maplines[n].Path[lnk].Dst)
 
 			if lnk == 0 {
 				var ws WebPath
@@ -157,7 +158,7 @@ func JSONPage(sst PoSST, maplines []PageMap) string {
 				path = append(path, ws)
 
 			} else { // ARROW
-				arr := GetDBArrowByPtr(&sst, maplines[n].Path[lnk].Arr)
+				arr := GetDBArrowByPtr(ctx, &sst, maplines[n].Path[lnk].Arr)
 				var wl WebPath
 				wl.Name = arr.Long
 				wl.Arr = maplines[n].Path[lnk].Arr
@@ -186,7 +187,7 @@ func JSONPage(sst PoSST, maplines []PageMap) string {
 
 // **************************************************************************
 
-func GetNodeOrbit(sst *PoSST, nptr NodePtr, exclude_vector string, limit int) [ST_TOP][]Orbit {
+func GetNodeOrbit(ctx context.Context, sst *PoSST, nptr NodePtr, exclude_vector string, limit int) [ST_TOP][]Orbit {
 
 	// radius = 0 is the starting node
 
@@ -196,7 +197,7 @@ func GetNodeOrbit(sst *PoSST, nptr NodePtr, exclude_vector string, limit int) [S
 
 	var satellites [ST_TOP][]Orbit
 
-	sweep, nPaths := GetEntireConePathsAsLinks(sst, "any", nptr, probe_radius, limit)
+	sweep, nPaths := GetEntireConePathsAsLinks(ctx, sst, "any", nptr, probe_radius, limit)
 	if nPaths == 0 {
 		return satellites
 	}
@@ -211,7 +212,7 @@ func GetNodeOrbit(sst *PoSST, nptr NodePtr, exclude_vector string, limit int) [S
 		go func(idx int) {
 			defer thread_wg.Done() // threading
 
-			satellites[idx] = AssembleSatellitesBySTtype(sst, idx, satellites[idx], sweep, exclude_vector, probe_radius, limit)
+			satellites[idx] = AssembleSatellitesBySTtype(ctx, sst, idx, satellites[idx], sweep, exclude_vector, probe_radius, limit)
 
 		}(stindex)
 	}
@@ -223,7 +224,7 @@ func GetNodeOrbit(sst *PoSST, nptr NodePtr, exclude_vector string, limit int) [S
 
 // **************************************************************************
 
-func AssembleSatellitesBySTtype(sst *PoSST, stindex int, satellite []Orbit, sweep [][]Link, exclude_vector string, probe_radius int, limit int) []Orbit {
+func AssembleSatellitesBySTtype(ctx context.Context, sst *PoSST, stindex int, satellite []Orbit, sweep [][]Link, exclude_vector string, probe_radius int, limit int) []Orbit {
 
 	var already = make(map[string]bool)
 
@@ -238,11 +239,11 @@ func AssembleSatellitesBySTtype(sst *PoSST, stindex int, satellite []Orbit, swee
 			const nearest_satellite = 1
 			start := sweep[angle][nearest_satellite]
 
-			arrow := GetDBArrowByPtr(sst, start.Arr)
+			arrow := GetDBArrowByPtr(ctx, sst, start.Arr)
 
 			if arrow.STAindex == stindex {
 
-				txt := GetDBNodeByNodePtr(sst, start.Dst)
+				txt := GetDBNodeByNodePtr(ctx, sst, start.Dst)
 
 				var nt Orbit
 				nt.Arrow = arrow.Long
@@ -264,8 +265,8 @@ func AssembleSatellitesBySTtype(sst *PoSST, stindex int, satellite []Orbit, swee
 
 					arprev := STIndexToSTType(arrow.STAindex)
 					next := sweep[angle][depth]
-					arrow = GetDBArrowByPtr(sst, next.Arr)
-					subtxt := GetDBNodeByNodePtr(sst, next.Dst)
+					arrow = GetDBArrowByPtr(ctx, sst, next.Arr)
+					subtxt := GetDBNodeByNodePtr(ctx, sst, next.Dst)
 
 					if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
 						break
@@ -311,7 +312,7 @@ func IdempAddSatellite(list []Orbit, item Orbit, already map[string]bool) []Orbi
 
 // **************************************************************************
 
-func GetLongestAxialPath(sst *PoSST, nptr NodePtr, arrowptr ArrowPtr, limit int) []Link {
+func GetLongestAxialPath(ctx context.Context, sst *PoSST, nptr NodePtr, arrowptr ArrowPtr, limit int) []Link {
 
 	// Used in story search along extended STtype paths
 
@@ -319,7 +320,7 @@ func GetLongestAxialPath(sst *PoSST, nptr NodePtr, arrowptr ArrowPtr, limit int)
 
 	sttype := STIndexToSTType(sst.ARROW_DIRECTORY[arrowptr].STAindex)
 
-	paths, dim := GetFwdPathsAsLinks(sst, nptr, sttype, limit, limit)
+	paths, dim := GetFwdPathsAsLinks(ctx, sst, nptr, sttype, limit, limit)
 
 	for pth := 0; pth < dim; pth++ {
 

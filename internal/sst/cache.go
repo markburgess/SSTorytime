@@ -7,6 +7,7 @@
 package sst
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"sync"
@@ -87,11 +88,11 @@ func CacheNode(sst *PoSST, n Node) {
 
 // **************************************************************************
 
-func DownloadArrowsFromDB(sst *PoSST) {
+func DownloadArrowsFromDB(ctx context.Context, sst *PoSST) {
 	if sst.Q == nil {
 		return
 	}
-	rows, err := sst.Q.ListArrowDirectory(sst.ctx())
+	rows, err := sst.Q.ListArrowDirectory(ctx)
 	if err != nil {
 		fmt.Println("QUERY Download Arrows Failed", err)
 		return
@@ -120,7 +121,7 @@ func DownloadArrowsFromDB(sst *PoSST) {
 		}
 		sst.ARROW_DIRECTORY_TOP++
 	}
-	inv, err := sst.Q.ListArrowInverses(sst.ctx())
+	inv, err := sst.Q.ListArrowInverses(ctx)
 	if err != nil {
 		fmt.Println("QUERY Download Inverses Failed", err)
 		return
@@ -130,11 +131,11 @@ func DownloadArrowsFromDB(sst *PoSST) {
 	}
 }
 
-func DownloadContextsFromDB(sst *PoSST) {
+func DownloadContextsFromDB(ctx context.Context, sst *PoSST) {
 	if sst.Q == nil {
 		return
 	}
-	rows, err := sst.Q.ListContexts(sst.ctx())
+	rows, err := sst.Q.ListContexts(ctx)
 	if err != nil {
 		fmt.Println("QUERY Download Contexts Failed", err)
 		return
@@ -157,12 +158,12 @@ func DownloadContextsFromDB(sst *PoSST) {
 	}
 }
 
-func SynchronizeNPtrs(sst *PoSST) {
+func SynchronizeNPtrs(ctx context.Context, sst *PoSST) {
 	if sst.Q == nil {
 		return
 	}
 	for channel := N1GRAM; channel <= GT1024; channel++ {
-		maxC, err := sst.Q.MaxCPtrForChan(sst.ctx(), int32(channel))
+		maxC, err := sst.Q.MaxCPtrForChan(ctx, int32(channel))
 		if err != nil {
 			fmt.Println("QUERY Synchronizing nptrs", err)
 			continue

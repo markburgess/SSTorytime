@@ -7,6 +7,7 @@
 package sst
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -15,7 +16,7 @@ import (
 
 // **************************************************************************
 
-func GetPathsAndSymmetries(sst *PoSST, start_set, end_set []NodePtr, chapter string, context []string, arrowptrs []ArrowPtr, sttypes []int, mindepth, maxdepth int) [][]Link {
+func GetPathsAndSymmetries(ctx context.Context, sst *PoSST, start_set, end_set []NodePtr, chapter string, context []string, arrowptrs []ArrowPtr, sttypes []int, mindepth, maxdepth int) [][]Link {
 
 	var left_paths, right_paths [][]Link
 	var ldepth, rdepth int = 1, 1
@@ -38,8 +39,8 @@ func GetPathsAndSymmetries(sst *PoSST, start_set, end_set []NodePtr, chapter str
 
 	// Prime paths - the different starting points could be parallelized in principle, but we might not win much
 
-	left_paths, Lnum = GetConstraintConePathsAsLinks(sst, start_set, ldepth, chapter, context, arrowptrs, sttypes, maxdepth)
-	right_paths, Rnum = GetConstraintConePathsAsLinks(sst, end_set, rdepth, chapter, context, adj_arrowptrs, adj_sttypes, maxdepth)
+	left_paths, Lnum = GetConstraintConePathsAsLinks(ctx, sst, start_set, ldepth, chapter, context, arrowptrs, sttypes, maxdepth)
+	right_paths, Rnum = GetConstraintConePathsAsLinks(ctx, sst, end_set, rdepth, chapter, context, adj_arrowptrs, adj_sttypes, maxdepth)
 
 	// Expand waves
 
@@ -60,10 +61,10 @@ func GetPathsAndSymmetries(sst *PoSST, start_set, end_set []NodePtr, chapter str
 		}
 
 		if turn%2 == 0 {
-			left_paths = IncConstraintConeLinks(sst, left_paths, chapter, context, arrowptrs, sttypes, maxdepth)
+			left_paths = IncConstraintConeLinks(ctx, sst, left_paths, chapter, context, arrowptrs, sttypes, maxdepth)
 			ldepth++
 		} else {
-			right_paths = IncConstraintConeLinks(sst, right_paths, chapter, context, adj_arrowptrs, adj_sttypes, maxdepth)
+			right_paths = IncConstraintConeLinks(ctx, sst, right_paths, chapter, context, adj_arrowptrs, adj_sttypes, maxdepth)
 			rdepth++
 		}
 	}
@@ -76,7 +77,7 @@ func GetPathsAndSymmetries(sst *PoSST, start_set, end_set []NodePtr, chapter str
 
 // **************************************************************************
 
-func IncConstraintConeLinks(sst *PoSST, cone [][]Link, chapter string, context []string, arrowptrs []ArrowPtr, sttypes []int, maxdepth int) [][]Link {
+func IncConstraintConeLinks(ctx context.Context, sst *PoSST, cone [][]Link, chapter string, context []string, arrowptrs []ArrowPtr, sttypes []int, maxdepth int) [][]Link {
 
 	// Provide an incremental cone expander, so we can preserve state to avoid recomputation
 	// This will be increasingly effective as path length increases
@@ -94,7 +95,7 @@ func IncConstraintConeLinks(sst *PoSST, cone [][]Link, chapter string, context [
 
 		tip := []NodePtr{branch[len(branch)-1].Dst}
 
-		shoots := GetConstrainedFwdLinks(sst, tip, chapter, context, sttypes, arrowptrs, maxdepth)
+		shoots := GetConstrainedFwdLinks(ctx, sst, tip, chapter, context, sttypes, arrowptrs, maxdepth)
 
 		// unfurl branches, checking for retracing
 
@@ -118,7 +119,7 @@ func IncConstraintConeLinks(sst *PoSST, cone [][]Link, chapter string, context [
 
 // **************************************************************************
 
-func GetConstrainedFwdLinks(sst *PoSST, start []NodePtr, chapter string, context []string, sttypes []int, arrows []ArrowPtr, maxlimit int) []Link {
+func GetConstrainedFwdLinks(ctx context.Context, sst *PoSST, start []NodePtr, chapter string, context []string, sttypes []int, arrows []ArrowPtr, maxlimit int) []Link {
 
 	var ret []Link
 	if sst.Q == nil || len(start) == 0 {
@@ -135,7 +136,7 @@ func GetConstrainedFwdLinks(sst *PoSST, start []NodePtr, chapter string, context
 	excl := append(append([]NodePtr{}, start...), NONODE)
 
 	for _, st := range sttypes {
-		whole, err := sst.Q.GetConstrainedFwdLinks(sst.ctx(), sqlc.GetConstrainedFwdLinksParams{
+		whole, err := sst.Q.GetConstrainedFwdLinks(ctx, sqlc.GetConstrainedFwdLinksParams{
 			Column1: int32(start[0].Class),
 			Column2: int32(start[0].CPtr),
 			Column3: chapter,
@@ -160,7 +161,7 @@ func GetConstrainedFwdLinks(sst *PoSST, start []NodePtr, chapter string, context
 
 // **************************************************************************
 
-func GetPathsAndSymmetries_legacy(sst *PoSST, start_set, end_set []NodePtr, chapter string, context []string, arrowptrs []ArrowPtr, sttypes []int, mindepth, maxdepth int) [][]Link {
+func GetPathsAndSymmetries_legacy(ctx context.Context, sst *PoSST, start_set, end_set []NodePtr, chapter string, context []string, arrowptrs []ArrowPtr, sttypes []int, mindepth, maxdepth int) [][]Link {
 
 	var left_paths, right_paths [][]Link
 	var ldepth, rdepth int = 1, 1
@@ -192,12 +193,12 @@ func GetPathsAndSymmetries_legacy(sst *PoSST, start_set, end_set []NodePtr, chap
 
 		go func() {
 			defer wg.Done()
-			left_paths, Lnum = GetConstraintConePathsAsLinks(sst, start_set, ldepth, chapter, context, arrowptrs, sttypes, maxdepth)
+			left_paths, Lnum = GetConstraintConePathsAsLinks(ctx, sst, start_set, ldepth, chapter, context, arrowptrs, sttypes, maxdepth)
 		}()
 
 		go func() {
 			defer wg.Done()
-			right_paths, Rnum = GetConstraintConePathsAsLinks(sst, end_set, rdepth, chapter, context, adj_arrowptrs, adj_sttypes, maxdepth)
+			right_paths, Rnum = GetConstraintConePathsAsLinks(ctx, sst, end_set, rdepth, chapter, context, adj_arrowptrs, adj_sttypes, maxdepth)
 		}()
 
 		wg.Wait()

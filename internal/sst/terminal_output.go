@@ -7,6 +7,7 @@
 package sst
 
 import (
+	"context"
 	"fmt"
 	"unicode"
 )
@@ -125,16 +126,16 @@ func Waiting() {
 
 // **************************************************************************
 
-func PrintNodeOrbit(sst *PoSST, nptr NodePtr, limit int) {
+func PrintNodeOrbit(ctx context.Context, sst *PoSST, nptr NodePtr, limit int) {
 
-	node := GetDBNodeByNodePtr(sst, nptr)
+	node := GetDBNodeByNodePtr(ctx, sst, nptr)
 	fmt.Print("\"")
 	ShowText(node.S, SCREENWIDTH)
 	fmt.Print("\"")
 	fmt.Println("\tin chapter:", node.Chap)
 	fmt.Println()
 
-	satellites := GetNodeOrbit(sst, nptr, "", limit)
+	satellites := GetNodeOrbit(ctx, sst, nptr, "", limit)
 
 	PrintLinkOrbit(satellites, EXPRESS, 0)
 	PrintLinkOrbit(satellites, -EXPRESS, 0)
@@ -172,20 +173,20 @@ func PrintLinkOrbit(satellites [ST_TOP][]Orbit, sttype int, indent_level int) {
 
 // **************************************************************************
 
-func PrintLinkPath(sst *PoSST, cone [][]Link, p int, prefix string, chapter string, context []string) {
+func PrintLinkPath(ctx context.Context, sst *PoSST, cone [][]Link, p int, prefix string, chapter string, context []string) {
 
-	PrintSomeLinkPath(sst, cone, p, prefix, chapter, context, 10000)
+	PrintSomeLinkPath(ctx, sst, cone, p, prefix, chapter, context, 10000)
 }
 
 // **************************************************************************
 
-func PrintSomeLinkPath(sst *PoSST, cone [][]Link, p int, prefix string, chapter string, context []string, limit int) {
+func PrintSomeLinkPath(ctx context.Context, sst *PoSST, cone [][]Link, p int, prefix string, chapter string, context []string, limit int) {
 
 	count := 0
 
 	if len(cone[p]) > 1 {
 
-		path_start := GetDBNodeByNodePtr(sst, cone[p][0].Dst)
+		path_start := GetDBNodeByNodePtr(ctx, sst, cone[p][0].Dst)
 
 		start_shown := false
 
@@ -216,13 +217,13 @@ func PrintSomeLinkPath(sst *PoSST, cone [][]Link, p int, prefix string, chapter 
 				start_shown = true
 			}
 
-			nextnode := GetDBNodeByNodePtr(sst, cone[p][l].Dst)
+			nextnode := GetDBNodeByNodePtr(ctx, sst, cone[p][l].Dst)
 
 			if !SimilarString(nextnode.Chap, chapter) {
 				break
 			}
 
-			arr := GetDBArrowByPtr(sst, cone[p][l].Arr)
+			arr := GetDBArrowByPtr(ctx, sst, cone[p][l].Arr)
 
 			if arr.Short == "then" {
 				fmt.Print("\n   >>> ")

@@ -7,6 +7,7 @@
 package sst
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -52,13 +53,13 @@ func RegisterContext(sst *PoSST, parse_state map[string]bool, context []string) 
 
 // **************************************************************************
 
-func TryContext(sst *PoSST, context []string) ContextPtr {
+func TryContext(ctx context.Context, sst *PoSST, context []string) ContextPtr {
 
 	ctxstr := CompileContextString(context)
-	str, ctxptr := GetDBContextByName(sst, ctxstr)
+	str, ctxptr := GetDBContextByName(ctx, sst, ctxstr)
 
 	if ctxptr == -1 || str != ctxstr {
-		ctxptr = UploadContextToDB(sst, ctxstr, -1)
+		ctxptr = UploadContextToDB(ctx, sst, ctxstr, -1)
 		RegisterContext(sst, nil, context)
 	}
 
@@ -116,9 +117,9 @@ func NormalizeContextString(contextmap map[string]bool, ctx []string) string {
 
 // **************************************************************************
 
-func GetNodeContext(sst *PoSST, node Node) []string {
+func GetNodeContext(ctx context.Context, sst *PoSST, node Node) []string {
 
-	str := GetNodeContextString(sst, node)
+	str := GetNodeContextString(ctx, sst, node)
 
 	if str != "" {
 		return strings.Split(str, ",")
@@ -129,12 +130,12 @@ func GetNodeContext(sst *PoSST, node Node) []string {
 
 // **************************************************************************
 
-func GetNodeContextString(sst *PoSST, node Node) string {
+func GetNodeContextString(ctx context.Context, sst *PoSST, node Node) string {
 
 	// This reads the ghost link planted for the purpose of attaching
 	// a context to floating nodes
 
-	empty := GetDBArrowByName(sst, "empty")
+	empty := GetDBArrowByName(ctx, sst, "empty")
 
 	for _, lnk := range node.I[ST_ZERO+LEADSTO] {
 

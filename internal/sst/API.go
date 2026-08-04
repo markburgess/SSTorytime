@@ -7,13 +7,14 @@
 package sst
 
 import (
+	"context"
 	"fmt"
 	"os"
 )
 
 //**************************************************************
 
-func Vertex(sst *PoSST, name, chap string) Node {
+func Vertex(ctx context.Context, sst *PoSST, name, chap string) Node {
 
 	// Automatic NPtr numbering
 
@@ -22,30 +23,30 @@ func Vertex(sst *PoSST, name, chap string) Node {
 	n.S = name
 	n.Chap = chap
 
-	return IdempDBAddNode(sst, n)
+	return IdempDBAddNode(ctx, sst, n)
 }
 
 // **************************************************************************
 
-func Edge(sst *PoSST, from Node, arrow string, to Node, context []string, weight float32) (ArrowPtr, int) {
+func Edge(ctx context.Context, sst *PoSST, from Node, arrow string, to Node, context []string, weight float32) (ArrowPtr, int) {
 
-	arrowptr, sttype := GetDBArrowsWithArrowName(sst, arrow)
+	arrowptr, sttype := GetDBArrowsWithArrowName(ctx, sst, arrow)
 
 	var link Link
 
 	link.Arr = arrowptr
 	link.Dst = to.NPtr
 	link.Wgt = weight
-	link.Ctx = TryContext(sst, context)
+	link.Ctx = TryContext(ctx, sst, context)
 
-	IdempDBAddLink(sst, from, link, to)
+	IdempDBAddLink(ctx, sst, from, link, to)
 
 	return arrowptr, sttype
 }
 
 // **************************************************************************
 
-func HubJoin(sst *PoSST, name, chap string, nptrs []NodePtr, arrow string, context []string, weight []float32) Node {
+func HubJoin(ctx context.Context, sst *PoSST, name, chap string, nptrs []NodePtr, arrow string, context []string, weight []float32) Node {
 
 	// Create a container node joining several other nodes in a list, like a hyperlink
 
@@ -71,7 +72,7 @@ func HubJoin(sst *PoSST, name, chap string, nptrs []NodePtr, arrow string, conte
 		name = "hub_" + arrow + "_"
 		for n := range nptrs {
 			name += fmt.Sprintf("(%d,%d)", nptrs[n].Class, nptrs[n].CPtr)
-			node := GetDBNodeByNodePtr(sst, nptrs[n])
+			node := GetDBNodeByNodePtr(ctx, sst, nptrs[n])
 			chaps[node.Chap]++
 		}
 	}
@@ -88,9 +89,9 @@ func HubJoin(sst *PoSST, name, chap string, nptrs []NodePtr, arrow string, conte
 		}
 	}
 
-	container := IdempDBAddNode(sst, to)
+	container := IdempDBAddNode(ctx, sst, to)
 
-	arrowptr, sttype := GetDBArrowsWithArrowName(sst, arrow)
+	arrowptr, sttype := GetDBArrowsWithArrowName(ctx, sst, arrow)
 	if arrowptr == 0 && sttype == 0 {
 		fmt.Println("HubJoin: no such arrow", arrow)
 		os.Exit(-1)
@@ -102,12 +103,12 @@ func HubJoin(sst *PoSST, name, chap string, nptrs []NodePtr, arrow string, conte
 		link.Arr = arrowptr
 		link.Dst = container.NPtr
 		link.Wgt = weight[nptr]
-		link.Ctx = TryContext(sst, context)
-		from := GetDBNodeByNodePtr(sst, nptrs[nptr])
-		IdempDBAddLink(sst, from, link, container)
+		link.Ctx = TryContext(ctx, sst, context)
+		from := GetDBNodeByNodePtr(ctx, sst, nptrs[nptr])
+		IdempDBAddLink(ctx, sst, from, link, container)
 	}
 
-	return GetDBNodeByNodePtr(sst, container.NPtr)
+	return GetDBNodeByNodePtr(ctx, sst, container.NPtr)
 }
 
 //

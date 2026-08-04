@@ -7,6 +7,7 @@
 package sst
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
@@ -43,7 +44,7 @@ func ContextIntentAnalysis(spectrum map[string]int) ([]string, []string) {
 
 // **************************************************************************
 
-func GetChaptersByChapContext(sst PoSST, chap string, cn []string, limit int) map[string][]string {
+func GetChaptersByChapContext(ctx context.Context, sst PoSST, chap string, cn []string, limit int) map[string][]string {
 
 	if sst.Q == nil {
 		return nil
@@ -68,7 +69,7 @@ func GetChaptersByChapContext(sst PoSST, chap string, cn []string, limit int) ma
 		cn_stripped = []string{}
 	}
 
-	rows, err := sst.Q.ListPageMapChapters(sst.ctx(), sqlc.ListPageMapChaptersParams{
+	rows, err := sst.Q.ListPageMapChapters(ctx, sqlc.ListPageMapChaptersParams{
 		Column1: cn_stripped,
 		Column2: anyChap,
 		Column3: chapUnaccent,
@@ -112,7 +113,7 @@ func GetChaptersByChapContext(sst PoSST, chap string, cn []string, limit int) ma
 
 // *********************************************************************
 
-func UpdateSTMContext(sst *PoSST, ambient, key string, now int64, params SearchParameters) string {
+func UpdateSTMContext(ctx context.Context, sst *PoSST, ambient, key string, now int64, params SearchParameters) string {
 
 	var context []string
 
@@ -121,7 +122,7 @@ func UpdateSTMContext(sst *PoSST, ambient, key string, now int64, params SearchP
 		context = append(context, params.Name...)
 		context = append(context, params.From...)
 		context = append(context, params.To...)
-		return AddContext(sst, ambient, key, now, context)
+		return AddContext(ctx, sst, ambient, key, now, context)
 	} else {
 		// ongoing / adhoc are ambient
 		context = append(context, params.Name...)
@@ -136,7 +137,7 @@ func UpdateSTMContext(sst *PoSST, ambient, key string, now int64, params SearchP
 			context = append(context, "Chapter:"+params.Chapter)
 		}
 
-		return AddContext(sst, ambient, key, now, context)
+		return AddContext(ctx, sst, ambient, key, now, context)
 	}
 
 	return ""
@@ -144,7 +145,7 @@ func UpdateSTMContext(sst *PoSST, ambient, key string, now int64, params SearchP
 
 // *********************************************************************
 
-func AddContext(sst *PoSST, ambient, key string, now int64, tokens []string) string {
+func AddContext(ctx context.Context, sst *PoSST, ambient, key string, now int64, tokens []string) string {
 
 	for t := range tokens {
 
@@ -161,7 +162,7 @@ func AddContext(sst *PoSST, ambient, key string, now int64, tokens []string) str
 			fmt.Sscanf(token, "(%d,%d)", &nptr.Class, &nptr.CPtr)
 
 			if nptr.Class > 0 {
-				node := GetDBNodeByNodePtr(sst, nptr)
+				node := GetDBNodeByNodePtr(ctx, sst, nptr)
 				if node.L < TEXT_SIZE_LIMIT {
 					token = node.S
 				} else {

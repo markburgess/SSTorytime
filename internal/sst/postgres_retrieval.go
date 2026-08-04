@@ -7,6 +7,7 @@
 package sst
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"sort"
@@ -18,7 +19,7 @@ import (
 
 // **************************************************************************
 
-func SolveNodePtrs(sst PoSST, nodenames []string, search SearchParameters, arr []ArrowPtr, limit int) []NodePtr {
+func SolveNodePtrs(ctx context.Context, sst PoSST, nodenames []string, search SearchParameters, arr []ArrowPtr, limit int) []NodePtr {
 
 	chap := search.Chapter
 	cntx := search.Context
@@ -42,7 +43,7 @@ func SolveNodePtrs(sst PoSST, nodenames []string, search SearchParameters, arr [
 
 		// Takes care of general context matching
 
-		nptrs := GetDBNodePtrMatchingNCCS(sst, rest[r], chap, cntx, arr, seq, limit)
+		nptrs := GetDBNodePtrMatchingNCCS(ctx, sst, rest[r], chap, cntx, arr, seq, limit)
 
 		for n := 0; n < len(nptrs); n++ {
 			idempotence[nptrs[n]] = true
@@ -62,12 +63,12 @@ func SolveNodePtrs(sst PoSST, nodenames []string, search SearchParameters, arr [
 
 //******************************************************************
 
-func GetBookmarksFromDB(sst PoSST) []Bookmark {
+func GetBookmarksFromDB(ctx context.Context, sst PoSST) []Bookmark {
 
 	if sst.Q == nil {
 		return nil
 	}
-	rows, err := sst.Q.ListBookmarks(sst.ctx())
+	rows, err := sst.Q.ListBookmarks(ctx)
 	if err != nil {
 		fmt.Println("QUERY BegBookmarksFromDB Failed", err)
 		return nil
@@ -130,16 +131,16 @@ func GetBookmarksFromDB(sst PoSST) []Bookmark {
 
 //******************************************************************
 
-func GetDBNodePtrMatchingName(sst PoSST, name, chap string) []NodePtr {
+func GetDBNodePtrMatchingName(ctx context.Context, sst PoSST, name, chap string) []NodePtr {
 
 	// simplified, retain for compatibility
 
-	return GetDBNodePtrMatchingNCCS(sst, name, chap, nil, nil, false, CAUSAL_CONE_MAXLIMIT)
+	return GetDBNodePtrMatchingNCCS(ctx, sst, name, chap, nil, nil, false, CAUSAL_CONE_MAXLIMIT)
 }
 
 // **************************************************************************
 
-func GetDBNodePtrMatchingNCCS(sst PoSST, nm, chap string, cn []string, arrow []ArrowPtr, seq bool, limit int) []NodePtr {
+func GetDBNodePtrMatchingNCCS(ctx context.Context, sst PoSST, nm, chap string, cn []string, arrow []ArrowPtr, seq bool, limit int) []NodePtr {
 
 	if sst.Q == nil {
 		return nil
@@ -153,7 +154,7 @@ func GetDBNodePtrMatchingNCCS(sst PoSST, nm, chap string, cn []string, arrow []A
 		Seq:     seq,
 		Limit:   limit,
 	})
-	rows, err := sst.Q.SearchNodePtrs(sst.ctx(), arg)
+	rows, err := sst.Q.SearchNodePtrs(ctx, arg)
 	if err != nil {
 		fmt.Println("QUERY GetNodePtrMatchingNCC Failed", err)
 		return nil
@@ -244,7 +245,7 @@ func searchNodePtrsArg(sst PoSST, spec nodeSearchSpec) sqlc.SearchNodePtrsParams
 
 // **************************************************************************
 
-func GetDBChaptersMatchingName(sst PoSST, src string) []string {
+func GetDBChaptersMatchingName(ctx context.Context, sst PoSST, src string) []string {
 
 	if sst.Q == nil {
 		return nil
@@ -256,9 +257,9 @@ func GetDBChaptersMatchingName(sst PoSST, src string) []string {
 		err  error
 	)
 	if remove_accents {
-		rows, err = sst.Q.ListChaptersLikeUnaccent(sst.ctx(), "%"+stripped+"%")
+		rows, err = sst.Q.ListChaptersLikeUnaccent(ctx, "%"+stripped+"%")
 	} else {
-		rows, err = sst.Q.ListChaptersLike(sst.ctx(), "%"+src+"%")
+		rows, err = sst.Q.ListChaptersLike(ctx, "%"+src+"%")
 	}
 	if err != nil {
 		fmt.Println("QUERY GetDBChaptersMatchingName", err)
@@ -284,7 +285,7 @@ func GetDBChaptersMatchingName(sst PoSST, src string) []string {
 
 // **************************************************************************
 
-func GetDBContextByName(sst *PoSST, src string) (string, ContextPtr) {
+func GetDBContextByName(ctx context.Context, sst *PoSST, src string) (string, ContextPtr) {
 
 	if sst.Q == nil {
 		return "", 0
@@ -296,9 +297,9 @@ func GetDBContextByName(sst *PoSST, src string) (string, ContextPtr) {
 		err error
 	)
 	if remove_accents {
-		row, err = sst.Q.GetContextByTextUnaccent(sst.ctx(), stripped)
+		row, err = sst.Q.GetContextByTextUnaccent(ctx, stripped)
 	} else {
-		row, err = sst.Q.GetContextByText(sst.ctx(), strPtr(src))
+		row, err = sst.Q.GetContextByText(ctx, strPtr(src))
 	}
 	if err != nil {
 		return "", 0
@@ -308,12 +309,12 @@ func GetDBContextByName(sst *PoSST, src string) (string, ContextPtr) {
 
 // **************************************************************************
 
-func GetDBContextByPtr(sst *PoSST, ptr ContextPtr) (string, ContextPtr) {
+func GetDBContextByPtr(ctx context.Context, sst *PoSST, ptr ContextPtr) (string, ContextPtr) {
 
 	if sst.Q == nil {
 		return "", ptr
 	}
-	row, err := sst.Q.GetContextByPtr(sst.ctx(), int32(ptr))
+	row, err := sst.Q.GetContextByPtr(ctx, int32(ptr))
 	if err != nil {
 		return "", ptr
 	}
@@ -337,7 +338,7 @@ func GetSTtypesFromArrows(sst PoSST, arrows []ArrowPtr) []int {
 
 // **************************************************************************
 
-func GetDBNodeByNodePtr(sst *PoSST, db_nptr NodePtr) Node {
+func GetDBNodeByNodePtr(ctx context.Context, sst *PoSST, db_nptr NodePtr) Node {
 
 	im_nptr, cached := sst.NODE_CACHE[db_nptr]
 
@@ -350,7 +351,7 @@ func GetDBNodeByNodePtr(sst *PoSST, db_nptr NodePtr) Node {
 		return n
 	}
 
-	row, err := sst.Q.GetNodeByNPtr(sst.ctx(), sqlc.GetNodeByNPtrParams{
+	row, err := sst.Q.GetNodeByNPtr(ctx, sqlc.GetNodeByNPtrParams{
 		Column1: int32(db_nptr.Class),
 		Column2: int32(db_nptr.CPtr),
 	})
@@ -379,7 +380,7 @@ func GetDBNodeByNodePtr(sst *PoSST, db_nptr NodePtr) Node {
 
 // **************************************************************************
 
-func GetDBSingletonBySTType(sst PoSST, sttypes []int, chap string, cn []string) ([]NodePtr, []NodePtr) {
+func GetDBSingletonBySTType(ctx context.Context, sst PoSST, sttypes []int, chap string, cn []string) ([]NodePtr, []NodePtr) {
 
 	// Used in graph report, analysis
 
@@ -405,7 +406,7 @@ func GetDBSingletonBySTType(sst PoSST, sttypes []int, chap string, cn []string) 
 	chapter := "%" + SQLEscape(chap) + "%"
 	lead, cont, expr, near := stPosFlags(sttypes)
 
-	srcRows, err := sst.Q.ListSingletonSources(sst.ctx(), sqlc.ListSingletonSourcesParams{
+	srcRows, err := sst.Q.ListSingletonSources(ctx, sqlc.ListSingletonSourcesParams{
 		Lower:   chapter,
 		Column2: lead,
 		Column3: cont,
@@ -422,7 +423,7 @@ func GetDBSingletonBySTType(sst PoSST, sttypes []int, chap string, cn []string) 
 		src_nptrs = append(src_nptrs, NodePtr{Class: int(r.Chan), CPtr: ClassedNodePtr(r.Cptr)})
 	}
 
-	snkRows, err := sst.Q.ListSingletonSinks(sst.ctx(), sqlc.ListSingletonSinksParams{
+	snkRows, err := sst.Q.ListSingletonSinks(ctx, sqlc.ListSingletonSinksParams{
 		Lower:   chapter,
 		Column2: lead,
 		Column3: cont,
@@ -442,7 +443,7 @@ func GetDBSingletonBySTType(sst PoSST, sttypes []int, chap string, cn []string) 
 
 // **************************************************************************
 
-func SelectStoriesByArrow(sst *PoSST, nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []NodePtr {
+func SelectStoriesByArrow(ctx context.Context, sst *PoSST, nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []NodePtr {
 
 	var matches []NodePtr
 
@@ -460,7 +461,7 @@ func SelectStoriesByArrow(sst *PoSST, nodeptrs []NodePtr, arrowptrs []ArrowPtr, 
 		// After changes, all these nodes should have Seq = true already from "SolveNodePtrs()"
 		// So all the searching is finished, we just need to match the requested arrow
 
-		node := GetDBNodeByNodePtr(sst, n) // we are now caching this for later
+		node := GetDBNodeByNodePtr(ctx, sst, n) // we are now caching this for later
 		matches = append(matches, node.NPtr)
 	}
 
@@ -469,13 +470,13 @@ func SelectStoriesByArrow(sst *PoSST, nodeptrs []NodePtr, arrowptrs []ArrowPtr, 
 
 // **************************************************************************
 
-func GetSequenceContainers(sst *PoSST, nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []Story {
+func GetSequenceContainers(ctx context.Context, sst *PoSST, nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []Story {
 
 	// Story search
 
 	var stories []Story
 
-	openings := SelectStoriesByArrow(sst, nodeptrs, arrowptrs, sttypes, limit)
+	openings := SelectStoriesByArrow(ctx, sst, nodeptrs, arrowptrs, sttypes, limit)
 
 	arrname := ""
 	count := 0
@@ -486,11 +487,11 @@ func GetSequenceContainers(sst *PoSST, nodeptrs []NodePtr, arrowptrs []ArrowPtr,
 
 		var story Story
 
-		node := GetDBNodeByNodePtr(sst, openings[nth])
+		node := GetDBNodeByNodePtr(ctx, sst, openings[nth])
 
 		story.Chapter = node.Chap
 
-		axis := GetLongestAxialPath(sst, openings[nth], arrowptrs[0], limit)
+		axis := GetLongestAxialPath(ctx, sst, openings[nth], arrowptrs[0], limit)
 
 		directory := AssignStoryCoordinates(axis, nth, len(openings), limit, already)
 
@@ -500,7 +501,7 @@ func GetSequenceContainers(sst *PoSST, nodeptrs []NodePtr, arrowptrs []ArrowPtr,
 
 			var ne NodeEvent
 
-			nd := GetDBNodeByNodePtr(sst, axis[lnk].Dst)
+			nd := GetDBNodeByNodePtr(ctx, sst, axis[lnk].Dst)
 
 			ne.Text = nd.S
 			ne.L = nd.L
@@ -508,7 +509,7 @@ func GetSequenceContainers(sst *PoSST, nodeptrs []NodePtr, arrowptrs []ArrowPtr,
 			ne.Context = GetContext(sst, axis[lnk].Ctx)
 			ne.NPtr = axis[lnk].Dst
 			ne.XYZ = directory[ne.NPtr]
-			ne.Orbits = GetNodeOrbit(sst, axis[lnk].Dst, arrname, limit)
+			ne.Orbits = GetNodeOrbit(ctx, sst, axis[lnk].Dst, arrname, limit)
 			ne.Orbits = SetOrbitCoords(ne.XYZ, ne.Orbits)
 
 			if lnk > limit {
@@ -536,10 +537,10 @@ func GetSequenceContainers(sst *PoSST, nodeptrs []NodePtr, arrowptrs []ArrowPtr,
 
 // **************************************************************************
 
-func GetDBArrowsWithArrowName(sst *PoSST, s string) (ArrowPtr, int) {
+func GetDBArrowsWithArrowName(ctx context.Context, sst *PoSST, s string) (ArrowPtr, int) {
 
 	if sst.ARROW_DIRECTORY_TOP == 0 {
-		DownloadArrowsFromDB(sst)
+		DownloadArrowsFromDB(ctx, sst)
 	}
 
 	s = strings.Trim(s, "!")
@@ -562,12 +563,12 @@ func GetDBArrowsWithArrowName(sst *PoSST, s string) (ArrowPtr, int) {
 
 // **************************************************************************
 
-func GetDBArrowsMatchingArrowName(sst *PoSST, s string) []ArrowPtr {
+func GetDBArrowsMatchingArrowName(ctx context.Context, sst *PoSST, s string) []ArrowPtr {
 
 	var list []ArrowPtr
 
 	if sst.ARROW_DIRECTORY_TOP == 0 {
-		DownloadArrowsFromDB(sst)
+		DownloadArrowsFromDB(ctx, sst)
 	}
 
 	trimmed := strings.Trim(s, "!")
@@ -595,10 +596,10 @@ func GetDBArrowsMatchingArrowName(sst *PoSST, s string) []ArrowPtr {
 
 // **************************************************************************
 
-func GetDBArrowByName(sst *PoSST, name string) ArrowPtr {
+func GetDBArrowByName(ctx context.Context, sst *PoSST, name string) ArrowPtr {
 
 	if sst.ARROW_DIRECTORY_TOP == 0 {
-		DownloadArrowsFromDB(sst)
+		DownloadArrowsFromDB(ctx, sst)
 	}
 
 	name = strings.Trim(name, "!")
@@ -632,10 +633,10 @@ func GetDBArrowByName(sst *PoSST, name string) ArrowPtr {
 
 // **************************************************************************
 
-func GetDBArrowByPtr(sst *PoSST, arrowptr ArrowPtr) ArrowDirectory {
+func GetDBArrowByPtr(ctx context.Context, sst *PoSST, arrowptr ArrowPtr) ArrowDirectory {
 
 	if int(arrowptr) > len(sst.ARROW_DIRECTORY) {
-		DownloadArrowsFromDB(sst)
+		DownloadArrowsFromDB(ctx, sst)
 	}
 
 	if int(arrowptr) < len(sst.ARROW_DIRECTORY) {
@@ -651,11 +652,11 @@ func GetDBArrowByPtr(sst *PoSST, arrowptr ArrowPtr) ArrowDirectory {
 
 // **************************************************************************
 
-func GetDBArrowBySTType(sst PoSST, sttype int) []ArrowDirectory {
+func GetDBArrowBySTType(ctx context.Context, sst PoSST, sttype int) []ArrowDirectory {
 
 	var retval []ArrowDirectory
 
-	DownloadArrowsFromDB(&sst)
+	DownloadArrowsFromDB(ctx, &sst)
 
 	for a := range sst.ARROW_DIRECTORY {
 		sta := sst.ARROW_DIRECTORY[a].STAindex
@@ -669,7 +670,7 @@ func GetDBArrowBySTType(sst PoSST, sttype int) []ArrowDirectory {
 
 //******************************************************************
 
-func ArrowPtrFromArrowsNames(sst *PoSST, arrows []string) ([]ArrowPtr, []int) {
+func ArrowPtrFromArrowsNames(ctx context.Context, sst *PoSST, arrows []string) ([]ArrowPtr, []int) {
 
 	// Parse input and discern arrow types, best guess
 
@@ -684,11 +685,11 @@ func ArrowPtrFromArrowsNames(sst *PoSST, arrows []string) ([]ArrowPtr, []int) {
 		notnumber := err != nil
 
 		if notnumber {
-			arrs := GetDBArrowsMatchingArrowName(sst, arrows[a])
+			arrs := GetDBArrowsMatchingArrowName(ctx, sst, arrows[a])
 			for ar := range arrs {
 				arrowptr := arrs[ar]
 				if arrowptr > 0 {
-					arrdir := GetDBArrowByPtr(sst, arrowptr)
+					arrdir := GetDBArrowByPtr(ctx, sst, arrowptr)
 					arr = append(arr, arrdir.Ptr)
 					stt = append(stt, STIndexToSTType(arrdir.STAindex))
 				}
@@ -700,7 +701,7 @@ func ArrowPtrFromArrowsNames(sst *PoSST, arrows []string) ([]ArrowPtr, []int) {
 				stt = append(stt, number)
 			} else {
 				// whatever remains can only be an arrowpointer
-				arrdir := GetDBArrowByPtr(sst, ArrowPtr(number))
+				arrdir := GetDBArrowByPtr(ctx, sst, ArrowPtr(number))
 				arr = append(arr, arrdir.Ptr)
 				stt = append(stt, STIndexToSTType(arrdir.STAindex))
 			}
@@ -712,7 +713,7 @@ func ArrowPtrFromArrowsNames(sst *PoSST, arrows []string) ([]ArrowPtr, []int) {
 
 // **************************************************************************
 
-func GetAppointedNodesByArrow(sst *PoSST, arrow ArrowPtr, cn []string, chap string, size int) map[ArrowPtr][]Appointment {
+func GetAppointedNodesByArrow(ctx context.Context, sst *PoSST, arrow ArrowPtr, cn []string, chap string, size int) map[ArrowPtr][]Appointment {
 
 	// return a map of all the nodes in chap,context that are pointed to by the same type of arrow
 	// grouped by arrow
@@ -722,7 +723,7 @@ func GetAppointedNodesByArrow(sst *PoSST, arrow ArrowPtr, cn []string, chap stri
 	}
 
 	reverse_arrow := sst.INVERSE_ARROWS[arrow]
-	arr := GetDBArrowByPtr(sst, reverse_arrow)
+	arr := GetDBArrowByPtr(ctx, sst, reverse_arrow)
 	sttype := STIndexToSTType(arr.STAindex)
 
 	_, cn_stripped := IsBracketedSearchList(cn)
@@ -743,7 +744,7 @@ func GetAppointedNodesByArrow(sst *PoSST, arrow ArrowPtr, cn []string, chap stri
 		}
 	}
 
-	rows, err := sst.Q.GetAppointments(sst.ctx(), sqlc.GetAppointmentsParams{
+	rows, err := sst.Q.GetAppointments(ctx, sqlc.GetAppointmentsParams{
 		Column1: int32(reverse_arrow),
 		Column2: int32(sttype),
 		Column3: int32(size),
@@ -757,7 +758,7 @@ func GetAppointedNodesByArrow(sst *PoSST, arrow ArrowPtr, cn []string, chap stri
 	}
 	retval := make(map[ArrowPtr][]Appointment)
 	for _, whole := range rows {
-		next := ParseAppointedNodeCluster(sst, whole)
+		next := ParseAppointedNodeCluster(ctx, sst, whole)
 		retval[next.Arr] = append(retval[next.Arr], next)
 	}
 	return retval
@@ -765,7 +766,7 @@ func GetAppointedNodesByArrow(sst *PoSST, arrow ArrowPtr, cn []string, chap stri
 
 // **************************************************************************
 
-func GetAppointedNodesBySTType(sst *PoSST, sttype int, cn []string, chap string, size int) map[ArrowPtr][]Appointment {
+func GetAppointedNodesBySTType(ctx context.Context, sst *PoSST, sttype int, cn []string, chap string, size int) map[ArrowPtr][]Appointment {
 
 	// return a map of all the nodes in chap,context that are pointed to by the same type of arrow
 	// grouped by arrow
@@ -792,7 +793,7 @@ func GetAppointedNodesBySTType(sst *PoSST, sttype int, cn []string, chap string,
 		}
 	}
 
-	rows, err := sst.Q.GetAppointments(sst.ctx(), sqlc.GetAppointmentsParams{
+	rows, err := sst.Q.GetAppointments(ctx, sqlc.GetAppointmentsParams{
 		Column1: -1,
 		Column2: int32(sttype),
 		Column3: int32(size),
@@ -806,7 +807,7 @@ func GetAppointedNodesBySTType(sst *PoSST, sttype int, cn []string, chap string,
 	}
 	retval := make(map[ArrowPtr][]Appointment)
 	for _, whole := range rows {
-		next := ParseAppointedNodeCluster(sst, whole)
+		next := ParseAppointedNodeCluster(ctx, sst, whole)
 		retval[next.Arr] = append(retval[next.Arr], next)
 	}
 	return retval
@@ -814,7 +815,7 @@ func GetAppointedNodesBySTType(sst *PoSST, sttype int, cn []string, chap string,
 
 // **************************************************************************
 
-func ParseAppointedNodeCluster(sst *PoSST, whole string) Appointment {
+func ParseAppointedNodeCluster(ctx context.Context, sst *PoSST, whole string) Appointment {
 
 	//  (13,-1,maze,{},"(1,3122)","{""(1,3121)"",""(1,3138)""}")
 
@@ -890,7 +891,7 @@ func ScoreContext(i, j int) bool {
 
 // **************************************************************************
 
-func GetDBPageMap(sst PoSST, chap string, cn []string, page int, limit int) []PageMap {
+func GetDBPageMap(ctx context.Context, sst PoSST, chap string, cn []string, page int, limit int) []PageMap {
 
 	if sst.Q == nil {
 		return nil
@@ -908,7 +909,7 @@ func GetDBPageMap(sst PoSST, chap string, cn []string, page int, limit int) []Pa
 		offset = 0
 	}
 
-	rows, err := sst.Q.ListPageMap(sst.ctx(), sqlc.ListPageMapParams{
+	rows, err := sst.Q.ListPageMap(ctx, sqlc.ListPageMapParams{
 		Column1: cnStripped,
 		Lower:   chapter,
 		Offset:  int32(offset),
@@ -933,12 +934,12 @@ func GetDBPageMap(sst PoSST, chap string, cn []string, page int, limit int) []Pa
 
 // **************************************************************************
 
-func GetFwdConeAsNodes(sst *PoSST, start NodePtr, sttype, depth int, limit int) []NodePtr {
+func GetFwdConeAsNodes(ctx context.Context, sst *PoSST, start NodePtr, sttype, depth int, limit int) []NodePtr {
 
 	if sst.Q == nil {
 		return nil
 	}
-	rows, err := sst.Q.FwdConeAsNodes(sst.ctx(), sqlc.FwdConeAsNodesParams{
+	rows, err := sst.Q.FwdConeAsNodes(ctx, sqlc.FwdConeAsNodesParams{
 		Column1: int32(start.Class),
 		Column2: int32(start.CPtr),
 		Column3: int32(sttype),
@@ -958,7 +959,7 @@ func GetFwdConeAsNodes(sst *PoSST, start NodePtr, sttype, depth int, limit int) 
 
 // **************************************************************************
 
-func GetFwdConeAsLinks(sst *PoSST, start NodePtr, sttype, depth int) []Link {
+func GetFwdConeAsLinks(ctx context.Context, sst *PoSST, start NodePtr, sttype, depth int) []Link {
 
 	// This function may be misleading as it doesn't respect paths, may be deprecated in future
 
@@ -966,7 +967,7 @@ func GetFwdConeAsLinks(sst *PoSST, start NodePtr, sttype, depth int) []Link {
 		return nil
 	}
 	// maxlimit mirrors depth when callers omit a separate limit (upstream 3-arg form).
-	rows, err := sst.Q.FwdConeAsLinks(sst.ctx(), sqlc.FwdConeAsLinksParams{
+	rows, err := sst.Q.FwdConeAsLinks(ctx, sqlc.FwdConeAsLinksParams{
 		Column1: int32(start.Class),
 		Column2: int32(start.CPtr),
 		Column3: int32(sttype),
@@ -986,12 +987,12 @@ func GetFwdConeAsLinks(sst *PoSST, start NodePtr, sttype, depth int) []Link {
 
 // **************************************************************************
 
-func GetFwdPathsAsLinks(sst *PoSST, start NodePtr, sttype, depth int, maxlimit int) ([][]Link, int) {
+func GetFwdPathsAsLinks(ctx context.Context, sst *PoSST, start NodePtr, sttype, depth int, maxlimit int) ([][]Link, int) {
 
 	if sst.Q == nil {
 		return nil, 0
 	}
-	whole, err := sst.Q.FwdPathsAsLinks(sst.ctx(), sqlc.FwdPathsAsLinksParams{
+	whole, err := sst.Q.FwdPathsAsLinks(ctx, sqlc.FwdPathsAsLinksParams{
 		Column1: int32(start.Class),
 		Column2: int32(start.CPtr),
 		Column3: int32(sttype),
@@ -1008,14 +1009,14 @@ func GetFwdPathsAsLinks(sst *PoSST, start NodePtr, sttype, depth int, maxlimit i
 
 // **************************************************************************
 
-func GetEntireConePathsAsLinks(sst *PoSST, orientation string, start NodePtr, depth int, limit int) ([][]Link, int) {
+func GetEntireConePathsAsLinks(ctx context.Context, sst *PoSST, orientation string, start NodePtr, depth int, limit int) ([][]Link, int) {
 
 	// orientation should be "fwd" or "bwd" else "both"
 
 	if sst.Q == nil {
 		return nil, 0
 	}
-	whole, err := sst.Q.AllPathsAsLinks(sst.ctx(), sqlc.AllPathsAsLinksParams{
+	whole, err := sst.Q.AllPathsAsLinks(ctx, sqlc.AllPathsAsLinksParams{
 		Column1: int32(start.Class),
 		Column2: int32(start.CPtr),
 		Column3: orientation,
@@ -1037,7 +1038,7 @@ func GetEntireConePathsAsLinks(sst *PoSST, orientation string, start NodePtr, de
 
 // **************************************************************************
 
-func GetEntireNCConePathsAsLinks(sst *PoSST, orientation string, start []NodePtr, depth int, chapter string, context []string, limit int) ([][]Link, int) {
+func GetEntireNCConePathsAsLinks(ctx context.Context, sst *PoSST, orientation string, start []NodePtr, depth int, chapter string, context []string, limit int) ([][]Link, int) {
 
 	// See also GetConstraintConePathsAsLinks for an interface with arrow matching
 	// orientation should be "fwd" or "bwd" else "both"
@@ -1052,7 +1053,7 @@ func GetEntireNCConePathsAsLinks(sst *PoSST, orientation string, start []NodePtr
 		context = []string{}
 	}
 
-	whole, err := sst.Q.AllNCPathsAsLinks(sst.ctx(), sqlc.AllNCPathsAsLinksParams{
+	whole, err := sst.Q.AllNCPathsAsLinks(ctx, sqlc.AllNCPathsAsLinksParams{
 		Column1: nodePtrArrayLiteral(start),
 		Column2: chapter,
 		Column3: remove_accents,
@@ -1071,7 +1072,7 @@ func GetEntireNCConePathsAsLinks(sst *PoSST, orientation string, start []NodePtr
 
 // **************************************************************************
 
-func GetConstraintConePathsAsLinks(sst *PoSST, start []NodePtr, depth int, chapter string, context []string, arrowptrs []ArrowPtr, sttypes []int, limit int) ([][]Link, int) {
+func GetConstraintConePathsAsLinks(ctx context.Context, sst *PoSST, start []NodePtr, depth int, chapter string, context []string, arrowptrs []ArrowPtr, sttypes []int, limit int) ([][]Link, int) {
 
 	// See also GetEntireNCConePathsAsLinks() for a differently optimized interface
 	// orientation should be "fwd" or "bwd" else "both"
@@ -1086,7 +1087,7 @@ func GetConstraintConePathsAsLinks(sst *PoSST, start []NodePtr, depth int, chapt
 		context = []string{}
 	}
 
-	whole, err := sst.Q.ConstraintPathsAsLinks(sst.ctx(), sqlc.ConstraintPathsAsLinksParams{
+	whole, err := sst.Q.ConstraintPathsAsLinks(ctx, sqlc.ConstraintPathsAsLinksParams{
 		Column1: nodePtrArrayLiteral(start),
 		Column2: chapter,
 		Column3: remove_accents,

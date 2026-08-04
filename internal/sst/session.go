@@ -29,7 +29,6 @@ func OpenWithDSN(ctx context.Context, dsn string, load_arrows bool) PoSST {
 		panic("sst: OpenWithDSN called with nil context")
 	}
 	var sst PoSST
-	sst.Ctx = ctx
 
 	if WIPE_DB {
 		// Full reset: drop dirty migrate state by truncating app data after migrate.
@@ -59,9 +58,9 @@ func OpenWithDSN(ctx context.Context, dsn string, load_arrows bool) PoSST {
 	// Schema+functions: migrations only. No runtime DefineStoredFunctions.
 	_ = load_arrows
 
-	DownloadArrowsFromDB(&sst)
-	DownloadContextsFromDB(&sst)
-	SynchronizeNPtrs(&sst)
+	DownloadArrowsFromDB(ctx, &sst)
+	DownloadContextsFromDB(ctx, &sst)
+	SynchronizeNPtrs(ctx, &sst)
 
 	NO_NODE_PTR.Class = 0
 	NO_NODE_PTR.CPtr = -1

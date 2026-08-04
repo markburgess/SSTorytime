@@ -69,7 +69,6 @@ func Run(ctx context.Context, opt Options) error {
 	} else {
 		// Parse-only: in-memory only (no DB), same graph compile path as upstream
 		// before upload. Upstream always opened DB; we allow offline parse.
-		sst.Ctx = ctx
 		SST.MemoryInit(&sst)
 	}
 	AddMandatory(&sst)
@@ -99,7 +98,7 @@ func Run(ctx context.Context, opt Options) error {
 		PrintNZVector(sst, "Eigenvector centrality (EVC) score for symmetrized graph", dim, key, evc)
 	}
 	if UPLOAD {
-		if err := upload(sst); err != nil {
+		if err := upload(ctx, sst); err != nil {
 			SST.Close(sst)
 			return err
 		}
@@ -110,8 +109,8 @@ func Run(ctx context.Context, opt Options) error {
 	return nil
 }
 
-func upload(sst SST.PoSST) error {
-	dbchapters := SST.GetDBChaptersMatchingName(sst, "")
+func upload(ctx context.Context, sst SST.PoSST) error {
+	dbchapters := SST.GetDBChaptersMatchingName(ctx, sst, "")
 	memchapters := GetMemChapters(sst)
 	conflict := false
 	for m := range memchapters {
@@ -127,10 +126,10 @@ func upload(sst SST.PoSST) error {
 		return ErrChapterConflict
 	}
 	fmt.Println("\n\nUploading nodes..")
-	SST.GraphToDB(sst, true)
+	SST.GraphToDB(ctx, sst, true)
 	marks := GetBookMarks()
 	fmt.Println("\n\nUploading bookmarks..")
-	SST.BookmarksToDB(sst, marks)
+	SST.BookmarksToDB(ctx, sst, marks)
 	return nil
 }
 

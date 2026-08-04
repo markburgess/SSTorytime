@@ -7,6 +7,7 @@
 package sst
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -17,7 +18,7 @@ import (
 
 //**************************************************************
 
-func GraphToDB(sst PoSST, wait_counter bool) {
+func GraphToDB(ctx context.Context, sst PoSST, wait_counter bool) {
 
 	fmt.Println(".  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  ")
 	fmt.Println("\nStoring primary nodes ...")
@@ -28,17 +29,17 @@ func GraphToDB(sst PoSST, wait_counter bool) {
 
 		switch class {
 		case N1GRAM:
-			UploadNodesBatch(&sst, sst.NODE_DIRECTORY.N1directory[offset:])
+			UploadNodesBatch(ctx, &sst, sst.NODE_DIRECTORY.N1directory[offset:])
 		case N2GRAM:
-			UploadNodesBatch(&sst, sst.NODE_DIRECTORY.N2directory[offset:])
+			UploadNodesBatch(ctx, &sst, sst.NODE_DIRECTORY.N2directory[offset:])
 		case N3GRAM:
-			UploadNodesBatch(&sst, sst.NODE_DIRECTORY.N3directory[offset:])
+			UploadNodesBatch(ctx, &sst, sst.NODE_DIRECTORY.N3directory[offset:])
 		case LT128:
-			UploadNodesBatch(&sst, sst.NODE_DIRECTORY.LT128directory[offset:])
+			UploadNodesBatch(ctx, &sst, sst.NODE_DIRECTORY.LT128directory[offset:])
 		case LT1024:
-			UploadNodesBatch(&sst, sst.NODE_DIRECTORY.LT1024[offset:])
+			UploadNodesBatch(ctx, &sst, sst.NODE_DIRECTORY.LT1024[offset:])
 		case GT1024:
-			UploadNodesBatch(&sst, sst.NODE_DIRECTORY.GT1024[offset:])
+			UploadNodesBatch(ctx, &sst, sst.NODE_DIRECTORY.GT1024[offset:])
 		}
 
 	}
@@ -49,27 +50,27 @@ func GraphToDB(sst PoSST, wait_counter bool) {
 	fmt.Println("Storing Arrows...")
 
 	if sst.Q != nil {
-		if err := sst.Q.TruncateArrowDirectory(sst.ctx()); err != nil {
+		if err := sst.Q.TruncateArrowDirectory(ctx); err != nil {
 			fmt.Println("truncate arrowdirectory:", err)
 		}
-		if err := sst.Q.TruncateArrowInverses(sst.ctx()); err != nil {
+		if err := sst.Q.TruncateArrowInverses(ctx); err != nil {
 			fmt.Println("truncate arrowinverses:", err)
 		}
 	}
 
-	UploadArrowsToDB(sst)
+	UploadArrowsToDB(ctx, sst)
 
 	fmt.Println("Storing inverse Arrows...")
 
-	UploadInverseArrowsToDB(sst)
+	UploadInverseArrowsToDB(ctx, sst)
 
 	fmt.Println("Storing contexts...")
 
-	UploadContextsToDB(&sst)
+	UploadContextsToDB(ctx, &sst)
 
 	fmt.Println("Storing page map...")
 
-	UploadPageMapBatch(&sst, sst.PAGE_MAP)
+	UploadPageMapBatch(ctx, &sst, sst.PAGE_MAP)
 
 	// CREATE INDICES
 
@@ -80,13 +81,13 @@ func GraphToDB(sst PoSST, wait_counter bool) {
 
 	if sst.Q != nil {
 		for name, fn := range map[string]func() error{
-			"sst_gin":      func() error { return sst.Q.CreateNodeIndexes(sst.ctx()) },
-			"sst_ungin":    func() error { return sst.Q.CreateNodeIndexes2(sst.ctx()) },
-			"sst_s":        func() error { return sst.Q.CreateNodeIndexes3(sst.ctx()) },
-			"sst_n":        func() error { return sst.Q.CreateNodeIndexes4(sst.ctx()) },
-			"sst_cnt":      func() error { return sst.Q.CreateContextIndex(sst.ctx()) },
-			"node logged":  func() error { return sst.Q.AlterNodeLogged(sst.ctx()) },
-			"pagemap logged": func() error { return sst.Q.AlterPageMapLogged(sst.ctx()) },
+			"sst_gin":        func() error { return sst.Q.CreateNodeIndexes(ctx) },
+			"sst_ungin":      func() error { return sst.Q.CreateNodeIndexes2(ctx) },
+			"sst_s":          func() error { return sst.Q.CreateNodeIndexes3(ctx) },
+			"sst_n":          func() error { return sst.Q.CreateNodeIndexes4(ctx) },
+			"sst_cnt":        func() error { return sst.Q.CreateContextIndex(ctx) },
+			"node logged":    func() error { return sst.Q.AlterNodeLogged(ctx) },
+			"pagemap logged": func() error { return sst.Q.AlterPageMapLogged(ctx) },
 		} {
 			if err := fn(); err != nil {
 				fmt.Println("index/alter", name, ":", err)
@@ -98,13 +99,13 @@ func GraphToDB(sst PoSST, wait_counter bool) {
 
 // **************************************************************************
 
-func BookmarksToDB(sst PoSST, marks map[string]string) {
+func BookmarksToDB(ctx context.Context, sst PoSST, marks map[string]string) {
 
 	if sst.Q == nil {
 		return
 	}
 	for b, q := range marks {
-		if err := sst.Q.InsertBookmark(sst.ctx(), sqlc.InsertBookmarkParams{
+		if err := sst.Q.InsertBookmark(ctx, sqlc.InsertBookmarkParams{
 			Bookmark: strPtr(b),
 			Query:    strPtr(q),
 		}); err != nil && !isUniqueViolation(err) {
@@ -117,10 +118,10 @@ func BookmarksToDB(sst PoSST, marks map[string]string) {
 //  Uploading memory cache to database
 // **************************************************************************
 
-func UploadNodesBatch(sst *PoSST, nodes []Node) {
+func UploadNodesBatch(ctx context.Context, sst *PoSST, nodes []Node) {
 
 	for i := 0; i < len(nodes); i++ {
-		if err := UploadNodeToDB(sst, nodes[i]); err != nil {
+		if err := UploadNodeToDB(ctx, sst, nodes[i]); err != nil {
 			if isUniqueViolation(err) {
 				continue
 			}
@@ -132,7 +133,7 @@ func UploadNodesBatch(sst *PoSST, nodes []Node) {
 // **************************************************************************
 
 // UploadNodeToDB inserts one in-memory node (with link arrays) via sqlc.
-func UploadNodeToDB(sst *PoSST, n Node) error {
+func UploadNodeToDB(ctx context.Context, sst *PoSST, n Node) error {
 	if sst.Q == nil {
 		return ErrNoQuerier
 	}
@@ -142,7 +143,7 @@ func UploadNodeToDB(sst *PoSST, n Node) error {
 	}
 	s := n.S
 	chap := n.Chap
-	return sst.Q.InsertNodeRow(sst.ctx(), sqlc.InsertNodeRowParams{
+	return sst.Q.InsertNodeRow(ctx, sqlc.InsertNodeRowParams{
 		Column1:  int32(n.NPtr.Class),
 		Column2:  int32(n.NPtr.CPtr),
 		Column3:  int32(n.L),
@@ -161,7 +162,7 @@ func UploadNodeToDB(sst *PoSST, n Node) error {
 
 // **************************************************************************
 
-func UploadArrowsToDB(sst PoSST) {
+func UploadArrowsToDB(ctx context.Context, sst PoSST) {
 
 	if sst.Q == nil {
 		return
@@ -170,7 +171,7 @@ func UploadArrowsToDB(sst PoSST) {
 		staidx := int32(sst.ARROW_DIRECTORY[arrow].STAindex)
 		long := sst.ARROW_DIRECTORY[arrow].Long
 		short := sst.ARROW_DIRECTORY[arrow].Short
-		if err := sst.Q.InsertArrowDirectory(sst.ctx(), sqlc.InsertArrowDirectoryParams{
+		if err := sst.Q.InsertArrowDirectory(ctx, sqlc.InsertArrowDirectoryParams{
 			Staindex: &staidx,
 			Long:     &long,
 			Short:    &short,
@@ -183,7 +184,7 @@ func UploadArrowsToDB(sst PoSST) {
 
 // **************************************************************************
 
-func UploadInverseArrowsToDB(sst PoSST) {
+func UploadInverseArrowsToDB(ctx context.Context, sst PoSST) {
 
 	if sst.Q == nil {
 		return
@@ -191,7 +192,7 @@ func UploadInverseArrowsToDB(sst PoSST) {
 	for arrow := range sst.INVERSE_ARROWS {
 		plus := int32(arrow)
 		minus := int32(sst.INVERSE_ARROWS[arrow])
-		if err := sst.Q.InsertArrowInverse(sst.ctx(), sqlc.InsertArrowInverseParams{
+		if err := sst.Q.InsertArrowInverse(ctx, sqlc.InsertArrowInverseParams{
 			Plus:  plus,
 			Minus: minus,
 		}); err != nil && !isUniqueViolation(err) {
@@ -202,22 +203,22 @@ func UploadInverseArrowsToDB(sst PoSST) {
 
 // **************************************************************************
 
-func UploadContextsToDB(sst *PoSST) {
+func UploadContextsToDB(ctx context.Context, sst *PoSST) {
 
 	for ctxdir := range sst.CONTEXT_DIRECTORY {
-		UploadContextToDB(sst, sst.CONTEXT_DIRECTORY[ctxdir].Context, sst.CONTEXT_DIRECTORY[ctxdir].Ptr)
+		UploadContextToDB(ctx, sst, sst.CONTEXT_DIRECTORY[ctxdir].Context, sst.CONTEXT_DIRECTORY[ctxdir].Ptr)
 	}
 }
 
 // **************************************************************************
 
-func UploadContextToDB(sst *PoSST, contextstring string, ptr ContextPtr) ContextPtr {
+func UploadContextToDB(ctx context.Context, sst *PoSST, contextstring string, ptr ContextPtr) ContextPtr {
 
 	if sst.Q == nil {
 		return ptr
 	}
 
-	cptr, err := sst.Q.IdempInsertContext(sst.ctx(), sqlc.IdempInsertContextParams{
+	cptr, err := sst.Q.IdempInsertContext(ctx, sqlc.IdempInsertContextParams{
 		Constr: contextstring,
 		Conptr: int32(ptr),
 	})
@@ -230,14 +231,14 @@ func UploadContextToDB(sst *PoSST, contextstring string, ptr ContextPtr) Context
 
 //**************************************************************
 
-func UploadPageMapBatch(sst *PoSST, lines []PageMap) {
+func UploadPageMapBatch(ctx context.Context, sst *PoSST, lines []PageMap) {
 
 	if sst.Q == nil {
 		return
 	}
 	for _, line := range lines {
 		path := FormatSQLLinkArray(line.Path)
-		if err := sst.Q.InsertPageMap(sst.ctx(), sqlc.InsertPageMapParams{
+		if err := sst.Q.InsertPageMap(ctx, sqlc.InsertPageMapParams{
 			Chap:    strPtr(line.Chapter),
 			Alias:   strPtr(line.Alias),
 			Column3: int32(line.Context),

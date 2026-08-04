@@ -193,7 +193,8 @@ func ServeLocalTLS(ctx context.Context, redirectHTTPAddr, httpsAddr string, mux 
 			} else if _, port, err := net.SplitHostPort(httpsAddr); err == nil && port != "443" && port != "" {
 				targetHost = net.JoinHostPort(host, port)
 			}
-			http.Redirect(w, r, "https://"+targetHost+r.URL.RequestURI(), http.StatusMovedPermanently)
+			// 307 not 301: permanent redirects get cached and strand clients if HTTPS goes away.
+			http.Redirect(w, r, "https://"+targetHost+r.URL.RequestURI(), http.StatusTemporaryRedirect)
 		}),
 		BaseContext: baseCtx,
 	}

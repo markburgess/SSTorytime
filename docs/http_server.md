@@ -20,10 +20,11 @@ the app never does ACME and never opens a second port).
 |------|---------|-----------|
 | Proxy / normal | `sstorytime serve` | HTTP `:8080` only |
 | Local HTTPS | `sstorytime serve --tls` | HTTPS `:8443` only |
-| Dual + redirect | `sstorytime serve --tls --http-addr :8080` | HTTPS + HTTP 301 (only if 8443 is open end-to-end) |
+| Dual + redirect | `sstorytime serve --tls --http-addr :8080` | HTTPS + HTTP **307** temporary redirect |
 
-If HTTP redirects to HTTPS but the firewall drops the HTTPS port, browsers
-**hang** after the 301. Prefer single-port modes.
+If HTTP redirects to HTTPS but the firewall drops the HTTPS port, browsers can
+still stall; prefer single-port modes. Redirect is **307** (not 301) so browsers
+do not permanently cache it.
 
 ### Certificates (`--tls` only)
 

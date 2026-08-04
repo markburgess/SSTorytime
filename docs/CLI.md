@@ -72,7 +72,7 @@ sstorytime serve --tls
 ```
 
 Do **not** open a second HTTP redirect port unless the HTTPS port is reachable
-(firewalls that drop :8443 after a 301 make the browser hang):
+(firewalls that drop :8443 after a redirect make the browser stall; 307 is not permanently cached):
 
 ```text
 sstorytime serve --tls --http-addr :8080   # explicit dual bind + redirect

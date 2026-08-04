@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	demopocs "github.com/markburgess/SSTorytime/internal/demo_pocs"
 	"github.com/markburgess/SSTorytime/internal/n4l"
 	SST "github.com/markburgess/SSTorytime/internal/sst"
 	"github.com/spf13/cobra"
@@ -80,8 +81,14 @@ var examplesLoadCmd = &cobra.Command{
 
 var examplesRunCmd = &cobra.Command{
 	Use:   "run [demo]",
-	Short: "Run a Go API demo (api-1, api-2, api-3, api-4)",
-	Args:  cobra.ExactArgs(1),
+	Short: "Run a Go API demo or development poc",
+	Long: `Demos:
+  api-1..api-4          — upstream API_EXAMPLE_*
+  definecontext         — context registry smoke test
+  postgres_testdb       — open/close DB
+  dotest_getnodes       — name lookup parity (needs data)
+  dotest_entirecone     — NC vs plain cone (needs a7/i6)`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 		switch args[0] {
@@ -93,8 +100,17 @@ var examplesRunCmd = &cobra.Command{
 			return runAPI3(ctx)
 		case "api-4":
 			return runAPI4(ctx)
+		case "definecontext":
+			return demopocs.DefineContext(ctx)
+		case "postgres_testdb":
+			return demopocs.PostgresTestDB(ctx)
+		case "dotest_getnodes":
+			return demopocs.DotestGetNodes(ctx)
+		case "dotest_entirecone":
+			return demopocs.DotestEntireCone(ctx)
 		default:
-			return fmt.Errorf("%w: unknown demo %q (api-1..api-4)", ErrExamplesRun, args[0])
+			return fmt.Errorf("%w: unknown demo %q (api-1..4, definecontext, postgres_testdb, dotest_getnodes, dotest_entirecone)",
+				ErrExamplesRun, args[0])
 		}
 	},
 }

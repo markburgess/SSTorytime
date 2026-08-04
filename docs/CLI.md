@@ -56,31 +56,35 @@ sstorytime n4l --config ./SSTconfig -u notes.n4l
 
 ## Web server and TLS
 
-**Default is plain HTTP** on `--addr` (`:8080`) — reverse-proxy friendly.
-The app does **not** implement ACME; terminate TLS (and ACME) on the proxy.
+**Default is a single plain-HTTP port** on `--addr` (`:8080`) — reverse-proxy
+friendly. The app does **not** implement ACME; terminate TLS on the proxy.
 
 ```text
 sstorytime serve
-# open http://localhost:8080
+# open http://localhost:8080   (one listener only)
 ```
 
-**Optional local HTTPS** (self-signed, classic dual-port style):
+**Optional local HTTPS** (still one port by default):
 
 ```text
 sstorytime serve --tls
-# https://localhost:8443  (browser will warn)
-# http://localhost:8080 → redirect
+# https://localhost:8443 only  (self-signed if cert/key missing)
 ```
 
-With `--tls`, missing `cert.pem` / `key.pem` are generated via stdlib `crypto/x509`.
+Do **not** open a second HTTP redirect port unless the HTTPS port is reachable
+(firewalls that drop :8443 after a 301 make the browser hang):
+
+```text
+sstorytime serve --tls --http-addr :8080   # explicit dual bind + redirect
+```
 
 | Flag | Default | Meaning |
 |------|---------|---------|
-| `--addr` | `:8080` | HTTP app listen (or redirect listen with `--tls`) |
-| `--tls` | false | Self-signed HTTPS + HTTP→HTTPS redirect |
-| `--https-addr` | `:8443` | HTTPS listen (`--tls` only) |
-| `--http-addr` | (equals `--addr`) | HTTP redirect listen (`--tls` only) |
-| `--cert` / `--key` | `cert.pem` / `key.pem` | PEM paths (`--tls` only) |
+| `--addr` | `:8080` | HTTP app listen (when not using `--tls`) |
+| `--tls` | false | HTTPS app on `--https-addr` (single port) |
+| `--https-addr` | `:8443` | HTTPS listen (`--tls`) |
+| `--http-addr` | unset | Optional HTTP→HTTPS redirect listener (`--tls` only) |
+| `--cert` / `--key` | `cert.pem` / `key.pem` | PEM paths (`--tls`) |
 | `--resources` | `/mnt` | Root for `/Resources/` file URLs |
 
 ## Database schema and upgrades

@@ -32,16 +32,16 @@ Start the web server:
 $ ./bin/sstorytime serve
 </pre>
 
-Open **http://localhost:8080**. For local HTTPS like the classic dual-port setup:
+Open **http://localhost:8080** (single port). For local HTTPS only:
 
 <pre>
 $ ./bin/sstorytime serve --tls
 </pre>
 
-(then **https://localhost:8443**; self-signed cert is created if missing).
-Behind a reverse proxy, keep the default plain HTTP and terminate TLS on the proxy.
-See [CLI.md](CLI.md) and [http_server.md](http_server.md).
-## 1. Find your operating system
+(then **https://localhost:8443** only; self-signed cert if missing). Do not add
+`--http-addr` unless that HTTPS port is open through the firewall — a redirect
+to a blocked port makes browsers hang. Behind a reverse proxy, keep plain HTTP
+and terminate TLS (and ACME) on the proxy. See [CLI.md](CLI.md).## 1. Find your operating system
 
 Here is the rough plan:
 

@@ -31,25 +31,29 @@ var serveCmd = &cobra.Command{
 	Short: "HTTP UI and JSON API",
 	Long: `Start the SSTorytime web UI and JSON API.
 
-Default is plain HTTP on --addr (:8080). That is what you want behind a
-reverse proxy that terminates TLS (and handles ACME). The app does not speak ACME.
+Default is a single plain-HTTP listener on --addr (:8080). That is what you
+want behind a reverse proxy (proxy terminates TLS / ACME). The app does not
+speak ACME and does not open a second port.
 
-Local HTTPS (upstream-like) is opt-in:
+Local HTTPS is opt-in and still one port by default:
 
   sstorytime serve --tls
+  # HTTPS only on --https-addr (:8443); self-signed cert if missing
 
-Then HTTPS listens on --https-addr (:8443) and HTTP on --http-addr (:8080)
-redirects to it. Missing cert.pem/key.pem are generated with crypto/x509
-(self-signed localhost; browsers will warn).`,
+Optional HTTP→HTTPS redirect (second port — only if you need it and the
+HTTPS port is reachable):
+
+  sstorytime serve --tls --http-addr :8080
+`,
 	RunE: runServe,
 }
 
 func init() {
 	registerMultiCall("serve", "http_server")
-	serveCmd.Flags().StringVar(&serveAddr, "addr", ":8080", "HTTP listen address (app traffic; default plain HTTP)")
-	serveCmd.Flags().BoolVar(&serveTLS, "tls", false, "enable self-signed HTTPS + HTTP→HTTPS redirect (local dev)")
+	serveCmd.Flags().StringVar(&serveAddr, "addr", ":8080", "HTTP listen address when not using --tls")
+	serveCmd.Flags().BoolVar(&serveTLS, "tls", false, "serve HTTPS (self-signed if cert/key missing); single port unless --http-addr is set")
 	serveCmd.Flags().StringVar(&serveHTTPSAddr, "https-addr", ":8443", "HTTPS listen address (with --tls)")
-	serveCmd.Flags().StringVar(&serveHTTPAddr, "http-addr", "", "HTTP redirect listen address with --tls (default: same as --addr)")
+	serveCmd.Flags().StringVar(&serveHTTPAddr, "http-addr", "", "optional second listener: HTTP→HTTPS redirect (with --tls only; omit to avoid dual bind)")
 	serveCmd.Flags().StringVar(&serveResources, "resources", "/mnt", "directory for /Resources/")
 	serveCmd.Flags().StringVar(&serveCertFile, "cert", "cert.pem", "TLS certificate PEM (created if missing; --tls only)")
 	serveCmd.Flags().StringVar(&serveKeyFile, "key", "key.pem", "TLS private key PEM (created if missing; --tls only)")
@@ -81,9 +85,11 @@ func runServe(cmd *cobra.Command, args []string) error {
 		return ServePlainHTTP(ctx, serveAddr, mux, baseCtx)
 	}
 
-	redirectAddr := serveHTTPAddr
-	if redirectAddr == "" {
-		redirectAddr = serveAddr
+	// Redirect listener only when explicitly requested. Auto dual-bind was hanging
+	// clients behind firewalls that allow :8080 but drop :8443 after a 301.
+	redirectAddr := ""
+	if cmd.Flags().Changed("http-addr") && serveHTTPAddr != "" {
+		redirectAddr = serveHTTPAddr
 	}
 	return ServeLocalTLS(ctx, redirectAddr, serveHTTPSAddr, mux, baseCtx)
 }
@@ -121,8 +127,9 @@ func ServePlainHTTP(ctx context.Context, addr string, mux http.Handler, baseCtx 
 	return g.Wait()
 }
 
-// ServeLocalTLS enables self-signed HTTPS plus HTTP→HTTPS redirect for local dev.
-func ServeLocalTLS(ctx context.Context, httpAddr, httpsAddr string, mux http.Handler, baseCtx func(net.Listener) context.Context) error {
+// ServeLocalTLS serves the app over HTTPS. If redirectHTTPAddr is non-empty,
+// a second HTTP listener only issues redirects to HTTPS (opt-in dual bind).
+func ServeLocalTLS(ctx context.Context, redirectHTTPAddr, httpsAddr string, mux http.Handler, baseCtx func(net.Listener) context.Context) error {
 	certFile, keyFile, generated, err := server.EnsureTLSMaterial(serveCertFile, serveKeyFile)
 	if err != nil {
 		return fmt.Errorf("tls: %w", err)
@@ -135,13 +142,6 @@ func ServeLocalTLS(ctx context.Context, httpAddr, httpsAddr string, mux http.Han
 	if err != nil {
 		return fmt.Errorf("listen https %s: %w", httpsAddr, err)
 	}
-	httpLn, err := net.Listen("tcp", httpAddr)
-	if err != nil {
-		if cerr := httpsLn.Close(); cerr != nil {
-			return fmt.Errorf("listen http %s: %w (also close https: %v)", httpAddr, err, cerr)
-		}
-		return fmt.Errorf("listen http %s: %w", httpAddr, err)
-	}
 
 	httpsSrv := &http.Server{
 		Handler:           mux,
@@ -151,6 +151,35 @@ func ServeLocalTLS(ctx context.Context, httpAddr, httpsAddr string, mux http.Han
 		WriteTimeout:      120 * time.Second,
 		IdleTimeout:       120 * time.Second,
 	}
+
+	// HTTPS-only path (default with --tls): one port, no redirect trap.
+	if redirectHTTPAddr == "" {
+		log.Printf("listening on https://%s (no HTTP redirect listener)", httpsLn.Addr())
+		g, gctx := errgroup.WithContext(ctx)
+		g.Go(func() error {
+			err := httpsSrv.ServeTLS(httpsLn, certFile, keyFile)
+			if err != nil && !errors.Is(err, http.ErrServerClosed) {
+				return fmt.Errorf("https: %w", err)
+			}
+			return nil
+		})
+		g.Go(func() error {
+			<-gctx.Done()
+			shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+			defer cancel()
+			return httpsSrv.Shutdown(shutdownCtx)
+		})
+		return g.Wait()
+	}
+
+	httpLn, err := net.Listen("tcp", redirectHTTPAddr)
+	if err != nil {
+		if cerr := httpsLn.Close(); cerr != nil {
+			return fmt.Errorf("listen http %s: %w (also close https: %v)", redirectHTTPAddr, err, cerr)
+		}
+		return fmt.Errorf("listen http %s: %w", redirectHTTPAddr, err)
+	}
+
 	httpSrv := &http.Server{
 		ReadHeaderTimeout: 10 * time.Second,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -159,7 +188,6 @@ func ServeLocalTLS(ctx context.Context, httpAddr, httpsAddr string, mux http.Han
 				host = h
 			}
 			targetHost := host
-			// Redirect to the actual HTTPS listener address port when not 443.
 			if ta, ok := httpsLn.Addr().(*net.TCPAddr); ok && ta.Port != 443 {
 				targetHost = net.JoinHostPort(host, fmt.Sprintf("%d", ta.Port))
 			} else if _, port, err := net.SplitHostPort(httpsAddr); err == nil && port != "443" && port != "" {
@@ -171,7 +199,7 @@ func ServeLocalTLS(ctx context.Context, httpAddr, httpsAddr string, mux http.Han
 	}
 
 	log.Printf("listening on https://%s", httpsLn.Addr())
-	log.Printf("listening on http://%s (redirect → HTTPS)", httpLn.Addr())
+	log.Printf("listening on http://%s (redirect → HTTPS; ensure HTTPS port is reachable)", httpLn.Addr())
 
 	g, gctx := errgroup.WithContext(ctx)
 	g.Go(func() error {

@@ -13,27 +13,26 @@ go build -o bin/sstorytime ./cmd/sstorytime
 # multi-call: ln -s sstorytime http_server && ./http_server
 ```
 
-**Default: plain HTTP** on `:8080` (reverse-proxy / ACME-friendly; the app never
-does ACME itself).
+**Default: one plain HTTP port** on `:8080` (reverse-proxy / ACME on the proxy;
+the app never does ACME and never opens a second port).
 
 | Mode | Command | Listeners |
 |------|---------|-----------|
-| Production / proxy | `sstorytime serve` | HTTP `:8080` (app) |
-| Local TLS (upstream-like) | `sstorytime serve --tls` | HTTPS `:8443` (app) + HTTP `:8080` → redirect |
+| Proxy / normal | `sstorytime serve` | HTTP `:8080` only |
+| Local HTTPS | `sstorytime serve --tls` | HTTPS `:8443` only |
+| Dual + redirect | `sstorytime serve --tls --http-addr :8080` | HTTPS + HTTP 301 (only if 8443 is open end-to-end) |
+
+If HTTP redirects to HTTPS but the firewall drops the HTTPS port, browsers
+**hang** after the 301. Prefer single-port modes.
 
 ### Certificates (`--tls` only)
 
-If `cert.pem` / `key.pem` are missing, a **self-signed localhost** cert is written
-with Go `crypto/x509` (no openssl). Browsers will warn — expected for dev.
-
-For real deployments: terminate TLS on the reverse proxy and keep the default
-HTTP backend, or pass your own PEMs with `--tls --cert … --key …`.
+Missing `cert.pem` / `key.pem` → self-signed localhost via Go `crypto/x509`.
 
 ```text
 sstorytime serve --addr :8080
 sstorytime serve --tls --https-addr :8443
 ```
-
 ### Resources directory
 
 ```text

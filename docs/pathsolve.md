@@ -18,9 +18,9 @@ For now, you can get started by trying the examples, e.g.
 <pre>
 $ cd examples
 $ make
-$ ../src/pathsolve -begin A1 -end B6 
+$ sstorytime pathsolve -begin A1 -end B6 
 
-mark% go run pathsolve.go -begin a1 -end b6 
+mark% sstorytime pathsolve -begin a1 -end b6 
 
  Paths < end_set= {B6, b6, } | {A1, } = start set>
 
@@ -98,15 +98,15 @@ Or the adjoint path search:
 
 <pre>
 
-$ go run pathsolve.go -begin B6 -end A1 -bwd
+$ sstorytime pathsolve -begin B6 -end A1 -bwd
 
 </pre>
 You can also use Dirac transition matrix notation like this:
 <pre>
 
-$ go run pathsolve.go "<B6|A1>"
-$ go run pathsolve.go "<end|start>"
-$ go run pathsolve.go "<target|start>"
+$ sstorytime pathsolve "<B6|A1>"
+$ sstorytime pathsolve "<end|start>"
+$ sstorytime pathsolve "<target|start>"
 
 </pre>
 Notice the order of the start and end sets.

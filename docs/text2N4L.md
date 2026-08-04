@@ -5,10 +5,11 @@ Sometimes you want to make notes on a text that's already written in natural lan
 and it might be quite long. Reworking the text in note form would take a long time and might
 be difficult.
 
-The `text2N4L` command reads a plain text `filename.txt` like the examples in `examples/example_data`
-and turns it into a prototype N4Lfile automatically, based on a model of deconstructing narrative
-language (a Tiny Language Model). Nothing is uploaded into the database. You can use `N4L` to do that
-later. This give you the opportunity to edit and rework, add to and delete from the proposal.
+The `sstorytime text2n4l` command (symlink name `text2N4L`) reads a plain text
+`filename.txt` like the examples in `examples/example_data` and turns it into a
+prototype N4L file automatically, based on a model of deconstructing narrative
+language (a Tiny Language Model). Nothing is uploaded into the database. You can
+use `sstorytime n4l -u` to upload later after editing.
 
 **Note**: while this sounds like a nice idea, it can be quite expensive in terms of memory. Scanning
 even a fraction of a book can produce a lot of text and cross referencing, so unicode encoding time combined
@@ -18,18 +19,19 @@ will likely take several hours to upload.
 By default, the tool selects only a 50% fraction of the sentences that have been measired for their
 significance or their level of `intent'. 
 <pre>
-$ text2N4L ../examples/example_data/promisetheory1.dat 
+$ sstorytime text2n4l ../examples/example_data/promisetheory1.dat 
 
 Wrote file ../examples/example_data/promisetheory1.dat_edit_me.n4l
 Final fraction 62.18 of requested 50.00 sampled
 
 </pre>
-You can change the fraction sampled
+You can change the fraction sampled (`--percent` or the upstream `-%` alias):
 <pre>
-$ text2N4L -% 77 ../examples/example_data/MobyDick.dat 
+$ sstorytime text2n4l --percent 77 ../examples/example_data/MobyDick.dat
+$ sstorytime text2n4l -% 77 ../examples/example_data/MobyDick.dat
 </pre>
 Because there is uncertainty in how to select the relevant parts,
-`text2N4L` will oversample, especially for low percentages. As you reach
+`text2n4l` will oversample, especially for low percentages. As you reach
 100%, there is no ambiguity.
 
 The generated file takes sentences from the source document and prefixes them with labels:

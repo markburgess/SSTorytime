@@ -37,9 +37,10 @@
 
 The tool-set consistent of several components, starting with:
 
-* [N4L](N4L.md) - The N4L compiler (This is now merged with N4L-db)
+* [CLI overview](CLI.md) — single `sstorytime` binary (multi-call names: N4L, searchN4L, …)
+* [N4L](N4L.md) - The N4L compiler / uploader (`sstorytime n4l`)
 
-* [searchN4L](searchN4L.md) - a simple and experimental command line tool for testing the graph database
+* [search](searchN4L.md) (`sstorytime search`) - a simple and experimental command line tool for testing the graph database
 
 * [text2N4L](text2N4L.md) - scan a text file and turn it into a set of notes in N4L file for further editing
 
@@ -47,11 +48,11 @@ The tool-set consistent of several components, starting with:
 
 * [notes](notes.md) - a simple command line browser of notes in page view layout
 
-* [pathsolve](pathsolve.md) - a simple and experimental command line tool for testing the graph database
+* [pathsolve](pathsolve.md) (`sstorytime pathsolve`) - a simple and experimental command line tool for testing the graph database
 
 * [graph_report](graph_report.md) - a simple and experimental command line tool for reporting on graph data, detecting loops, sources, sinks, etc, symmetrizing on different links and finding eigenvector centrality.
 
-* [http_server](http_server.md) - a prototype webserver providing the SSTorytime browsing service
+* [web server](http_server.md) (`sstorytime serve`) - a prototype webserver providing the SSTorytime browsing service
 
 * [API_EXAMPLE_1](API_EXAMPLE_1.go) - a simple store and retrieve example of the graph database.
 

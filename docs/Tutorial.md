@@ -42,9 +42,9 @@ You can use the note taking language for writing reports (incident reports, fore
 * You can use tools like `graph_report` to study large data. For small data, *you* are the
 most important part of the model.
 
-* You can use `searchN4L` to query the graph database.
+* You can use `sstorytime search` to query the graph database.
 
-* Use `pathsolve` to find possible paths between certain items.
+* Use `sstorytime pathsolve` to find possible paths between certain items.
 
 * Use `notes` to read back the notes in the page order in which you wrote them.
 
@@ -182,7 +182,7 @@ This file is already available in the distribution:
 $ cd SSTorytime
 $ make
 $ cd example
-$ ../src/N4L tutorial.n4l
+$ sstorytime n4l tutorial.n4l
 </pre>
 When you run this, you'll see something like this:
 
@@ -192,7 +192,7 @@ If you choose verbose output, you see more of what's going on:
 
 ![A Flow Chart is a knowledge representation](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/verbose.png 'Verbose output')
 
-* First N4L reads a number of configuration files in `SSTconfig/*`. These contain arrow definitions.
+* First N4L reads a number of configuration files in `internal/sstconfig/*`. These contain arrow definitions.
 * Then it reads your file and chops it into parts that are related.
 * N4L thinks that each line is an event, or an item.
 * If you out something in parentheses, it treats it as a relationship or an "arrow" that points from one item to another. You can define your own arrows, and the idea is to use them to find things more easily.
@@ -211,20 +211,20 @@ $ make
 </pre>
 You see this runs the following command:
 <pre>
-../src/N4L -u -wipe doors.n4l Mary.n4l chinese*n4l branches.n4l doubleslit.n4l ConstructionProcesses.n4l wardleymap.n4l 
+sstorytime n4l -u -wipe doors.n4l Mary.n4l chinese*n4l branches.n4l doubleslit.n4l ConstructionProcesses.n4l wardleymap.n4l 
 brains.n4l kubernetes.n4l SSTorytime.n4l integral.n4l reasoning.n4l
 </pre>
 The `-u` option tells the program to upload to the database. The `-wipe` option, tells it to override
 whatever is already in the database and start again. If you want to append new data, you can simply
 omit the `-wipe` option:
 <pre>
-$ ../src/N4L -u LoopyLoo.n4l
+$ sstorytime n4l -u LoopyLoo.n4l
 </pre>
 The examples in the documentation assume you set up from the start with these uploads:
 <pre>
 $ cd examples
 $ make 
-$ ../src/N4L -u LoopyLoo.n4l
+$ sstorytime n4l -u LoopyLoo.n4l
 </pre>
 
 ## Searching
@@ -237,20 +237,20 @@ notes chapter brain
 please in chinese
 paths from a1 to s1
 </pre>
-You can either use the `searchN4L` tool, or the web browser by running the web server `http_server` and connecting to `localhost:8080` or an address, e.g.`192.168.0.5:8080`.
+You can either use the `sstorytime search` tool, or the web browser by running `sstorytime serve` and opening `https://localhost:8443` (HTTP :8080 redirects) or an address, e.g.`192.168.0.5:8080`.
 
 On the command line:
 <pre>
 
-$ ./searchN4L please in chinese
-$ ./searchN4L "(zai chengshi)"
-$ ./searchN4L from a1
-$ ./searchN4L notes about chinese context restaurant
-$ ./searchN4L notes about brain context waves
-$ ./searchN4L chapter brain
-$ ./searchN4L from a1
-$ ./searchN4L from a1 to b5
-$ ./searchN4L to "target 3"
+$ sstorytime search please in chinese
+$ sstorytime search "(zai chengshi)"
+$ sstorytime search from a1
+$ sstorytime search notes about chinese context restaurant
+$ sstorytime search notes about brain context waves
+$ sstorytime search chapter brain
+$ sstorytime search from a1
+$ sstorytime search from a1 to b5
+$ sstorytime search to "target 3"
 </pre>
 Notice that, if you want to match accented characters using unaccented substitutes (like 'o' for 'ø'), then you write the word in parentheses).
 
@@ -281,7 +281,7 @@ ways, because the most powerful ways to search any structure are to
 use a programming language that allows you to express your own
 intent. You can see examples in the demos and proof of concept
 directory under src/demo_poc.  But as the project progresses, you can
-use the `notes` and `searchN4L` tool to play around with the result.
+use the `notes` and `sstorytime search` tool to play around with the result.
 The simplest way to see what you entered (which is like a cleaned up version of `more`)
 is to use:
 <pre>

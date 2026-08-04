@@ -3,7 +3,7 @@
 
 // A small corpus tracking books I have read, what each is about,
 // who wrote them, what they cite, and a one-line takeaway.
-// Uses only arrows that ship in the default SSTconfig:
+// Uses only arrows that ship in the default internal/sstconfig:
 //   (about)     — the topic of
 //   (by)        — the author of
 //   (bib-cite)  — cites (as a bibtex-style citation)

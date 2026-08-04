@@ -1,37 +1,55 @@
 
-# `http_server` and web
+# Web server (`sstorytime serve` / `http_server`)
 
-The http server provided is a generic browsing interface. It isn't meant to be the last
-word on browsing the graph. In principle, every application might have its own custom
-interface. This web page illustrates the Web API and is used to develop our thinking around
-graphs.
+The server is a generic browsing interface and JSON Web API. It is not meant to
+be the last word on browsing the graph; applications may grow custom UIs. This
+document describes how to run it and how paths map to files.
 
-The web server has a single argument:
-<pre>
-./http_server -resources /data/directory
-</pre>
-This is a directory path which serves as a root for any file paths referenced in URLs, e.g.
-where images of documents may be cached in order to be accessible from links rendered in the
-browser. It may include any kind of MIME type, such as music files, images, documents etc.
+## Run
 
-For example, if we share a folder called `/mnt/Recordings`, then start the server
-<pre>
-./http_server -resources /mnt/Recordings
-</pre>
-which leads to a disk file
-<pre>
-/mnt/Recordings/Rush/Presto/Folder.jpg
-</pre>
-which maps an image reference
-<pre>
-/Resources/Rush/Presto/Folder.jpg
-</pre>
-to the URL
-<pre>
-http://localhost:8080/Resources/Rush/Presto/Folder.jpg
-</pre>
+```text
+go build -o bin/sstorytime ./cmd/sstorytime
+./bin/sstorytime serve
+# multi-call: ln -s sstorytime http_server && ./http_server
+```
 
-* The web server exposes port 8080 for now.
+**Default: one plain HTTP port** on `:8080` (reverse-proxy / ACME on the proxy;
+the app never does ACME and never opens a second port).
+
+| Mode | Command | Listeners |
+|------|---------|-----------|
+| Proxy / normal | `sstorytime serve` | HTTP `:8080` only |
+| Local HTTPS | `sstorytime serve --tls` | HTTPS `:8443` only |
+| Dual + redirect | `sstorytime serve --tls --http-addr :8080` | HTTPS + HTTP **307** temporary redirect |
+
+If HTTP redirects to HTTPS but the firewall drops the HTTPS port, browsers can
+still stall; prefer single-port modes. Redirect is **307** (not 301) so browsers
+do not permanently cache it.
+
+### Certificates (`--tls` only)
+
+Missing `cert.pem` / `key.pem` → self-signed localhost via Go `crypto/x509`.
+
+```text
+sstorytime serve --addr :8080
+sstorytime serve --tls --https-addr :8443
+```
+### Resources directory
+
+```text
+sstorytime serve --resources /data/directory
+```
+
+That path is the root for `/Resources/…` URLs (images, audio, PDFs, etc.).
+
+Example: share `/mnt/Recordings`, start with `--resources /mnt/Recordings`, then
+disk file `/mnt/Recordings/Rush/Presto/Folder.jpg` is served as:
+
+```text
+https://localhost:8443/Resources/Rush/Presto/Folder.jpg
+```
+
+(HTTP on :8080 redirects to the HTTPS URL.)
 
 ## Four search formats
 

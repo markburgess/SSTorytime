@@ -228,7 +228,7 @@ go build -o bin/sstorytime ./cmd/sstorytime
 | `sstorytime notes` | [notes](docs/notes.md) | page-map browser |
 | `sstorytime pathsolve` | [pathsolve](docs/pathsolve.md) | paths + centrality |
 | `sstorytime graph-report` | [graph_report](docs/graph_report.md) | loops, sources, EVC |
-| `sstorytime serve` | [http_server](docs/http_server.md) | web UI; HTTPS :8443 + HTTP :8080 redirect |
+| `sstorytime serve` | [http_server](docs/http_server.md) | web UI; HTTP :8080 (use `--tls` for local HTTPS) |
 | `sstorytime examples run …` | [CLI](docs/CLI.md) | API demos + dev pocs |
 
 Also: [Getting started](docs/GettingStarted.md), [Tutorial](docs/Tutorial.md),

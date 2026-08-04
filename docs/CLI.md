@@ -56,30 +56,31 @@ sstorytime n4l --config ./SSTconfig -u notes.n4l
 
 ## Web server and TLS
 
-Default (upstream-like):
-
-- **HTTPS** on `:8443` — UI and API
-- **HTTP** on `:8080` — permanent redirect to HTTPS
-
-If `cert.pem` / `key.pem` are missing in the working directory, the server
-**generates a self-signed certificate** with the Go standard library
-(`crypto/x509`, ECDSA P-256). No `openssl` step is required. Browsers will
-show a warning for self-signed certs; that is expected for local development.
+**Default is plain HTTP** on `--addr` (`:8080`) — reverse-proxy friendly.
+The app does **not** implement ACME; terminate TLS (and ACME) on the proxy.
 
 ```text
 sstorytime serve
-# open https://localhost:8443  (accept the warning)
-# or http://localhost:8080     (redirects)
+# open http://localhost:8080
 ```
 
-Useful flags:
+**Optional local HTTPS** (self-signed, classic dual-port style):
+
+```text
+sstorytime serve --tls
+# https://localhost:8443  (browser will warn)
+# http://localhost:8080 → redirect
+```
+
+With `--tls`, missing `cert.pem` / `key.pem` are generated via stdlib `crypto/x509`.
 
 | Flag | Default | Meaning |
 |------|---------|---------|
-| `--https-addr` / `--addr` | `:8443` | HTTPS listen |
-| `--http-addr` | `:8080` | HTTP listen (redirect) |
-| `--cert` / `--key` | `cert.pem` / `key.pem` | PEM paths |
-| `--http-only` | false | Plain HTTP only (e.g. behind a reverse proxy) |
+| `--addr` | `:8080` | HTTP app listen (or redirect listen with `--tls`) |
+| `--tls` | false | Self-signed HTTPS + HTTP→HTTPS redirect |
+| `--https-addr` | `:8443` | HTTPS listen (`--tls` only) |
+| `--http-addr` | (equals `--addr`) | HTTP redirect listen (`--tls` only) |
+| `--cert` / `--key` | `cert.pem` / `key.pem` | PEM paths (`--tls` only) |
 | `--resources` | `/mnt` | Root for `/Resources/` file URLs |
 
 ## Database schema and upgrades

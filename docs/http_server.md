@@ -13,27 +13,25 @@ go build -o bin/sstorytime ./cmd/sstorytime
 # multi-call: ln -s sstorytime http_server && ./http_server
 ```
 
-Default (same idea as classic upstream):
+**Default: plain HTTP** on `:8080` (reverse-proxy / ACME-friendly; the app never
+does ACME itself).
 
-| Listener | Role |
-|----------|------|
-| **https://localhost:8443** | UI + API (TLS) |
-| **http://localhost:8080** | 301 redirect to HTTPS |
+| Mode | Command | Listeners |
+|------|---------|-----------|
+| Production / proxy | `sstorytime serve` | HTTP `:8080` (app) |
+| Local TLS (upstream-like) | `sstorytime serve --tls` | HTTPS `:8443` (app) + HTTP `:8080` → redirect |
 
-### Certificates
+### Certificates (`--tls` only)
 
-If `cert.pem` and `key.pem` are not present in the working directory, the server
-**writes a self-signed localhost certificate** using the Go standard library
-(`crypto/x509` + ECDSA P-256). You do not need `openssl` or the old
-`make_certificate` script.
+If `cert.pem` / `key.pem` are missing, a **self-signed localhost** cert is written
+with Go `crypto/x509` (no openssl). Browsers will warn — expected for dev.
 
-Browsers will warn about the self-signed cert — accept the exception for local
-development. For production, put real PEMs in place (or use `--cert` / `--key`)
-or put a reverse proxy in front and run with `--http-only`.
+For real deployments: terminate TLS on the reverse proxy and keep the default
+HTTP backend, or pass your own PEMs with `--tls --cert … --key …`.
 
 ```text
-sstorytime serve --cert /etc/ssl/sst.pem --key /etc/ssl/sst-key.pem
-sstorytime serve --http-only --http-addr :8080   # plain HTTP only
+sstorytime serve --addr :8080
+sstorytime serve --tls --https-addr :8443
 ```
 
 ### Resources directory

@@ -10,7 +10,7 @@ Note: modern SSDs don't like being written to too many times. When using them fo
 
 ## Preferred method
 
-The best and most reliable way to update your notes is to use `N4L -wipe -u *.n4l` to upload all
+The best and most reliable way to update your notes is to use `sstorytime n4l -u --wipe *.n4l` to upload all
 your notes at the same time. `N4L` takes care of all the work and  makes sure everything is consistent.
 However, this takes a long time. There is no easy way around this, because graphs are complicated things
 with overlapping threads that need to be made consistent. Trying to remove data and then add it back placcces a
@@ -37,7 +37,7 @@ $ N4L -wipe -u file1.n4l ....... reminders.n4l
 </pre>
 Then you can remove the reminders:
 <pre>
-$ removeN4L reminders.n4l
+$ sstorytime remove reminders.n4l
 </pre>
 and add them back again without fragmentation:
 <pre>

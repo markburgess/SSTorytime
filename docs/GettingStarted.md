@@ -8,31 +8,33 @@ the programs by following these destructions below. You can get started with or 
 * Postgres
 * Docker (optional, e.g. Docker desktop)
 
-First compile the software. From the project root, run:
+Build the single CLI binary from the project root:
 
 <pre>
-$ make
+$ go build -o bin/sstorytime ./cmd/sstorytime
 </pre>
-Next, setup the PostgreSQL database:
-<pre>
-$ make db
-</pre>
-or (the preferred option for Linux):
-<pre>
-$ make ramdb
-</pre>
-Now that you've compiled and the database is running, you can upload the example data to play with:
-<pre>
-$ cd examples/
-$ make
-</pre>
-With data, you can now run the web server:
-<pre>
-cd src
-./http_server
-</pre>
-and open a web browser `http://localhost:8080`. Try searching for SSTorytime!
 
+Next, set up PostgreSQL (Docker compose under `postgres-docker/`, or
+`contrib/makedb.sh` / `make ramdb` where available). Default credentials match
+the docs: user/db `sstoryline`, password `sst_1234` (or set `POSTGRESQL_URI` /
+`--database-url`).
+
+Upload example data:
+
+<pre>
+$ ./bin/sstorytime examples load all
+# or: cd examples && make   # uses ../bin/sstorytime
+</pre>
+
+Start the web server:
+
+<pre>
+$ ./bin/sstorytime serve
+</pre>
+
+Open **https://localhost:8443** (self-signed cert is created automatically if
+missing; accept the browser warning). HTTP on port 8080 redirects to HTTPS.
+See [CLI.md](CLI.md) and [http_server.md](http_server.md).
 ## 1. Find your operating system
 
 Here is the rough plan:

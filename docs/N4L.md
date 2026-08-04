@@ -180,7 +180,7 @@ A useful ranking of nodes (known as EVC, or Eigenvector Centrality, which is som
 can be calculated from the weighted graph matrix (see below). The higher the score number, the more
 interconnected or "important" a term of text is, e.g.
 <pre>
-$ ../src/N4L -v -s -adj="" chinese.in
+$ sstorytime n4l -v -s -adj="" chinese.in
 
   ...
 

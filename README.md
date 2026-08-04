@@ -212,36 +212,31 @@ This is why we strive to study the role of stories in learning and understanding
 
 ## The tools
 
-The tool-set consistent of several components, starting with:
+Everything is one binary: **`sstorytime`** (see **[docs/CLI.md](docs/CLI.md)** for flags,
+TLS, multi-call symlinks, and upgrades).
 
-* [N4L](docs/N4L.md) - The N4L compiler (This is now merged with N4L-db)
+```text
+go build -o bin/sstorytime ./cmd/sstorytime
+```
 
-* [searchN4L](docs/searchN4L.md) - a simple and experimental command line tool for testing the graph database
+| Command | Docs | Notes |
+|---------|------|--------|
+| `sstorytime n4l` | [N4L](docs/N4L.md) | compile / upload (`N4L` symlink) |
+| `sstorytime search` | [searchN4L](docs/searchN4L.md) | CLI search |
+| `sstorytime text2n4l` | [text2N4L](docs/text2N4L.md) | skim text → N4L draft |
+| `sstorytime remove` | [removeN4L](docs/removeN4L.md) | delete chapter (`--force`) |
+| `sstorytime notes` | [notes](docs/notes.md) | page-map browser |
+| `sstorytime pathsolve` | [pathsolve](docs/pathsolve.md) | paths + centrality |
+| `sstorytime graph-report` | [graph_report](docs/graph_report.md) | loops, sources, EVC |
+| `sstorytime serve` | [http_server](docs/http_server.md) | web UI; HTTPS :8443 + HTTP :8080 redirect |
+| `sstorytime examples run …` | [CLI](docs/CLI.md) | API demos + dev pocs |
 
-* [text2N4L](docs/text2N4L.md) - scan a text file and turn it into a set of notes in N4L file for further editing
+Also: [Getting started](docs/GettingStarted.md), [Tutorial](docs/Tutorial.md),
+[API overview](docs/API.md), [FAQ](docs/FAQ.md).
 
-* [removeN4L](docs/removeN4L.md) - remove an uploaded chapter from the database
-
-* [notes](docs/notes.md) - a simple command line browser of notes in page view layout
-
-* [pathsolve](docs/pathsolve.md) - a simple and experimental command line tool for testing the graph database
-
-* [graph_report](docs/graph_report.md) - a simple and experimental command line tool for reporting on graph data, detecting loops, sources, sinks, etc, symmetrizing on different links and finding eigenvector centrality.
-
-* [http_server](docs/http_server.md) - a prototype webserver providing the SSTorytime browsing service
-
-* [API_EXAMPLE_1](src/API_EXAMPLE_1.go) - a simple store and retrieve example of the graph database.
-
-* [API_EXAMPLE_2](src/API_EXAMPLE_2.go) - multi/hyperlink example, joining several nodes through a central hub.
-
-* [API_EXAMPLE_3](src/API_EXAMPLE_3.go) - a maze solving example, showing higher functions.
-
-* [API_EXAMPLE_4](src/API_EXAMPLE_4.go) - a path solving example, with loop corrections (quantum style).
-
-* [python_integration_example.py](src/python_integration_example.py) - a basic Python example
-
-* [SSTorytime.py](src/SSTorytime.py) - Includable Python interface for SSTorytime, basic functions (TBD)
-
+Python helpers (still under `python/` / `src/` where present):
+[python_integration_example.py](python/python_integration_example.py),
+[SSTorytime.py](python/SSTorytime.py) (basic / TBD).
 
 ## See also spinoff projects
 

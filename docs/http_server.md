@@ -1,37 +1,57 @@
 
-# `http_server` and web
+# Web server (`sstorytime serve` / `http_server`)
 
-The http server provided is a generic browsing interface. It isn't meant to be the last
-word on browsing the graph. In principle, every application might have its own custom
-interface. This web page illustrates the Web API and is used to develop our thinking around
-graphs.
+The server is a generic browsing interface and JSON Web API. It is not meant to
+be the last word on browsing the graph; applications may grow custom UIs. This
+document describes how to run it and how paths map to files.
 
-The web server has a single argument:
-<pre>
-./http_server -resources /data/directory
-</pre>
-This is a directory path which serves as a root for any file paths referenced in URLs, e.g.
-where images of documents may be cached in order to be accessible from links rendered in the
-browser. It may include any kind of MIME type, such as music files, images, documents etc.
+## Run
 
-For example, if we share a folder called `/mnt/Recordings`, then start the server
-<pre>
-./http_server -resources /mnt/Recordings
-</pre>
-which leads to a disk file
-<pre>
-/mnt/Recordings/Rush/Presto/Folder.jpg
-</pre>
-which maps an image reference
-<pre>
-/Resources/Rush/Presto/Folder.jpg
-</pre>
-to the URL
-<pre>
-http://localhost:8080/Resources/Rush/Presto/Folder.jpg
-</pre>
+```text
+go build -o bin/sstorytime ./cmd/sstorytime
+./bin/sstorytime serve
+# multi-call: ln -s sstorytime http_server && ./http_server
+```
 
-* The web server exposes port 8080 for now.
+Default (same idea as classic upstream):
+
+| Listener | Role |
+|----------|------|
+| **https://localhost:8443** | UI + API (TLS) |
+| **http://localhost:8080** | 301 redirect to HTTPS |
+
+### Certificates
+
+If `cert.pem` and `key.pem` are not present in the working directory, the server
+**writes a self-signed localhost certificate** using the Go standard library
+(`crypto/x509` + ECDSA P-256). You do not need `openssl` or the old
+`make_certificate` script.
+
+Browsers will warn about the self-signed cert — accept the exception for local
+development. For production, put real PEMs in place (or use `--cert` / `--key`)
+or put a reverse proxy in front and run with `--http-only`.
+
+```text
+sstorytime serve --cert /etc/ssl/sst.pem --key /etc/ssl/sst-key.pem
+sstorytime serve --http-only --http-addr :8080   # plain HTTP only
+```
+
+### Resources directory
+
+```text
+sstorytime serve --resources /data/directory
+```
+
+That path is the root for `/Resources/…` URLs (images, audio, PDFs, etc.).
+
+Example: share `/mnt/Recordings`, start with `--resources /mnt/Recordings`, then
+disk file `/mnt/Recordings/Rush/Presto/Folder.jpg` is served as:
+
+```text
+https://localhost:8443/Resources/Rush/Presto/Folder.jpg
+```
+
+(HTTP on :8080 redirects to the HTTPS URL.)
 
 ## Four search formats
 

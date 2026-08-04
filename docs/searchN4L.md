@@ -1,12 +1,12 @@
 
-# searchN4L
+# sstorytime search
 
 This is a tool for querying the database. This is redesigned to avoid having to use command line options.
 The only command line option is `-v` for verbose output, which is helpful for debugging.
 
 ## Commands with `\` or `\\`
 
-Commands may be used to search in `searchN4L` or the web browser application. All command words are prefixed
+Commands may be used to search in `sstorytime search` or the web browser application. All command words are prefixed
 with a backslash to distinguish them from search terms. Note that, on the shell command line, you need to use two
 backslashes as `\` is an escaped character.
 
@@ -64,7 +64,7 @@ Using the pre-loaded examples, you can try:
 
 ## Search for nodes and their close neighbour orbits matching a name
 <pre>
-$ ./searchN4L Mark
+$ ./sstorytime search Mark
 ------------------------------------------------------------------
 
 0: supermarket
@@ -94,7 +94,7 @@ $ ./searchN4L Mark
 If you can only get English characters on your keyboard, you can still search for accented
 words by placing parentheses around them "(...)":
 <pre>
-% ./searchN4L  "(fangzi)" \\chapter "chinese" 
+% ./sstorytime search  "(fangzi)" \\chapter "chinese" 
 ------------------------------------------------------------------
 
 0: fángzi
@@ -117,7 +117,7 @@ words by placing parentheses around them "(...)":
 ## Searching for anything in a given context
 
 <pre>
-$ ./searchN4L %% \\context smalltalk brain wave \\limit 3
+$ ./sstorytime search %% \\context smalltalk brain wave \\limit 3
 ------------------------------------------------------------------
  Limiting to maximum of 3 results
 ------------------------------------------------------------------
@@ -149,7 +149,7 @@ If you know about the database internals, you can look up node pointers directly
 as long as you quote the parentheses for the shell.
 Notice how the indentation shows you the distance from the starting node.
 <pre>
-./searchN4L "(1,1)"
+./sstorytime search "(1,1)"
 ------------------------------------------------------------------
 
 0: door
@@ -171,7 +171,7 @@ Notice how the indentation shows you the distance from the starting node.
 
 Context strings are clustered into groups. If you don't remember, you can search:
 <pre>
-% ./searchN4L context restaurant
+% ./sstorytime search context restaurant
   0. "buildings"
   1. "come"
   2. "come in"
@@ -190,14 +190,14 @@ Context strings are clustered into groups. If you don't remember, you can search
 You can look up arrow definitions too, by name, number, or spacetime type.
 The output format is `arrowptr, sttype, long name`:
 <pre>
-$ ./searchN4L \\arrow ph,pe
+$ ./sstorytime search \\arrow ph,pe
 192. (3) ph -> pinyin has hanzi
 190. (3) pe -> pinyin has english
 
-$ ./searchN4L \\arrow 125
+$ ./sstorytime search \\arrow 125
 125. (-2) during -> happened during
 
-$ ./searchN4L \\arrow -2
+$ ./sstorytime search \\arrow -2
   9. (-2) in -> is in
  11. (-2) is an emphatic proto-concept in -> is emph in
  13. (-2) is mentioned in -> ismentin
@@ -215,7 +215,7 @@ $ ./searchN4L \\arrow -2
 
 You can search for paths from one location to another:
 <pre>
- ./searchN4L \\from start \\to "target 1"
+ ./sstorytime search \\from start \\to "target 1"
 ------------------------------------------------------------------
 
      - story path:  start  -(leads to)->  door  -(leads to)->  passage  -(debug)->  target 1
@@ -225,11 +225,11 @@ The default path length limtis to 5 hops. There might be longer paths, so you ca
 to force a larger search:
 
 <pre>
-$ ./searchN4L \\paths \\from a7 \\to i6 \\depth 16
+$ ./sstorytime search \\paths \\from a7 \\to i6 \\depth 16
 </pre>
 or simply
 <pre>
-$ ./searchN4L a7 \\to i6 \\depth 16
+$ ./sstorytime search a7 \\to i6 \\depth 16
 ------------------------------------------------------------------
 
      - story path:  maze_a7  -(forwards)->  maze_b7  -(forwards)->  maze_b6  -(forwards)->  maze_c6
@@ -248,7 +248,7 @@ $ ./searchN4L a7 \\to i6 \\depth 16
 ## Searching for story sequences
 
 <pre>
-./searchN4L sequence "Mary had"
+./sstorytime search sequence "Mary had"
 The following story/sequence (standalone trail without title anchor) "..."
 
 
@@ -265,7 +265,7 @@ The following story/sequence (standalone trail without title anchor) "..."
 
 Sometimes you want to see your full notes, the way you ordered them:
 <pre>
-$ ./searchN4L \\notes brain
+$ ./sstorytime search \\notes brain
 
 ---------------------------------------------
 
@@ -293,7 +293,7 @@ gamma waves (occurs in) frontal cortex
 To get a table of contents, with embedded contexts:
 
 <pre>
-./searchN4L \\chapter any \\limit 4
+./sstorytime search \\chapter any \\limit 4
 ------------------------------------------------------------------
  Limiting to maximum of 4 results
 
@@ -334,7 +334,7 @@ To get a table of contents, with embedded contexts:
 To get a list of phrases you've used to label contexts:
 
 <pre>
-$ ./searchN4L \\context any
+$ ./sstorytime search \\context any
 
 ------------------------------------------------------------------
  Limiting to maximum of 10 results
@@ -358,7 +358,7 @@ $ ./searchN4L \\context any
 </pre>
 To find tokens related to a particular match:
 <pre>
-$ ./searchN4L.go \\context direct keyi |more
+$ ./sstorytime search.go \\context direct keyi |more
 
 ------------------------------------------------------------------
  Limiting to maximum of 10 results

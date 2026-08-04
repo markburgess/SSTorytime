@@ -1673,7 +1673,8 @@ for (let line = 0; line < array.length; line++)
          let arrow_link = document.createElement("a");
          arrow_link.textContent = `( ${arrow} )  `;
          arrow_link.id = `arrow-` + stindex;
-         arrow_link.class = "tooltip";
+	 arrow_link.class = "tooltip";
+	 arrow_link.onclick = function () { sendLinkSearch('\\arrow "' + arrow + '"');};
          arrow_link.title = STINDICES[stindex];
          arrow_link.style.fontFamily = "Verdana";
 

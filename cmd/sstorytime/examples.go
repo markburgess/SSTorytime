@@ -100,6 +100,7 @@ var examplesRunCmd = &cobra.Command{
 }
 
 func init() {
+	registerMultiCall("examples", "sstorytime-examples")
 	examplesCmd.AddCommand(examplesListCmd, examplesLoadCmd, examplesRunCmd)
 }
 

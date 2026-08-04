@@ -39,7 +39,9 @@ func init() {
 }
 
 // Execute runs the root command under ctx (from main's signal.NotifyContext).
+// Busybox-style names (N4L, searchN4L, …) are rewritten via multiCall before Cobra runs.
 func Execute(ctx context.Context) error {
+	os.Args = applyMultiCall(os.Args)
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return err

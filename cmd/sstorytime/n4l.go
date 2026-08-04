@@ -44,6 +44,7 @@ var n4lCmd = &cobra.Command{
 }
 
 func init() {
+	registerMultiCall("n4l", "N4L", "N4L-db")
 	n4lCmd.Flags().BoolVarP(&n4lUpload, "upload", "u", false, "upload into database")
 	n4lCmd.Flags().BoolVar(&n4lWipe, "wipe", false, "wipe and reset before upload")
 	n4lCmd.Flags().BoolVar(&n4lForce, "force", false, "force upload")

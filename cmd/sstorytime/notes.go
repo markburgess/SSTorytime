@@ -26,5 +26,6 @@ var notesCmd = &cobra.Command{
 }
 
 func init() {
+	registerMultiCall("notes", "notes")
 	notesCmd.Flags().IntVar(&notesPage, "page", 1, "page number")
 }

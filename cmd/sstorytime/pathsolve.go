@@ -30,6 +30,7 @@ var pathsolveCmd = &cobra.Command{
 }
 
 func init() {
+	registerMultiCall("pathsolve", "pathsolve", "PathSolve")
 	pathsolveCmd.Flags().StringVar(&psBegin, "begin", "", "start match")
 	pathsolveCmd.Flags().StringVar(&psEnd, "end", "", "end match")
 	pathsolveCmd.Flags().StringVar(&psChapter, "chapter", "", "optional chapter filter")

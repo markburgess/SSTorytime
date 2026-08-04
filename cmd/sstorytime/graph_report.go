@@ -67,6 +67,7 @@ var graphReportCmd = &cobra.Command{
 }
 
 func init() {
+	registerMultiCall("graph-report", "graph_report")
 	graphReportCmd.Flags().StringVar(&grChapter, "chapter", "", "chapter substring")
 	graphReportCmd.Flags().StringVar(&grSTType, "sttype", "+L", "link ST types e.g. L,C,P,N")
 	graphReportCmd.Flags().IntVar(&grDepth, "depth", 3, "max probe depth")

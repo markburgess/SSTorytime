@@ -86,6 +86,7 @@ var migrateVersionCmd = &cobra.Command{
 }
 
 func init() {
+	registerMultiCall("migrate", "sstorytime-migrate")
 	migrateCmd.AddCommand(migrateUpCmd, migrateDownCmd, migrateVersionCmd)
 }
 

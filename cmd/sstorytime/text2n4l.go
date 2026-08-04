@@ -17,5 +17,6 @@ var text2n4lCmd = &cobra.Command{
 }
 
 func init() {
+	registerMultiCall("text2n4l", "text2N4L", "Text2N4L")
 	text2n4lCmd.Flags().Float64Var(&text2Pct, "percent", 50, "approximate percentage of file to skim")
 }

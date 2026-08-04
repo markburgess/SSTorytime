@@ -33,5 +33,6 @@ var removeCmd = &cobra.Command{
 }
 
 func init() {
+	registerMultiCall("remove", "removeN4L")
 	removeCmd.Flags().BoolVar(&removeForce, "force", false, "force remove")
 }

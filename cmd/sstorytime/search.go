@@ -35,3 +35,7 @@ var searchCmd = &cobra.Command{
 		return nil
 	},
 }
+
+func init() {
+	registerMultiCall("search", "searchN4L")
+}

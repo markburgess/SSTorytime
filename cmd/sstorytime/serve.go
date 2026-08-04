@@ -62,6 +62,7 @@ var serveCmd = &cobra.Command{
 }
 
 func init() {
+	registerMultiCall("serve", "http_server")
 	serveCmd.Flags().StringVar(&serveAddr, "addr", ":8080", "HTTP listen address")
 	serveCmd.Flags().StringVar(&serveResources, "resources", "/mnt", "directory for /Resources/")
 }

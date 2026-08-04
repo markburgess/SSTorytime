@@ -192,7 +192,7 @@ If you choose verbose output, you see more of what's going on:
 
 ![A Flow Chart is a knowledge representation](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/verbose.png 'Verbose output')
 
-* First N4L reads a number of configuration files in `SSTconfig/*`. These contain arrow definitions.
+* First N4L reads a number of configuration files in `internal/sstconfig/*`. These contain arrow definitions.
 * Then it reads your file and chops it into parts that are related.
 * N4L thinks that each line is an event, or an item.
 * If you out something in parentheses, it treats it as a relationship or an "arrow" that points from one item to another. You can define your own arrows, and the idea is to use them to find things more easily.

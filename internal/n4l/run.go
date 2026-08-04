@@ -21,9 +21,9 @@ type Options struct {
 	Summary     bool
 	AdjList     string // empty = no adjacency matrix
 	DatabaseURL string
-	// ConfigFS is the SSTconfig tree. nil means embedded defaults
-	// (sstconfig.Default()). Pass os.DirFS(path) only when the user
-	// explicitly opts in to an on-disk config.
+	// ConfigFS is the arrow/annotation config tree. nil means embedded
+	// defaults from internal/sstconfig. Pass os.DirFS(path) only when the
+	// user explicitly opts in to an on-disk config (--config).
 	ConfigFS fs.FS
 }
 

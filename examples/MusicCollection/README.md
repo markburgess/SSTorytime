@@ -1,8 +1,9 @@
 
 # Independent example
 
-Note, this section has a private `SSTconfig/` directory, which conflicts with some of the definitions
-in the examples in the directory above. You would have to try by wiping:
+Note, this section has a private `SSTconfig/` directory (local override, not the
+default embedded config in `internal/sstconfig/`), which conflicts with some of
+the definitions in the examples in the directory above. You would have to try by wiping:
 
 <pre>
 N4L -wipe -u collection.n4l

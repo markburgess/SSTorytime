@@ -60,7 +60,7 @@ These help us to use the "right kind of" arrows for searching and reasoning late
 ## The arrows in (parentheses) -- the four kinds
 
 Each arrow is written in (parentheses). You can use a long or a short name. These arrows must be
-defined in the configuration files of `SSTconfig/`.
+defined in the configuration files of `internal/sstconfig/`.
 
 To begin with you can write down relations just as you might say them, but to make an effective knowledge
 graph, you need to reduce the number of arrows to a smallish but still expressive set. Each arrow

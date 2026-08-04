@@ -30,7 +30,7 @@ You can quote a phrase:
 
 Constructing a search expression each time, for a complex extraction can be tedious. You can
 create a set of links to search expressions to select sections of data by creating
-a `SSTconfig/bookmarks.sst` file in the format
+a `internal/sstconfig/bookmarks.sst` file in the format
 <pre>
 Bookmark entry : search expression.
 </pre>

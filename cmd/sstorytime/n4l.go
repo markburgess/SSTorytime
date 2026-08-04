@@ -50,5 +50,5 @@ func init() {
 	n4lCmd.Flags().BoolVarP(&n4lDiag, "diagnostic", "d", false, "diagnostic mode")
 	n4lCmd.Flags().BoolVarP(&n4lSummary, "summary", "s", false, "print summary")
 	n4lCmd.Flags().StringVar(&n4lAdj, "adj", "none", "comma-separated short link names for adjacency")
-	n4lCmd.Flags().StringVar(&n4lConfigDir, "config", "", "SSTconfig directory (default: embedded); explicit opt-in only")
+	n4lCmd.Flags().StringVar(&n4lConfigDir, "config", "", "arrow config directory (default: embedded internal/sstconfig); explicit opt-in only")
 }

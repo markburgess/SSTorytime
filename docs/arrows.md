@@ -122,7 +122,7 @@ the path sequence in `chinese.n4l` from Pinyin to Hanzi to English
  qǐng (ph) 请 (he) please
 </pre>
 also needs an arrow `please (ep) qǐng`, but this is a pain to add manually.
-By defining a rule in `SSTconfig/closures.sst`, this can be made automatically, by adding rules
+By defining a rule in `internal/sstconfig/closures.sst`, this can be made automatically, by adding rules
 to complete sequences of the relevant arrows:
 <pre>
 - closures

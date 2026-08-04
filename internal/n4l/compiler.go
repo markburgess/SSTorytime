@@ -24,7 +24,7 @@ import (
 )
 
 
-// configFS is the active SSTconfig tree (embedded by default).
+// configFS is the active arrow/annotation config tree (embedded by default).
 var configFS fs.FS = sstconfig.Default()
 
 // SetConfigFS replaces the config filesystem (explicit user override only).

@@ -209,7 +209,7 @@ $ ../src/N4L -v -s -adj="" chinese.in
 The N4L language has only a small number of features. It's power hopefully lies in its simplicity.
 It consists of text, small or larger (but pragmatically not huge), and relationships between them
 (in parentheses). The vocabulary of parenthetic relations is defined separately in a set of
-files in the configuration directory called `SSTconfig/` 
+files in the configuration directory called `internal/sstconfig/` 
 (see below).
 
 <pre>
@@ -515,24 +515,25 @@ So the contexts are terms that provide the sensory data, not the selection crite
 be the `policy engine', deciding what is relevant. So, you will never need to type logical expressions in
 your notes, except for highly skilled and specialized notes that we'll come back to later.*
 
-## The `SSTconfig` directory
+## The `internal/sstconfig` directory
 
-**NB: this configuration layout has changed **
+Arrows for use in notes are defined in a number of files under `internal/sstconfig/`.
+That is the only default copy in the tree; those files are embedded into the `sstorytime`
+binary at build time. To use a different on-disk tree, pass an explicit directory:
 
-Arrows for use in notes are defined in a number of files under the `SSTconfig/` directory.
-The N4L compilers will look for such a directory under `./` and `../` etc, or you can set an environment
-variable
 <pre>
-setenv SST_CONFIG_PATH mypath
-export SST_CONFIG_PATH = my_path
+sstorytime n4l --config /path/to/myconfig -u notes.n4l
 </pre>
-There is now a separate file for each of the arrow STtypes:
+
+There is a separate file for each of the arrow STtypes (plus annotations and closures):
 <pre>
 arrows-LT-1.sst
 arrows-NR-0.sst
 arrows-CN-2.sst
 arrows-EP-3.sst
 annotations.sst
+closures.sst
+bookmarks.sst
 </pre>
 so that everyone can share a set of standard definitions. Since it can be difficult to figure
 out how to register arrows, it seems a more sustainable way of proceeding than expecting everyone

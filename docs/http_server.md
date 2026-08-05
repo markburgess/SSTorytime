@@ -1,37 +1,72 @@
 
-# `http_server` and web
+# `http_server` / `sstorytime serve` and web
 
 The http server provided is a generic browsing interface. It isn't meant to be the last
 word on browsing the graph. In principle, every application might have its own custom
 interface. This web page illustrates the Web API and is used to develop our thinking around
 graphs.
 
-The web server has a single argument:
-<pre>
-./http_server -resources /data/directory
-</pre>
-This is a directory path which serves as a root for any file paths referenced in URLs, e.g.
-where images of documents may be cached in order to be accessible from links rendered in the
-browser. It may include any kind of MIME type, such as music files, images, documents etc.
+Build from the project root with `make build`. That produces `bin/sstorytime` and multicall
+symlinks including `bin/http_server`. Equivalent:
 
-For example, if we share a folder called `/mnt/Recordings`, then start the server
-<pre>
-./http_server -resources /mnt/Recordings
-</pre>
-which leads to a disk file
-<pre>
+```bash
+go build -o bin/sstorytime ./cmd/sstorytime
+ln -sfn sstorytime bin/http_server
+```
+
+You can also run the Cobra subcommand: `./bin/sstorytime serve …`.
+
+## TLS certificates
+
+For local HTTPS, create a self-signed cert (writes `cert.pem` and `key.pem` in the **current working directory**):
+
+```bash
+./internal/app/httpserver/make_certificate
+```
+
+The script always loads `localhost.conf` from its own directory, so you can run it from anywhere.
+Pass the PEMs to the server:
+
+```bash
+./bin/http_server -cert cert.pem -key key.pem
+./bin/sstorytime serve -cert cert.pem -key key.pem
+# defaults are already cert.pem / key.pem in CWD
+./bin/http_server
+```
+
+## Resources directory
+
+The web server accepts a resources root for file paths referenced in URLs (images, documents, etc.):
+
+```bash
+./bin/http_server -resources /data/directory
+```
+
+For example, if we share a folder called `/mnt/Recordings`:
+
+```bash
+./bin/http_server -resources /mnt/Recordings
+```
+
+then a disk file
+
+```text
 /mnt/Recordings/Rush/Presto/Folder.jpg
-</pre>
-which maps an image reference
-<pre>
-/Resources/Rush/Presto/Folder.jpg
-</pre>
-to the URL
-<pre>
-http://localhost:8080/Resources/Rush/Presto/Folder.jpg
-</pre>
+```
 
-* The web server exposes port 8080 for now.
+maps an image reference
+
+```text
+/Resources/Rush/Presto/Folder.jpg
+```
+
+to the URL
+
+```text
+http://localhost:8080/Resources/Rush/Presto/Folder.jpg
+```
+
+* HTTP on port **8080**; HTTPS on **8443** (with `-cert` / `-key`).
 
 ## Four search formats
 
@@ -41,4 +76,3 @@ The web server renders four different kinds of page.
 * Page notes (N4L view, e.g. `\notes chinese`)
 * Story/Sequence view (`\seq astronomy` or `\story (huli)`)
 * Path solutions (`\from` a set of nodes `\to` a set of nodes).
-

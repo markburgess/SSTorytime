@@ -237,7 +237,7 @@ notes chapter brain
 please in chinese
 paths from a1 to s1
 </pre>
-You can either use the `searchN4L` tool, or the web browser by running the web server `http_server` and connecting to `localhost:8080` or an address, e.g.`192.168.0.5:8080`.
+You can either use the `searchN4L` tool, or the web browser by running the web server (`./bin/http_server`) and connecting to `localhost:8080` or an address, e.g.`192.168.0.5:8080`.
 
 On the command line:
 <pre>
@@ -280,12 +280,12 @@ Eventually, there will be tools for scripting the search in simple
 ways, because the most powerful ways to search any structure are to
 use a programming language that allows you to express your own
 intent. You can see examples in the demos and proof of concept
-directory under src/demo_poc.  But as the project progresses, you can
+directory under `cmd/` (demo tools) or see docs/demo_pocs.  But as the project progresses, you can
 use the `notes` and `searchN4L` tool to play around with the result.
 The simplest way to see what you entered (which is like a cleaned up version of `more`)
 is to use:
 <pre>
-$ src/notes fox and crow
+$ ./bin/notes fox and crow
 
 
 Title: chinese story about fox and crow
@@ -304,7 +304,7 @@ Húli zài shùlín lĭ zhăo chī de.  Tā lái dào yì kē dà shù xià,
 </pre>
 This take only a page number as an argument for controlling long note sets:
 <pre>
-$ src/notes -page 2 brain
+$ ./bin/notes -page 2 brain
 
 </pre>
 

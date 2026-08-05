@@ -1,28 +1,23 @@
+# Setting up TLS for the web server
 
-# Setting up TLS encrypted web
+From the project root (or any directory; PEMs are written to the **current working directory**):
 
+```bash
+./cmd/http_server/make_certificate
+```
 
-  openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
+This runs `openssl` with `cmd/http_server/localhost.conf` (localhost + 127.0.0.1 SANs).
+Equivalent manual command:
 
-<pre>
-openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
-......+....+...+.....+......+......+.+........+..........+..+.........+.+.....+...+.+...+..+.+.................+...............+.+............+........+.+......+..+.+............+..+.+..+............+...+....+...+..+....+.....+....+..+.............+............+...+...+..+...+...+......+....+.....+.......+..+.+.........+...+++++++++++++++++++++++++++++++++++++++++++++*....+....+......+.....+....+...+...........+++++++++++++++++++++++++++++++++++++++++++++*........+..........+............+........+....+...+......+.....+....+...+...................................+.........+..........+...+..+....+...........+.............+........+...+....+...+...+.........+...+..................+......+...+..+.........+.......+........+.........+...+++++
-.......+...+.........+....+......+......+..+...+...+.........+...+....+...+......+.....+....+..+.+..+...+.........................+..+......+.+.....+.+...+.....+.+.....+.+.....+.......+..+.+........+.+.........+..+++++++++++++++++++++++++++++++++++++++++++++*........+....+.....+....+++++++++++++++++++++++++++++++++++++++++++++*..+................................+....+.....+......+.............+.....+...+.........................+..+.+..+.......+.....+.+..+.......+......+......+.....+...............+.+.........+........+................+..............+............+...+.+..+..........+...+...........+.+..+.............+.....+............+.......+.........+.................+.........+....+.........+.....+.+......+............................................+........................+...+....+...+............+...+........+...+....+...+++++
------
-You are about to be asked to enter information that will be incorporated
-into your certificate request.
-What you are about to enter is what is called a Distinguished Name or a DN.
-There are quite a few fields but you can leave some blank
-For some fields there will be a default value,
-If you enter '.', the field will be left blank.
------
-Country Name (2 letter code) [AU]:NO
-State or Province Name (full name) [Some-State]:Oslo
-Locality Name (eg, city) []:Oslo
-Organization Name (eg, company) [Internet Widgits Pty Ltd]:ChiTek-i
-Organizational Unit Name (eg, section) []:AS
-Common Name (e.g. server FQDN or YOUR name) []:
-Email Address []:
-</pre>
+```bash
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem \
+  -days 365 -nodes -config cmd/http_server/localhost.conf
+```
 
+Then:
 
+```bash
+./bin/http_server -cert cert.pem -key key.pem
+```
+
+Browsers will warn on self-signed certificates; that is expected for local development.

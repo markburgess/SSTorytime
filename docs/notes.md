@@ -10,7 +10,7 @@ see how you intentionally wrote the notes, but without comments and variables.
 `notes` works page by page.
 
 <pre>
-$ src/notes fox and crow
+$ ./bin/notes fox and crow
 
 
 Title: chinese story about fox and crow
@@ -29,7 +29,7 @@ Húli zài shùlín lĭ zhăo chī de.  Tā lái dào yì kē dà shù xià,
 </pre>
 This take only a page number as an argument for controlling long note sets:
 <pre>
-$ src/notes -page 2 brain
+$ ./bin/notes -page 2 brain
 
 </pre>
 

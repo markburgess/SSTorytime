@@ -1,19 +1,27 @@
 
-# `http_server` and web
+# `http_server` / `sstorytime serve` and web
 
 The http server provided is a generic browsing interface. It isn't meant to be the last
 word on browsing the graph. In principle, every application might have its own custom
 interface. This web page illustrates the Web API and is used to develop our thinking around
 graphs.
 
-Build from the project root (`make build` or `go build -o bin/http_server ./cmd/http_server`).
+Build from the project root with `make build`. That produces `bin/sstorytime` and multicall
+symlinks including `bin/http_server`. Equivalent:
+
+```bash
+go build -o bin/sstorytime ./cmd/sstorytime
+ln -sfn sstorytime bin/http_server
+```
+
+You can also run the Cobra subcommand: `./bin/sstorytime serve …`.
 
 ## TLS certificates
 
 For local HTTPS, create a self-signed cert (writes `cert.pem` and `key.pem` in the **current working directory**):
 
 ```bash
-./cmd/http_server/make_certificate
+./internal/app/httpserver/make_certificate
 ```
 
 The script always loads `localhost.conf` from its own directory, so you can run it from anywhere.
@@ -21,6 +29,7 @@ Pass the PEMs to the server:
 
 ```bash
 ./bin/http_server -cert cert.pem -key key.pem
+./bin/sstorytime serve -cert cert.pem -key key.pem
 # defaults are already cert.pem / key.pem in CWD
 ./bin/http_server
 ```

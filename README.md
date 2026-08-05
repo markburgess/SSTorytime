@@ -210,7 +210,18 @@ relationship to logic. We first decide emotionally, narrowly or expansively depe
 on our context, and then we try to formulate a "logical" story to support that.
 This is why we strive to study the role of stories in learning and understanding for this project.
 
+## Building
+
+Layout follows common Go practice: commands under `cmd/`, library code under `internal/sst/`.
+
+```bash
+make build          # binaries in bin/
+# or
+go build -o bin/N4L ./cmd/N4L
+```
+
 ## The tools
+
 
 The tool-set consistent of several components, starting with:
 
@@ -230,17 +241,17 @@ The tool-set consistent of several components, starting with:
 
 * [http_server](docs/http_server.md) - a prototype webserver providing the SSTorytime browsing service
 
-* [API_EXAMPLE_1](src/API_EXAMPLE_1.go) - a simple store and retrieve example of the graph database.
+* [API_EXAMPLE_1](cmd/API_EXAMPLE_1/) - a simple store and retrieve example of the graph database.
 
-* [API_EXAMPLE_2](src/API_EXAMPLE_2.go) - multi/hyperlink example, joining several nodes through a central hub.
+* [API_EXAMPLE_2](cmd/API_EXAMPLE_2/) - multi/hyperlink example, joining several nodes through a central hub.
 
-* [API_EXAMPLE_3](src/API_EXAMPLE_3.go) - a maze solving example, showing higher functions.
+* [API_EXAMPLE_3](cmd/API_EXAMPLE_3/) - a maze solving example, showing higher functions.
 
-* [API_EXAMPLE_4](src/API_EXAMPLE_4.go) - a path solving example, with loop corrections (quantum style).
+* [API_EXAMPLE_4](cmd/API_EXAMPLE_4/) - a path solving example, with loop corrections (quantum style).
 
-* [python_integration_example.py](src/python_integration_example.py) - a basic Python example
+* [python_integration_example.py](python/python_integration_example.py) - a basic Python example
 
-* [SSTorytime.py](src/SSTorytime.py) - Includable Python interface for SSTorytime, basic functions (TBD)
+* [SSTorytime.py](python/SSTorytime.py) - Includable Python interface for SSTorytime, basic functions (TBD)
 
 
 ## See also spinoff projects

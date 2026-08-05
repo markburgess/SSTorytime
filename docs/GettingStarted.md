@@ -282,5 +282,5 @@ Now that everything is working, simply do the following to try out the examples 
 ```
 $ cd examples
 $ make
-$ ../src/N4L -u LoopyLoo.n4l
+$ ../bin/N4L -u LoopyLoo.n4l
 ```

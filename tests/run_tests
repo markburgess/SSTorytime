@@ -5,9 +5,9 @@
 # For now, as things are changing, tests need to be run manually
 #
 
-PASS_PROG="../src/bin/N4L -adj=all"
-FAIL_PROG="../src/bin/N4L"
-WARN_PROG="../src/bin/N4L"
+PASS_PROG="../bin/N4L -adj=all"
+FAIL_PROG="../bin/N4L"
+WARN_PROG="../bin/N4L"
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -25,7 +25,7 @@ echo ""
 BINARIES="N4L searchN4L notes pathsolve graph_report http_server API_EXAMPLE_1  API_EXAMPLE_2 API_EXAMPLE_3 API_EXAMPLE_4"
 
 for prog in $BINARIES; do
-   if ../src/bin/$prog -h > /dev/null 2>&1; then 
+   if ../bin/$prog -h > /dev/null 2>&1; then 
        echo -e "Testing $prog ${GREEN} ok ${END}"
    else 
        echo -e "Testing $prog ${RED} NOT yet ok, no data? ${END}"
@@ -91,7 +91,7 @@ if $DB_TEST_PROG > /dev/null;
    then 
       echo -e "1. ${GREEN} database ok ${END}"
 
-      TESTPROG=../src/bin/API_EXAMPLE_3
+      TESTPROG=../bin/API_EXAMPLE_3
 
       if $TESTPROG > /dev/null; 
          then 
@@ -104,7 +104,7 @@ else
 
 fi
 
-DB_TEST_PROG="../src/bin/API_EXAMPLE_1"
+DB_TEST_PROG="../bin/API_EXAMPLE_1"
 
 if $DB_TEST_PROG > /dev/null; 
    then 

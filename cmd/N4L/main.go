@@ -1,0 +1,2942 @@
+//**************************************************************
+//
+// N4LParser and compiler
+//
+//**************************************************************
+
+package main
+
+import (
+	"strings"
+	"os"
+	"bufio"
+	"flag"
+	"fmt"
+	"unicode/utf8"
+	"unicode"
+	"regexp"
+	"sort"
+	"strconv"
+
+	SST "github.com/markburgess/SSTorytime/internal/sst"
+)
+
+//**************************************************************
+// Parsing state variables
+//**************************************************************
+
+const (
+	ALPHATEXT = 'x'
+	NON_ASCII_LQUOTE = '“'
+	NON_ASCII_RQUOTE = '”'
+        HAVE_PLUS = 11
+        HAVE_MINUS = 22
+	ROLE_ABBR = 33
+	LARGE_FILE = 500000
+
+	SEQ_UNKNOWN = false
+	SEQ_START = true
+
+	ROLE_EVENT = 1
+	ROLE_RELATION = 2
+	ROLE_SECTION = 3
+	ROLE_CONTEXT = 4
+	ROLE_CONTEXT_ADD = 5
+	ROLE_CONTEXT_SUBTRACT = 6
+	ROLE_BLANK_LINE = 7
+	ROLE_LINE_ALIAS = 8
+	ROLE_LOOKUP = 9
+
+	ROLE_COMPOSITION = 11
+	ROLE_RESULT = 12
+
+	WORD_MISTAKE_LEN = 2 // a string shorter than this is probably a mistake
+
+	WARN_NOTE_TO_SELF = "WARNING: Found a possible note to self in the text"
+	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
+	WARN_CHAPTER_CLASS_MIXUP="WARNING: possible space between class cancellation -:: <class> :: ambiguous chapter name, in: "
+	ERR_CHAPTER_COMMA="You shouldn't use commas in the chapter title (ambiguous separator): "
+
+	ERR_NO_SUCH_FILE_FOUND = "No file found in the name "
+	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
+	ERR_MISSING_SECTION = "Declarations outside a section or chapter"
+	ERR_NO_SUCH_ALIAS = "No such alias or \" reference exists to fill in - aborting"
+	ERR_MISSING_ITEM_SOMEWHERE = "Missing item, empty string, perhaps a missing ditto or variable reference"
+	ERR_MISSING_ITEM_RELN = "Missing item or double relation"
+	ERR_MISMATCH_QUOTE = "Apparent missing or mismatch in ', \" or ( )"
+	ERR_ILLEGAL_CONFIGURATION = "Error in configuration, no such section"
+	ERR_BAD_LABEL_OR_REF = "Badly formed label or reference (@label becomes $label.n) in "
+	ERR_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference. Double-quoted strings should not have a space after leading quote, as it can be confused with \" ditto symbol"
+	ERR_ANNOTATION_BAD = "Annotation marker should be short mark of non-space, non-alphanumeric character "
+	ERR_BAD_ABBRV = "abbreviation out of place"
+	ERR_BAD_ALIAS_REFERENCE = "Alias references start from $name.1"
+	ERR_ANNOTATION_MISSING = "Missing non-alphnumeric annotation marker or stray relation"
+	ERR_ANNOTATION_REDEFINE = "Redefinition of annotation character"
+	ERR_SIMILAR_NO_SIGN = "Arrows for similarity do not have signs, they are directionless"
+	ERR_ARROW_SELFLOOP = "Arrow's origin points to itself"
+	ERR_ARR_REDEFINITION="Warning: Redefinition of arrow "
+	ERR_NEGATIVE_WEIGHT = "Arrow relation has a negative weight, which is disallowed. Use a NOT relation if you want to signify inhibition: "
+	ERR_TOO_MANY_WEIGHTS = "More than one weight value in the arrow relation "
+        ERR_STRAY_PAREN="Stray ) in an event/item - illegal character"
+	ERR_MISSING_LINE_LABEL_IN_REFERENCE="Missing a line label in reference, should be in the form $label.n"
+	ERR_NON_WORD_WHITE="Non word (whitespace) character after an annotation: "
+	ERR_SHORT_WORD="Short word, possible mistake or mistaken annotation (try spaces around symbol): "
+	ERR_ILLEGAL_ANNOT_CHAR="Cannot use +/- reserved tokens for annotation"
+)
+
+//**************************************************************
+// DATA structures for input
+//**************************************************************
+
+type RCtype struct {
+
+	Row SST.NodePtr
+	Col SST.NodePtr
+}
+
+type Closure struct {
+
+	Sequence []SST.ArrowPtr
+	Result   SST.ArrowPtr
+	Sum      int
+}
+
+//**************************************************************
+
+var (
+	LINE_NUM int = 1
+	LINE_ITEM_CACHE = make(map[string][]string)  // contains current and labelled line elements
+	LINE_ITEM_REFS []SST.NodePtr                     // contains current line integer references
+	LINE_RELN_CACHE = make(map[string][]SST.Link)
+	LINE_ITEM_STATE int = ROLE_BLANK_LINE
+	LINE_ALIAS string = ""
+	LINE_ITEM_COUNTER int = 1
+	LINE_RELN_COUNTER int = 0
+	LINE_PATH []SST.Link
+
+	FWD_ARROW string
+	BWD_ARROW string
+	FWD_INDEX SST.ArrowPtr
+	BWD_INDEX SST.ArrowPtr
+	ANNOTATION = make(map[string]string)
+
+	CONTEXT_STATE = make(map[string]bool)
+	SECTION_STATE string
+
+	// Sequence mode state
+
+	SEQUENCE_MODE bool = false
+	SEQUENCE_START bool = false
+	SEQUENCE_RELN string = "then"
+	SEQUENCE_RELN_INV string = "from"
+	SEQUENCE_RELN_LONG string = "then followed by"
+	SEQUENCE_RELN_INV_LONG string = "follows on from"
+
+	LAST_IN_SEQUENCE string = ""
+
+	// Flags
+
+	VERBOSE bool = false
+	SIGN_OF_LIFE int
+	GIVE_SIGNS_OF_LIFE = false
+	DIAGNOSTIC bool = false
+	UPLOAD bool = false
+	FORCE_UPLOAD bool = false
+	SUMMARIZE bool = false
+	CREATE_ADJACENCY bool = false
+	ADJ_LIST string
+
+	CONFIGURING bool
+	CURRENT_FILE string
+	TEST_DIAG_FILE string
+
+	RELN_BY_SST [4][]SST.ArrowPtr // From an EventItemNode
+
+	ARROW_CLOSURES []Closure
+)
+
+//**************************************************************
+// BEGIN
+//**************************************************************
+
+func main() {
+
+	load_arrows := false
+	args := Init()
+	
+	if UPLOAD {
+		load_arrows = true
+
+		if SST.WIPE_DB {
+			load_arrows = false
+		}
+	}
+
+	sst := SST.Open(load_arrows)
+	AddMandatory(&sst)
+
+	// Load arrow configurations
+
+	config := ReadConfig()
+
+	CONFIGURING = true
+
+	for input := 0; input < len(config); input++ {
+		NewFile(config[input])
+		con := ReadFile(CURRENT_FILE)
+		ParseConfig(&sst,con)
+	}
+
+	CONFIGURING = false
+
+	// Read the user inputs
+
+	for input := 0; input < len(args); input++ {
+		NewFile(args[input])
+		input := ReadFile(CURRENT_FILE)
+		ParseN4L(&sst,input)
+	}
+
+	// Post process, complete NEAR cliques
+
+	CompleteInferences(&sst)
+
+	// Outputs
+
+	if SUMMARIZE {
+		SummarizeGraph(sst)
+	}
+
+	if CREATE_ADJACENCY {
+		dim, key, d_adj, u_adj := CreateAdjacencyMatrix(sst,ADJ_LIST)
+		PrintMatrix(sst,"directed adjacency sub-matrix",dim,key,d_adj)
+		PrintMatrix(sst,"undirected adjacency sub-matrix",dim,key,u_adj)
+		evc := ComputeEVC(dim,u_adj)
+		PrintNZVector(sst,"Eigenvector centrality (EVC) score for symmetrized graph",dim,key,evc)
+	}
+
+	if UPLOAD {
+		Upload(sst)
+	}
+	
+	SST.Close(sst)
+}
+
+//**************************************************************
+
+func Init() []string {
+
+	flag.Usage = Usage
+	verbosePtr := flag.Bool("v", false,"verbose")
+	diagPtr := flag.Bool("d", false,"diagnostic mode")
+	uploadPtr := flag.Bool("u", false,"upload")
+	forcePtr := flag.Bool("force", false,"force upload")
+	wipePtr := flag.Bool("wipe", false,"wipe and reset")
+	incidencePtr := flag.Bool("s", false,"summary (node,links...)")
+	adjacencyPtr := flag.String("adj", "none", "a quoted, comma-separated list of short link names")
+
+	flag.Parse()
+	args := flag.Args()
+
+	if len(args) < 1 {
+		Usage()
+		os.Exit(1);
+	}
+
+	if *verbosePtr {
+		VERBOSE = true
+	}
+
+	if *wipePtr {
+		SST.WIPE_DB = true
+	}
+
+	if *diagPtr {
+		VERBOSE = true
+		DIAGNOSTIC = true
+	}
+
+	if *uploadPtr {
+		UPLOAD = true
+	}
+
+	if *forcePtr {
+		FORCE_UPLOAD = true
+	}
+
+	if *incidencePtr {
+		SUMMARIZE = true
+	}
+
+	if *adjacencyPtr != "none" {
+		CREATE_ADJACENCY = true
+		ADJ_LIST = *adjacencyPtr
+	}
+
+	return args
+}
+
+//**************************************************************
+
+func Upload(sst SST.PoSST) {
+
+	dbchapters := SST.GetDBChaptersMatchingName(sst,"")
+	memchapters := GetMemChapters(sst)
+
+	conflict := false
+
+	for m := range memchapters {
+		for d := range dbchapters {
+			if memchapters[m] == dbchapters[d] {
+
+				fmt.Println(" Database already contains a chapter: ",dbchapters[d])
+				conflict = true
+			}
+		}
+	}
+
+	if conflict && !FORCE_UPLOAD {
+
+		fmt.Println("\nUploading to a pre-existing chapter might corrupt the data. You can remove it first with removeN4L or force using -force. It's recommended to rebuilt everything unless replacing the last added chapter(s) for reminders.")
+
+	} else {
+		fmt.Println("\n\nUploading nodes..")
+		SST.GraphToDB(sst,true)
+		marks := GetBookMarks()
+		fmt.Println("\n\nUploading bookmarks..")
+		SST.BookmarksToDB(sst,marks)
+	}
+}
+
+//**************************************************************
+// Parsing
+//**************************************************************
+
+func NewFile(filename string) {
+
+	CURRENT_FILE = filename
+	TEST_DIAG_FILE = DiagnosticName(filename)
+	GIVE_SIGNS_OF_LIFE = false
+	
+	Box("Parsing new file",filename)
+
+	stat, err := os.Stat(filename)
+
+	if err != nil {
+		ParseError(ERR_NO_SUCH_FILE_FOUND+filename)
+		os.Exit(-1)
+	}
+
+	if stat.Size() > LARGE_FILE {
+		GIVE_SIGNS_OF_LIFE = true
+	}
+
+	if !VERBOSE && GIVE_SIGNS_OF_LIFE {
+		fmt.Printf("\n[%s] is a large file. This will take a while...\n",filename)
+	}
+
+	LINE_ITEM_STATE = ROLE_BLANK_LINE
+	LINE_NUM = 1
+	LINE_ITEM_CACHE = make(map[string][]string)
+	LINE_RELN_CACHE = make(map[string][]SST.Link)
+	LINE_ITEM_REFS = nil
+	LINE_ITEM_COUNTER = 1
+	LINE_RELN_COUNTER = 0
+	LINE_ALIAS = ""
+	LAST_IN_SEQUENCE = ""
+	LINE_PATH = nil
+	SEQUENCE_MODE = false
+	FWD_ARROW = ""
+	BWD_ARROW = ""
+	SECTION_STATE = ""
+	ResetContextState()
+	Box("Reset context","any")
+	ContextEval("any","=")
+}
+
+//**************************************************************
+// N4L configuration
+//**************************************************************
+
+func ParseConfig(sst *SST.PoSST,src []rune) {
+
+	var token string
+
+	for pos := 0; pos < len(src); {
+
+		pos = SkipWhiteSpace(sst,src,pos)
+		token,pos = GetConfigToken(src,pos)
+
+		ClassifyConfigRole(sst,token)
+	}
+}
+
+//**************************************************************
+
+func GetConfigToken(src []rune, pos int) (string,int) {
+
+	// Handle concatenation of words/lines and separation of types
+
+	var token string
+
+	if pos >= len(src) {
+		return "", pos
+	}
+
+	switch (src[pos]) {
+
+	case '+':
+		token,pos = ReadToLast(src,pos,ALPHATEXT)
+
+	case '-':
+		token,pos = ReadToLast(src,pos,ALPHATEXT)
+
+	case '(':
+		token,pos = ReadToLast(src,pos,')')  // alias
+
+	case '#':
+		return "",pos
+
+	case '/':
+		if src[pos+1] == '/' {
+			return "",pos
+		}
+
+	default: // similarity
+		token,pos = ReadToLast(src,pos,ALPHATEXT)
+
+	}
+
+	return token, pos
+}
+
+//**************************************************************
+
+func ClassifyConfigRole(sst *SST.PoSST,token string) {
+
+	if len(token) == 0 {
+		return
+	}
+
+	// Chapter definition must be at the top
+
+	if token[0] == '-' && LINE_ITEM_STATE == ROLE_BLANK_LINE {
+		SECTION_STATE = strings.TrimSpace(token[1:])
+		Box("Configuration of",SECTION_STATE)
+		LINE_ITEM_STATE = ROLE_SECTION
+		return
+	}
+
+	switch SECTION_STATE {
+
+	case "leadsto","contains","properties":
+
+		switch token[0] {
+
+		case '+':
+			FWD_ARROW = strings.TrimSpace(token[1:])
+			LINE_ITEM_STATE = HAVE_PLUS
+			Diag("fwd arrow in",SECTION_STATE, token)
+
+		case '-':
+			BWD_ARROW = strings.TrimSpace(token[1:])
+			LINE_ITEM_STATE = HAVE_MINUS
+			Diag("bwd arrow in",SECTION_STATE, token)
+
+		case '(':
+			reln := token[1:len(token)-1]
+			reln = strings.TrimSpace(reln)
+
+			if LINE_ITEM_STATE == HAVE_MINUS {
+				BWD_INDEX = SST.InsertArrowDirectory(sst,SECTION_STATE,reln,BWD_ARROW,"-")
+				ArrowCollision(BWD_INDEX,reln,BWD_ARROW)
+				SST.InsertInverseArrowDirectory(sst,FWD_INDEX,BWD_INDEX)
+				PVerbose("In",SECTION_STATE,"short name",reln,"for",BWD_ARROW,", direction","-")
+			} else if LINE_ITEM_STATE == HAVE_PLUS {
+				FWD_INDEX = SST.InsertArrowDirectory(sst,SECTION_STATE,reln,FWD_ARROW,"+")
+				ArrowCollision(FWD_INDEX,reln,FWD_ARROW)
+				PVerbose("In",SECTION_STATE,"short name",reln,"for",FWD_ARROW,", direction","+")
+			} else {
+				ParseError(ERR_BAD_ABBRV)
+				os.Exit(-1)
+			}
+		}
+
+	case "similarity":
+
+		switch token[0] {
+
+		case '(':
+			reln := token[1:len(token)-1]
+			reln = strings.TrimSpace(reln)
+
+			if LINE_ITEM_STATE == HAVE_MINUS {
+				index := SST.InsertArrowDirectory(sst,SECTION_STATE,reln,BWD_ARROW,"both")
+				SST.InsertInverseArrowDirectory(sst,index,index)
+				PVerbose("In",SECTION_STATE,reln,"for",BWD_ARROW,", direction","both")
+			} else {
+				PVerbose(SECTION_STATE,"abbreviation out of place")
+			}
+
+		case '+','-':
+			ParseError(ERR_SIMILAR_NO_SIGN)
+			os.Exit(-1)
+
+		default:
+			similarity := strings.TrimSpace(token)
+			FWD_ARROW = similarity
+			BWD_ARROW = similarity
+			LINE_ITEM_STATE = HAVE_MINUS
+		}
+
+	case "annotations":
+
+		switch token[0] {
+
+		case '(':
+			if LINE_ITEM_STATE != HAVE_PLUS {
+				ParseError(ERR_ANNOTATION_MISSING)
+			}
+
+			FWD_ARROW = StripParen(token)
+			PVerbose("Annotation marker",LAST_IN_SEQUENCE,"defined as arrow:",FWD_ARROW)
+
+			value,defined := ANNOTATION[LAST_IN_SEQUENCE]
+
+			if defined && value != FWD_ARROW {
+				ParseError(ERR_ANNOTATION_REDEFINE)
+				os.Exit(-1)
+			}
+
+			ANNOTATION[LAST_IN_SEQUENCE] = FWD_ARROW
+			LINE_ITEM_STATE = ROLE_BLANK_LINE
+
+		default:
+
+			for r := range token {
+				if unicode.IsLetter(rune(token[r])) {
+					ParseError(ERR_ANNOTATION_BAD)
+				}
+			}
+
+			if token[0] == '+' || token[0] == '-' {
+				ParseError(ERR_ILLEGAL_ANNOT_CHAR)
+				os.Exit(-1)
+			}
+
+			Diag("Markup character defined in",SECTION_STATE, token)
+			LINE_ITEM_STATE = HAVE_PLUS
+			LAST_IN_SEQUENCE = token
+
+		}
+
+	case "closures":
+
+		switch token[0] {
+
+		case '(':
+
+			if LINE_ITEM_STATE == ROLE_RESULT {
+
+				AddArrowClosure(sst,LINE_ITEM_CACHE["THIS"],token)
+			} else {
+				LINE_ITEM_COUNTER++
+				LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
+				LINE_ITEM_STATE = ROLE_COMPOSITION
+			}
+
+		case '+',',':
+			LINE_ITEM_STATE = ROLE_COMPOSITION
+
+		case '=':
+			LINE_ITEM_STATE = ROLE_RESULT
+
+		default:
+			ParseError(ERR_ILLEGAL_CONFIGURATION+" "+SECTION_STATE)
+			os.Exit(-1)
+		}
+
+	default:
+		ParseError(ERR_ILLEGAL_CONFIGURATION + " " + SECTION_STATE)
+		os.Exit(-1)
+	}
+}
+
+//**************************************************************
+
+func ArrowCollision(arr SST.ArrowPtr,short,long string) {
+
+	if arr < 0 {
+		ParseError(ERR_ARR_REDEFINITION+"long \""+long+"\", "+"short \""+short+"\" seems to be previously used somewhere")
+		//os.Exit(-1)
+	}
+}
+
+//**************************************************************
+
+func GetLinkArrowByName(sst *SST.PoSST,token string) SST.Link {
+
+	// Return a preregistered link/arrow ptr bythe name of a link
+
+	var reln []string
+	var weight float32 = 1
+	var weightcount int
+	var ctx []string
+	var name string
+
+	if token[0] == '(' {
+		name = token[1:len(token)-1]
+	} else {
+		name = token
+	}
+
+	name = strings.TrimSpace(name)
+
+	if strings.Contains(name,",") {
+		reln = strings.Split(name,",")
+		name = reln[0]
+
+		// look at any comma separated notes after the arrow name
+		for i := 1; i < len(reln); i++ {
+
+			v, err := strconv.ParseFloat(reln[i], 32)
+
+			if err == nil {
+				if weight < 0 {
+					ParseError(ERR_NEGATIVE_WEIGHT+token)
+					os.Exit(-1)
+				}
+				if weightcount > 1 {
+					ParseError(ERR_TOO_MANY_WEIGHTS+token)
+					os.Exit(-1)
+				}
+				weight = float32(v)
+				weightcount++
+			} else {
+				ctx = append(ctx,reln[i])
+			}
+		}
+	}
+
+	// First check if this is an alias/short name
+
+	ptr, ok := sst.ARROW_SHORT_DIR[name]
+
+	// If not, then check longname
+
+	if !ok {
+		ptr, ok = sst.ARROW_LONG_DIR[name]
+
+		if !ok {
+			ParseError(SST.ERR_NO_SUCH_ARROW+"("+name+")")
+			os.Exit(-1)
+		}
+	}
+
+	var link SST.Link
+	link.Arr = ptr
+	link.Wgt = weight
+	link.Ctx = SST.RegisterContext(sst,CONTEXT_STATE,ctx)
+	return link
+}
+
+//**************************************************************
+
+func LookupAlias(alias string, counter int) string {
+
+	value,ok := LINE_ITEM_CACHE[alias]
+
+	if !ok || counter > len(value) {
+		ParseError(ERR_NO_SUCH_ALIAS)
+		os.Exit(1)
+	}
+
+	return LINE_ITEM_CACHE[alias][counter-1]
+
+}
+
+//**************************************************************
+
+func ResolveAliasedItem(token string) string {
+
+	// split $alias.n into (alias string,n int)
+
+	if! strings.Contains(token,".") {
+		// just a dollar amount
+		return token
+	}
+
+	var contig string
+	fmt.Sscanf(token,"%s",&contig)
+
+	if len(contig) == 1 {
+		return token
+	}
+
+	if contig == "$$" {
+		return token
+	}
+
+	split := strings.Split(token[1:],".")
+
+	if len(split) < 2 {
+		ParseError(ERR_MISSING_LINE_LABEL_IN_REFERENCE)
+		os.Exit(-1)
+	}
+
+	name := strings.TrimSpace(split[0])
+
+	var number int = 0
+	fmt.Sscanf(split[1],"%d",&number)
+
+	if number < 1 {
+		ParseError(ERR_BAD_ALIAS_REFERENCE)
+		os.Exit(-1)
+	}
+
+	return LookupAlias(name,number)
+}
+
+//**************************************************************
+
+func AddArrowClosure(sst *SST.PoSST,sequence []string,result string) {
+
+	var closure Closure
+
+	for _,arrow := range sequence {
+		arr := GetLinkArrowByName(sst,arrow).Arr
+		closure.Sum += int(arr)
+		closure.Sequence = append(closure.Sequence,arr)
+	}
+
+	closure.Result = GetLinkArrowByName(sst,result).Arr
+
+	ARROW_CLOSURES = append(ARROW_CLOSURES,closure)
+
+	PVerbose("Arrow sequences",sequence,"to be closed with cyclic",result)
+}
+
+//**************************************************************
+
+func CompleteInferences(sst *SST.PoSST) {
+
+	for class := SST.N1GRAM; class <= SST.GT1024; class++ {
+
+		header := fmt.Sprintf("Completing node inferences and cliques.....for class %d",class)
+		Box(header)
+
+		switch class {
+
+		case SST.N1GRAM:
+			for _,node := range sst.NODE_DIRECTORY.N1directory {
+				CompleteNode(sst,node)
+				SST.CheckAltCaps(sst,node,ParseError)
+			}
+		case SST.N2GRAM:
+			for _,node := range sst.NODE_DIRECTORY.N2directory {
+				CompleteNode(sst,node)
+				SST.CheckAltCaps(sst,node,ParseError)
+			}
+		case SST.N3GRAM:
+			for _,node := range sst.NODE_DIRECTORY.N3directory {
+				CompleteNode(sst,node)
+				SST.CheckAltCaps(sst,node,ParseError)
+			}
+		case SST.LT128:
+			for _,node := range sst.NODE_DIRECTORY.LT128directory {
+				CompleteNode(sst,node)
+				SST.CheckAltCaps(sst,node,ParseError)
+			}
+		case SST.LT1024:
+			for _,node := range sst.NODE_DIRECTORY.LT1024 {
+				CompleteNode(sst,node)
+			}
+		case SST.GT1024:
+			for _,node := range sst.NODE_DIRECTORY.GT1024 {
+				CompleteNode(sst,node)
+			}
+		}
+	}
+}
+
+//**************************************************************
+
+func CompleteNode(sst *SST.PoSST,node SST.Node) {
+
+	CompleteCloseness(sst,node)
+	CompleteSequences(sst,node)
+
+	mesg := SST.CompleteETCTypes(sst,node)
+
+	if len(mesg) > 1 {
+		Verbose(mesg)
+	}
+}
+
+//**************************************************************
+
+func CompleteCloseness(sst *SST.PoSST,node SST.Node) {
+
+	var equivalences = make(map[SST.ArrowPtr]int)
+
+	// Only NEAR links can be completed by inference
+
+	near_nodes := node.I[SST.ST_ZERO + SST.NEAR]
+
+	if len(near_nodes) == 0 {
+		return
+	}
+
+	// Count references with same NEAR arrow type
+
+	for _,link := range near_nodes {
+		equivalences[link.Arr]++
+	}
+
+	for arrow := range equivalences {
+		if equivalences[arrow] > 1 {
+
+			var neighbours []SST.NodePtr
+
+			// Get the semamntically NEAR neighbours
+
+			for _,link := range near_nodes {
+				if link.Arr == arrow {
+					neighbours = append(neighbours,link.Dst)
+				}
+			}
+
+			// complete the subgraph
+			for n := 0; n < len(neighbours); n++ {
+				for o := n+1; o < len(neighbours); o++{
+
+					var link SST.Link
+					link.Arr = arrow
+					link.Wgt = 1
+
+					t1 := SST.GetNodeTxtFromPtr(sst,neighbours[n])
+					t2 := SST.GetNodeTxtFromPtr(sst,neighbours[o])
+					arrname := sst.ARROW_DIRECTORY[arrow].Short
+
+					// NOTs are not close
+
+					if !strings.HasPrefix(arrname,"!") {
+						m := fmt.Sprintf("   Complete: %s -(%s)-> %s",t1,arrname,t2)
+						Verbose(m)
+						SST.AppendLinkToNode(sst,neighbours[n],link,neighbours[o])
+					}
+				}
+			}
+		}
+	}
+}
+
+//**************************************************************
+
+func CompleteSequences(sst *SST.PoSST,node SST.Node) {
+
+	for _,cl := range ARROW_CLOSURES {
+
+		nptr,found := GetNodePointedTo(sst,node,cl.Sequence)
+
+		if found {
+			// Link nptr to node.NPtr with cl.Result arrow
+
+			t2 := node.S
+			t1 := SST.GetNodeTxtFromPtr(sst,nptr)
+
+			var link SST.Link
+			link.Arr = cl.Result
+			link.Wgt = 1
+			link.Ctx = node.I[SST.ST_ZERO+SST.LEADSTO][0].Ctx // infer from default node context
+
+			arrname := sst.ARROW_DIRECTORY[link.Arr].Short
+
+			m := fmt.Sprintf("   Complete: %s -(%s)-> %s",t1,arrname,t2)
+			Verbose(m)
+			SST.AppendLinkToNode(sst,nptr,link,node.NPtr)
+		}
+	}
+}
+
+//**************************************************************
+
+func SummarizeGraph(sst SST.PoSST) {
+
+	Box("Summarizing Graph.....\n")
+
+	var count_nodes int = 0
+	var count_links [4]int
+	var total int
+
+	for class := SST.N1GRAM; class <= SST.GT1024; class++ {
+		switch class {
+		case SST.N1GRAM:
+			for n,org := range sst.NODE_DIRECTORY.N1directory {
+				count_nodes++
+				PrintNodeSystem(sst,n,org,&count_links)
+			}
+		case SST.N2GRAM:
+			for n,org := range sst.NODE_DIRECTORY.N2directory {
+				count_nodes++
+				PrintNodeSystem(sst,n,org,&count_links)
+			}
+		case SST.N3GRAM:
+			for n,org := range sst.NODE_DIRECTORY.N3directory {
+				count_nodes++
+				PrintNodeSystem(sst,n,org,&count_links)
+			}
+		case SST.LT128:
+			for n,org := range sst.NODE_DIRECTORY.LT128directory {
+				count_nodes++
+				PrintNodeSystem(sst,n,org,&count_links)
+			}
+		case SST.LT1024:
+			for n,org := range sst.NODE_DIRECTORY.LT1024 {
+				count_nodes++
+				PrintNodeSystem(sst,n,org,&count_links)
+			}
+		case SST.GT1024:
+			for n,org := range sst.NODE_DIRECTORY.GT1024 {
+				count_nodes++
+				PrintNodeSystem(sst,n,org,&count_links)
+			}
+		}
+	}
+
+	fmt.Println("-------------------------------------")
+	fmt.Println("Incidence summary of raw declarations")
+	fmt.Println("-------------------------------------")
+
+	fmt.Println("Total nodes",count_nodes)
+
+	for st := 0; st < 4; st++ {
+		total += count_links[st]
+		fmt.Println("Total directed links of type",SST.STTypeName(st),count_links[st])
+	}
+
+	complete := count_nodes * (count_nodes-1)
+	fmt.Println("Total links",total,"sparseness (fraction of completeness)",float32(total)/float32(complete))
+}
+
+//**************************************************************
+
+func CreateAdjacencyMatrix(sst SST.PoSST,searchlist string) (int,[]SST.NodePtr,[][]float32,[][]float32) {
+
+	search_list := ValidateLinkArgs(sst,searchlist)
+
+	// the matrix is dim x dim
+
+	filtered_node_list,path_weights := AssembleInvolvedNodes(sst,search_list)
+
+	dim := len(filtered_node_list)
+
+	for f := 0; f < len(filtered_node_list); f++ {
+		Verbose("    - row/col key [",f,"/",dim,"]",SST.GetNodeTxtFromPtr(&sst,filtered_node_list[f]))
+	}
+
+	var subadj_matrix [][]float32 = make([][]float32,dim)
+	var symadj_matrix [][]float32 = make([][]float32,dim)
+
+	for row := 0; row < dim; row++ {
+		subadj_matrix [row] = make([]float32,dim)
+		symadj_matrix [row] = make([]float32,dim)
+	}
+
+	for row := 0; row < dim; row++ {
+		for col := 0; col < dim; col++ {
+
+			var rc, rcT RCtype
+			rc.Row = filtered_node_list[row]
+			rc.Col = filtered_node_list[col]
+
+			rcT.Row = filtered_node_list[col]
+			rcT.Col = filtered_node_list[row]
+
+			subadj_matrix[row][col] = path_weights[rc]
+
+			symadj_matrix[row][col] = path_weights[rc] + path_weights[rcT]
+			symadj_matrix[col][row] = path_weights[rc] + path_weights[rcT]
+		}
+	}
+
+	return dim, filtered_node_list, subadj_matrix, symadj_matrix
+}
+
+//**************************************************************
+
+func PrintMatrix(sst SST.PoSST,name string, dim int, key []SST.NodePtr, matrix [][]float32) {
+
+
+	s := fmt.Sprintln("\n",name,"...\n")
+	Verbose(s)
+
+	for row := 0; row < dim; row++ {
+
+		s = fmt.Sprintf("%20.15s ..\r\t\t\t(",SST.GetNodeTxtFromPtr(&sst,key[row]))
+
+		for col := 0; col < dim; col++ {
+
+			const screenwidth = 12
+
+			if col > screenwidth {
+				s += fmt.Sprint("\t...")
+				break
+			} else {
+				s += fmt.Sprintf("  %4.1f",matrix[row][col])
+			}
+
+		}
+		s += fmt.Sprint(")")
+		Verbose(s)
+	}
+}
+
+//**************************************************************
+
+func PrintNZVector(sst SST.PoSST,name string, dim int, key []SST.NodePtr, vector[]float32) {
+
+	s := fmt.Sprintln("\n",name,"...\n")
+
+	Verbose(s)
+
+	type KV struct {
+		Key string
+		Value float32
+	}
+
+	var vec []KV = make([]KV,dim)
+
+	for row := 0; row < dim; row++ {
+		vec[row].Key = SST.GetNodeTxtFromPtr(&sst,key[row])
+		vec[row].Value = vector[row]
+	}
+
+	sort.SliceStable(vec, func(i, j int) bool {
+		return vec[i].Value > vec[j].Value
+	})
+
+	for row := 0; row < dim; row++ {
+		if vec[row].Value > 0.1 {
+			s = fmt.Sprintf("ordered by EVC:  (%4.1f)  ",vec[row].Value)
+			s += fmt.Sprintf("%-80.79s",vec[row].Key)
+			Verbose(s)
+		}
+	}
+}
+
+//**************************************************************
+
+func ComputeEVC(dim int,adj [][]float32) []float32 {
+
+	v := MakeInitVector(dim,1.0)
+	vlast := v
+
+	const several = 6
+
+	for i := 0; i < several; i++ {
+
+		v = MatrixOpVector(dim,adj,vlast)
+
+		if CompareVec(v,vlast) < 0.1 {
+			break
+		}
+		vlast = v
+	}
+
+	maxval := GetVecMax(v)
+	v = NormalizeVec(v,maxval)
+
+	return v
+}
+
+//**************************************************************
+
+func MakeInitVector(dim int, init_value float32) []float32 {
+
+	var v = make([]float32,dim)
+
+	for r := 0; r < dim; r++ {
+		v[r] = init_value
+	}
+
+	return v
+}
+
+//**************************************************************
+
+func MatrixOpVector(dim int,m [][]float32, v []float32) []float32 {
+
+	var vp = make([]float32,dim)
+
+	for r := 0; r < dim; r++ {
+		for c := 0; c < dim; c++ {
+			if m[r][c] != 0 {
+				vp[r] += m[r][c] * v[c]
+			}
+		}
+	}
+	return vp
+}
+
+//**************************************************************
+
+func GetVecMax(v []float32) float32 {
+
+	var max float32 = -1
+
+	for r := range v {
+		if v[r] > max {
+			max = v[r]
+		}
+	}
+
+	return max
+}
+
+//**************************************************************
+
+func NormalizeVec(v []float32, div float32) []float32 {
+
+	for r := range v {
+		v[r] = v[r] / div
+	}
+
+	return v
+}
+
+//**************************************************************
+
+func CompareVec(v1,v2 []float32) float32 {
+
+	var max float32 = -1
+
+	for r := range v1 {
+		diff := v1[r]-v2[r]
+
+		if diff < 0 {
+			diff = -diff
+		}
+
+		if diff > max {
+			max = diff
+		}
+	}
+
+	return max
+}
+
+//**************************************************************
+
+func FlatSTType(i int) int {
+
+	n := i - SST.ST_ZERO
+	if n < 0 {
+		n = -n
+	}
+
+	return n
+}
+
+//**************************************************************
+
+func ValidateLinkArgs(sst SST.PoSST,s string) []SST.ArrowPtr {
+
+	list := strings.Split(s,",")
+	var search_list []SST.ArrowPtr
+
+	if s == "" || s == "all" {
+		return nil
+	}
+
+	for i := range list {
+		v,ok := sst.ARROW_SHORT_DIR[list[i]]
+
+		if ok {
+			typ := sst.ARROW_DIRECTORY[v].STAindex - SST.ST_ZERO
+			if typ < 0 {
+				typ = -typ
+			}
+
+			name := sst.ARROW_DIRECTORY[v].Long
+			ptr := sst.ARROW_DIRECTORY[v].Ptr
+
+			fmt.Println(" - including search pathway STtype",SST.STTypeName(typ),"->",name)
+			search_list = append(search_list,ptr)
+
+			if typ != SST.NEAR {
+				inverse := sst.INVERSE_ARROWS[ptr]
+				fmt.Println("   including inverse meaning",sst.ARROW_DIRECTORY[inverse].Long)
+				search_list = append(search_list,inverse)
+			}
+		} else {
+			fmt.Println("\nThere is no link abbreviation called ",list[i])
+			os.Exit(-1)
+		}
+	}
+
+	return search_list
+}
+
+//**************************************************************
+
+func AssembleInvolvedNodes(sst SST.PoSST,search_list []SST.ArrowPtr) ([]SST.NodePtr,map[RCtype]float32) {
+
+	var node_list []SST.NodePtr
+	var weights = make(map[RCtype]float32)
+
+	for class := SST.N1GRAM; class <= SST.GT1024; class++ {
+
+		switch class {
+		case SST.N1GRAM:
+			for n := range sst.NODE_DIRECTORY.N1directory {
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.N1directory[n],search_list,node_list,weights)
+			}
+		case SST.N2GRAM:
+			for n := range sst.NODE_DIRECTORY.N2directory {
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.N2directory[n],search_list,node_list,weights)
+			}
+		case SST.N3GRAM:
+			for n := range sst.NODE_DIRECTORY.N3directory {
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.N3directory[n],search_list,node_list,weights)
+			}
+		case SST.LT128:
+			for n := range sst.NODE_DIRECTORY.LT128directory {
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.LT128directory[n],search_list,node_list,weights)
+			}
+		case SST.LT1024:
+			for n := range sst.NODE_DIRECTORY.LT1024 {
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.LT1024[n],search_list,node_list,weights)
+			}
+		case SST.GT1024:
+			for n := range sst.NODE_DIRECTORY.GT1024 {
+				node_list = SearchIncidentRowClass(sst.NODE_DIRECTORY.GT1024[n],search_list,node_list,weights)
+			}
+		}
+	}
+
+	return node_list,weights
+}
+
+//**************************************************************
+
+func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr,node_list []SST.NodePtr,ret_weights map[RCtype]float32) []SST.NodePtr {
+
+	var row_nodes = make(map[SST.NodePtr]bool)
+	var ret_nodes []SST.NodePtr
+
+        var rc,cr RCtype
+
+	rc.Row = node.NPtr // transposes
+        cr.Col = node.NPtr
+
+	// flip backward facing arrows
+	const inverse_flip_arrow = SST.ST_ZERO
+
+        // Only sum over outgoing (+) links
+
+	for sttype := SST.ST_ZERO; sttype < len(node.I); sttype++ {
+
+		for lnk := range node.I[sttype] {
+			arrowptr := node.I[sttype][lnk].Arr
+
+			if len(searcharrows) == 0 {
+				match := node.I[sttype][lnk]
+				row_nodes[match.Dst] = true
+				rc.Col = match.Dst
+				cr.Row = match.Dst
+
+				if sttype < inverse_flip_arrow {
+					ret_weights[cr] += match.Wgt  // flip arrow
+				} else {
+					ret_weights[rc] += match.Wgt
+				}
+			} else {
+				for l := range searcharrows {
+					if arrowptr == searcharrows[l] {
+						match := node.I[sttype][lnk]
+						row_nodes[match.Dst] = true
+						rc.Col = match.Dst
+						cr.Row = match.Dst
+						if sttype < inverse_flip_arrow {
+							ret_weights[cr] += match.Wgt  // flip arrow
+						} else {
+							ret_weights[rc] += match.Wgt
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+	if len(row_nodes) > 0 {
+		row_nodes[node.NPtr] = true // Add the parent if it has children
+	}
+
+	for nptr := range node_list {
+		row_nodes[node_list[nptr]] = true
+	}
+
+	// Merge idempotently
+
+	for nptr := range row_nodes {
+		ret_nodes = append(ret_nodes,nptr)
+	}
+
+	return ret_nodes
+}
+
+//**************************************************************
+// N4L language
+//**************************************************************
+
+func ParseN4L(sst *SST.PoSST,src []rune) {
+
+	var token string
+
+	for pos := 0; pos < len(src); {
+
+		pos = SkipWhiteSpace(sst,src,pos)
+		token,pos = GetToken(sst,src,pos)
+
+		ClassifyTokenRole(sst,token)
+	}
+
+	if Dangler() {
+		ParseError(ERR_MISSING_EVENT)
+	}
+}
+
+//**************************************************************
+
+func SkipWhiteSpace(sst *SST.PoSST,src []rune, pos int) int {
+
+	for ; pos < len(src) && IsWhiteSpace(src[pos],src[pos]); pos++ {
+
+		if src[pos] == '\n' {
+			UpdateLastLineCache(sst)
+		} else {
+
+			if src[pos] == '#' || (src[pos] == '/' && src[pos+1] == '/') {
+
+				for ; pos < len(src) && src[pos] != '\n'; pos++ {
+				}
+
+				UpdateLastLineCache(sst)
+			}
+		}
+	}
+
+	return pos
+}
+
+//**************************************************************
+
+func AddMandatory(sst *SST.PoSST) {
+
+	SST.RegisterContext(sst,nil,[]string{"any"})
+
+	// empty link for orphans to retain context - NB, this convention is used a lot in context handling EMPTY == LEADSTO
+
+	arr := SST.InsertArrowDirectory(sst,"leadsto","empty","debug","+")
+	inv := SST.InsertArrowDirectory(sst,"leadsto","void","unbug","-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
+
+	arr = SST.InsertArrowDirectory(sst,"near",SST.NEAR_CAPS_S,SST.NEAR_CAPS_L,"both")
+	SST.InsertInverseArrowDirectory(sst,arr,arr)
+
+	// reserved for text2N4L
+
+	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_FINDS_S,SST.CONT_FINDS_L,"+")
+        inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_FOUND_IN_S,SST.INV_CONT_FOUND_IN_L,"-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
+
+	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_FRAG_S,SST.CONT_FRAG_L,"+")
+        inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_FRAG_IN_S,SST.INV_CONT_FRAG_IN_L,"-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
+
+	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_INTENT_S,SST.EXPR_INTENT_L,"+")
+        inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_INTENT_S,SST.INV_EXPR_INTENT_L,"-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
+
+	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_AMBIENT_S,SST.EXPR_AMBIENT_L,"+")
+        inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_AMBIENT_S,SST.INV_EXPR_AMBIENT_L,"-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
+
+	// Reserved for special UX handling
+
+	arr = SST.InsertArrowDirectory(sst,"leadsto",SEQUENCE_RELN,SEQUENCE_RELN_LONG,"+")
+	inv = SST.InsertArrowDirectory(sst,"leadsto",SEQUENCE_RELN_INV,SEQUENCE_RELN_INV_LONG,"-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
+
+	arr = SST.InsertArrowDirectory(sst,"properties","url","has URL","+")
+	inv = SST.InsertArrowDirectory(sst,"properties","isurl","is a URL for","-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
+
+	arr = SST.InsertArrowDirectory(sst,"properties","img","has image","+")
+	inv = SST.InsertArrowDirectory(sst,"properties","isimg","is an image for","-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
+
+}
+
+//**************************************************************
+
+func ReadConfig() []string {
+
+	files := []string{"arrows-LT-1.sst","arrows-NR-0.sst","arrows-CN-2.sst","arrows-EP-3.sst","annotations.sst","closures.sst"}
+	dir := os.Getenv("SST_CONFIG_PATH")
+
+	var configs []string
+
+	if dir != "" {
+
+		for f := 0; f < len(files); f++ {
+			configs = append(configs,dir+"/"+files[f])
+		}
+
+	return configs
+
+	} else {
+		search_paths := []string{"./SSTconfig","../SSTconfig","../../SSTconfig"}
+
+		for p := range search_paths {
+
+			info, err := os.Stat(search_paths[p]);
+
+			if err == nil && info.IsDir() {
+				for f := 0; f < len(files); f++ {
+					configs = append(configs,search_paths[p]+"/"+files[f])
+				}
+				return configs
+			}
+		}
+	}
+
+	return []string{"no configuration file"}
+}
+
+//**************************************************************
+
+func GetToken(sst *SST.PoSST,src []rune, pos int) (string,int) {
+
+	// Handle concatenation of words/lines and separation of types
+
+	var token string
+
+	if pos >= len(src) {	    // end of file
+		UpdateLastLineCache(sst)
+		return "", pos
+	}
+
+	switch (src[pos]) {
+
+	case '+':  // could be +::
+
+		switch (src[pos+1]) {
+
+		case ':':
+			token,pos = ReadToLast(src,pos,':')
+		default:
+			token,pos = ReadToLast(src,pos,ALPHATEXT)
+		}
+
+	case '-':  // could -:: or -section
+
+		switch (src[pos+1]) {
+
+		case ':':
+			token,pos = ReadToLast(src,pos,':')
+		default:
+			token,pos = ReadToLast(src,pos,ALPHATEXT)
+		}
+
+	case ':':
+		token,pos = ReadToLast(src,pos,':')
+
+	case '(':
+		token,pos = ReadToLast(src,pos,')')
+
+        case '"','\'':
+		quote := src[pos]
+
+		if IsQuote(quote) && IsBackReference(src,pos) {
+			token = "\""
+			pos++
+		} else {
+			if quote == '"' && pos+2 < len(src) && IsWhiteSpace(src[pos+1],src[pos+2]) {
+				ParseError(ERR_ILLEGAL_QUOTED_STRING_OR_REF)
+				os.Exit(-1)
+			}
+			token,pos = ReadToLast(src,pos,quote)
+		}
+
+	case '#':
+		return "",pos
+
+	case '/':
+		if src[pos+1] == '/' {
+			return "",pos
+		}
+
+	case '@':
+		token,pos = ReadToLast(src,pos,' ')
+
+	default: // a text item that could end with any of the above
+		token,pos = ReadToLast(src,pos,ALPHATEXT)
+
+	}
+
+	return token, pos
+}
+
+//**************************************************************
+
+func ClassifyTokenRole(sst *SST.PoSST,token string) {
+
+	if len(token) == 0 {
+		return
+	}
+
+	switch token[0] {
+
+	case ':':
+		expression := ExtractContextExpression(token)
+		CheckSequenceMode(expression,'+')
+		LINE_ITEM_STATE = ROLE_CONTEXT
+		AssessGrammarCompletions(sst,expression,LINE_ITEM_STATE)
+
+	case '+':
+		expression := ExtractContextExpression(token)
+		CheckSequenceMode(expression,'+')
+		LINE_ITEM_STATE = ROLE_CONTEXT_ADD
+		AssessGrammarCompletions(sst,expression,LINE_ITEM_STATE)
+
+	case '-':
+		if token[len(token)-1:] == string(':') {
+			expression := ExtractContextExpression(token)
+			CheckSequenceMode(expression,'-')
+			LINE_ITEM_STATE = ROLE_CONTEXT_SUBTRACT
+			AssessGrammarCompletions(sst,expression,LINE_ITEM_STATE)
+		} else if len(SECTION_STATE) == 0 {
+			section := strings.TrimSpace(token[1:])
+			LINE_ITEM_STATE = ROLE_SECTION
+			AssessGrammarCompletions(sst,section,LINE_ITEM_STATE)
+		} else {
+			// The line starts with a -, but it's not a new chapter
+			LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
+			StoreAlias(token)
+			AssessGrammarCompletions(sst,token,LINE_ITEM_STATE)
+
+			LINE_ITEM_STATE = ROLE_EVENT
+			LINE_ITEM_COUNTER++
+		}
+
+		// No quotes here in a string, we need to allow quoting in excerpts.
+
+	case '(':
+		if LINE_ITEM_STATE == ROLE_RELATION {
+			ParseError(ERR_MISSING_ITEM_RELN)
+			os.Exit(-1)
+		}
+		link := GetLinkArrowByName(sst,token)
+		LINE_ITEM_STATE = ROLE_RELATION
+		LINE_RELN_CACHE["THIS"] = append(LINE_RELN_CACHE["THIS"],link)
+		LINE_RELN_COUNTER++
+
+	case '"': // prior reference, unless it is a full quoted string
+
+		if len(token) > 1 { // quoted string: treat as an ordinary item
+			LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
+			StoreAlias(token)
+			AssessGrammarCompletions(sst,token,LINE_ITEM_STATE)
+			LINE_ITEM_STATE = ROLE_EVENT
+			LINE_ITEM_COUNTER++
+			break
+		}
+		
+		result := LookupAlias("PREV",LINE_ITEM_COUNTER)
+		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],result)
+		StoreAlias(result)
+		AssessGrammarCompletions(sst,result,LINE_ITEM_STATE)
+		LINE_ITEM_STATE = ROLE_EVENT
+		LINE_ITEM_COUNTER++
+
+	case '@':
+		LINE_ITEM_STATE = ROLE_LINE_ALIAS
+		token  = strings.TrimSpace(token)
+		LINE_ALIAS = token[1:]
+		CheckLineAlias(token)
+
+	case '$':
+		CheckLineAlias(token)
+		actual := ResolveAliasedItem(token)
+		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],actual)
+		PVerbose("fyi, line reference",token,"resolved to",actual)
+		AssessGrammarCompletions(sst,actual,LINE_ITEM_STATE)
+		LINE_ITEM_STATE = ROLE_LOOKUP
+		LINE_ITEM_COUNTER++
+
+	default:
+		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
+		StoreAlias(token)
+		AssessGrammarCompletions(sst,token,LINE_ITEM_STATE)
+
+		LINE_ITEM_STATE = ROLE_EVENT
+		LINE_ITEM_COUNTER++
+	}
+}
+
+//**************************************************************
+
+func AssessGrammarCompletions(sst *SST.PoSST,token string, prior_state int) {
+
+	if len(token) == 0 {
+		return
+	}
+
+	this_item := token
+
+	const BOM_UTF8 = "\xef\xbb\xbf"
+
+	if this_item == BOM_UTF8 {
+		// Skip a unicode header, needed for text editors
+		Verbose("Skipping embedded Unicode Header")
+		return
+	}
+
+	switch prior_state {
+
+	case ROLE_RELATION:
+
+		CheckNonNegative(LINE_ITEM_COUNTER-2)
+		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
+		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
+		last_iptr := LINE_ITEM_REFS[LINE_ITEM_COUNTER-2]
+		this_iptr := HandleNode(sst,this_item)
+		const annotation = false
+		IdempAddLink(sst,last_item,last_iptr,last_reln,this_item,this_iptr,annotation)
+		CheckSection(this_item)
+
+	case ROLE_CONTEXT:
+		Box("Reset context: ->",this_item)
+		ContextEval(this_item,"=")
+		CheckSection(this_item)
+
+	case ROLE_CONTEXT_ADD:
+		Box("Add to context:",this_item)
+		ContextEval(this_item,"+")
+		CheckSection(this_item)
+
+	case ROLE_CONTEXT_SUBTRACT:
+		Box("Remove from context:",this_item)
+		ContextEval(this_item,"-")
+		CheckSection(this_item)
+
+	case ROLE_SECTION:
+		Box("Set chapter/section: ->",this_item)
+		CheckChapter(this_item)
+		SECTION_STATE = this_item
+
+	default:
+		CheckSection(this_item)
+
+		if NoteToSelf(token) {
+			ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
+		}
+
+		HandleNode(sst,this_item)
+		LinkUpStorySequence(sst,this_item)
+	}
+}
+
+//**************************************************************
+
+func CheckLineAlias(token string) {
+
+	var contig string
+	fmt.Sscanf(token,"%s",&contig)
+
+	if token[0] == '@' && len(contig) == 1 {
+		ParseError(ERR_BAD_LABEL_OR_REF+token)
+		os.Exit(-1)
+	}
+}
+
+//**************************************************************
+
+func CheckChapter(name string) {
+
+	if name[0] == ':' {
+		ParseError(WARN_CHAPTER_CLASS_MIXUP+name)
+		os.Exit(-1)
+	}
+
+	if strings.Contains(name,",") {
+		ParseError(ERR_CHAPTER_COMMA+name)
+		os.Exit(-1)
+	}
+
+	SEQUENCE_MODE = false
+	SEQUENCE_START = false
+}
+
+//**************************************************************
+
+func StoreAlias(name string) {
+
+	if LINE_ALIAS != "" {
+		PVerbose("-- Storing alias",LINE_ITEM_CACHE[LINE_ALIAS],name,"as",LINE_ALIAS)
+		LINE_ITEM_CACHE[LINE_ALIAS] = append(LINE_ITEM_CACHE[LINE_ALIAS],name)
+	}
+}
+
+//**************************************************************
+
+func GetBookMarks() map[string]string {
+
+	marks := make(map[string]string)
+	
+	search_paths := []string{"./SSTconfig","../SSTconfig","../../SSTconfig"}
+
+	for p := range search_paths {
+
+		filename := fmt.Sprintf("%s/bookmarks.sst",search_paths[p]);
+
+		info, err := os.Stat(filename)
+		
+		if err == nil && !info.IsDir() {
+			
+			file, err := os.Open(filename)
+
+			if err != nil {
+				fmt.Printf("Error opening file: %s", err)
+				continue
+			}
+
+			defer file.Close()
+			scanner := bufio.NewScanner(file)
+
+			for scanner.Scan() {
+				line := scanner.Text()
+
+				const silly = 10
+				
+				if len(line) > silly {
+					s := strings.Split(line,":")
+					key := strings.TrimSpace(s[0])
+					value := strings.TrimSpace(s[1])
+					if len(key) > 0 && len(value) > 0 {
+						marks[key] = value
+					}
+				}
+			}
+		}
+	}
+
+	return marks
+}
+
+//**************************************************************
+// Memory representation
+//**************************************************************
+
+func IdempAddLink(sst *SST.PoSST,from string, frptr SST.NodePtr, link SST.Link,to string, toptr SST.NodePtr, is_annotation bool) {
+
+	// Add a link index cache pointer directly to a from node
+
+	if from == to {
+		ParseError(ERR_ARROW_SELFLOOP)
+		os.Exit(-1)
+	}
+
+	if link.Wgt != 1 {
+		PVerbose("... Relation:",from,"--(",sst.ARROW_DIRECTORY[link.Arr].Long,",",link.Wgt,")-> '",to,"'",sst.CONTEXT_DIRECTORY[link.Ctx])
+	} else {
+		PVerbose("... Relation:",from,"--",sst.ARROW_DIRECTORY[link.Arr].Long,"-> '",to,"'",sst.CONTEXT_DIRECTORY[link.Ctx])
+	}
+
+        // Build PageMap
+
+	link.Dst = toptr
+
+	if !is_annotation {
+		LINE_PATH = append(LINE_PATH,link)
+	}
+
+	if from == "" || to == "" {
+		ParseError(ERR_MISSING_ITEM_SOMEWHERE + " (adding link)")
+		os.Exit(-1)
+	}
+
+	SST.AppendLinkToNode(sst,frptr,link,toptr)
+
+	// Double up the reverse definition for easy indexing of both in/out arrows
+	// But be careful not the make the graph undirected by mistake
+
+	invlink := GetLinkArrowByName(sst,sst.ARROW_DIRECTORY[sst.INVERSE_ARROWS[link.Arr]].Short)
+
+	invlink.Ctx = link.Ctx
+
+	SST.AppendLinkToNode(sst,toptr,invlink,frptr)
+
+}
+
+//**************************************************************
+
+func HandleNode(sst *SST.PoSST,annotated string) SST.NodePtr {
+
+	clean_ptr,clean_version := IdempAddNode(sst,annotated,SEQ_UNKNOWN)
+
+	PVerbose("Event/item/node: \"",clean_version,"\" in chapter",SECTION_STATE)
+
+	LINE_ITEM_REFS = append(LINE_ITEM_REFS,clean_ptr)
+
+	if len(clean_version) != len(annotated) {
+		AddBackAnnotations(sst,clean_version,clean_ptr,annotated)
+	}
+
+	IdempAddContextToNode(sst,clean_ptr)
+
+	return clean_ptr
+}
+
+//**************************************************************
+
+func IdempAddNode(sst *SST.PoSST,s string,intended_sequence bool) (SST.NodePtr,string) {
+
+	clean_version := StripAnnotations(s)
+
+	l,c := SST.StorageClass(s)
+
+	var new_nodetext SST.Node
+	new_nodetext.S = clean_version
+	new_nodetext.L = l
+	new_nodetext.Seq = new_nodetext.Seq || intended_sequence
+	new_nodetext.Chap = SECTION_STATE
+	new_nodetext.NPtr.Class = c
+
+	iptr := SST.AppendTextToDirectory(sst,new_nodetext,ParseError)
+
+	// Build page map
+
+	if LINE_PATH == nil {
+		var leg SST.Link
+		leg.Dst = iptr
+		LINE_PATH = append(LINE_PATH,leg)
+	}
+
+	return iptr,clean_version
+}
+
+//**************************************************************
+
+func IdempAddContextToNode(sst *SST.PoSST,nptr SST.NodePtr) {
+
+	// add a nullpotent link containing root node for
+	// context membership, in case it's a singleton
+
+	var nowhere SST.NodePtr
+	var empty SST.Link
+	empty.Ctx = SST.RegisterContext(sst,CONTEXT_STATE,nil)
+	empty.Arr = 0
+	empty.Wgt = 1
+
+	SST.AppendLinkToNode(sst,nptr,empty,nowhere)
+}
+
+//**************************************************************
+// Scan text input
+//**************************************************************
+
+func ReadFile(filename string) []rune {
+
+	text := ReadUTF8FileBuffered(filename)
+
+	// clean unicode nonsense
+
+	for r := range text {
+		switch text[r] {
+		case NON_ASCII_LQUOTE,NON_ASCII_RQUOTE:
+			text[r] = '"'
+		}
+	}
+
+	return text
+}
+
+
+//**************************************************************
+
+func ReadToLast(src []rune,pos int, stop rune) (string,int) {
+
+	// Read until we find a terminator for this kind of token
+	// determined by "stop" signal - watch out for embedded quotes
+
+	var cpy []rune
+
+	var starting_at = LINE_NUM
+
+	// We have to read the string in rune form to handle unicode
+	// rune by rune to handle special cases and aggregated into cpy
+
+	for ; Collect(src,pos,stop,cpy) && pos < len(src); pos++ {
+
+		cpy = append(cpy,src[pos])
+
+		// if there's an embedded " quote, treat quoted section as a single character
+
+		if pos+1 < len(src) && src[pos] == '"' {
+			for p := pos+1; p < len(src); p++ {
+				cpy = append(cpy,src[p])
+				if src[p] == '"' {
+					pos = p
+					break
+				}
+			}
+		}
+	}
+
+	if IsQuote(stop) && src[pos-1] != stop {
+		e := fmt.Sprintf("%s starting at line %d (found token %s)",ERR_MISMATCH_QUOTE,starting_at,string(cpy))
+		ParseError(e)
+		os.Exit(-1)
+	}
+
+	// Tokenize the string
+
+	token := string(cpy)
+	token = strings.TrimSpace(token)
+	count := strings.Count(token,"\n")
+	LINE_NUM += count
+	return token,pos
+}
+
+//**************************************************************
+
+func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
+
+	// Generalize the stop-condition for for-loop accumulating runes
+	// when we receive the "stop" rune signal, that's the end by policy
+
+	var collect bool = true
+
+	// Quoted strings are tricky, especially when they start in the middle of another string
+
+	if IsQuote(stop) {
+		var is_end bool
+
+		if pos+1 >= len(src) {
+			is_end= true
+		} else {
+			is_end = IsWhiteSpace(src[pos],src[pos+1])
+		}
+
+		if src[pos-1] == stop && is_end {
+			return false
+		} else {
+			return true
+		}
+	}
+
+	// nothing unquoted can exceed a line length
+
+	if pos >= len(src) || src[pos] == '\n' {
+		return false
+	}
+
+	// ordinary text strings are signalled by ALPHATEXT policy
+
+	if stop == ALPHATEXT {
+		collect = IsGeneralString(src,pos)
+	} else {
+		// a ::: cluster is special, we don't care how many
+
+		if stop != ':' && !IsQuote(stop) {
+			return !LastSpecialChar(src,pos,stop)
+		} else {
+			var groups int = 0
+
+			for r := 1; r < len(cpy)-1; r++ {
+
+				if cpy[r] != ':' && cpy[r-1] == ':' {
+					groups++
+				}
+
+				if cpy[r] != '"' && cpy[r-1] == '"' {
+					groups++
+				}
+			}
+
+			if groups > 1 {
+				collect = !LastSpecialChar(src,pos,stop)
+			}
+		}
+	}
+
+	return collect
+}
+
+//**************************************************************
+
+func IsGeneralString(src []rune,pos int) bool {
+
+	// Plain text should terminate like this, but
+	// beware of quotes inside
+
+	switch src[pos] {
+
+        case ')':
+		var before,after int
+
+		if pos-20 > 0 {
+			before = pos-20
+		} else {
+			before = 0
+		}
+
+		if pos + 20 < len(src) {
+			after = pos+20
+		} else {
+			after = len(src)-1
+		}
+
+		msg := fmt.Sprintf("%s at position %d near '...%s...'",ERR_STRAY_PAREN,pos,string(src[before:after]))
+	        ParseError(msg)
+		os.Exit(-1)
+	case '(':
+		return false
+	case '#':
+		return false
+	case '\n':
+		return false
+
+	case '/':
+		if src[pos+1] == '/' {
+			return false
+		}
+	}
+
+	return true
+}
+
+//**************************************************************
+
+func IsQuote(r rune) bool {
+
+	switch r {
+	case '"','\'',NON_ASCII_LQUOTE,NON_ASCII_RQUOTE:
+		return true
+	}
+
+	return false
+}
+
+//**************************************************************
+
+func LastSpecialChar(src []rune,pos int, stop rune) bool {
+
+	if src[pos] == '\n' {
+		if stop != '"' {
+			return true
+		}
+	}
+
+	// Special case, but still don't understand why?!
+
+	if src[pos] == '@' {
+		return false
+	}
+
+	if pos > 0 && src[pos-1] == stop && src[pos] != stop {
+		return true
+	}
+
+	return false
+}
+
+//**************************************************************
+
+func UpdateLastLineCache(sst *SST.PoSST,) {
+
+	if Dangler() {
+		ParseError(ERR_MISSING_EVENT)
+	}
+
+	if !CONFIGURING {
+		PageMap(sst,SECTION_STATE,CONTEXT_STATE,LINE_PATH,LINE_NUM,LINE_ALIAS)
+	}
+
+	LINE_NUM++
+
+	// If this line was not blank, overwrite previous settings and reset
+
+	if LINE_ITEM_STATE != ROLE_BLANK_LINE {
+
+		if LINE_ITEM_CACHE["THIS"] != nil {
+			LINE_ITEM_CACHE["PREV"] = LINE_ITEM_CACHE["THIS"]
+		}
+		if LINE_RELN_CACHE["THIS"] != nil {
+			LINE_RELN_CACHE["PREV"] = LINE_RELN_CACHE["THIS"]
+		}
+	}
+
+	LINE_ITEM_CACHE["THIS"] = nil
+	LINE_RELN_CACHE["THIS"] = nil
+	LINE_ITEM_REFS = nil
+	LINE_ITEM_COUNTER = 1
+	LINE_RELN_COUNTER = 0
+	LINE_ALIAS = ""
+	LINE_PATH = nil
+
+	LINE_ITEM_STATE = ROLE_BLANK_LINE
+
+}
+
+//**************************************************************
+
+func PageMap(sst *SST.PoSST,chapter string,ctxmap map[string]bool,path []SST.Link,line int,alias string) {
+
+	if len(path) == 0 {
+		return
+	}
+
+	var page_event SST.PageMap;
+	var context []string
+	var contextstr string
+
+	for c := range ctxmap {
+		context = append(context,c)
+	}
+
+	sort.Strings(context)
+
+	for c := 0; c < len(context); c++ {
+		contextstr += context[c]
+		if c < len(context)-1 {
+			contextstr += ", "
+		}
+	}
+
+	page_event.Chapter = chapter
+	page_event.Alias = alias
+	page_event.Context = SST.RegisterContext(sst,CONTEXT_STATE,nil)
+	page_event.Line = line
+	page_event.Path = path
+
+	sst.PAGE_MAP = append(sst.PAGE_MAP,page_event)
+}
+
+//**************************************************************
+
+func IsWhiteSpace(r,rn rune) bool {
+
+	return (unicode.IsSpace(r) || r == '#' || r == '/' && rn == '/')
+}
+
+//**************************************************************
+
+func IsBackReference(src []rune,pos int) bool {
+
+	// Any non-whitespace before \n or ( means it's not a back reference
+
+	for pos++; pos < len(src); pos++ {
+
+		if src[pos] == '(' || src[pos] == '\n' || src[pos] == '#' {
+			return true
+		} else {
+			if !unicode.IsSpace(src[pos]) {
+				return false
+			}
+		}
+	}
+
+	return false
+}
+
+//**************************************************************
+
+func Dangler() bool {
+
+	switch LINE_ITEM_STATE {
+
+	case ROLE_EVENT:
+		return false
+	case ROLE_LOOKUP:
+		return false
+	case ROLE_BLANK_LINE:
+		return false
+	case ROLE_SECTION:
+		return false
+	case ROLE_CONTEXT:
+		return false
+	case ROLE_CONTEXT_ADD:
+		return false
+	case ROLE_CONTEXT_SUBTRACT:
+		return false
+	case HAVE_MINUS:
+		return false
+	case ROLE_RESULT:
+		return false
+	}
+
+	return true
+}
+
+//**************************************************************
+
+func ExtractContextExpression(token string) string {
+
+	var expression string
+
+	s := strings.Split(token, ":")
+
+	for i := 1; i < len(s); i++ {
+		if len(s[i]) > 1 {
+			expression = strings.TrimSpace(s[i])
+			break
+		}
+	}
+
+	return expression
+}
+
+//**************************************************************
+
+func CheckSequenceMode(context string, mode rune) {
+
+	if (strings.Contains(context,"_sequence_")) {
+
+		switch mode {
+		case '+':
+			PVerbose("\nStart sequence mode for items")
+			SEQUENCE_MODE = true
+			SEQUENCE_START = true
+			LAST_IN_SEQUENCE = ""
+
+		case '-':
+			PVerbose("End sequence mode for items\n")
+			SEQUENCE_MODE = false
+			SEQUENCE_START = false
+		}
+	}
+
+}
+
+//**************************************************************
+
+func LinkUpStorySequence(sst *SST.PoSST,this string) {
+
+	// Join together a sequence of nodes using default "(then)"
+
+	if SEQUENCE_MODE && this != LAST_IN_SEQUENCE {
+
+		if LINE_ITEM_COUNTER == 1 && LAST_IN_SEQUENCE != "" {
+
+			PVerbose("* ... Sequence addition: ",LAST_IN_SEQUENCE,"-(",SEQUENCE_RELN,")->",this,"\n")
+
+			var last_iptr SST.NodePtr
+
+			if SEQUENCE_START {
+				last_iptr,_ = IdempAddNode(sst,LAST_IN_SEQUENCE,SEQ_START)
+				SEQUENCE_START = false
+			} else {
+				last_iptr,_ = IdempAddNode(sst,LAST_IN_SEQUENCE,SEQ_UNKNOWN)
+			}
+
+			this_iptr,_ := IdempAddNode(sst,this,SEQ_UNKNOWN)
+			link := GetLinkArrowByName(sst,"(then)")
+			SST.AppendLinkToNode(sst,last_iptr,link,this_iptr)
+
+			invlink := GetLinkArrowByName(sst,sst.ARROW_DIRECTORY[sst.INVERSE_ARROWS[link.Arr]].Short)
+			SST.AppendLinkToNode(sst,this_iptr,invlink,last_iptr)
+
+		}
+
+		LAST_IN_SEQUENCE = this
+	}
+}
+
+//**************************************************************
+
+func StripAnnotations(fulltext string) string {
+
+	var protected bool = false
+	var deloused []rune
+
+	if fulltext[0] == fulltext[len(fulltext)-1] {
+		switch fulltext[0] {
+		case '"','\'':
+			if len(fulltext) > 1 {
+				fulltext = fulltext[1:len(fulltext)-1]
+				protected = true
+			}
+		}
+	}
+	
+	var preserve_unicode = []rune(fulltext)
+
+	for r := 0; r < len(preserve_unicode); r++ {
+
+		if preserve_unicode[r] == '"' {
+			protected = !protected
+		        // here: drop surrounding quotes		  
+            		// drop only the surrounding quote pair; embedded quotes stay
+		}
+
+		if !protected {
+			skip,symb := EmbeddedSymbol(preserve_unicode,r)
+
+			if skip > 0 {
+				r += skip-1
+				if unicode.IsSpace(preserve_unicode[r]) {
+					ParseError(ERR_NON_WORD_WHITE+symb)
+				}
+				continue
+			}
+		}
+
+		deloused = append(deloused,preserve_unicode[r])
+	}
+
+	return string(deloused)
+}
+
+//**************************************************************
+
+func AddBackAnnotations(sst *SST.PoSST,cleantext string,cleanptr SST.NodePtr,annotated string) {
+
+	var protected bool = false
+
+	reminder := fmt.Sprintf("%.30s...",cleantext)
+	PVerbose("\n        Checking annotations from \""+reminder+"\"")
+
+	for r := 0; r < len(annotated); r++ {
+
+		if annotated[r] == '"' {
+			protected = !protected
+		} else {
+			if !protected {
+				skip,symb := EmbeddedSymbol([]rune(annotated),r)
+
+				if skip > 0 {
+					link := GetLinkArrowByName(sst,ANNOTATION[symb])
+					this_item := ExtractWord(annotated,r+skip)
+
+					if len(this_item) <= WORD_MISTAKE_LEN {
+						err := fmt.Sprintf("%s \"%s\"  after annotation %s, len %d",ERR_SHORT_WORD,this_item,symb,skip)
+						ParseError(err)
+					}
+
+					this_iptr,_ := IdempAddNode(sst,this_item,SEQ_UNKNOWN)
+					const is_annotation = true
+					IdempAddLink(sst,reminder,cleanptr,link,this_item,this_iptr,is_annotation)
+					r += skip-1
+					continue
+				}
+			}
+		}
+	}
+}
+
+//**************************************************************
+
+func EmbeddedSymbol(runetext []rune,offset int) (int,string) {
+
+	if offset >= len(runetext) {
+		return 0,"end of string"
+	}
+
+	var found_len int
+	var found string
+
+	for an := range ANNOTATION {
+
+		// Careful of unicode, convert to runes
+
+		uni := []rune(an)
+		match := runetext[offset] == uni[0]
+
+		for r := 0; r < len(uni) && r+offset < len(runetext); r++ {
+
+			if uni[r] != runetext[offset+r] {
+				match = false
+				continue
+			}
+
+			if offset+r >= len(runetext)-1 {
+				match = false
+				continue
+			}
+
+			// No space between marker and text
+			if offset+r+1 < len(runetext) && unicode.IsSpace(runetext[offset+r+1]) {
+				match = false
+				continue
+			}
+		}
+
+		// There might still be another longer greedy match
+
+		if match && len(an) > found_len {
+			found = an
+			found_len = len(an)
+			match = false
+		}
+	}
+
+	if len(found) > 0 {
+		return found_len,found
+	}
+
+	return 0,"UNKNOWN SYMBOL"
+}
+
+//**************************************************************
+
+func ExtractWord(fulltext string,offset int) string {
+
+	var protected bool = false
+	var end_of_protection = false
+
+	runetext := []rune(fulltext)
+	var word []rune
+	var pair_quote string
+
+	for r := offset; r < len(runetext); r++ {
+
+		if runetext[r] == '"' || runetext[r] == '\'' {
+			if protected {
+				end_of_protection = true
+			}
+			protected = !protected
+			pair_quote = string(runetext[r]) + " "
+			continue
+		}
+
+		// end of protection catches quote parts not ending in spaces
+		
+		if !protected && unicode.IsSpace(rune(runetext[r])) || !protected && end_of_protection {
+
+			sword := strings.Trim(strings.TrimSpace(string(word)),pair_quote)
+			return sword
+		}
+
+		word = append(word,runetext[r])
+	}
+
+	sword := strings.Trim(strings.TrimSpace(string(word)),pair_quote)
+
+	if len(sword) <= WORD_MISTAKE_LEN {
+		ParseError(ERR_SHORT_WORD+"\""+sword+"\"")
+	}
+
+	return sword
+}
+
+//**************************************************************
+
+func GetMemChapters(sst SST.PoSST) []string {
+
+	var chapters = make(map[string]int)
+
+	for index := range sst.NODE_DIRECTORY.N1directory {
+		chap := sst.NODE_DIRECTORY.N1directory[index].Chap
+		chapters[chap]++
+	}
+
+	for index := range sst.NODE_DIRECTORY.N2directory {
+		chap := sst.NODE_DIRECTORY.N2directory[index].Chap
+		chapters[chap]++
+	}
+
+	for index := range sst.NODE_DIRECTORY.N3directory {
+		chap := sst.NODE_DIRECTORY.N3directory[index].Chap
+		chapters[chap]++
+	}
+
+	for index := range sst.NODE_DIRECTORY.LT128directory {
+		chap := sst.NODE_DIRECTORY.LT128directory[index].Chap
+		chapters[chap]++
+	}
+
+	for index := range sst.NODE_DIRECTORY.LT1024 {
+		chap := sst.NODE_DIRECTORY.LT1024[index].Chap
+		chapters[chap]++
+	}
+
+	for index := range sst.NODE_DIRECTORY.GT1024 {
+		chap := sst.NODE_DIRECTORY.GT1024[index].Chap
+		chapters[chap]++
+	}
+
+	return SST.Map2List(chapters)
+}
+
+//**************************************************************
+
+func GetNodePointedTo(sst *SST.PoSST,node SST.Node,sequence []SST.ArrowPtr) (SST.NodePtr,bool) {
+
+	for _,s_arr := range sequence {
+
+		found := false
+		arrow := sst.ARROW_DIRECTORY[s_arr]
+		stindex := arrow.STAindex
+
+		for _,lnk := range node.I[stindex] {
+			if lnk.Arr == s_arr {
+				found = true
+				node = SST.GetMemoryNodeFromPtr(sst,lnk.Dst)
+			}
+		}
+
+		if !found {
+			return node.NPtr,false
+		}
+	}
+
+	return node.NPtr,true
+}
+
+//**************************************************************
+// Context logic
+//**************************************************************
+
+func ResetContextState() {
+
+	CONTEXT_STATE = make(map[string]bool)
+}
+
+//**************************************************************
+
+func ContextEval(s,op string) {
+
+	expr := CleanExpression(s)
+
+	or_parts := SplitWithParensIntact(expr,'|')
+
+	if strings.Contains(s,"(") {
+		ParseError(WARN_INADVISABLE_CONTEXT_EXPRESSION)
+	}
+
+	// +,-,= on CONTEXT_STATE
+
+	switch op {
+
+	case "=":
+		ResetContextState()
+		ModContext(or_parts,"+")
+	default:
+		ModContext(or_parts,op)
+	}
+}
+
+//**************************************************************
+
+func CleanExpression(s string) string {
+
+	s = TrimParen(s)
+	r1 := regexp.MustCompile("[|,]+")
+	s = r1.ReplaceAllString(s,"|")
+	r2 := regexp.MustCompile("[&]+")
+	s = r2.ReplaceAllString(s,".")
+	r3 := regexp.MustCompile("[.]+")
+	s = r3.ReplaceAllString(s,".")
+
+	return s
+}
+
+// ***********************************************************************
+
+func SplitWithParensIntact(expr string,split_ch rune) []string {
+
+	var token string = ""
+	var set []string
+
+	unicode := []rune(expr)
+
+	for c := 0; c < len(unicode); c++ {
+
+		switch unicode[c] {
+
+		case split_ch:
+			set = append(set,token)
+			token = ""
+
+		case '(':
+			subtoken,offset := Paren(unicode,c)
+			token += subtoken
+			c = offset-1
+
+		default:
+			token += string(unicode[c])
+		}
+	}
+
+	if len(token) > 0 {
+		set = append(set,token)
+	}
+
+	return set
+}
+
+// ***********************************************************************
+
+func Paren(s []rune, offset int) (string,int) {
+
+	var level int = 0
+
+	for c := offset; c < len(s); c++ {
+
+		if s[c] == '(' {
+			level++
+			continue
+		}
+
+		if s[c] == ')' {
+			level--
+			if level == 0 {
+				token := s[offset:c+1]
+				return string(token), c+1
+			}
+		}
+	}
+
+	return "bad expression", -1
+}
+
+// ***********************************************************************
+
+func TrimParen(s string) string {
+
+	var level int = 0
+	var trim = true
+
+	if len(s) == 0 {
+		return s
+	}
+
+	s = strings.TrimSpace(s)
+
+	if s[0] != '(' {
+		return s
+	}
+
+	for c := 0; c < len(s); c++ {
+
+		if s[c] == '(' {
+			level++
+			continue
+		}
+
+		if level == 0 && c < len(s)-1 {
+			trim = false
+		}
+
+		if s[c] == ')' {
+			level--
+
+			if level == 0 && c == len(s)-1 {
+
+				var token string
+
+				if trim {
+					token = s[1:len(s)-1]
+				} else {
+					token = s
+				}
+				return token
+			}
+		}
+	}
+
+	return s
+}
+
+//**************************************************************
+
+func ModContext(list []string,op string) {
+
+	for or_frag := range list {
+
+		frag := strings.TrimSpace(list[or_frag])
+
+		if len(frag) == 0 {
+			continue
+		}
+
+		switch op {
+		case "+":
+			CONTEXT_STATE[frag] = true
+
+		case "-": // to remove, we also need to look at children
+			for cand := range CONTEXT_STATE {
+				and_parts := SplitWithParensIntact(cand,'.')
+
+				for part := range and_parts {
+
+					if strings.Contains(and_parts[part],frag) {
+						delete(CONTEXT_STATE,cand)
+					}
+				}
+			}
+		}
+
+	}
+}
+
+//**************************************************************
+
+func CheckNonNegative(i int) {
+
+	if i < 0 {
+		ParseError(ERR_MISSING_ITEM_SOMEWHERE)
+		os.Exit(-1)
+	}
+}
+
+//**************************************************************
+
+func CheckSection(item string) {
+
+	if len(SECTION_STATE) == 0 {
+		ParseError(ERR_MISSING_SECTION)
+		os.Exit(-1)
+	}
+}
+
+//**************************************************************
+
+func NoteToSelf(s string) bool {
+
+	if len(s) <= 2 * WORD_MISTAKE_LEN {
+		return false
+	}
+
+	const intentionality_threshold = 50
+
+	if (len(s) > intentionality_threshold) && s[len(s)-1] == '.' {
+		return false
+	}
+
+	for _, r := range s {
+
+		if !unicode.IsUpper(r) && (unicode.IsLetter(r) || unicode.IsNumber(r)) {
+			return false
+		}
+	}
+
+	// Don't repeat the same message for multi-line dittos
+
+	if LINE_ITEM_CACHE["THIS"] != nil && LINE_ITEM_CACHE["PREV"] != nil {
+		if LINE_ITEM_CACHE["THIS"][0] == LINE_ITEM_CACHE["PREV"][0] {
+			return false
+		}
+	}
+
+	return true
+}
+
+//**************************************************************
+
+func StripParen(token string) string {
+
+	token =	strings.TrimSpace(token[1:])
+
+	if token[0] == '(' {
+		token =	strings.TrimSpace(token[1:])
+	}
+
+	if token[len(token)-1] == ')' {
+		token =	token[:len(token)-1]
+	}
+
+	return token
+}
+
+//**************************************************************
+// Tools
+//**************************************************************
+
+func PrintNodeSystem(sst SST.PoSST,n int,org SST.Node, count_links *[4]int) {
+
+	fmt.Println(n,"\t",org.S)
+
+	for sttype := range org.I {
+		for lnk := range org.I[sttype] {
+			count_links[FlatSTType(sttype)]++
+			PrintLink(sst,org.I[sttype][lnk])
+		}
+	}
+	fmt.Println()
+}
+
+//**************************************************************
+
+func PrintLink(sst SST.PoSST,l SST.Link) {
+
+	to := SST.GetNodeTxtFromPtr(&sst,l.Dst)
+	arrow := sst.ARROW_DIRECTORY[l.Arr]
+	Verbose("\t ... --(",arrow.Long,",",l.Wgt,")->",to,l.Ctx," \t . . .",SST.PrintSTAIndex(arrow.STAindex))
+}
+
+// **************************************************************************
+
+func ParseError(message string) {
+
+	const red = "\033[31;1;1m"
+	const endred = "\033[0m"
+
+	fmt.Print("\n",LINE_NUM,":",red)
+	fmt.Println("N4L",CURRENT_FILE,message,"at line", LINE_NUM,endred)
+	Diag("N4L",CURRENT_FILE,message,"at line", LINE_NUM)
+
+}
+
+//**************************************************************
+
+func ReadUTF8FileBuffered(filename string) []rune {
+
+	// Open a stream to the file instead of reading it all at once.
+
+	file, err := os.Open(filename)
+
+	if err != nil {
+		ParseError(ERR_NO_SUCH_FILE_FOUND + filename)
+		os.Exit(-1)
+	}
+
+	defer file.Close()
+
+	// Create a new scanner to read from the file stream.
+
+	scanner := bufio.NewScanner(file)
+
+	// Configure the scanner to split the input by Unicode runes, not lines.
+
+	scanner.Split(bufio.ScanRunes)
+
+	var unicode []rune
+
+	// The scanner reads one rune at a time until the end of the file.
+
+	for scanner.Scan() {
+
+		// Get the text for the current rune
+
+		runeText := scanner.Text()
+
+		// Decode the string (which contains one rune) to a rune value
+
+		r, _ := utf8.DecodeRuneInString(runeText)
+
+		unicode = append(unicode, r)
+	}
+
+	// Check for any errors that occurred during scanning.
+
+	if err := scanner.Err(); err != nil {
+
+		fmt.Printf("Error reading file %s: %v\n", filename, err)
+		os.Exit(-1)
+
+	}
+
+	return unicode
+}
+
+//**************************************************************
+
+func Usage() {
+
+	fmt.Printf("usage: N4L [-v] [-u] [-s] [file].dat\n")
+	flag.PrintDefaults()
+	os.Exit(0)
+}
+
+//**************************************************************
+
+func Verbose(a ...interface{}) {
+
+	line := fmt.Sprintln(a...)
+
+	if DIAGNOSTIC {
+		AppendStringToFile(TEST_DIAG_FILE,line)
+	}
+
+	if VERBOSE {
+		fmt.Print(line)
+	}
+}
+
+//**************************************************************
+
+func PVerbose(a ...interface{}) {
+
+	const green = "\x1b[36m"
+	const endgreen = "\x1b[0m"
+
+	if VERBOSE {
+		fmt.Print(LINE_NUM,":\t",green)
+		fmt.Println(a...)
+		fmt.Print(endgreen)
+	}
+}
+
+//**************************************************************
+
+func Box(a ...interface{}) {
+
+	if VERBOSE {
+
+		fmt.Println("\n------------------------------------")
+		fmt.Println(a...)
+		fmt.Println("------------------------------------\n")
+	}
+}
+
+//**************************************************************
+
+func DiagnosticName(filename string) string {
+
+	return "test_output/"+filename+"_test_log"
+
+}
+
+//**************************************************************
+
+func Diag(a ...interface{}) {
+
+	// Log diagnostic output for self-diagnostic tests
+
+	if DIAGNOSTIC {
+		s := fmt.Sprintln(a...)
+		prefix := fmt.Sprint(LINE_NUM,":")
+		AppendStringToFile(TEST_DIAG_FILE,prefix+s)
+	}
+}
+
+//**************************************************************
+
+func AppendStringToFile(name string, s string) {
+
+	// strip out \r that mess up the file format but are useful for term
+
+	san := strings.Replace(s,"\r","",-1)
+
+	f, err := os.OpenFile(name,os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		fmt.Println("Couldn't open for write/append to",name,err)
+		f.Close()
+		return
+	}
+
+	_, err = f.WriteString(san)
+
+	if err != nil {
+		fmt.Println("Couldn't write/append to",name,err)
+	}
+
+	f.Close()
+}

@@ -182,7 +182,7 @@ This file is already available in the distribution:
 $ cd SSTorytime
 $ make
 $ cd example
-$ ../src/N4L tutorial.n4l
+$ ../bin/N4L tutorial.n4l
 </pre>
 When you run this, you'll see something like this:
 
@@ -211,20 +211,20 @@ $ make
 </pre>
 You see this runs the following command:
 <pre>
-../src/N4L -u -wipe doors.n4l Mary.n4l chinese*n4l branches.n4l doubleslit.n4l ConstructionProcesses.n4l wardleymap.n4l 
+../bin/N4L -u -wipe doors.n4l Mary.n4l chinese*n4l branches.n4l doubleslit.n4l ConstructionProcesses.n4l wardleymap.n4l 
 brains.n4l kubernetes.n4l SSTorytime.n4l integral.n4l reasoning.n4l
 </pre>
 The `-u` option tells the program to upload to the database. The `-wipe` option, tells it to override
 whatever is already in the database and start again. If you want to append new data, you can simply
 omit the `-wipe` option:
 <pre>
-$ ../src/N4L -u LoopyLoo.n4l
+$ ../bin/N4L -u LoopyLoo.n4l
 </pre>
 The examples in the documentation assume you set up from the start with these uploads:
 <pre>
 $ cd examples
 $ make 
-$ ../src/N4L -u LoopyLoo.n4l
+$ ../bin/N4L -u LoopyLoo.n4l
 </pre>
 
 ## Searching

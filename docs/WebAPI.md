@@ -1,7 +1,7 @@
 
 # Web JSON queries
 
-Query data returned by searches are addressed to the `cmd/http_server` (or `./bin/http_server`)
+Query data returned by searches are addressed to the `internal/app/httpserver` (or `./bin/http_server` / `sstorytime serve`)
 program handler as POST requests, either with a command string into a
 `name` field, or as an NPtr reference sent as two separate form
 variables `nclass` and `ncptr` for the two components of and `NPtr`.

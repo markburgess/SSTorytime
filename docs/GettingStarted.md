@@ -11,7 +11,7 @@ the programs by following these destructions below. You can get started with or 
 First compile the software. From the project root, run:
 
 <pre>
-$ make
+$ make build
 </pre>
 Next, setup the PostgreSQL database:
 <pre>
@@ -29,8 +29,9 @@ $ make
 With data, you can now run the web server (from the project root):
 <pre>
 $ make build
-$ ./cmd/http_server/make_certificate   # self-signed cert.pem + key.pem in CWD
+$ ./internal/app/httpserver/make_certificate   # self-signed cert.pem + key.pem in CWD
 $ ./bin/http_server -cert cert.pem -key key.pem
+# or: ./bin/sstorytime serve -cert cert.pem -key key.pem
 </pre>
 and open a web browser at `http://localhost:8080` (redirects to HTTPS on :8443). Try searching for SSTorytime!
 

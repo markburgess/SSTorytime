@@ -45,12 +45,12 @@ The API examples is the `src` directory are stripped down to the minimum, and th
 tools llike the pathsolver and notes tool show how to make simple wrappers for the API functions too.
 You will also find many examples of using Go(lang) code to write custom scripts
 that interact with the database through the Go API
-[here](https://github.com/markburgess/SSTorytime/tree/main/cmd).
+[here](https://github.com/markburgess/SSTorytime/tree/main/internal/app).
 
 
 ## Creating an SST graph from data
 
-See the [example](../cmd/API_EXAMPLE_1/). To make node registration as easy as possible, you can use two functions
+See the [example](../internal/app/apiexample1/). To make node registration as easy as possible, you can use two functions
 `Vertex()` and `Edge()` to create nodes and links respectively. These names are chosen to distance themselves
 from the underlying `Node` and `Link`naming, by using the more mathematical names for these objects.
 
@@ -233,7 +233,7 @@ In general, you will want to use the special functions written for
 querying the data.  These return data into Go structures directly,
 performing all the marshalling and de-marshalling. The following are
 basic workhorses. You will not normally use these.
-For example, [see demo](https://github.com/markburgess/SSTorytime/tree/main/cmd/postgres_testdb).
+For example, [see demo](https://github.com/markburgess/SSTorytime/tree/main/internal/app/postgrestestdb).
 
 
 ### Graph Creation ad hoc

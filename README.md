@@ -212,16 +212,15 @@ This is why we strive to study the role of stories in learning and understanding
 
 ## Building
 
-Layout follows common Go practice: commands under `cmd/`, library code under `internal/`.
-
-Primary binary is **`sstorytime`** (Cobra). Symlinks in `bin/` enable busybox-style
-multicall (`N4L`, `searchN4L`, `http_server`, …).
+Only **`cmd/sstorytime`** is the installable program. Library and tool bodies live under
+`internal/`. Symlinks in `bin/` enable busybox-style multicall (`N4L`, `searchN4L`,
+`http_server`, …).
 
 ```bash
 make build                    # bin/sstorytime + multicall symlinks
 # or
 go build -o bin/sstorytime ./cmd/sstorytime
-ln -s sstorytime bin/N4L
+ln -sfn sstorytime bin/N4L
 
 ./bin/sstorytime n4l -u examples/doors.n4l
 ./bin/N4L -u examples/doors.n4l          # same via multicall
@@ -248,13 +247,13 @@ The tool-set consistent of several components, starting with:
 
 * [http_server](docs/http_server.md) - a prototype webserver providing the SSTorytime browsing service
 
-* [API_EXAMPLE_1](cmd/API_EXAMPLE_1/) - a simple store and retrieve example of the graph database.
+* [API_EXAMPLE_1](internal/app/apiexample1/) - a simple store and retrieve example of the graph database.
 
-* [API_EXAMPLE_2](cmd/API_EXAMPLE_2/) - multi/hyperlink example, joining several nodes through a central hub.
+* [API_EXAMPLE_2](internal/app/apiexample2/) - multi/hyperlink example, joining several nodes through a central hub.
 
-* [API_EXAMPLE_3](cmd/API_EXAMPLE_3/) - a maze solving example, showing higher functions.
+* [API_EXAMPLE_3](internal/app/apiexample3/) - a maze solving example, showing higher functions.
 
-* [API_EXAMPLE_4](cmd/API_EXAMPLE_4/) - a path solving example, with loop corrections (quantum style).
+* [API_EXAMPLE_4](internal/app/apiexample4/) - a path solving example, with loop corrections (quantum style).
 
 * [python_integration_example.py](python/python_integration_example.py) - a basic Python example
 

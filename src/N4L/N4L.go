@@ -1469,8 +1469,6 @@ func GetToken(sst *SST.PoSST,src []rune, pos int) (string,int) {
 				os.Exit(-1)
 			}
 			token,pos = ReadToLast(src,pos,quote)
-			strip := strings.Split(token,string(quote))
-			token = strip[1]
 		}
 
 	case '#':
@@ -1546,13 +1544,21 @@ func ClassifyTokenRole(sst *SST.PoSST,token string) {
 		LINE_RELN_CACHE["THIS"] = append(LINE_RELN_CACHE["THIS"],link)
 		LINE_RELN_COUNTER++
 
-	case '"': // prior reference
-		result := LookupAlias("PREV",LINE_ITEM_COUNTER)
-		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],result)
-		StoreAlias(result)
-		AssessGrammarCompletions(sst,result,LINE_ITEM_STATE)
-		LINE_ITEM_STATE = ROLE_EVENT
-		LINE_ITEM_COUNTER++
+	case '"': // prior reference, unless it is a full quoted string
+	     if(len(token)>1) { // quoted string: treat as an ordinary item
+		  LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
+		  StoreAlias(token)
+		  AssessGrammarCompletions(sst,token,LINE_ITEM_STATE)
+		  LINE_ITEM_STATE = ROLE_EVENT
+		  LINE_ITEM_COUNTER++
+		  break
+             }
+             result := LookupAlias("PREV",LINE_ITEM_COUNTER)
+             LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],result)
+             StoreAlias(result)
+             AssessGrammarCompletions(sst,result,LINE_ITEM_STATE)
+             LINE_ITEM_STATE = ROLE_EVENT
+             LINE_ITEM_COUNTER++
 
 	case '@':
 		LINE_ITEM_STATE = ROLE_LINE_ALIAS
@@ -2261,6 +2267,11 @@ func StripAnnotations(fulltext string) string {
 
 		if preserve_unicode[r] == '"' {
 			protected = !protected
+		        // here: drop surrounding quotes		  
+            		// drop only the surrounding quote pair; embedded quotes stay
+            		if r == 0 || r == len(preserve_unicode)-1 {
+                	   continue
+            		}
 		}
 
 		if !protected {

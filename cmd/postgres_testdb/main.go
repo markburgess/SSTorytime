@@ -1,14 +1,7 @@
 package main
 
-import (
-	SST "github.com/markburgess/SSTorytime/internal/sst"
-)
-
+import "github.com/markburgess/SSTorytime/internal/app/postgrestestdb"
 
 func main() {
-
-	sst := SST.Open(false)
-
-	SST.Close(sst)
+	postgrestestdb.Main()
 }
-

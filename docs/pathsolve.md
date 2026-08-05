@@ -18,7 +18,7 @@ For now, you can get started by trying the examples, e.g.
 <pre>
 $ cd examples
 $ make
-$ ../src/pathsolve -begin A1 -end B6 
+$ ../bin/pathsolve -begin A1 -end B6 
 
 mark% go run pathsolve.go -begin a1 -end b6 
 

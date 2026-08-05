@@ -23,7 +23,7 @@ cert.pem
 /configure_flags.env
 __pycache__/
 
-http_server
+/http_server
 json
 
 # tags
@@ -69,3 +69,6 @@ conceptualize
 # mkdocs build output
 /pages/site/
 /site/
+
+# build output (make build / go build -o bin/)
+/bin/

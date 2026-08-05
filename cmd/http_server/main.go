@@ -37,6 +37,8 @@ import (
 
 var content embed.FS
 var VERBOSE bool
+var certFile string
+var keyFile string
 
 // *********************************************************************
 // Main
@@ -54,14 +56,18 @@ func Init() string {
 
 	flag.Usage = Usage
 
-	verbosePtr := flag.Bool("v", false,"verbose")
+	verbosePtr := flag.Bool("v", false, "verbose")
 	resourcePtr := flag.String("resources", "/mnt", "Root directory for serving /Resources/ files")
+	certPtr := flag.String("cert", "cert.pem", "TLS certificate PEM path")
+	keyPtr := flag.String("key", "key.pem", "TLS private key PEM path")
 
 	flag.Parse()
 
 	if *verbosePtr {
 		VERBOSE = true
 	}
+	certFile = *certPtr
+	keyFile = *keyPtr
 
 	return *resourcePtr
 }
@@ -70,10 +76,10 @@ func Init() string {
 
 func Usage() {
 
-        // We assume that the server is run from the directory under which
+	// We assume that the server is run from the directory under which
 	// it will store all cached files. The resources directory is extra read-only
 
-	fmt.Printf("usage: http_server [-resources string]\n")
+	fmt.Printf("usage: http_server [-resources string] [-cert file] [-key file]\n")
 	flag.PrintDefaults()
 	os.Exit(0)
 }
@@ -152,12 +158,12 @@ func Start(resources string) {
 	}()
 
 	go func() {
-		if err := https_srv.ListenAndServeTLS("../server/cert.pem", "../server/key.pem"); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := https_srv.ListenAndServeTLS(certFile, keyFile); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("HTTPS Listen: %v", err)
 		}
 	}()
 
-	log.Println("Servers running on :8080 and :8443")
+	log.Printf("Servers running on :8080 and :8443 (cert=%s key=%s)", certFile, keyFile)
 	<-done
 
 	log.Println("Servers stopped gracefully")

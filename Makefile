@@ -1,11 +1,9 @@
-# SSTorytime — standard Go layout
-# Primary binary: bin/sstorytime (Cobra + busybox multicall).
+# SSTorytime — single multicall binary
 # Packagers / Nix: `make build` or `go build -o bin/sstorytime ./cmd/sstorytime`
 
 BINDIR ?= bin
 GO     ?= go
 
-# Single multicall binary
 SSTORYTIME = $(BINDIR)/sstorytime
 
 # Historical tool names (symlinks → sstorytime)
@@ -27,7 +25,7 @@ MULTICALL_LINKS = \
 	dotest_getnodes \
 	postgres_testdb
 
-.PHONY: all build tools demos test clean css db ramdb sstorytime links
+.PHONY: all build test clean css db ramdb sstorytime links
 
 all: build
 
@@ -39,15 +37,10 @@ $(SSTORYTIME):
 	@mkdir -p $(BINDIR)
 	$(GO) build -o $@ ./cmd/sstorytime
 
-# Symlinks so argv0 multicall works (N4L → sstorytime, …)
 links: $(SSTORYTIME)
 	@for name in $(MULTICALL_LINKS); do \
 		ln -sfn sstorytime $(BINDIR)/$$name; \
 	done
-
-# Backward-compatible aliases
-tools: build
-demos: build
 
 css:
 	cd internal/app/httpserver && $(GO) run -tags css_tool ./css-builder

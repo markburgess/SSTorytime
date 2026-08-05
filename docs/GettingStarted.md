@@ -29,11 +29,14 @@ $ make
 With data, you can now run the web server (from the project root):
 <pre>
 $ make build
-$ ./internal/app/httpserver/make_certificate   # self-signed cert.pem + key.pem in CWD
-$ ./bin/http_server -cert cert.pem -key key.pem
-# or: ./bin/sstorytime serve -cert cert.pem -key key.pem
+$ ./bin/sstorytime serve
+# plain HTTP on :8080 — open http://localhost:8080
+#
+# local HTTPS (self-signed cert auto-created if missing):
+# $ ./bin/sstorytime serve -tls
+# then https://localhost:8443
 </pre>
-and open a web browser at `http://localhost:8080` (redirects to HTTPS on :8443). Try searching for SSTorytime!
+Try searching for SSTorytime!
 
 ## 1. Find your operating system
 

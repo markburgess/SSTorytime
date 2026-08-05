@@ -1,25 +1,25 @@
-# Setting up TLS for the web server
+# TLS for the web server
 
-From the project root (or any directory; PEMs are written to the **current working directory**):
+## Default: no cert needed
+
+```bash
+./bin/sstorytime serve
+# HTTP :8080
+```
+
+## Local HTTPS (`-tls`)
+
+Missing `cert.pem` / `key.pem` are **auto-generated** (stdlib crypto; no openssl):
+
+```bash
+./bin/sstorytime serve -tls
+# HTTPS :8443
+```
+
+Optional flags: `-cert`, `-key`, `-https-addr`, and `-http-addr` for an opt-in HTTP→HTTPS **307** redirect.
+
+Optional openssl helper:
 
 ```bash
 ./internal/app/httpserver/make_certificate
 ```
-
-This runs `openssl` with `internal/app/httpserver/localhost.conf` (localhost + 127.0.0.1 SANs).
-Equivalent manual command:
-
-```bash
-openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem \
-  -days 365 -nodes -config internal/app/httpserver/localhost.conf
-```
-
-Then (after `make build`):
-
-```bash
-./bin/http_server -cert cert.pem -key key.pem
-# or
-./bin/sstorytime serve -cert cert.pem -key key.pem
-```
-
-Browsers will warn on self-signed certificates; that is expected for local development.

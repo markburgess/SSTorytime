@@ -26,12 +26,13 @@ Now that you've compiled and the database is running, you can upload the example
 $ cd examples/
 $ make
 </pre>
-With data, you can now run the web server:
+With data, you can now run the web server (from the project root):
 <pre>
-cd src
-./http_server
+$ make build
+$ ./cmd/http_server/make_certificate   # self-signed cert.pem + key.pem in CWD
+$ ./bin/http_server -cert cert.pem -key key.pem
 </pre>
-and open a web browser `http://localhost:8080`. Try searching for SSTorytime!
+and open a web browser at `http://localhost:8080` (redirects to HTTPS on :8443). Try searching for SSTorytime!
 
 ## 1. Find your operating system
 
@@ -256,7 +257,7 @@ These are used to simplify the importing of packages. Finally, you need to link 
 % mkdir -p ~/go/bin
 % mkdir -p ~/go/src
 % git clone https://github.com/markburgess/SSTorytime
-% ln -s ~/clonedirectory/pkg/SST ~/go/src/SSTorytime
+% # library is internal/sst (module github.com/markburgess/SSTorytime); no GOPATH symlink needed
 ```
 
 The last step links the directory where you will keep the Smart Spacetime code library to the list of libraries that Go knows about. You’ll also need to set a GOPATH environment variable and add the installation directory to your execution path.For Linux (using default bash shell) you edit the file “~/.bashrc” in your home directory using your favourite text editor. It should contain these lines, as per the golang destructions:

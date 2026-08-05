@@ -1,37 +1,51 @@
 
-# `http_server` and web
+# `http_server` / `sstorytime serve` and web
 
 The http server provided is a generic browsing interface. It isn't meant to be the last
 word on browsing the graph. In principle, every application might have its own custom
 interface. This web page illustrates the Web API and is used to develop our thinking around
 graphs.
 
-The web server has a single argument:
-<pre>
-./http_server -resources /data/directory
-</pre>
-This is a directory path which serves as a root for any file paths referenced in URLs, e.g.
-where images of documents may be cached in order to be accessible from links rendered in the
-browser. It may include any kind of MIME type, such as music files, images, documents etc.
+Build from the project root with `make build` (or `go build -o bin/sstorytime ./cmd/sstorytime`).
 
-For example, if we share a folder called `/mnt/Recordings`, then start the server
-<pre>
-./http_server -resources /mnt/Recordings
-</pre>
-which leads to a disk file
-<pre>
-/mnt/Recordings/Rush/Presto/Folder.jpg
-</pre>
-which maps an image reference
-<pre>
-/Resources/Rush/Presto/Folder.jpg
-</pre>
-to the URL
-<pre>
-http://localhost:8080/Resources/Rush/Presto/Folder.jpg
-</pre>
+## Listen modes
 
-* The web server exposes port 8080 for now.
+| Mode | Command | Ports |
+|------|---------|--------|
+| Plain HTTP (default) | `./bin/http_server` or `./bin/sstorytime serve` | `-addr` (default `:8080`) only |
+| HTTPS | `… serve -tls` | `-https-addr` (default `:8443`) only; self-signed cert if missing |
+| HTTPS + redirect | `… serve -tls -http-addr :8080` | HTTPS + optional HTTP **307** temporary redirect |
+
+Default plain HTTP is what you want behind a reverse proxy (proxy terminates TLS). The app does not speak ACME.
+
+## TLS certificates (`-tls` only)
+
+If `-cert` / `-key` files are missing, the server **generates** a self-signed localhost certificate
+with Go `crypto/x509` (no openssl). Paths default to `cert.pem` / `key.pem` in the process CWD.
+
+```bash
+./bin/sstorytime serve -tls
+# or with explicit paths
+./bin/sstorytime serve -tls -cert /path/cert.pem -key /path/key.pem
+```
+
+Optional openssl helper (still available):
+
+```bash
+./internal/app/httpserver/make_certificate
+```
+
+Browsers will warn on self-signed certificates; that is expected for local development.
+
+## Resources directory
+
+```bash
+./bin/http_server -resources /data/directory
+```
+
+For example, `/mnt/Recordings/Rush/Presto/Folder.jpg` maps to
+`http://localhost:8080/Resources/Rush/Presto/Folder.jpg` when started with
+`-resources /mnt/Recordings`.
 
 ## Four search formats
 
@@ -41,4 +55,3 @@ The web server renders four different kinds of page.
 * Page notes (N4L view, e.g. `\notes chinese`)
 * Story/Sequence view (`\seq astronomy` or `\story (huli)`)
 * Path solutions (`\from` a set of nodes `\to` a set of nodes).
-

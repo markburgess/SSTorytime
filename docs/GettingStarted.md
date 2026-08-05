@@ -11,7 +11,7 @@ the programs by following these destructions below. You can get started with or 
 First compile the software. From the project root, run:
 
 <pre>
-$ make
+$ make build
 </pre>
 Next, setup the PostgreSQL database:
 <pre>
@@ -26,12 +26,17 @@ Now that you've compiled and the database is running, you can upload the example
 $ cd examples/
 $ make
 </pre>
-With data, you can now run the web server:
+With data, you can now run the web server (from the project root):
 <pre>
-cd src
-./http_server
+$ make build
+$ ./bin/sstorytime serve
+# plain HTTP on :8080 — open http://localhost:8080
+#
+# local HTTPS (self-signed cert auto-created if missing):
+# $ ./bin/sstorytime serve -tls
+# then https://localhost:8443
 </pre>
-and open a web browser `http://localhost:8080`. Try searching for SSTorytime!
+Try searching for SSTorytime!
 
 ## 1. Find your operating system
 
@@ -256,7 +261,7 @@ These are used to simplify the importing of packages. Finally, you need to link 
 % mkdir -p ~/go/bin
 % mkdir -p ~/go/src
 % git clone https://github.com/markburgess/SSTorytime
-% ln -s ~/clonedirectory/pkg/SST ~/go/src/SSTorytime
+% # library is internal/sst (module github.com/markburgess/SSTorytime); no GOPATH symlink needed
 ```
 
 The last step links the directory where you will keep the Smart Spacetime code library to the list of libraries that Go knows about. You’ll also need to set a GOPATH environment variable and add the installation directory to your execution path.For Linux (using default bash shell) you edit the file “~/.bashrc” in your home directory using your favourite text editor. It should contain these lines, as per the golang destructions:
@@ -282,5 +287,5 @@ Now that everything is working, simply do the following to try out the examples 
 ```
 $ cd examples
 $ make
-$ ../src/N4L -u LoopyLoo.n4l
+$ ../bin/N4L -u LoopyLoo.n4l
 ```

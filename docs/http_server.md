@@ -6,67 +6,46 @@ word on browsing the graph. In principle, every application might have its own c
 interface. This web page illustrates the Web API and is used to develop our thinking around
 graphs.
 
-Build from the project root with `make build`. That produces `bin/sstorytime` and multicall
-symlinks including `bin/http_server`. Equivalent:
+Build from the project root with `make build` (or `go build -o bin/sstorytime ./cmd/sstorytime`).
+
+## Listen modes
+
+| Mode | Command | Ports |
+|------|---------|--------|
+| Plain HTTP (default) | `./bin/http_server` or `./bin/sstorytime serve` | `-addr` (default `:8080`) only |
+| HTTPS | `… serve -tls` | `-https-addr` (default `:8443`) only; self-signed cert if missing |
+| HTTPS + redirect | `… serve -tls -http-addr :8080` | HTTPS + optional HTTP **307** temporary redirect |
+
+Default plain HTTP is what you want behind a reverse proxy (proxy terminates TLS). The app does not speak ACME.
+
+## TLS certificates (`-tls` only)
+
+If `-cert` / `-key` files are missing, the server **generates** a self-signed localhost certificate
+with Go `crypto/x509` (no openssl). Paths default to `cert.pem` / `key.pem` in the process CWD.
 
 ```bash
-go build -o bin/sstorytime ./cmd/sstorytime
-ln -sfn sstorytime bin/http_server
+./bin/sstorytime serve -tls
+# or with explicit paths
+./bin/sstorytime serve -tls -cert /path/cert.pem -key /path/key.pem
 ```
 
-You can also run the Cobra subcommand: `./bin/sstorytime serve …`.
-
-## TLS certificates
-
-For local HTTPS, create a self-signed cert (writes `cert.pem` and `key.pem` in the **current working directory**):
+Optional openssl helper (still available):
 
 ```bash
 ./internal/app/httpserver/make_certificate
 ```
 
-The script always loads `localhost.conf` from its own directory, so you can run it from anywhere.
-Pass the PEMs to the server:
-
-```bash
-./bin/http_server -cert cert.pem -key key.pem
-./bin/sstorytime serve -cert cert.pem -key key.pem
-# defaults are already cert.pem / key.pem in CWD
-./bin/http_server
-```
+Browsers will warn on self-signed certificates; that is expected for local development.
 
 ## Resources directory
-
-The web server accepts a resources root for file paths referenced in URLs (images, documents, etc.):
 
 ```bash
 ./bin/http_server -resources /data/directory
 ```
 
-For example, if we share a folder called `/mnt/Recordings`:
-
-```bash
-./bin/http_server -resources /mnt/Recordings
-```
-
-then a disk file
-
-```text
-/mnt/Recordings/Rush/Presto/Folder.jpg
-```
-
-maps an image reference
-
-```text
-/Resources/Rush/Presto/Folder.jpg
-```
-
-to the URL
-
-```text
-http://localhost:8080/Resources/Rush/Presto/Folder.jpg
-```
-
-* HTTP on port **8080**; HTTPS on **8443** (with `-cert` / `-key`).
+For example, `/mnt/Recordings/Rush/Presto/Folder.jpg` maps to
+`http://localhost:8080/Resources/Rush/Presto/Folder.jpg` when started with
+`-resources /mnt/Recordings`.
 
 ## Four search formats
 

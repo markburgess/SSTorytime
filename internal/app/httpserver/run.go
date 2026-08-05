@@ -8,22 +8,23 @@ package httpserver
 
 import (
 	"context"
+	"crypto/md5"
 	"embed"
 	"encoding/json"
+	"errors"
+	"flag"
 	"fmt"
+	"io"
 	"io/fs"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
-	"io"
 	"sort"
 	"strings"
 	"syscall"
 	"time"
-	"flag"
-	"errors"	
-	"crypto/md5"
 
 	SST "github.com/markburgess/SSTorytime/internal/sst"
 )
@@ -39,6 +40,10 @@ var content embed.FS
 var VERBOSE bool
 var certFile string
 var keyFile string
+var useTLS bool
+var httpAddr string
+var httpsAddr string
+var redirectHTTPAddr string
 
 // *********************************************************************
 // Main
@@ -58,8 +63,12 @@ func Init() string {
 
 	verbosePtr := flag.Bool("v", false, "verbose")
 	resourcePtr := flag.String("resources", "/mnt", "Root directory for serving /Resources/ files")
-	certPtr := flag.String("cert", "cert.pem", "TLS certificate PEM path")
-	keyPtr := flag.String("key", "key.pem", "TLS private key PEM path")
+	certPtr := flag.String("cert", "cert.pem", "TLS certificate PEM path (with -tls; created if missing)")
+	keyPtr := flag.String("key", "key.pem", "TLS private key PEM path (with -tls; created if missing)")
+	tlsPtr := flag.Bool("tls", false, "serve HTTPS (self-signed if cert/key missing); single port unless -http-addr is set")
+	addrPtr := flag.String("addr", ":8080", "HTTP listen address when not using -tls")
+	httpsAddrPtr := flag.String("https-addr", ":8443", "HTTPS listen address (with -tls)")
+	httpRedirectPtr := flag.String("http-addr", "", "optional second listener: HTTP→HTTPS redirect (with -tls only)")
 
 	flag.Parse()
 
@@ -68,6 +77,10 @@ func Init() string {
 	}
 	certFile = *certPtr
 	keyFile = *keyPtr
+	useTLS = *tlsPtr
+	httpAddr = *addrPtr
+	httpsAddr = *httpsAddrPtr
+	redirectHTTPAddr = *httpRedirectPtr
 
 	return *resourcePtr
 }
@@ -79,7 +92,7 @@ func Usage() {
 	// We assume that the server is run from the directory under which
 	// it will store all cached files. The resources directory is extra read-only
 
-	fmt.Printf("usage: http_server [-resources string] [-cert file] [-key file]\n")
+	fmt.Printf("usage: http_server [-resources string] [-tls] [-cert file] [-key file] [-addr addr] [-https-addr addr] [-http-addr addr]\n")
 	flag.PrintDefaults()
 	os.Exit(0)
 }
@@ -95,7 +108,6 @@ func Start(resources string) {
 	if err != nil {
 		log.Fatal("failed to create sub-filesystem:", err)
 	}
-
 
 	// 2. Create a router (ServeMux) and register various handlers.
 
@@ -113,61 +125,97 @@ func Start(resources string) {
 	mux.HandleFunc("/SearchAssets", AssetsHandler)
 
 	fmt.Println("\n***********************************************\n")
-	fmt.Println(" *  File serving resources, set to: ",resources)
+	fmt.Println(" *  File serving resources, set to: ", resources)
 	fmt.Println("\n *  Use -resources=/a/b/c to configure")
+	fmt.Println("\n *  Default: plain HTTP on -addr (:8080). Local HTTPS: -tls")
 	fmt.Println("\n***********************************************\n")
-
-
-	// 3. Create server instances for graceful shutdown.
-
-	http_srv := &http.Server{
-		Addr: ":8080",
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		shost := strings.Split(r.Host,":")[0]
-		fmt.Println("Redirecting http","https://"+shost+":8443"+r.URL.String())
-			http.Redirect(w, r, "https://"+shost+":8443"+r.URL.String(), http.StatusMovedPermanently)
-		}),
-	}
-
-	https_srv := &http.Server{Addr: ":8443", Handler: mux}
-
-	// Graceful Shutdown Channel
 
 	done := make(chan struct{})
 	quit := make(chan os.Signal, 1)
-
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-	// Start servers
+	var servers []*http.Server
+
+	if !useTLS {
+		// Reverse-proxy / simple local: app traffic on HTTP only (no cert, no second port).
+		srv := &http.Server{Addr: httpAddr, Handler: mux}
+		servers = append(servers, srv)
+		go func() {
+			log.Printf("listening on http://%s", httpAddr)
+			if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				log.Fatalf("HTTP Listen: %v", err)
+			}
+		}()
+	} else {
+		certPath, keyPath, generated, err := EnsureTLSMaterial(certFile, keyFile)
+		if err != nil {
+			log.Fatalf("tls: %v", err)
+		}
+		if generated {
+			log.Printf("generated self-signed TLS material: %s , %s (dev only; browser will warn)", certPath, keyPath)
+		}
+
+		httpsSrv := &http.Server{Addr: httpsAddr, Handler: mux}
+		servers = append(servers, httpsSrv)
+		go func() {
+			log.Printf("listening on https://%s (cert=%s key=%s)", httpsAddr, certPath, keyPath)
+			if err := httpsSrv.ListenAndServeTLS(certPath, keyPath); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				log.Fatalf("HTTPS Listen: %v", err)
+			}
+		}()
+
+		// Optional HTTP→HTTPS redirect (second port). Off by default so a firewall
+		// that allows :8080 but drops :8443 cannot trap browsers after a redirect.
+		if redirectHTTPAddr != "" {
+			redirSrv := &http.Server{
+				Addr: redirectHTTPAddr,
+				Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					host := r.Host
+					if h, _, err := net.SplitHostPort(host); err == nil {
+						host = h
+					}
+					targetHost := host
+					if _, port, err := splitHostPortLoose(httpsAddr); err == nil && port != "" && port != "443" {
+						targetHost = net.JoinHostPort(host, port)
+					}
+					// 307 not 301: permanent redirects get cached and strand clients if HTTPS goes away.
+					http.Redirect(w, r, "https://"+targetHost+r.URL.RequestURI(), http.StatusTemporaryRedirect)
+				}),
+			}
+			servers = append(servers, redirSrv)
+			go func() {
+				log.Printf("listening on http://%s (307 redirect → HTTPS; ensure HTTPS port is reachable)", redirectHTTPAddr)
+				if err := redirSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+					log.Fatalf("HTTP redirect Listen: %v", err)
+				}
+			}()
+		} else {
+			log.Printf("no HTTP redirect listener (pass -http-addr :8080 if you want one)")
+		}
+	}
 
 	go func() {
 		<-quit
 		log.Println("Shutting down servers...")
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-
-		http_srv.Shutdown(ctx)
-		https_srv.Shutdown(ctx)
+		for _, srv := range servers {
+			_ = srv.Shutdown(ctx)
+		}
 		close(done)
 	}()
 
-	go func() {
-		if err := http_srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("HTTP Listen: %v", err)
-		}
-	}()
-
-	go func() {
-		if err := https_srv.ListenAndServeTLS(certFile, keyFile); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("HTTPS Listen: %v", err)
-		}
-	}()
-
-	log.Printf("Servers running on :8080 and :8443 (cert=%s key=%s)", certFile, keyFile)
 	<-done
-
 	log.Println("Servers stopped gracefully")
 	log.Println("Server exited properly")
+}
+
+func splitHostPortLoose(addr string) (host, port string, err error) {
+	// net.SplitHostPort needs brackets for IPv6; for ":8443" host is empty.
+	if strings.HasPrefix(addr, ":") {
+		return "", strings.TrimPrefix(addr, ":"), nil
+	}
+	return net.SplitHostPort(addr)
 }
 
 

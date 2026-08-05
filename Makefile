@@ -1,10 +1,15 @@
-# SSTorytime — standard Go layout (cmd/, internal/)
-# Packagers / Nix: `make build` or `go build -o bin/N4L ./cmd/N4L`
+# SSTorytime — standard Go layout
+# Primary binary: bin/sstorytime (Cobra + busybox multicall).
+# Packagers / Nix: `make build` or `go build -o bin/sstorytime ./cmd/sstorytime`
 
 BINDIR ?= bin
 GO     ?= go
 
-TOOLS = \
+# Single multicall binary
+SSTORYTIME = $(BINDIR)/sstorytime
+
+# Historical tool names (symlinks → sstorytime)
+MULTICALL_LINKS = \
 	N4L \
 	searchN4L \
 	removeN4L \
@@ -16,32 +21,38 @@ TOOLS = \
 	API_EXAMPLE_1 \
 	API_EXAMPLE_2 \
 	API_EXAMPLE_3 \
-	API_EXAMPLE_4
-
-DEMOS = \
+	API_EXAMPLE_4 \
 	definecontext \
 	dotest_entirecone \
 	dotest_getnodes \
 	postgres_testdb
 
-.PHONY: all build tools demos test clean css db ramdb
+.PHONY: all build tools demos test clean css db ramdb sstorytime links
 
 all: build
 
-build: tools demos
+build: sstorytime links
 
-tools: $(addprefix $(BINDIR)/,$(TOOLS))
+sstorytime: $(SSTORYTIME)
 
-demos: $(addprefix $(BINDIR)/,$(DEMOS))
-
-$(BINDIR)/%:
+$(SSTORYTIME):
 	@mkdir -p $(BINDIR)
-	$(GO) build -o $@ ./cmd/$*
+	$(GO) build -o $@ ./cmd/sstorytime
+
+# Symlinks so argv0 multicall works (N4L → sstorytime, …)
+links: $(SSTORYTIME)
+	@for name in $(MULTICALL_LINKS); do \
+		ln -sfn sstorytime $(BINDIR)/$$name; \
+	done
+
+# Backward-compatible aliases
+tools: build
+demos: build
 
 css:
-	cd cmd/http_server && $(GO) run -tags css_tool ./css-builder
+	cd internal/app/httpserver && $(GO) run -tags css_tool ./css-builder
 
-test: tools
+test: $(SSTORYTIME)
 	$(GO) test ./...
 	$(MAKE) -C tests test
 

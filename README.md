@@ -212,12 +212,19 @@ This is why we strive to study the role of stories in learning and understanding
 
 ## Building
 
-Layout follows common Go practice: commands under `cmd/`, library code under `internal/sst/`.
+Layout follows common Go practice: commands under `cmd/`, library code under `internal/`.
+
+Primary binary is **`sstorytime`** (Cobra). Symlinks in `bin/` enable busybox-style
+multicall (`N4L`, `searchN4L`, `http_server`, …).
 
 ```bash
-make build          # binaries in bin/
+make build                    # bin/sstorytime + multicall symlinks
 # or
-go build -o bin/N4L ./cmd/N4L
+go build -o bin/sstorytime ./cmd/sstorytime
+ln -s sstorytime bin/N4L
+
+./bin/sstorytime n4l -u examples/doors.n4l
+./bin/N4L -u examples/doors.n4l          # same via multicall
 ```
 
 ## The tools

@@ -30,6 +30,7 @@ type SearchParameters struct {
 	Min       []int
 	Max       []int
 	Finds     []string
+	Assess    bool
 	Sequence  bool
 	Stats     bool
 	Bookmarks bool
@@ -101,6 +102,7 @@ const (
 	CMD_ATMOST = "\\atmost"
 	CMD_NEVER = "\\never"
 	CMD_NEW = "\\new"
+	CMD_ASSESS = "\\assess"
 
 	RECENT = 4  // Four hours between a morning and afternoon
         NEVER = -1   // Haven't seen in this long
@@ -127,7 +129,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 		CMD_STATS,CMD_STATS_2,
 		CMD_REMIND,CMD_NEVER,CMD_NEW,
 		CMD_HELP,CMD_HELP_2,
-		CMD_FINDS,CMD_ABOUT,
+		CMD_FINDS,CMD_ABOUT,CMD_ASSESS,
 		CMD_BOOKMARKS,
         }
 	

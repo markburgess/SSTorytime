@@ -112,7 +112,7 @@ func CheckExisting(sst *PoSST,event Node) (ClassedNodePtr,bool) {
 
 		if db_exists != nil {
 			
-			fmt.Println("Matches for",event.S,"already exist in the database. You need to reload all overlapping segments together to avoid double registration.")
+			fmt.Println("Matches for '",event.S,"' already exist in the database. You need to reload all overlapping segments together to avoid double registration.")
 		}
 	}
 	

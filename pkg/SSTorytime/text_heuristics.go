@@ -112,6 +112,16 @@ func TextExcerpt(L int, S string, finds []string) string {
 	return retstr
 }
 
+//**************************************************************
+
+func SemanticScore(search,match string) float64 {
+
+	// fractionate both
+
+
+	return 5.5
+}
+
 
 //
 // text_heuristics.go

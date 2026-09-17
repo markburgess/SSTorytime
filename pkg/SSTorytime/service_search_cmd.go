@@ -210,7 +210,11 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 			case CMD_BOOKMARKS:
 				param.Bookmarks = true;
 				continue
-				
+
+			case CMD_ASSESS:
+				param.Assess = true;
+				continue
+
 			case CMD_STATS, CMD_STATS_2:
 				param.Stats = true
 				continue

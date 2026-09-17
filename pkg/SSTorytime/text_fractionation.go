@@ -121,6 +121,13 @@ func FractionateTextFile(name string) ([][]Sentence,int) {
 
 	file := ReadTextFile(name)
 	proto_text := CleanText(file)
+	return FractionateText(proto_text)
+}
+
+//**************************************************************
+
+func FractionateText(proto_text string) ([][]Sentence,int) {
+
 	pbsf := SplitIntoParaSentences(proto_text)
 
 	count := 0
@@ -764,7 +771,7 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]string,[
 	}
 
 	frag = CleanNgram(frag)
-	
+
 	if N_GRAM_MIN <= 1 && !ExcludedByBindings(frag,frag,frag) {
 		change_set[1] = append(change_set[1],frag)
 	}

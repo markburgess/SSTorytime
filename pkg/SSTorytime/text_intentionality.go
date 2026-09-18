@@ -173,10 +173,10 @@ func AddContext(sst *PoSST,ambient,key string,now int64,tokens []string) string 
 
 			if nptr.Class > 0 {
 				node := GetDBNodeByNodePtr(sst,nptr)
-				if node.L < TEXT_SIZE_LIMIT {
-					token = node.S
-				} else {
+				if node.L > TEXT_SIZE_LIMIT + 10 {
 					token = node.S[0:TEXT_SIZE_LIMIT] + "..."
+				} else {
+					token = node.S
 				}
 			} else {
 				continue

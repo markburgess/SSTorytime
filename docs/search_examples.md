@@ -68,11 +68,11 @@ or the vertical bar "pipe" symbol (which is not confused with the ! not operator
 
 If your search term contains spaces, exclose them in double quotes or use the `<->` search operator (belonging to postgres *ts_vector*). If want to use logical operators to select or exclude certain words (or find matches based in related/derivative words) then the algorithm uses the ts_vector mathods and searching is by exact words. Then you need to use the substitute space `<->` and `<N>` (not integer N) to represent spaces
 <pre>
-  strange<->kind<->of<->woman  // neighbouring lexemes (separated by space)
-  strange<2>woman              // skip 2 lexemes
+  'strange<->kind<->of<->woman'  // neighbouring lexemes (separated by space)
+  'strange<2>woman'              // skip 2 lexemes
 </pre>
 (NB: the ts_vector method ignores insignificant words like "a", "in", "of", etc, so it will tend to ignore these
-if you include them in a search string.)
+if you include them in a search string.) ts-expressions containing spaces should be placed in single quotes to avoid spurious SQL errors.
 
 If you simply want a (sub)string match, character by character, then quote the string:
 <pre>

@@ -2292,9 +2292,15 @@ func StripAnnotations(fulltext string) string {
 
 	for r := 0; r < len(preserve_unicode); r++ {
 
-		if preserve_unicode[r] == '"' {
+		// `backticks` preserve substring in annotation
+		
+		if preserve_unicode[r] == '`' {
 			protected = !protected
-		        // here: drop surrounding quotes		  
+
+		        // here: drop surrounding quotes
+			if r < len(preserve_unicode) {
+				r++
+			}
             		// drop only the surrounding quote pair; embedded quotes stay
 		}
 

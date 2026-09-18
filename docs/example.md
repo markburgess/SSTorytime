@@ -157,9 +157,11 @@ More deeply, they are like index words that you will be able to filter searches 
 We can use annotations like "%" and ">" to add sub-references to a string of text. There is no need to label too much,
 but sometimes you might want to explicitly connect a sentence to one of its subjects.
 
-You can use quotes around parts of a sentence to collect words with spaces or special characters.
-<pre> 
-Kubernetes (short for) "K8s"
+You can use backticks e.g. `xxx` around parts of a sentence to collect words with spaces or special characters.
+<pre>
+some text (arrow) a longer explanantion containing `a substring of importance` 
+
+Kubernetes (short form) K8s
            (represents) a %container %orchestration system
            (foundedby) %Google
            (maintainedby) %CNCF

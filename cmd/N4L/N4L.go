@@ -1800,29 +1800,27 @@ func IdempAddLink(sst *SST.PoSST,from string, frptr SST.NodePtr, link SST.Link,t
 
 func HandleNode(sst *SST.PoSST,annotated string) SST.NodePtr {
 
-	clean_ptr,clean_version := IdempAddNode(sst,annotated,SEQ_UNKNOWN)
+	clean, extracts := CleanAndSeparateString(annotated)
 
-	PVerbose("Event/item/node: \"",clean_version,"\" in chapter",SECTION_STATE)
+	clean_ptr := IdempAddNode(sst,clean,SEQ_UNKNOWN)
+
+	PVerbose("Event/item/node: \"",clean,"\" in chapter",SECTION_STATE)
 
 	LINE_ITEM_REFS = append(LINE_ITEM_REFS,clean_ptr)
 
-	if len(clean_version) != len(annotated) {
-		AddBackAnnotations(sst,clean_version,clean_ptr,annotated)
+	if len(clean) != len(annotated) {
+		AddBackAnnotations(sst,clean,clean_ptr,extracts)
 	}
 
 	IdempAddContextToNode(sst,clean_ptr)
-	
 	return clean_ptr
 }
 
 //**************************************************************
 
-func IdempAddNode(sst *SST.PoSST,s string,intended_sequence bool) (SST.NodePtr,string) {
+func IdempAddNode(sst *SST.PoSST,clean_version string,intended_sequence bool) SST.NodePtr {
 
-	clean_version := StripAnnotations(s)
-	
-	l,c := SST.StorageClass(s)
-
+	l,c := SST.StorageClass(clean_version)
 	var new_nodetext SST.Node
 	new_nodetext.S = clean_version
 	new_nodetext.L = l
@@ -1840,7 +1838,7 @@ func IdempAddNode(sst *SST.PoSST,s string,intended_sequence bool) (SST.NodePtr,s
 		LINE_PATH = append(LINE_PATH,leg)
 	}
 
-	return iptr,clean_version
+	return iptr
 }
 
 //**************************************************************
@@ -2252,13 +2250,13 @@ func LinkUpStorySequence(sst *SST.PoSST,this string) {
 			var last_iptr SST.NodePtr
 
 			if SEQUENCE_START {
-				last_iptr,_ = IdempAddNode(sst,LAST_IN_SEQUENCE,SEQ_START)
+				last_iptr = IdempAddNode(sst,LAST_IN_SEQUENCE,SEQ_START)
 				SEQUENCE_START = false
 			} else {
-				last_iptr,_ = IdempAddNode(sst,LAST_IN_SEQUENCE,SEQ_UNKNOWN)
+				last_iptr = IdempAddNode(sst,LAST_IN_SEQUENCE,SEQ_UNKNOWN)
 			}
 
-			this_iptr,_ := IdempAddNode(sst,this,SEQ_UNKNOWN)
+			this_iptr := IdempAddNode(sst,this,SEQ_UNKNOWN)
 			link := GetLinkArrowByName(sst,"(then)")
 			SST.AppendLinkToNode(sst,last_iptr,link,this_iptr)
 
@@ -2273,17 +2271,17 @@ func LinkUpStorySequence(sst *SST.PoSST,this string) {
 
 //**************************************************************
 
-func StripAnnotations(fulltext string) string {
+func CleanAndSeparateString(fulltext string) (string,map[string][]string) {
 
-	var protected bool = false
-	var deloused []rune
+	var cleaned []rune
+	var lookup = make(map[string][]string)
 
 	if fulltext[0] == fulltext[len(fulltext)-1] {
 		switch fulltext[0] {
 		case '"','\'':
 			if len(fulltext) > 1 {
 				fulltext = fulltext[1:len(fulltext)-1]
-				protected = true
+				return fulltext,lookup
 			}
 		}
 	}
@@ -2292,166 +2290,112 @@ func StripAnnotations(fulltext string) string {
 
 	for r := 0; r < len(preserve_unicode); r++ {
 
-		// `backticks` preserve substring in annotation
+		// first check for annotation symbol
 		
-		if preserve_unicode[r] == '`' {
-			protected = !protected
-
-		        // here: drop surrounding quotes
-			if r < len(preserve_unicode) {
-				r++
-			}
-            		// drop only the surrounding quote pair; embedded quotes stay
+		annotated, note_symb := EmbeddedSymbol(preserve_unicode,r)
+		
+		if annotated {
+			//skip the annotator
+			r += len(note_symb)
 		}
 
-		if !protected {
-			skip,symb := EmbeddedSymbol(preserve_unicode,r)
+		// get next chars, check for quoted chunks
 
-			if skip > 0 {
-				r += skip-1
-				if unicode.IsSpace(preserve_unicode[r]) {
-					ParseError(ERR_NON_WORD_WHITE+symb)
-				}
-				continue
+		var extract []rune
+
+		startchar := preserve_unicode[r]
+		
+		switch startchar {
+			
+		case '"', '\'', '`':
+			extract,r = SST.ReadToNext(preserve_unicode,r,startchar)
+
+			if startchar == '`' {
+				extract = extract[1:len(extract)-1]
+			}
+			
+		default:
+			if annotated {
+				// read next word
+				extract,r = SST.ReadToNext(preserve_unicode,r,' ')
 			}
 		}
 
-		deloused = append(deloused,preserve_unicode[r])
-	}
-
-	return string(deloused)
-}
-
-//**************************************************************
-
-func AddBackAnnotations(sst *SST.PoSST,cleantext string,cleanptr SST.NodePtr,annotated string) {
-
-	var protected bool = false
-
-	reminder := fmt.Sprintf("%.30s...",cleantext)
-	PVerbose("\n        Checking annotations from \""+reminder+"\"")
-
-	for r := 0; r < len(annotated); r++ {
-
-		if annotated[r] == '"' {
-			protected = !protected
+		if len(extract) > 0 {
+			cleaned = append(cleaned,extract...)
+			if annotated {
+				lookup[note_symb] = append(lookup[note_symb],string(extract))
+			}
 		} else {
-			if !protected {
-				skip,symb := EmbeddedSymbol([]rune(annotated),r)
-
-				if skip > 0 {
-					link := GetLinkArrowByName(sst,ANNOTATION[symb])
-					this_item := ExtractWord(annotated,r+skip)
-
-					if len(this_item) <= WORD_MISTAKE_LEN {
-						err := fmt.Sprintf("%s \"%s\"  after annotation %s, len %d",ERR_SHORT_WORD,this_item,symb,skip)
-						ParseError(err)
-					}
-
-					this_iptr,_ := IdempAddNode(sst,this_item,SEQ_UNKNOWN)
-					const is_annotation = true
-					IdempAddLink(sst,reminder,cleanptr,link,this_item,this_iptr,is_annotation)
-					r += skip-1
-					continue
-				}
-			}
-		}
-	}
-}
-
-//**************************************************************
-
-func EmbeddedSymbol(runetext []rune,offset int) (int,string) {
-
-	if offset >= len(runetext) {
-		return 0,"end of string"
-	}
-
-	var found_len int
-	var found string
-
-	for an := range ANNOTATION {
-
-		// Careful of unicode, convert to runes
-
-		uni := []rune(an)
-		match := runetext[offset] == uni[0]
-
-		for r := 0; r < len(uni) && r+offset < len(runetext); r++ {
-
-			if uni[r] != runetext[offset+r] {
-				match = false
-				continue
-			}
-
-			if offset+r >= len(runetext)-1 {
-				match = false
-				continue
-			}
-
-			// No space between marker and text
-			if offset+r+1 < len(runetext) && unicode.IsSpace(runetext[offset+r+1]) {
-				match = false
-				continue
-			}
-		}
-
-		// There might still be another longer greedy match
-
-		if match && len(an) > found_len {
-			found = an
-			found_len = len(an)
-			match = false
-		}
-	}
-
-	if len(found) > 0 {
-		return found_len,found
-	}
-
-	return 0,"UNKNOWN SYMBOL"
-}
-
-//**************************************************************
-
-func ExtractWord(fulltext string,offset int) string {
-
-	var protected bool = false
-	var end_of_protection = false
-
-	runetext := []rune(fulltext)
-	var word []rune
-	var pair_quote string
-
-	for r := offset; r < len(runetext); r++ {
-
-		if runetext[r] == '"' || runetext[r] == '\'' {
-			if protected {
-				end_of_protection = true
-			}
-			protected = !protected
-			pair_quote = string(runetext[r]) + " "
+			cleaned = append(cleaned,preserve_unicode[r])
 			continue
 		}
-
-		// end of protection catches quote parts not ending in spaces
 		
-		if !protected && unicode.IsSpace(rune(runetext[r])) || !protected && end_of_protection {
+	}
+	
+	return string(cleaned),lookup
+}
 
-			sword := strings.Trim(strings.TrimSpace(string(word)),pair_quote)
-			return sword
+//**************************************************************
+
+func AddBackAnnotations(sst *SST.PoSST,clean string,cleanptr SST.NodePtr,extracts map[string][]string) {
+
+	reminder := fmt.Sprintf("%.50s...",clean)
+
+	PVerbose("\n         -- Checking annotations from \""+reminder+"\"")
+	
+	for symb := range extracts {
+
+		arrowname,ok := ANNOTATION[symb]
+
+		if ok {
+			link := GetLinkArrowByName(sst,arrowname)
+
+			for _,this_item := range extracts[symb] {
+				
+				if len(this_item) <= WORD_MISTAKE_LEN {
+					err := fmt.Sprintf("%s \"%s\"  after annotation %s, len %d",ERR_SHORT_WORD,this_item)
+					ParseError(err)
+			}
+				
+				this_iptr := IdempAddNode(sst,this_item,SEQ_UNKNOWN)
+				const is_annotation = true
+				IdempAddLink(sst,reminder,cleanptr,link,this_item,this_iptr,is_annotation)
+			}
 		}
+	}
+}
 
-		word = append(word,runetext[r])
+//**************************************************************
+
+func EmbeddedSymbol(runetext []rune,offset int) (bool,string) {
+
+	if offset >= len(runetext) {
+		return false,"end of string"
 	}
 
-	sword := strings.Trim(strings.TrimSpace(string(word)),pair_quote)
-
-	if len(sword) <= WORD_MISTAKE_LEN {
-		ParseError(ERR_SHORT_WORD+"\""+sword+"\"")
+	if !unicode.IsSpace(runetext[offset]) {
+		for symb := range ANNOTATION {
+			
+			if MatchAnnotation([]rune(symb),runetext[offset:]) {
+				return true,symb
+			}
+		}
 	}
+	
+	return false,"UNKNOWN SYMBOL"
+}
 
-	return sword
+//**************************************************************
+
+func MatchAnnotation(base,cmp []rune) bool {
+
+	for i := 0; i < len(base) && i < len(cmp); i++ {
+		if base[i] != cmp[i] {
+			return false
+		}
+	}
+	return true
 }
 
 //**************************************************************

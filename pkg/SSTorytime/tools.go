@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 	"sort"
+	"unicode"
 	"regexp"
 	"net/http"
 	"io/ioutil"
@@ -669,24 +670,31 @@ func IsQuote(r rune) bool {
 
 //****************************************************************************
 
-func ReadToNext(array []rune,pos int,r rune) (string,int) {
+func ReadToNext(array []rune,pos int,endchar rune) ([]rune,int) {
 
 	var buff []rune
+
+	// read until next occurrence of endchar unless char is ' ', extract,
+	// then break leaving return pos just before next char to read
 
 	for i := pos; i < len(array); i++ {
 
 		buff = append(buff,array[i])
 
-		if i > pos && array[i] == r {
-			ret := string(buff)
-			return ret,len(ret)
+		if endchar == ' ' && unicode.IsSpace(array[i]) {
+			// clip the space
+			buff = buff[:len(buff)-1]
+			// return the space to be read
+			return buff,i-1
+		}
+		
+		if i > pos && array[i] == endchar {
+			return buff,i
 		}
 	}
 
-	ret := string(buff)
-	return ret,len(ret)
+	return buff,len(array)
 }
-
 
 // **************************************************************************
 

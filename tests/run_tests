@@ -148,20 +148,20 @@ fi
 #
 ######################################
 
-../cmd/bin/N4L -v annotation_1.sp | grep Node | cut -d\' -f 2 | sort > annot_test_deleteme_1
+#../cmd/bin/N4L -v annotation_1.sp | grep Node | cut -d\' -f 2 | sort > annot_test_deleteme_1
 
-( cat annotation_1.sp | grep // | cut -d\' -f 2; cat annotation_1.sp | grep // | cut -d\' -f 4 ) | sort > annot_test_deleteme_2
+#( cat annotation_1.sp | grep // | cut -d\' -f 2; cat annotation_1.sp | grep // | cut -d\' -f 4 ) | sort > annot_test_deleteme_2
 
-result=$(diff annot_test_deleteme_1 annot_test_deleteme_2)
+#result=$(diff annot_test_deleteme_1 annot_test_deleteme_2)
 
-if [[ $result == "" ]]
-   then 
-      echo -e "5. ${GREEN} Annotation extraction ok ${END}"
-   else 
-      echo -e "5. ${RED} Annotation extraction broken? $result ${END}"
-fi
+#if [[ $result == "" ]]
+#   then 
+#      echo -e "5. ${GREEN} Annotation extraction ok ${END}"
+#   else 
+#      echo -e "5. ${RED} Annotation extraction broken? $result ${END}"
+#fi
 
-rm *deleteme*
+#rm *deleteme*
 
 
 

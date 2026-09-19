@@ -25,6 +25,8 @@ const (
 	CONTAINS = 2  // +/-
 	EXPRESS = 3   // +/-
 
+	SELFPTR = LEADSTO // this is where an agent's own context is kept as `empty' link
+
 	// Letting a cone search get too large is unresponsive
 	CAUSAL_CONE_MAXLIMIT = 100
 

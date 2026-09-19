@@ -797,10 +797,10 @@ func SplitQuotes(s string) []string {
 				items = append(items,string(upto))
 			}
 
-			qstr,offset := ReadToNext(cmd,r,cmd[r])
+			array,offset := ReadToNext(cmd,r,cmd[r])
 
-			if len(qstr) > 0 {
-				items = append(items,qstr)
+			if len(array) > 0 {
+				items = append(items,string(array))
 				r += offset
 			}
 			continue
@@ -819,10 +819,10 @@ func SplitQuotes(s string) []string {
 				items = append(items,string(upto))
 			}
 
-			qstr,offset := ReadToNext(cmd,r,')')
+			array,offset := ReadToNext(cmd,r,')')
 
-			if len(qstr) > 0 {
-				items = append(items,qstr)
+			if len(array) > 0 {
+				items = append(items,string(array))
 				r += offset
 			}
 			continue

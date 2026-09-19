@@ -11,7 +11,7 @@
  // don't start with >?
 
  *** (ref)
-  = (involves)
+ = (involves)
  ** (is a special case of)
 
  # Longer matches are a better idea, and should come first to ensure we don't pick up the substring instead

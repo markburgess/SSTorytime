@@ -765,12 +765,6 @@ func CompleteNode(sst *SST.PoSST,node SST.Node) {
 
 	CompleteCloseness(sst,node)
 	CompleteSequences(sst,node)
-
-	mesg := SST.CompleteETCTypes(sst,node)
-
-	if len(mesg) > 1 {
-		Verbose(mesg)
-	}
 }
 
 //**************************************************************

@@ -92,10 +92,31 @@ func List2String(list []string) string {
 
 func SQLEscape(s string) string {
 
-	undo := strings.ReplaceAll(s,"''","'")
-	escaped := strings.ReplaceAll(undo,"'","''")
+	if IsSymbols(s) {
+		return ""
+	}
 
+	undo := strings.ReplaceAll(s,"''","'")
+	logi := strings.ReplaceAll(undo," & ","")
+	logi2 := strings.ReplaceAll(logi," | ","")
+	escaped := strings.ReplaceAll(logi2,"'","''")
+	
 	return string(escaped)
+}
+
+// **************************************************************************
+
+func IsSymbols(s string) bool {
+
+	letters := []rune(s)
+
+	for _,v := range letters {
+		if unicode.IsPunct(v) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // **************************************************************************

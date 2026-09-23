@@ -211,10 +211,6 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				param.Bookmarks = true;
 				continue
 
-			case CMD_ASSESS:
-				param.Assess = true;
-				continue
-
 			case CMD_STATS, CMD_STATS_2:
 				param.Stats = true
 				continue
@@ -797,12 +793,13 @@ func SplitQuotes(s string) []string {
 				items = append(items,string(upto))
 			}
 
-			array,offset := ReadToNext(cmd,r,cmd[r])
+			array,_ := ReadToNext(cmd,r,cmd[r])
 
 			if len(array) > 0 {
 				items = append(items,string(array))
-				r += offset
+				r += len(array)
 			}
+
 			continue
 		}
 
@@ -812,6 +809,7 @@ func SplitQuotes(s string) []string {
 				items = append(items,string(upto))
 			}
 			upto = nil
+
 			continue
 
 		case '(':

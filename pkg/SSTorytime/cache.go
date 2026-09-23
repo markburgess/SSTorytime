@@ -117,7 +117,7 @@ func DownloadArrowsFromDB(sst *PoSST) {
 			ad.Long = long
 			ad.Short = short
 			ad.Ptr = ptr
-			fmt.Println("XXX",ad)
+
 			sst.ARROW_DIRECTORY = append(sst.ARROW_DIRECTORY,ad)
 			sst.ARROW_SHORT_DIR[short] = sst.ARROW_DIRECTORY_TOP
 			sst.ARROW_LONG_DIR[long] = sst.ARROW_DIRECTORY_TOP

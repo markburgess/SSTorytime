@@ -17,6 +17,7 @@ import (
 )
 
 var TARGET_PERCENT float64 = 50.0
+var MARKDOWN bool = false
 
 //**************************************************************
 // BEGIN
@@ -28,8 +29,11 @@ func main() {
 
 	input := GetArgs()
 
-	RipFile2File(input,TARGET_PERCENT)
-
+	if MARKDOWN {
+		RipMarkdown(input,TARGET_PERCENT)
+	} else {
+		RipFile2File(input,TARGET_PERCENT)
+	}
 }
 
 //**************************************************************
@@ -39,12 +43,14 @@ func GetArgs() string {
 	flag.Usage = Usage
 
 	limitPtr := flag.Float64("%", 50, "approximate percentage of file to skim (overestimates for small values)")
-
+	md := flag.Bool("md", false, "interpret file as markdown text")
+	
 	flag.Parse()
 	args := flag.Args()
 
 	TARGET_PERCENT = *limitPtr
-
+	MARKDOWN = *md
+	
 	if len(args) != 1 {
 		fmt.Println("Missing pure text filename to scan")
 		os.Exit(-2)
@@ -65,7 +71,7 @@ func Usage() {
 
 //*******************************************************************
 
-func RipFile2File(filename string,percentage float64){
+func RipFile2File(filename string,percentage float64) {
 
 	for i := 1; i < SST.N_GRAM_MAX; i++ {
 		
@@ -96,6 +102,43 @@ func RipFile2File(filename string,percentage float64){
 
 	WriteOutput(filename,selection,L,percentage,f,s,ff,ss)
 }
+
+//*******************************************************************
+
+func RipMarkdown(filename string,percentage float64) {
+
+	for i := 1; i < SST.N_GRAM_MAX; i++ {
+		
+		SST.STM_NGRAM_FREQ[i] = make(map[string]float64)
+		SST.STM_NGRAM_LOCA[i] = make(map[string][]int)
+		SST.STM_NGRAM_LAST[i] = make(map[string]int)
+	}
+
+	fmt.Println("Fractionating markdown file...",filename)
+
+	psf,L := SST.FractionateMarkdown(filename)
+	
+	fmt.Println("Analyzing longitudinal patterns")
+	ranking1 := SelectByRunningIntent(psf,L,percentage)
+	fmt.Println("Analyzing statistical patterns")
+	ranking2 := SelectByStaticIntent(psf,L,percentage)
+	fmt.Println("Merging selections")
+	selection := MergeSelections(ranking1,ranking2)
+
+	fmt.Println("Extracting ambient phrases for context")
+
+	// We only want short fragments for context, else we're repeating
+	// significant context info from teh actual samples
+
+	const minN = 1 // >= N_GRAM_MIN
+	const maxN = 4 // <= N_GRAM_MAX
+
+	f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
+
+	WriteOutput(filename,selection,L,percentage,f,s,ff,ss)
+
+}
+
 
 //*******************************************************************
 
@@ -139,8 +182,14 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 		context := SpliceSet(ambi_by_part[selection[i].Partition])
 
-		part := PartName(selection[i].Partition,filealias,context)
+		var part string
 
+		if len(selection[i].Title) > 0 {
+			part = selection[i].Title
+		} else {
+			part = PartName(selection[i].Partition,filealias,context)
+		}
+		
 		// Add context from n = 2,3 fractions
 
 		if part != lastpart {
@@ -192,15 +241,25 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	fmt.Fprintf(fp,"\n :: parts, sections ::\n")
 
 	for p := range parts {
+		
+		container,exists := SST.DOC_DIRECTORY[parts[p]]
 
-		fmt.Fprintf(fp,"\n %s\n",parts[p])
-
-		for w := range ambi_by_part[p] {
-			fmt.Fprintf(fp,"  #AMBI %s\n",ambi_by_part[p][w])
+		if exists {
+			fmt.Fprintf(fp,"\n %s (%s) %s \n",parts[p],SST.INV_CONT_FRAG_IN_S,container)
+		} else {
+			fmt.Fprintf(fp,"\n %s \n",parts[p])
 		}
 
-		for w := range anom_by_part[p] {
-			fmt.Fprintf(fp,"   #INTENT %s\n",anom_by_part[p][w])
+		if p < len(ambi_by_part) {
+			for w := range ambi_by_part[p] {
+				fmt.Fprintf(fp,"  #AMBI %s\n",ambi_by_part[p][w])
+			}
+		}
+
+		if p < len(anom_by_part) {
+			for w := range anom_by_part[p] {
+				fmt.Fprintf(fp,"   #INTENT %s\n",anom_by_part[p][w])
+			}
 		}
 	}
 
@@ -301,6 +360,7 @@ func SelectByRunningIntent(psf [][]SST.Sentence,L int,percentage float64) []SST.
 
 			var this SST.TextRank
 			this.Fragment = psf[p][s].S
+			this.Title = psf[p][s].Title
 			this.Significance = score
 			this.Order = sentence_counter
 			this.Partition = sentence_counter / coherence_length
@@ -338,6 +398,7 @@ func SelectByStaticIntent(psf [][]SST.Sentence,L int,percentage float64) []SST.T
 
 			var this SST.TextRank
 			this.Fragment = psf[p][s].S
+			this.Title = psf[p][s].Title
 			this.Significance = score
 			this.Order = sentence_counter
 			this.Partition = sentence_counter / coherence_length

@@ -2348,7 +2348,7 @@ func AddBackAnnotations(sst *SST.PoSST,clean string,cleanptr SST.NodePtr,extract
 			for _,this_item := range extracts[symb] {
 				
 				if len(this_item) <= WORD_MISTAKE_LEN {
-					err := fmt.Sprintf("%s \"%s\"  after annotation %s, len %d",ERR_SHORT_WORD,this_item)
+					err := fmt.Sprintf("%s \"%s\"  after annotation '%s'",ERR_SHORT_WORD,this_item,symb)
 					ParseError(err)
 			}
 				

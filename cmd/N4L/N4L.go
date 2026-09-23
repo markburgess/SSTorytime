@@ -1347,20 +1347,20 @@ func AddMandatory(sst *SST.PoSST) {
 
 	// reserved for text2N4L
 
-	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_FINDS_S,SST.CONT_FINDS_L,"+")
-        inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_FOUND_IN_S,SST.INV_CONT_FOUND_IN_L,"-")
+	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_FINDS_S, SST.CONT_FINDS_L,"+")
+        inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_FOUND_IN_S, SST.INV_CONT_FOUND_IN_L,"-")
 	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
-	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_FRAG_S,SST.CONT_FRAG_L,"+")
-        inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_FRAG_IN_S,SST.INV_CONT_FRAG_IN_L,"-")
+	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_FRAG_S, SST.CONT_FRAG_L,"+")
+        inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_FRAG_IN_S, SST.INV_CONT_FRAG_IN_L,"-")
 	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
-	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_INTENT_S,SST.EXPR_INTENT_L,"+")
-        inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_INTENT_S,SST.INV_EXPR_INTENT_L,"-")
+	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_INTENT_S, SST.EXPR_INTENT_L,"+")
+        inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_INTENT_S, SST.INV_EXPR_INTENT_L,"-")
 	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
-	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_AMBIENT_S,SST.EXPR_AMBIENT_L,"+")
-        inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_AMBIENT_S,SST.INV_EXPR_AMBIENT_L,"-")
+	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_AMBIENT_S, SST.EXPR_AMBIENT_L,"+")
+        inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_AMBIENT_S, SST.INV_EXPR_AMBIENT_L,"-")
 	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
 	// Reserved for special UX handling

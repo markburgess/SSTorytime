@@ -197,7 +197,7 @@ func UploadNodeToDB(sst *PoSST, n Node) string {
 // **************************************************************************
 
 func UploadArrowsToDB(sst PoSST) {
-	
+
 	qstr := "BEGIN;\n"
 	
 	for arrow := range sst.ARROW_DIRECTORY {

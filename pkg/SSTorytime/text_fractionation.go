@@ -15,7 +15,6 @@ import (
 	"regexp"
 	"math"
 	_ "github.com/lib/pq"
-
 )
 
 //*****************************************************************
@@ -61,9 +60,12 @@ var STM_NGRAM_FREQ [N_GRAM_MAX]map[string]float64
 var STM_NGRAM_LOCA [N_GRAM_MAX]map[string][]int
 var STM_NGRAM_LAST [N_GRAM_MAX]map[string]int
 
+//**************************************************************
+
 type TextRank struct {
 	Significance float64
 	Fragment     string
+	Title        string
 	Order        int
 	Partition    int
 }
@@ -73,6 +75,7 @@ type TextRank struct {
 type Sentence struct {
 
 	S string
+	Title string
 	Frags []string
 }
 

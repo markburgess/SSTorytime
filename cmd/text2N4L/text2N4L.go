@@ -117,7 +117,8 @@ func RipMarkdown(filename string,percentage float64) {
 	fmt.Println("Fractionating markdown file...",filename)
 
 	psf,L := SST.FractionateMarkdown(filename)
-	
+	SST.AnnotateFractions(psf)
+
 	fmt.Println("Analyzing longitudinal patterns")
 	ranking1 := SelectByRunningIntent(psf,L,percentage)
 	fmt.Println("Analyzing statistical patterns")
@@ -134,7 +135,7 @@ func RipMarkdown(filename string,percentage float64) {
 	const maxN = 4 // <= N_GRAM_MAX
 
 	f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
-
+	
 	WriteOutput(filename,selection,L,percentage,f,s,ff,ss)
 
 }

@@ -14,6 +14,37 @@ import (
 	_ "github.com/lib/pq"
 )
 
+//**************************************************************
+
+func AnnotateFractions(pbsf [][]Sentence) int {
+
+	count := 0	
+
+	for p := range pbsf {
+		for s := range pbsf[p] {
+
+			count++
+
+			for f := range pbsf[p][s].Frags {
+
+				change_set := Fractionate(pbsf[p][s].Frags[f],count,STM_NGRAM_FREQ,N_GRAM_MIN)
+
+				// Update global n-gram frequencies for fragment, and location histories
+
+				for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
+					for ng := range change_set[n] {
+						ngram := change_set[n][ng]
+						STM_NGRAM_FREQ[n][ngram]++
+						STM_NGRAM_LOCA[n][ngram] = append(STM_NGRAM_LOCA[n][ngram],count)
+					}
+				}
+			}
+		}
+	}
+
+	return count
+}
+
 //******************************************************************
 
 func ContextIntentAnalysis(spectrum map[string]int) ([]string,[]string) {

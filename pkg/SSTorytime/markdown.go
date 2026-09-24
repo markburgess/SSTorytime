@@ -11,8 +11,6 @@ import (
 	"os"
 	"io/ioutil"
 	"strings"
-	//	"sort"
-
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/text"

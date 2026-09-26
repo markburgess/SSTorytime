@@ -216,12 +216,24 @@ func SplitSentences(para string) []string {
 
 func SanitizeSentence(extract []rune) string {
 
+	// In dialogue, some paragraphs may begin with a quote, which
+	// does not end in the same paragraph, causing trouble
+	
+	if extract[0] == '"' && extract[1] == ' ' {
+		for i := 1; i < len(extract); i++ {
+			if extract[i] != ' ' && extract[i] != '\t' {
+				extract = extract[i:]
+				break
+			}
+		}
+	}
+
 	s := string(extract)
 	
 	if strings.Count(s,"\"") % 2 != 0 {
 		s += "\""
 	}
-
+	
 	return s
 }
 
@@ -229,13 +241,16 @@ func SanitizeSentence(extract []rune) string {
 
 func CleanText(s string) string {
 
+	s = strings.TrimSpace(s)
+	
 	// Start by stripping HTML / XML tags before para-split
 	// if they haven't been removed already
 
-	s = CleanSmallText(s)
-
 	m := regexp.MustCompile("<[^>]+>") 
 	s = m.ReplaceAllString(s,"") 
+	
+	m = regexp.MustCompile("\"[ \t]+>") 
+	s = m.ReplaceAllString(s,"\"") 
 
 	// Weird English abbrev
 	s = strings.Replace(s,"[","",-1) 
@@ -245,6 +260,7 @@ func CleanText(s string) string {
 	s = strings.Replace(s,"Mrs.","Mrs",-1) 
 	s = strings.Replace(s,"Dr.","Dr",-1)
 	s = strings.Replace(s,"Ms.","Ms",-1)
+	s = CleanSmallText(s)
 	
 	// Encode sentence space boundaries and end of sentence markers with a # for later splitting
 
@@ -272,7 +288,6 @@ func CleanSmallText(para string) string {
 	para = strings.ReplaceAll(para,"’","'")
 	para = strings.ReplaceAll(para,"(","[")
 	para = strings.ReplaceAll(para,")","]")
-	para = strings.TrimSpace(para)
 	return para
 }
 

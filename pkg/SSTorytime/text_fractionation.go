@@ -239,8 +239,13 @@ func CleanText(s string) string {
 
 	// Weird English abbrev
 	s = strings.Replace(s,"[","",-1) 
-	s = strings.Replace(s,"]","",-1) 
+	s = strings.Replace(s,"]","",-1)
 
+	s = strings.Replace(s,"Mr.","Mr",-1)
+	s = strings.Replace(s,"Mrs.","Mrs",-1) 
+	s = strings.Replace(s,"Dr.","Dr",-1)
+	s = strings.Replace(s,"Ms.","Ms",-1)
+	
 	// Encode sentence space boundaries and end of sentence markers with a # for later splitting
 
 	/* ellipsis

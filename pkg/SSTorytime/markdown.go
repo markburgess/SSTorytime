@@ -103,13 +103,13 @@ func FractionateMarkdown(filename string) ([][]Sentence, int) {
 
 			var this Sentence
 			this.S = sentences[s]
-			this.Title = v.Title
-			cache[v.Level] = v.Title
+			this.Title = CleanSmallText(v.Title)
+			cache[v.Level] = CleanSmallText(v.Title)
 
 			// Record the containment for later
 
 			if v.Level > 1 {
-				for i := v.Level; i > 0; i-- {
+				for i := v.Level-1; i > 0; i-- {
 					if len(cache[i]) > 0 {
 						DOC_DIRECTORY[v.Title] = cache[i]
 						break

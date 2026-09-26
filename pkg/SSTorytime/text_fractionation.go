@@ -92,32 +92,6 @@ func NewNgramMap() [N_GRAM_MAX]map[string]float64 {
 	return thismap
 }
 
-//**************************************************************
-
-func CleanText(s string) string {
-
-	// Start by stripping HTML / XML tags before para-split
-	// if they haven't been removed already
-
-	m := regexp.MustCompile("<[^>]*>") 
-	s = m.ReplaceAllString(s,":\n") 
-
-	// Weird English abbrev
-	s = strings.Replace(s,"[","",-1) 
-	s = strings.Replace(s,"]","",-1) 
-
-	// Encode sentence space boundaries and end of sentence markers with a # for later splitting
-
-	/* ellipsis
-	m = regexp.MustCompile("([.][.][.])+")  // end of sentence punctuation
-	s = m.ReplaceAllString(s,"---")
-
-	m = regexp.MustCompile("[—]+")  // endash
-	s = m.ReplaceAllString(s,", ") */
-
-	return s
-}
-
 //******************************************************************
 
 func FractionateTextFile(name string) ([][]Sentence,int) {
@@ -189,16 +163,8 @@ func SplitSentences(para string) []string {
 
 	const min_sentence = 20
 	const min_paragraph = 100
-	
-	para = strings.ReplaceAll(para,"\n"," ")
-	para = strings.ReplaceAll(para,"\t"," ")
-	lquote := fmt.Sprintf("%c",NON_ASCII_LQUOTE)
-	para = strings.ReplaceAll(para,lquote,"\"")
-	rquote := fmt.Sprintf("%c",NON_ASCII_RQUOTE)
-	para = strings.ReplaceAll(para,rquote,"\"")
-	para = strings.ReplaceAll(para,"`","'")
-	para = strings.ReplaceAll(para,"’","'")
-	para = strings.TrimSpace(para)
+
+	para = CleanText(para)
 
 	var sentences []string
 	var extract []rune
@@ -257,6 +223,52 @@ func SanitizeSentence(extract []rune) string {
 	}
 
 	return s
+}
+
+//**************************************************************
+
+func CleanText(s string) string {
+
+	// Start by stripping HTML / XML tags before para-split
+	// if they haven't been removed already
+
+	s = CleanSmallText(s)
+
+	m := regexp.MustCompile("<[^>]+>") 
+	s = m.ReplaceAllString(s,"") 
+
+	// Weird English abbrev
+	s = strings.Replace(s,"[","",-1) 
+	s = strings.Replace(s,"]","",-1) 
+
+	// Encode sentence space boundaries and end of sentence markers with a # for later splitting
+
+	/* ellipsis
+	m = regexp.MustCompile("([.][.][.])+")  // end of sentence punctuation
+	s = m.ReplaceAllString(s,"---")
+
+	m = regexp.MustCompile("[—]+")  // endash
+	s = m.ReplaceAllString(s,", ") */
+
+	return s
+}
+
+//**************************************************************
+
+func CleanSmallText(para string) string {
+
+	para = strings.ReplaceAll(para,"\n"," ")
+	para = strings.ReplaceAll(para,"\t"," ")
+	lquote := fmt.Sprintf("%c",NON_ASCII_LQUOTE)
+	para = strings.ReplaceAll(para,lquote,"\"")
+	rquote := fmt.Sprintf("%c",NON_ASCII_RQUOTE)
+	para = strings.ReplaceAll(para,rquote,"\"")
+	para = strings.ReplaceAll(para,"`","'")
+	para = strings.ReplaceAll(para,"’","'")
+	para = strings.ReplaceAll(para,"(","[")
+	para = strings.ReplaceAll(para,")","]")
+	para = strings.TrimSpace(para)
+	return para
 }
 
 //**************************************************************

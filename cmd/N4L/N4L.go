@@ -1794,6 +1794,8 @@ func IdempAddLink(sst *SST.PoSST,from string, frptr SST.NodePtr, link SST.Link,t
 
 func HandleNode(sst *SST.PoSST,annotated string) SST.NodePtr {
 
+	annotated = SkipUnreadable(annotated)
+	
 	clean, extracts := CleanAndSeparateString(annotated)
 
 	clean_ptr := IdempAddNode(sst,clean,SEQ_UNKNOWN)
@@ -2265,6 +2267,23 @@ func LinkUpStorySequence(sst *SST.PoSST,this string) {
 
 //**************************************************************
 
+func SkipUnreadable(s string) string {
+
+	forbidden := []string{"$("}
+
+	for _,ch := range forbidden {
+		if strings.Contains(s,ch) {
+			err := fmt.Sprintf("Not currently able to parse: %s",s)
+			ParseError(err)
+			return "[UNPARSABLE TEXT]"
+		}
+	}
+	
+	return s
+}
+
+//**************************************************************
+
 func CleanAndSeparateString(fulltext string) (string,map[string][]string) {
 
 	var cleaned []rune
@@ -2291,6 +2310,9 @@ func CleanAndSeparateString(fulltext string) (string,map[string][]string) {
 		if annotated {
 			//skip the annotator
 			r += len(note_symb)
+			if r >= len(preserve_unicode) {
+				break
+			}
 		}
 
 		// get next chars, check for quoted chunks

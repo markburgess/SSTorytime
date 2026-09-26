@@ -122,7 +122,8 @@ func SplitIntoParaSentences(file string) [][]Sentence {
 
 	for _,p := range paras {
 
-		p = strings.TrimSpace(p)
+		p = CleanNewLines(p)
+
 		sentences := SplitSentences(p)
 
 		var cleaned []Sentence
@@ -167,48 +168,51 @@ func SplitSentences(para string) []string {
 	para = CleanText(para)
 
 	var sentences []string
-	var extract []rune
 	var dlevel, slevel int
-	
+
+	extract := []rune(para)
+
 	if len(para) < min_paragraph {
-		extract = []rune(para)
-	} else {
+		sentences = append(sentences,SanitizeSentence(extract))
+		return sentences
+	} 
 
-		// First look for matching pairs of quotes
-
-		for _,rval := range para {
+	// First look for matching pairs of quotes
+	
+	for _,rval := range para {
+		
+		extract = append(extract,rval)
+		
+		switch rval {
 			
-			extract = append(extract,rval)
-			
-			switch rval {
-				
-			case '\'':
-				if slevel == 0 {
-					slevel++
-				} else {
-					slevel--
-				}
-				
-			case '"':
-				if dlevel == 0 {
-					dlevel++
-				} else {
-					dlevel--
-				}
-				
-			case '!','.','。':
-				if slevel == 0 && dlevel == 0 && len(extract) > min_sentence {
-					sentences = append(sentences,SanitizeSentence(extract))
-					extract = nil
-				}
+		case '\'':
+			if slevel == 0 {
+				slevel++
+			} else {
+				slevel--
 			}
+				
+		case '"':
+			if dlevel == 0 {
+				dlevel++
+			} else {
+				dlevel--
+			}
+			
+		case '!','.','。','?':
+			if slevel == 0 && dlevel == 0 && len(extract) > min_sentence {
+				sentences = append(sentences,SanitizeSentence(extract))
+				extract = nil
+				}
 		}
 	}
+
+	// remainder
 	
 	if len(extract) > 0 {
 		sentences = append(sentences,SanitizeSentence(extract))
 	}
-
+	
 	return sentences
 }
 
@@ -219,7 +223,7 @@ func SanitizeSentence(extract []rune) string {
 	// In dialogue, some paragraphs may begin with a quote, which
 	// does not end in the same paragraph, causing trouble
 	
-	if extract[0] == '"' && extract[1] == ' ' {
+	if len(extract) > 0 && extract[0] == '"' && extract[1] == ' ' {
 		for i := 1; i < len(extract); i++ {
 			if extract[i] != ' ' && extract[i] != '\t' {
 				extract = extract[i:]
@@ -248,9 +252,6 @@ func CleanText(s string) string {
 
 	m := regexp.MustCompile("<[^>]+>") 
 	s = m.ReplaceAllString(s,"") 
-	
-	m = regexp.MustCompile("\"[ \t]+>") 
-	s = m.ReplaceAllString(s,"\"") 
 
 	// Weird English abbrev
 	s = strings.Replace(s,"[","",-1) 
@@ -260,7 +261,6 @@ func CleanText(s string) string {
 	s = strings.Replace(s,"Mrs.","Mrs",-1) 
 	s = strings.Replace(s,"Dr.","Dr",-1)
 	s = strings.Replace(s,"Ms.","Ms",-1)
-	s = CleanSmallText(s)
 	
 	// Encode sentence space boundaries and end of sentence markers with a # for later splitting
 
@@ -270,24 +270,26 @@ func CleanText(s string) string {
 
 	m = regexp.MustCompile("[—]+")  // endash
 	s = m.ReplaceAllString(s,", ") */
+	
+	s = strings.ReplaceAll(s,"\t"," ")
+	lquote := fmt.Sprintf("%c",NON_ASCII_LQUOTE)
+	s = strings.ReplaceAll(s,lquote,"\"")
+	rquote := fmt.Sprintf("%c",NON_ASCII_RQUOTE)
+	s = strings.ReplaceAll(s,rquote,"\"")
+	s = strings.ReplaceAll(s,"`","'")
+	s = strings.ReplaceAll(s,"’","'")
+	s = strings.ReplaceAll(s,"(","[")
+	s = strings.ReplaceAll(s,")","]")
 
 	return s
 }
 
 //**************************************************************
 
-func CleanSmallText(para string) string {
+func CleanNewLines(para string) string {
 
 	para = strings.ReplaceAll(para,"\n"," ")
-	para = strings.ReplaceAll(para,"\t"," ")
-	lquote := fmt.Sprintf("%c",NON_ASCII_LQUOTE)
-	para = strings.ReplaceAll(para,lquote,"\"")
-	rquote := fmt.Sprintf("%c",NON_ASCII_RQUOTE)
-	para = strings.ReplaceAll(para,rquote,"\"")
-	para = strings.ReplaceAll(para,"`","'")
-	para = strings.ReplaceAll(para,"’","'")
-	para = strings.ReplaceAll(para,"(","[")
-	para = strings.ReplaceAll(para,")","]")
+	para = strings.TrimSpace(para)
 	return para
 }
 

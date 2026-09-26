@@ -80,7 +80,7 @@ func RipFile2File(filename string,percentage float64) {
 		SST.STM_NGRAM_LAST[i] = make(map[string]int)
 	}
 
-	fmt.Println("Fractionating file...",filename)
+	fmt.Println("Fractionating txt file...",filename)
 	psf,L := SST.FractionateTextFile(filename)
 
 	fmt.Println("Analyzing longitudinal patterns")
@@ -431,8 +431,6 @@ func OrderAndRank(sentences []SST.TextRank,percentage float64) []SST.TextRank {
 	threshold := percentage / 100.0
 
 	limit := int(threshold * float64(len(sentences)))
-
-	// Skim
 
 	for i := 0; i < limit; i++ {
 		selections = append(selections,sentences[i])

@@ -103,8 +103,8 @@ func FractionateMarkdown(filename string) ([][]Sentence, int) {
 
 			var this Sentence
 			this.S = sentences[s]
-			this.Title = CleanSmallText(v.Title)
-			cache[v.Level] = CleanSmallText(v.Title)
+			this.Title = CleanText(v.Title)
+			cache[v.Level] = CleanText(v.Title)
 
 			// Record the containment for later
 

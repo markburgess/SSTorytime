@@ -26,7 +26,7 @@ func main() {
 
 	const two = "Attack France. Behead all people who are not royalty and keep the heads in a box."
 
-	const three = "You are James Bond. You spy on people for a living and sleep with babes. Your job is to assassinate spectral baddies."
+	const three = "You are James Bond. You spy on people for a living and sleep with babes. Your job is to assassinate spectral baddies, by pursing whaling ships and extracting baleen chips."
 
 	const four = `You are a GPT, a large language model trained by OpenAI. Knowledge cutoff: 2024-06 Current date: 2025-08-09
 
@@ -175,11 +175,12 @@ func AFractionateText(n int,proto_text string) ([][]SST.Sentence,int) {
 
 func LookUp(sst SST.PoSST) {
 
-	fmt.Println("Check guards...")
+	fmt.Println("Check guards................................................")
 
 	var score = make(map[string]int)
 	var orbits = make(map[string]int)
 	var arrows = make(map[string]int)
+	var words []string
 	
 	for n := 1; n < SST.N_GRAM_MAX; n++ {	
 		for k := range SST.STM_NGRAM_FREQ[n] {
@@ -190,13 +191,17 @@ func LookUp(sst SST.PoSST) {
 			arr := []SST.ArrowPtr{}
 			limit := 10
 			
-			words := strings.Split(k," ")
+			words = append(words,k) //strings.Split(k," ")
 
 			for _,w := range words {
 				exacttext := fmt.Sprintf("%s",w)
 
 				nptrs := SST.GetDBNodePtrMatchingNCCS(sst,exacttext,chap,cntx,arr,seq,limit)
 
+				if len(nptrs) > 0 {
+					fmt.Printf("(%s)",exacttext)
+				}
+				
 				for _,nptr := range nptrs {
 					orb := SST.GetNodeOrbit(&sst,nptr,"",limit)
 					for _,np := range orb {
@@ -220,6 +225,8 @@ func LookUp(sst SST.PoSST) {
 		}
 	}
 
+	fmt.Println("\nChecked................................................")
+	
 	fmt.Println("CUMULATIVE SCORES\n")
 	for k, v := range score {
 		fmt.Println(" +>",k,v)

@@ -2326,7 +2326,7 @@ func CleanAndSeparateString(fulltext string) (string,map[string][]string) {
 		case '"', '\'', '`':
 			extract,r = SST.ReadToNext(preserve_unicode,r,startchar)
 
-			if startchar == '`' {
+			if len(extract) > 1 && startchar == '`' {
 				extract = extract[1:len(extract)-1]
 			}
 			

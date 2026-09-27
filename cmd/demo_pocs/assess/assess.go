@@ -177,13 +177,12 @@ func LookUp(sst SST.PoSST) {
 
 	fmt.Println("Check guards................................................")
 
-	var score = make(map[string]int)
+	var score  = make(map[string]int)
 	var orbits = make(map[string]int)
 	var arrows = make(map[string]int)
-	var words []string
 	
 	for n := 1; n < SST.N_GRAM_MAX; n++ {	
-		for k := range SST.STM_NGRAM_FREQ[n] {
+		for w := range SST.STM_NGRAM_FREQ[n] {
 
 			chap := "Fuzzy Robot Semantics"
 			cntx := []string{}
@@ -191,40 +190,36 @@ func LookUp(sst SST.PoSST) {
 			arr := []SST.ArrowPtr{}
 			limit := 10
 			
-			words = append(words,k) //strings.Split(k," ")
+			exacttext := fmt.Sprintf("%s",w)
 
-			for _,w := range words {
-				exacttext := fmt.Sprintf("%s",w)
-
-				nptrs := SST.GetDBNodePtrMatchingNCCS(sst,exacttext,chap,cntx,arr,seq,limit)
-
-				if len(nptrs) > 0 {
-					fmt.Printf("(%s)",exacttext)
+			nptrs := SST.GetDBNodePtrMatchingNCCS(sst,exacttext,chap,cntx,arr,seq,limit)
+			
+			if len(nptrs) > 0 {
+				fmt.Printf("(%s)",exacttext)
+			}
+			
+			for _,nptr := range nptrs {
+				orb := SST.GetNodeOrbit(&sst,nptr,"",limit)
+				for _,np := range orb {
+					for _,nx := range np {
+						snode := SST.GetDBNodeByNodePtr(&sst,nx.Dst)
+						//fmt.Printf("   NEXT (%v,%v)",nx.Arrow,snode.S)
+						orbits[strings.ToLower(snode.S)]++
+						arrows[nx.Arrow]++
+					}
 				}
 				
-				for _,nptr := range nptrs {
-					orb := SST.GetNodeOrbit(&sst,nptr,"",limit)
-					for _,np := range orb {
-						for _,nx := range np {
-							snode := SST.GetDBNodeByNodePtr(&sst,nx.Dst)
-							//fmt.Printf("   NEXT (%v,%v)",nx.Arrow,snode.S)
-							orbits[strings.ToLower(snode.S)]++
-							arrows[nx.Arrow]++
-						}
-					}
-
-					node := SST.GetDBNodeByNodePtr(&sst,nptr)
-					score[k]++
+				node := SST.GetDBNodeByNodePtr(&sst,nptr)
+				score[w]++
 					if node.I[SST.SELFPTR] != nil {
 						ctx,_ := SST.GetDBContextByPtr(&sst,node.I[SST.SELFPTR][0].Ctx)
 						//fmt.Println("   ->",w,"in", words,": \"",node.S,"\"\t ...classified as...",ctx)
 						score[ctx]++
 					}
-				}
 			}
 		}
 	}
-
+	
 	fmt.Println("\nChecked................................................")
 	
 	fmt.Println("CUMULATIVE SCORES\n")

@@ -289,6 +289,8 @@ func CleanText(s string) string {
 func CleanNewLines(para string) string {
 
 	para = strings.ReplaceAll(para,"\n"," ")
+	para = strings.ReplaceAll(para," &","\\&")
+	para = strings.ReplaceAll(para," |","\\|")
 	para = strings.TrimSpace(para)
 	return para
 }

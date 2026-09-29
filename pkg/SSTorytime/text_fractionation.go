@@ -162,6 +162,7 @@ func SplitIntoParaSentences(file string) [][]Sentence {
 
 func SplitSentences(para string) []string {
 
+	// bounding sizes in characters
 	const min_sentence = 20
 	const min_paragraph = 100
 
@@ -170,7 +171,7 @@ func SplitSentences(para string) []string {
 	var sentences []string
 	var dlevel, slevel int
 
-	extract := []rune(para)
+	var extract []rune
 
 	if len(para) < min_paragraph {
 		sentences = append(sentences,SanitizeSentence(extract))
@@ -179,11 +180,11 @@ func SplitSentences(para string) []string {
 
 	// First look for matching pairs of quotes
 	
-	for _,rval := range para {
-		
-		extract = append(extract,rval)
-		
-		switch rval {
+	for _,rn := range para {
+
+		extract = append(extract,rn)
+
+		switch rn {
 			
 		case '\'':
 			if slevel == 0 {
@@ -198,7 +199,7 @@ func SplitSentences(para string) []string {
 			} else {
 				dlevel--
 			}
-			
+ 			
 		case '!','.','。','?':
 			if slevel == 0 && dlevel == 0 && len(extract) > min_sentence {
 				sentences = append(sentences,SanitizeSentence(extract))
@@ -212,7 +213,10 @@ func SplitSentences(para string) []string {
 	if len(extract) > 0 {
 		sentences = append(sentences,SanitizeSentence(extract))
 	}
-	
+
+	for _,v := range sentences {
+		fmt.Println("SIZIIZIIZI",v)
+	}
 	return sentences
 }
 

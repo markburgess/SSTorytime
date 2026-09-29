@@ -133,7 +133,6 @@ When you assume
 	var lines = []string{zzz,one,two,three,four}
 
 	for n,l := range lines {
-		fmt.Println("====================",n,"=========================")
 		AFractionateText(n,l)
 		LookUp(sst,l)
 	}	
@@ -177,86 +176,114 @@ func AFractionateText(n int,proto_text string) ([][]SST.Sentence,int) {
 
 func LookUp(sst SST.PoSST, line string) {
 
-	fmt.Println("Check guards................................................")
-
+	fmt.Println("=============",line,"===========")
 	doc_psf := SST.SplitIntoParaSentences(line)
 
+	var count int
 	var score  = make(map[string]int)
 	var orbits = make(map[string]int)
 	var arrows = make(map[string]int)
 	var stm    = make(map[string]string)
-	
+	var stm_ngram_freq [SST.N_GRAM_MAX]map[string]float64
+
+	for i := 0; i < SST.N_GRAM_MAX; i++ {
+		stm_ngram_freq[i] = make(map[string]float64)
+	}
+
 	for p := 0; p < len(doc_psf); p++ {
 		
 		for s := 0; s < len(doc_psf[p]); s++ {
 
-			exacttext := fmt.Sprintf(">> %s",doc_psf[p][s])
-			fmt.Println("XXXX",exacttext)			
-			chap := "Fuzzy Robot Semantics"
-			cntx := []string{}
-			seq := false
-			arr := []SST.ArrowPtr{}
-			limit := 10
+			for f := 0; f < len(doc_psf[p][s].Frags); f++ {
+			
+				text := strings.TrimSpace(doc_psf[p][s].Frags[f])
+				
+				chap := "Fuzzy Robot Semantics"
+				cntx := []string{}
+				seq := false
+				arr := []SST.ArrowPtr{}
+				limit := 10
+				
+				stm["start"] = stm["prev"]
+				stm["prev"] = stm["now"]
+				stm["now"] = strings.ToLower(text)
 
-			stm["start"] = stm["prev"]
-			stm["prev"] = stm["now"]
-			stm["now"] = exacttext
+				try := stm["now"]
 
-			fmt.Printf("-->LOOK (%s,%s,%s)\n",stm["now"],stm["prev"],stm["start"])
-			
-			nptrs := SST.GetDBNodePtrMatchingNCCS(sst,exacttext,chap,cntx,arr,seq,limit)
-			
-			if len(nptrs) > 0 {
-				fmt.Printf("(%s)",exacttext)
-			}
-			
-			for _,nptr := range nptrs {
-				orb := SST.GetNodeOrbit(&sst,nptr,"",limit)
-				for _,np := range orb {
-					for _,nx := range np {
-						snode := SST.GetDBNodeByNodePtr(&sst,nx.Dst)
-						//fmt.Printf("   NEXT (%v,%v)",nx.Arrow,snode.S)
-						orbits[strings.ToLower(snode.S)]++
-						arrows[nx.Arrow]++
-					}
+				if len(try) < 3 {
+					try = "x"
+				}
+
+				if len(stm["prev"]) > 2 {
+					try += stm["prev"]
+				}
+
+				if len(stm["start"]) > 2 {
+					try += stm["start"]
 				}
 				
-				node := SST.GetDBNodeByNodePtr(&sst,nptr)
-				//score[w]++
-					if node.I[SST.SELFPTR] != nil {
-						ctx,_ := SST.GetDBContextByPtr(&sst,node.I[SST.SELFPTR][0].Ctx)
-						//fmt.Println("   ->",w,"in", words,": \"",node.S,"\"\t ...classified as...",ctx)
-						score[ctx]++
+				//fmt.Printf("-LOOK %s ==> \n",try)
+				
+				change_set := Fractionate(try,count,stm_ngram_freq,SST.N_GRAM_MIN)
+
+				for n := 0; n < SST.N_GRAM_MAX; n++ {
+					for ng := range change_set[n] {
+						ngram := change_set[n][ng]
+						nptrs := SST.GetDBNodePtrMatchingNCCS(sst,ngram,chap,cntx,arr,seq,limit)
+
+						if len(nptrs) > 0 {
+							fmt.Printf("\n ... (%s)",ngram)
+						}
+			
+						for _,nptr := range nptrs {
+							orb := SST.GetNodeOrbit(&sst,nptr,"",limit)
+							for _,np := range orb {
+								for _,nx := range np {
+									snode := SST.GetDBNodeByNodePtr(&sst,nx.Dst)
+									fmt.Printf("   NEXT (%v,%v)",nx.Arrow,snode.S)
+									orbits[strings.ToLower(snode.S)]++
+									arrows[nx.Arrow]++
+								}
+							}
+							
+							node := SST.GetDBNodeByNodePtr(&sst,nptr)
+							//score[w]++
+							if node.I[SST.SELFPTR] != nil {
+								ctx,_ := SST.GetDBContextByPtr(&sst,node.I[SST.SELFPTR][0].Ctx)
+								fmt.Println("   ->",node.S,"\"\t ...classified as...",ctx)
+								score[ctx]++
+							}
+						}
 					}
+				}
 			}
 		}
 	}
-	
-	fmt.Println("\nChecked................................................")
 	
 	fmt.Println("CUMULATIVE SCORES\n")
 	for k, v := range score {
 		fmt.Println(" +>",k,v)
 	}
-
+	
 	fmt.Println("CUMULATIVE ORBITS\n")
 	for k, v := range orbits {
 		fmt.Println(" o>",k,v)
 	}
-
+	
 	fmt.Println("ARROWS\n")
 	for k, v := range arrows {
 		fmt.Println(" ->",k,v)
-	}
+		}
+	
 }
 
 //**************************************************************
 
 func Fractionate(frag string,L int,frequency [SST.N_GRAM_MAX]map[string]float64,min int) [SST.N_GRAM_MAX][]string {
-
+	
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
-
+	
 	var rrbuffer [SST.N_GRAM_MAX][]string
 	var change_set [SST.N_GRAM_MAX][]string
 

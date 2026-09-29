@@ -133,8 +133,9 @@ When you assume
 	var lines = []string{zzz,one,two,three,four}
 
 	for n,l := range lines {
+		fmt.Println("====================",n,"=========================")
 		AFractionateText(n,l)
-		LookUp(sst)
+		LookUp(sst,l)
 	}	
 }
 
@@ -142,15 +143,15 @@ When you assume
 
 func AFractionateText(n int,proto_text string) ([][]SST.Sentence,int) {
 
-	fmt.Println("\nANALYZE:",n,proto_text)
-	
 	pbsf := SST.SplitIntoParaSentences(proto_text)
 
 	count := 0
 
 	for p := range pbsf {
+
 		for s := range pbsf[p] {
 			count++
+
 			for f := range pbsf[p][s].Frags {
 
 				change_set := Fractionate(pbsf[p][s].Frags[f],count,SST.STM_NGRAM_FREQ,SST.N_GRAM_MIN)
@@ -160,6 +161,7 @@ func AFractionateText(n int,proto_text string) ([][]SST.Sentence,int) {
 				for n := 0; n < SST.N_GRAM_MAX; n++ {
 					for ng := range change_set[n] {
 						ngram := change_set[n][ng]
+							
 						SST.STM_NGRAM_FREQ[n][ngram]++
 					}
 				}
@@ -173,25 +175,35 @@ func AFractionateText(n int,proto_text string) ([][]SST.Sentence,int) {
 
 //**************************************************************
 
-func LookUp(sst SST.PoSST) {
+func LookUp(sst SST.PoSST, line string) {
 
 	fmt.Println("Check guards................................................")
+
+	doc_psf := SST.SplitIntoParaSentences(line)
 
 	var score  = make(map[string]int)
 	var orbits = make(map[string]int)
 	var arrows = make(map[string]int)
+	var stm    = make(map[string]string)
 	
-	for n := 1; n < SST.N_GRAM_MAX; n++ {	
-		for w := range SST.STM_NGRAM_FREQ[n] {
+	for p := 0; p < len(doc_psf); p++ {
+		
+		for s := 0; s < len(doc_psf[p]); s++ {
 
+			exacttext := fmt.Sprintf(">> %s",doc_psf[p][s])
+			fmt.Println("XXXX",exacttext)			
 			chap := "Fuzzy Robot Semantics"
 			cntx := []string{}
 			seq := false
 			arr := []SST.ArrowPtr{}
 			limit := 10
-			
-			exacttext := fmt.Sprintf("%s",w)
 
+			stm["start"] = stm["prev"]
+			stm["prev"] = stm["now"]
+			stm["now"] = exacttext
+
+			fmt.Printf("-->LOOK (%s,%s,%s)\n",stm["now"],stm["prev"],stm["start"])
+			
 			nptrs := SST.GetDBNodePtrMatchingNCCS(sst,exacttext,chap,cntx,arr,seq,limit)
 			
 			if len(nptrs) > 0 {
@@ -210,7 +222,7 @@ func LookUp(sst SST.PoSST) {
 				}
 				
 				node := SST.GetDBNodeByNodePtr(&sst,nptr)
-				score[w]++
+				//score[w]++
 					if node.I[SST.SELFPTR] != nil {
 						ctx,_ := SST.GetDBContextByPtr(&sst,node.I[SST.SELFPTR][0].Ctx)
 						//fmt.Println("   ->",w,"in", words,": \"",node.S,"\"\t ...classified as...",ctx)

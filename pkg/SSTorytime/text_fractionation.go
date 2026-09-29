@@ -214,9 +214,6 @@ func SplitSentences(para string) []string {
 		sentences = append(sentences,SanitizeSentence(extract))
 	}
 
-	for _,v := range sentences {
-		fmt.Println("SIZIIZIIZI",v)
-	}
 	return sentences
 }
 

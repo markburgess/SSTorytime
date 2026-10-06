@@ -19,11 +19,12 @@ import (
 
 )
 
-
 // **************************************************************************
 
 func SplitChapters(str string) []string {
 
+	// This relates to chapter references of a Node, not to text scanning
+	
 	run := []rune(str)
 
 	var part []rune
@@ -911,7 +912,28 @@ func GetURIFile(url string) (string,error) {
 	return string(body),nil
 }
 
+// **************************************************************************
+
+func IsAllUpper(s string) bool {
+
+	if len(s) == 0 {
+		return false
+	}
+	
+	for _, r := range s {
+		if !unicode.IsSpace(r) && !unicode.IsUpper(r) {
+			return false
+		}
+	}
+	return true
+}
+
+
+
+
 //
 // tools.go
 //
+
+
 

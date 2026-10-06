@@ -82,10 +82,9 @@ func RipFile2File(filename string,percentage float64) {
 
 	fmt.Println("Fractionating txt file...",filename)
 	psf,L := SST.FractionateTextFile(filename)
-
 	fmt.Println("Analyzing longitudinal patterns")
 	ranking1 := SelectByRunningIntent(psf,L,percentage)
-	fmt.Println("Analyzing statistical patterns")
+	fmt.Println("Analyzing transverse statistical patterns")
 	ranking2 := SelectByStaticIntent(psf,L,percentage)
 	fmt.Println("Merging selections")
 	selection := MergeSelections(ranking1,ranking2)
@@ -115,13 +114,13 @@ func RipMarkdown(filename string,percentage float64) {
 	}
 
 	fmt.Println("Fractionating markdown file...",filename)
-
 	psf,L := SST.FractionateMarkdown(filename)
-	SST.AnnotateFractions(psf)
+	fmt.Println("Analyzing frequencies")
+	SST.AnnotateFractionIntent(psf)
 
 	fmt.Println("Analyzing longitudinal patterns")
 	ranking1 := SelectByRunningIntent(psf,L,percentage)
-	fmt.Println("Analyzing statistical patterns")
+	fmt.Println("Analyzing transverse statistical patterns")
 	ranking2 := SelectByStaticIntent(psf,L,percentage)
 	fmt.Println("Merging selections")
 	selection := MergeSelections(ranking1,ranking2)
@@ -181,10 +180,13 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 	for i := range selection {
 
-		context := SpliceSet(ambi_by_part[selection[i].Partition])
-
+		if len(selection[i].Fragment) < 1 {
+			continue
+		}
+		
 		var part string
-
+		context := SpliceSet(ambi_by_part[selection[i].Partition])
+		
 		if len(selection[i].Title) > 0 {
 			part = selection[i].Title
 		} else {
@@ -192,26 +194,27 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 		}
 		
 		// Add context from n = 2,3 fractions
-
+		
 		if part != lastpart {
 			if len(context) > 0 {
 				fmt.Fprintf(fp,"\n :: %s ::\n",context)
-				lastpart = part
 			}
+			
+			lastpart = part
+			
 		}
 
-		fmt.Fprintf(fp,"\n@sen%d   %s\n\n",selection[i].Order,Sanitize(selection[i].Fragment))
-
+		fmt.Fprintf(fp,"\n@sen%d   %s\n\n",selection[i].Order,Sanitize(selection[i].Fragment))		
 		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.INV_CONT_FOUND_IN_S,part)
-
+		
 		AddIntentionalContext(collected_fragments,part,anom_by_part[selection[i].Partition],already)
-
+		
 		if !partcheck[part] {
 			parts = append(parts,part)
 			partcheck[part] = true
 		}
 	}
-
+	
 	fmt.Fprintf(fp,"\n -:: _sequence_ , %s::\n", filealias)
 	fmt.Fprintf(fp,"\n# (end) ************\n")
 
@@ -278,7 +281,7 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 	fmt.Println("Wrote file",outputfile)
 	fmt.Printf("Final fraction %.2f of requested %.2f sampled\n",float64(len(selection)*100)/float64(L),percentage)
-
+		
 }
 
 //*******************************************************************

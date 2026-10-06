@@ -11,6 +11,7 @@ import (
 	"os"
 	"io/ioutil"
 	"strings"
+	"unicode"
 	"sort"
 	"regexp"
 	"math"
@@ -73,10 +74,16 @@ type TextRank struct {
 //**************************************************************
 
 type Sentence struct {
-
 	S string
 	Title string
 	Frags []string
+}
+
+type ExtSentence struct {
+	Level   int
+	Title   string
+	Number  string
+	Content string
 }
 
 //**************************************************************
@@ -105,57 +112,122 @@ func FractionateTextFile(name string) ([][]Sentence,int) {
 
 func FractionateText(proto_text string) ([][]Sentence,int) {
 
-	pbsf := SplitIntoParaSentences(proto_text)
-	count := AnnotateFractions(pbsf)
+	pbsf,count := SplitIntoParaSentences(proto_text)
+	AnnotateFractionIntent(pbsf)
 	return pbsf,count
 }
 
 //**************************************************************
 
-func SplitIntoParaSentences(file string) [][]Sentence {
+func SplitIntoParaSentences(file string) ([][]Sentence,int) {
 
-	var pbsf [][]Sentence
-	
-	// first split by paragraph
+	var sections []ExtSentence
+	var current *ExtSentence
+	var title string = ""
+	var level int
 
 	paras := strings.Split(file,"\n\n")
 
-	for _,p := range paras {
+	for _,sec := range paras {
 
-		p = CleanNewLines(p)
-
-		sentences := SplitSentences(p)
-
-		var cleaned []Sentence
+		issection,value,number := IsNewSection(sec)
 		
-		for s := range sentences {
-
-			// NB, if parentheses contain multiple sentences, this complains, TBD
-
-			frags := SplitPunctuationText(sentences[s])
-
-			var this Sentence
-
-			this.S = sentences[s]
-
-			for f := range frags {
-				content := strings.TrimSpace(frags[f])
-				if len(content) > 2 {			
-					this.Frags = append(this.Frags,content)
-				}
+		if issection {
+			title = value
+			
+			current = &ExtSentence{
+				Level: level,
+				Title: title,
+				Number: number,
+				Content: value,
 			}
-
-			if len(this.S) > 0 {
-				cleaned = append(cleaned,this)
+		} else {
+			current = &ExtSentence{
+				Level: level,
+				Title: title,
+				Number: value,
+				Content: value,
 			}
 		}
+		
+		sections = append(sections, *current)
+	}
+	
+	pbsf,count := AssemblePBSF(sections)
+	return pbsf,count
+}
 
-		if len(cleaned) > 0 {
-			pbsf = append(pbsf,cleaned)
-		}
+// **************************************************************************
+
+func IsNewSection(para string) (bool,string,string) {
+
+	// See if we can classify a lump of text
+
+	para = strings.ReplaceAll(para,"\n"," ")
+	
+	// Sections tend to start with a number or letter a),iv), 6.2.1, etc
+
+	ischap, number, name := LooksLikeChapSection(para)
+
+	if ischap {
+		return true,name,number
 	}
 
-	return pbsf
+	return false,para,"unnumbered"
+}
+
+// **************************************************************************
+
+func LooksLikeChapSection(org string) (bool,string,string) {
+
+	if len(org) == 0 {
+		return false,"unnumbered",""
+	}
+
+	org = strings.TrimSpace(strings.ToLower(org))
+
+	if strings.HasPrefix(org,"I ") {
+		return false,"unnumbered",""
+	}
+
+	if strings.HasPrefix(org,"chapter ") {
+		name := org[len("chapter "):]
+		fmt.Println("\n Found chapter:",name)
+
+		namestart := strings.Split(name," ")[0]
+		hasnumber := LooksLikeNumber(namestart)
+
+		if hasnumber {
+			return true,namestart,name
+		} else {
+			return true,"unnumbered",name
+		}
+	}
+	
+	// Is the line ALL CAPS? This could be a Note To Self, but fine.
+	
+	if IsAllUpper(org) {
+		return true,org,"unnumbered"
+	}
+
+	line := strings.Split(org," ")
+	linestart := line[0]
+
+	rest := strings.Join(line[1:]," ")
+	
+	if len(linestart) > 2 && linestart[len(linestart)-1] == ')' {
+		rest = linestart[:len(linestart)-1]
+	}
+	
+	// check start
+
+	hasnumber := LooksLikeNumber(linestart)
+
+	if hasnumber {
+		return true,linestart,rest
+	}
+	
+	return false,"unnumbered",org
 }
 
 //**************************************************************
@@ -224,7 +296,7 @@ func SanitizeSentence(extract []rune) string {
 	// In dialogue, some paragraphs may begin with a quote, which
 	// does not end in the same paragraph, causing trouble
 	
-	if len(extract) > 0 && extract[0] == '"' && extract[1] == ' ' {
+	if len(extract) > 1 && extract[0] == '"' && extract[1] == ' ' {
 		for i := 1; i < len(extract); i++ {
 			if extract[i] != ' ' && extract[i] != '\t' {
 				extract = extract[i:]
@@ -301,6 +373,88 @@ func CleanNewLines(para string) string {
 func SplitPunctuationText(s string) []string {
 
 	return SplitPunctuationTextWork(s,false)
+}
+
+//**************************************************************
+
+func AssemblePBSF(sections []ExtSentence)  ([][]Sentence,int) {
+	
+	var pbsf [][]Sentence
+	var count int
+
+	for _,sec := range sections {
+		
+		sentences := SplitSentences(sec.Content)
+
+		var cleaned []Sentence
+		var number,name string
+		
+		for s := range sentences {
+
+			if len(sentences[s]) == 0 {
+				continue
+			}
+
+			frags := SplitPunctuationText(sentences[s])
+
+			var this Sentence
+			this.S = sentences[s]
+
+			if len(sec.Title) > 0 {
+				number, name = SwallowTitle(sec.Title)
+			}
+			
+			if len(name) > 0 {
+				this.Title = "section with name: " + name
+				if number != "unnumbered" {
+					this.Title += " [numbered in the document as: " + number + "]"
+				}
+			} else {
+				this.Title = ""
+			}
+
+			count++
+			
+			for f := range frags {
+				content := strings.TrimSpace(frags[f])
+				if len(content) > 2 {			
+					this.Frags = append(this.Frags,content)
+				}
+			}
+
+			cleaned = append(cleaned,this)
+		}
+
+		if len(cleaned) > 0 {
+			pbsf = append(pbsf,cleaned)
+		}
+	}
+	
+	return pbsf,count
+}
+
+//*****************************************************************
+
+func SwallowTitle(text string) (string,string) {
+
+	var number,name string
+
+	text = strings.TrimSpace(text)
+	text = strings.ReplaceAll(text,"\n"," ")
+	name = text
+	number = "unnumbered"
+	
+	if strings.Contains(text," ") {
+
+		first := strings.Split(text," ")[0]
+
+		if LooksLikeNumber(first) {
+			name = CleanText(text[len(first):])
+			number = first
+		}
+	}
+
+	return number,name
 }
 
 //**************************************************************
@@ -1026,6 +1180,53 @@ func StaticIntentionality(L int, s string, freq float64) float64 {
 }
 
 
+//*****************************************************************
+
+func LooksLikeNumber(s string) bool {
+	
+	var numbers = []rune{'i','v','x','c','l'}
+	var havedigit int
+
+	if len(s) < 2 {
+		return false
+	}
+	
+	for _,c := range strings.ToLower(s) {
+
+		goaround := false
+		
+		if unicode.IsSpace(c) {
+			return false
+		}
+
+		if unicode.IsDigit(c) {
+			havedigit++
+			continue
+		}
+
+		if havedigit > 0 && c == '.' {
+			havedigit++
+			continue
+		}		
+
+		for _,t := range numbers {
+			if t == c {
+				goaround = true
+				break
+			}
+		}
+
+		if goaround {
+			continue
+		}
+
+		if unicode.IsLetter(c) || unicode.IsPunct(c) {
+			return false
+		}
+	}
+
+	return true
+}
 
 //
 // text_fractionation.go

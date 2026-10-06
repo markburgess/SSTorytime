@@ -16,15 +16,13 @@ import (
 
 //**************************************************************
 
-func AnnotateFractions(pbsf [][]Sentence) int {
+func AnnotateFractionIntent(pbsf [][]Sentence) {
 
-	count := 0	
-
+	var count int
+	
 	for p := range pbsf {
 		for s := range pbsf[p] {
-
 			count++
-
 			for f := range pbsf[p][s].Frags {
 
 				change_set := Fractionate(pbsf[p][s].Frags[f],count,STM_NGRAM_FREQ,N_GRAM_MIN)
@@ -41,8 +39,6 @@ func AnnotateFractions(pbsf [][]Sentence) int {
 			}
 		}
 	}
-
-	return count
 }
 
 //******************************************************************

@@ -76,6 +76,30 @@ const (
 	INV_CONT_FOUND_IN_L = "extract/quote from"
 	INV_CONT_FOUND_IN_S = "extract-fr"
 
+	EXPR_TABNAME_L = "tabular association to"
+	EXPR_TABNAME_S = "tabassoc"
+
+	INV_EXPR_TABNAME_L = "is an association to"
+	INV_EXPR_TABNAME_S = "tabassocinv"
+
+	EXPR_TAB_HEADER_L = "has the interpretation/role-meaning"
+	EXPR_TAB_HEADER_S = "hasrm"
+
+	INV_EXPR_TAB_HEADER_L = "is the interpretation for"
+	INV_EXPR_TAB_HEADER_S = "hasrmfor"
+
+	CONT_TABLE_NAME_L = "table contains item"
+	CONT_TABLE_NAME_S = "tabconit"
+
+	INV_CONT_TABLE_NAME_L = "item in association table"
+	INV_CONT_TABLE_NAME_S = "itintab"
+
+	CONT_REF_L = "refers to"
+	CONT_REF_S = "refersto"
+
+	INV_CONT_REF_L = "is referred to in"
+	INV_CONT_REF_S = "isreferredtoin"
+
 	// This is a "contained-by something that expresses"
 
 	CONT_FRAG_L = "contains intented characteristic"      // intentional characteristic

@@ -159,7 +159,7 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 	defer fp.Close()
 
-	fmt.Fprintf(fp," - Samples from %s\n",filename)
+	fmt.Fprintf(fp," - Excerpts from %s\n",filename)
 
 	fmt.Fprintf(fp,"\n # TABLE OF CONTENTS ...")
 	fmt.Fprintf(fp,"\n # themes and topics ")
@@ -171,6 +171,15 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	fmt.Fprintf(fp,"\n# (begin) ************\n")
 
 	filealias := strings.Split(filename,".")[0]
+
+
+	// Lookup tables of contents from Markdown
+
+	SST.CompileTabular(fp,filealias,SST.TABLES)
+	SST.CompileTOC(fp,filealias,SST.SECTIONS)
+
+	// 
+
 	fmt.Fprintf(fp,"\n :: _sequence_ , %s::\n", filealias)
 
 	var partcheck = make(map[string]bool)

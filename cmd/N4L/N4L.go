@@ -1351,6 +1351,10 @@ func AddMandatory(sst *SST.PoSST) {
         inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_FOUND_IN_S, SST.INV_CONT_FOUND_IN_L,"-")
 	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
+	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_REF_S, SST.CONT_REF_L,"+")
+        inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_REF_S, SST.INV_CONT_REF_L,"-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
+
 	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_FRAG_S, SST.CONT_FRAG_L,"+")
         inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_FRAG_IN_S, SST.INV_CONT_FRAG_IN_L,"-")
 	SST.InsertInverseArrowDirectory(sst,arr,inv)
@@ -1363,6 +1367,19 @@ func AddMandatory(sst *SST.PoSST) {
         inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_AMBIENT_S, SST.INV_EXPR_AMBIENT_L,"-")
 	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
+	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_TABNAME_S,SST.EXPR_TABNAME_L,"+")
+	inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_TABNAME_S,SST.INV_EXPR_TABNAME_L,"-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
+
+	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_TAB_HEADER_S,SST.EXPR_TAB_HEADER_L,"+")
+	inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_TAB_HEADER_S,SST.INV_EXPR_TAB_HEADER_L,"-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
+	
+	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_TABLE_NAME_S,SST.CONT_TABLE_NAME_L,"+")
+        inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_TABLE_NAME_S, SST.INV_CONT_TABLE_NAME_L,"-")
+	SST.InsertInverseArrowDirectory(sst,arr,inv)
+
+	
 	// Reserved for special UX handling
 
 	arr = SST.InsertArrowDirectory(sst,"leadsto",SEQUENCE_RELN,SEQUENCE_RELN_LONG,"+")
@@ -1377,6 +1394,9 @@ func AddMandatory(sst *SST.PoSST) {
 	inv = SST.InsertArrowDirectory(sst,"properties","isimg","is an image for","-")
 	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
+	// Finally a required annotation
+
+	ANNOTATION["****"] = SST.CONT_REF_S
 }
 
 //**************************************************************

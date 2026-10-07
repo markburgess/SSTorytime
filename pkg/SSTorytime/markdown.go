@@ -45,6 +45,8 @@ type MDTable struct {
 }
 
 var DOC_DIRECTORY = make(map[string]string)
+var SECTIONS []ExtSentence
+var TABLES []MDTable
 
 //*****************************************************************
 
@@ -63,10 +65,8 @@ func FractionateMarkdown(filename string) ([][]Sentence, int) {
 	
 	doc := md.Parser().Parse(text.NewReader(source))
 
-	var sections []ExtSentence
 	var current *ExtSentence
-	var tables []MDTable
-	var title string = ""
+	var title string = "introductory qprologue"
 	var level int
 
 	// collect together into current to assemble in an ExtSentence
@@ -82,7 +82,7 @@ func FractionateMarkdown(filename string) ([][]Sentence, int) {
 		case *extast.Table:
 			tableData := ParseTable(n, source)
 			tableData.Context = title
-			tables = append(tables, tableData)
+			TABLES = append(TABLES, tableData)
 
 		case *ast.Heading:
 			title = string(n.Text(source))
@@ -90,7 +90,7 @@ func FractionateMarkdown(filename string) ([][]Sentence, int) {
 
 		case *ast.Paragraph:
 			isnew, value, number := IsNewSection(string(n.Text(source)))
-
+			
 			if isnew {
 				current = &ExtSentence{
 					Level: level,
@@ -107,7 +107,7 @@ func FractionateMarkdown(filename string) ([][]Sentence, int) {
 				}
 			}
 
-			sections = append(sections, *current)
+			SECTIONS = append(SECTIONS, *current)
 		}
 
 		return ast.WalkContinue, nil
@@ -115,36 +115,73 @@ func FractionateMarkdown(filename string) ([][]Sentence, int) {
 
 	// Now assemble normal text into pbsf format
 
-	pbsf,count := AssemblePBSF(sections)
-
-	for i, table := range tables {
-		fmt.Printf("--- Table %d in context %s ---\n", i+1,table.Context)
-		fmt.Printf("Headers (Ordered): %v\n\n", table.Headers)
-		
-		for j, row := range table.Rows {
-			fmt.Printf("Row %d:\n", j+1)
-			for _, cell := range row.Cells {
-				fmt.Printf("  %-12s -> %s\n", cell.Header+":", cell.Value)
-			}
-			
-			// Example: Lookup by header key still works
-			if price, ok := row.GetByName("Price"); ok {
-				fmt.Printf("  [Lookup Price]: %s\n", price)
-			}
-			fmt.Println()
-		}
-	}
-
-	// Now split the parts
-
-	for _,sec := range sections {
-		fmt.Println("\nSEC",sec.Title,"at level",sec.Level,"with",sec.Content)
-	}
+	pbsf,count := AssemblePBSF(SECTIONS)
 
 	return pbsf,count
 }
 
+//*****************************************************************
+// Build ancillary structures
+//*****************************************************************
 
+func CompileTOC(fp *os.File, filealias string, sections []ExtSentence) {
+
+	// map to n4l
+
+	fmt.Fprintf(fp,"\n # BEG table of contents ############################\n")
+	fmt.Fprintf(fp,"\n :: _sequence_, table of contents :: \n")
+	
+	for _,sec := range sections {
+		fmt.Fprintf(fp,"\n%s (%s) Document part in %s\n",sec.Title,EXPR_TAB_HEADER_L,filealias)
+		fmt.Fprintf(fp,"\n%s (%s) Document part in %s\n",sec.Title,EXPR_TABNAME_S,sec.Content)
+	}
+
+	fmt.Fprintf(fp,"\n -:: _sequence_ :: \n")
+	fmt.Fprintf(fp,"\n # END table of contents ############################\n")
+}
+
+//*****************************************************************
+
+func CompileTabular(fp *os.File, filealias string, tables []MDTable) {
+
+	// Map to n4l
+
+	for _, table := range tables {
+
+		fmt.Fprintf(fp," :: _sequence_, %s :: \n",table.Context)
+
+		for _,h := range table.Headers {
+			if len(h) > 0 {
+				fmt.Fprintf(fp,"\n # table %s  ############## \n",table.Context)
+				fmt.Fprintf(fp," %s  (%s) %s\n",h,INV_EXPR_TAB_HEADER_L,table.Context)	
+			}
+		}
+
+		for j, row := range table.Rows {
+
+			last := ""
+			
+			for _, cell := range row.Cells {
+				fmt.Fprintf(fp," # table row\n")
+				fmt.Fprintf(fp,"\n Associative row %d (%s) %s\n",j+1,EXPR_TABNAME_S,cell.Value)
+				fmt.Fprintf(fp," %s (%s) %s \n", table.Context,CONT_TABLE_NAME_L,cell.Value)
+				if !strings.HasPrefix(cell.Header,"col_") {
+					fmt.Fprintf(fp," %s (%s) %s \n", cell.Header,INV_EXPR_TAB_HEADER_L, cell.Value)
+				}
+				if last != "" {
+					fmt.Fprintf(fp," %s (%s) %s \n", last,EXPR_TABNAME_S, cell.Value)
+					last = cell.Value
+				}
+			}
+		}
+
+		fmt.Fprintf(fp," -:: _sequence_ :: \n")
+	}
+
+}
+
+//*****************************************************************
+// Tools
 //*****************************************************************
 
 func ParseTable(table *extast.Table, source []byte) MDTable {
@@ -167,14 +204,16 @@ func ParseTable(table *extast.Table, source []byte) MDTable {
 			}
 
 			for i, val := range values {
+
 				headerName := fmt.Sprintf("col_%d", i+1)
+
 				if i < len(headers) && headers[i] != "" {
-					headerName = headers[i]
+					headerName = CleanText(headers[i])
 				}
 
 				row.Cells[i] = MDCell{
 					Header: headerName,
-					Value:  val,
+					Value:  CleanText(val),
 				}
 			}
 

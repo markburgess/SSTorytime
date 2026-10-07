@@ -79,13 +79,15 @@ type Sentence struct {
 	Frags []string
 }
 
-type ExtSentence struct {
+type ExtSentence struct { // hangover from goldmark processing, tb-elim
 	Level   int
 	Title   string
 	Number  string
 	Content string
 }
 
+//**************************************************************
+// Begin
 //**************************************************************
 
 func NewNgramMap() [N_GRAM_MAX]map[string]float64 {
@@ -164,7 +166,9 @@ func IsNewSection(para string) (bool,string,string) {
 	// See if we can classify a lump of text
 
 	para = strings.ReplaceAll(para,"\n"," ")
-	
+	para = CheckAnnotations(para)
+	para = CleanText(para)
+
 	// Sections tend to start with a number or letter a),iv), 6.2.1, etc
 
 	ischap, number, name := LooksLikeChapSection(para)
@@ -174,6 +178,19 @@ func IsNewSection(para string) (bool,string,string) {
 	}
 
 	return false,para,"unnumbered"
+}
+
+// **************************************************************************
+
+func CheckAnnotations(para string) string {
+
+	// Insert a *** annotation where boldface **x y z...** has been used
+	// Note, this assumes that *** is defined in the standard way
+	
+	modified := strings.ReplaceAll(para,"** ","` ")
+	modified = strings.ReplaceAll(para,"**","***`")
+
+	return modified
 }
 
 // **************************************************************************

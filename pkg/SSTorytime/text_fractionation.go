@@ -145,7 +145,7 @@ func SplitIntoParaSentences(file string) ([][]Sentence,int) {
 			current = &ExtSentence{
 				Level: level,
 				Title: title,
-				Number: value,
+				Number: number,
 				Content: value,
 			}
 		}

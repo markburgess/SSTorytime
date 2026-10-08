@@ -28,7 +28,7 @@ func main() {
 
 	//file = "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi-sonnet55-s3-20261004-131451/run.json"
 
-		file = "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi_consequence-sonnet55-s1-20261004-131046/manifest.json"
+	// file = "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi_consequence-sonnet55-s1-20261004-131046/manifest.json"
 	
 	filebytes, err := os.ReadFile(file)
 
@@ -101,7 +101,7 @@ func GetJSON(filename string,jsonData []byte) {
 	slices.Sort(order)
 	
 	for _,v := range order {
-		fmt.Println(" ",main_keys[v],v)
+		fmt.Println("schema ",main_keys[v],v)
 	}
 
 	fmt.Println("------- START ------")

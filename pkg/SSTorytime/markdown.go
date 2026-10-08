@@ -132,8 +132,8 @@ func CompileTOC(fp *os.File, filealias string, sections []ExtSentence) {
 	fmt.Fprintf(fp,"\n :: _sequence_, table of contents :: \n")
 	
 	for _,sec := range sections {
-		fmt.Fprintf(fp,"\n%s (%s) Document part in %s\n",sec.Title,EXPR_TAB_HEADER_L,filealias)
-		fmt.Fprintf(fp,"\n%s (%s) Document part in %s\n",sec.Title,EXPR_TABNAME_S,sec.Content)
+		fmt.Fprintf(fp,"\n%s (%s) part/section in %s\n",sec.Title,EXPR_TAB_HEADER_L,filealias)
+		fmt.Fprintf(fp,"\n%s (%s) part/section in %s\n",sec.Title,EXPR_TABNAME_S,sec.Content)
 	}
 
 	fmt.Fprintf(fp,"\n -:: _sequence_ :: \n")

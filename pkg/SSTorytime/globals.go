@@ -94,10 +94,10 @@ const (
 	INV_CONT_TABLE_NAME_L = "item in association table"
 	INV_CONT_TABLE_NAME_S = "itintab"
 
-	CONT_REF_L = "refers to"
+	CONT_REF_L = "uses/refers to"
 	CONT_REF_S = "refersto"
 
-	INV_CONT_REF_L = "is referred to in"
+	INV_CONT_REF_L = "is used/referred to in"
 	INV_CONT_REF_S = "isreferredtoin"
 
 	// This is a "contained-by something that expresses"

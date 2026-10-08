@@ -9,11 +9,12 @@ package main
 import (
 	"fmt"
 	"os"
-	"slices"
+	//	"slices"
 	"strings"
 	"path/filepath"
 	"bytes"
 	"encoding/json"
+
 
 	SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
 )
@@ -22,39 +23,182 @@ import (
 
 func main() {
 
+
 	// read and assess json files
 	
 	file := "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi-sonnet55-s3-20261004-131451/transcript.jsonl"
 
 	//file = "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi-sonnet55-s3-20261004-131451/run.json"
 
-	// file = "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi_consequence-sonnet55-s1-20261004-131046/manifest.json"
+	//file = "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi_consequence-sonnet55-s1-20261004-131046/manifest.json"
 	
-	filebytes, err := os.ReadFile(file)
+	ProcessJsonType(file)
 
+}
+
+//**************************************************************
+
+func ProcessJsonType(filename string) {
+
+	filebytes, err := os.ReadFile(filename)
+	
 	if err != nil {
 		panic(err)
 	}
-
-	ext := filepath.Ext(file) 
-
+	
+	ext := filepath.Ext(filename) 
+	
 	switch ext {
 	case ".json":
-		GetJSON(file,filebytes)
+		ProcessJson(filename,filebytes)
 		
 	case ".jsonl":
+		
 		lines := bytes.Split(filebytes, []byte("\n"))
 
-		for _,l := range lines {
-			GetJSON(file,l)
+		for _,runpart := range lines {
+			ProcessJson(filename,runpart)
 		}
 
 	default:
 		fmt.Println("File suffix",ext)
 		os.Exit(0)
 	}
+}
 
+//**************************************************************
+
+func ProcessJson(filename string,filebytes []byte) {
+
+	var result map[string]any // 'any' is an alias for interface{}
 	
+	if err := json.Unmarshal(filebytes, &result); err != nil {
+		
+		fmt.Println("Error:", err)
+		os.Exit(-1)
+	}
+
+	nametype := GetFileType(filename)
+
+	AnalyzeJson(result,0,nametype)
+	DumpEverything(result,nametype)
+}
+
+//**************************************************************
+
+func GetFileType(filename string) string {
+
+	prefix := []string{"run","manifest","transcript"}
+
+	last := strings.Split(filename,"/")
+	name := last[len(last)-1]
+	
+	for _,pr := range prefix {
+		if strings.Contains(name,pr) {
+			return pr
+		}
+	}
+	
+	return "none"
+}
+
+//**************************************************************
+
+func AnalyzeJson(v any,level int,prefix string) {
+
+	switch val := v.(type) {
+
+	// This is where the LHS key is handled at any level
+
+	case map[string]any:
+		fmt.Printf("%s [Struct]:\n", prefix)
+		for k, subVal := range val {
+			subprefix := fmt.Sprintf(" > ")
+			if level == 0 {
+				fmt.Printf("\t ***>  K: %q -> ",k)
+			} else {
+				fmt.Printf("\t\t --->  K: %q -> ",k)
+			}
+
+			AnalyzeJson(subVal,level, subprefix)
+		}
+
+	// Below are all the RHS
+		
+	case []any:
+		fmt.Printf("%s [Array] (length %d):\n", prefix, len(val))
+		for i, subVal := range val {
+			fmt.Printf("\t\t\t  Idx [%d]: ", i)
+			AnalyzeJson(subVal,level,prefix)
+		}
+	case string:
+		fmt.Printf("(string) %q\n", val)
+	case float64:
+		// Go unmarshals all JSON numbers to float64 by default
+		fmt.Printf("(number) %v\n", val)
+	case bool:
+		fmt.Printf("(boolean) %v\n", val)
+	case nil:
+		fmt.Printf("(null) nil\n")
+	default:
+		fmt.Printf("(unknown) %v\n", val)
+	}
+}
+
+//**************************************************************
+
+func DumpEverything(v any,prefix string) {
+	
+	fmt.Println("------- DUMP START ------")
+
+	PrintTypedValue(v,0,prefix)
+}
+
+//**************************************************************
+
+func PrintTypedValue(v any, level int,prefix string) {
+
+	switch val := v.(type) {
+
+	// This is where the LHS key is handled at any level
+
+	case map[string]any:
+		fmt.Printf("%s [Struct]:\n", prefix)
+		for k, subVal := range val {
+			subprefix := fmt.Sprintf(" > ")
+			if level == 0 {
+				fmt.Printf("\t ***>  K: %q -> ",k)
+			} else {
+				fmt.Printf("\t\t --->  K: %q -> ",k)
+			}
+
+			PrintTypedValue(subVal,level+1,subprefix)
+		}
+
+	// Below are all the RHS
+		
+	case []any:
+		fmt.Printf("%s [Array] (length %d):\n", prefix, len(val))
+		for i, subVal := range val {
+			fmt.Printf("\t\t\t  Idx [%d]: ", i)
+			PrintTypedValue(subVal,level+1,prefix)
+		}
+	case string:
+		fmt.Printf("(string) %q\n", val)
+	case float64:
+		// Go unmarshals all JSON numbers to float64 by default
+		fmt.Printf("(number) %v\n", val)
+	case bool:
+		fmt.Printf("(boolean) %v\n", val)
+	case nil:
+		fmt.Printf("(null) nil\n")
+	default:
+		fmt.Printf("(unknown) %v\n", val)
+	}
+}
+
+//**************************************************************
+
 	// ***********
 
 	/*	
@@ -73,88 +217,7 @@ func main() {
 		AFractionateText(n,l)
 		SplitAndLook(sst,l)
 	}*/	
-}
 
-//**************************************************************
-
-func GetJSON(filename string,jsonData []byte) {
-
-	var result map[string]any // 'any' is an alias for interface{}
-	
-	if err := json.Unmarshal(jsonData, &result); err != nil {
-		
-		fmt.Println("Error:", err)
-		os.Exit(-1)
-	}
-	
-	prefix := []string{"run","manifest","transcript"}
-	last := strings.Split(filename,"/")
-	name := last[len(last)-1]
-	var main_keys = make(map[string]int)
-	var order []string
-
-	for k := range result {
-		main_keys[k]++
-		order=append(order,k)
-	}	
-
-	slices.Sort(order)
-	
-	for _,v := range order {
-		fmt.Println("schema ",main_keys[v],v)
-	}
-
-	fmt.Println("------- START ------")
-	
-	for _,pr := range prefix {
-		if strings.Contains(name,pr) {
-			PrintTypedValue(result,main_keys,pr)
-		}
-	}
-}
-
-//**************************************************************
-
-func PrintTypedValue(v any, keys map[string]int,prefix string) {
-
-	switch val := v.(type) {
-
-	// This is where the LHS key is handled at any level
-
-	case map[string]any:
-		fmt.Printf("%s [Struct]:\n", prefix)
-		for k, subVal := range val {
-			subprefix := fmt.Sprintf("%s > ",prefix)
-			if keys[k] > 0 {
-				fmt.Printf("\t ***>  K: %q -> ",k)
-			} else {
-				fmt.Printf("\t\t --->  K: %q -> ",k)
-			}
-
-			PrintTypedValue(subVal,keys, subprefix)
-		}
-
-	// Below are all the RHS
-		
-	case []any:
-		fmt.Printf("%s [Array] (length %d):\n", prefix, len(val))
-		for i, subVal := range val {
-			fmt.Printf("\t\t\t  Idx [%d]: ", i)
-			PrintTypedValue(subVal,keys,prefix)
-		}
-	case string:
-		fmt.Printf("(string) %q\n", val)
-	case float64:
-		// Go unmarshals all JSON numbers to float64 by default
-		fmt.Printf("(number) %v\n", val)
-	case bool:
-		fmt.Printf("(boolean) %v\n", val)
-	case nil:
-		fmt.Printf("(null) nil\n")
-	default:
-		fmt.Printf("(unknown) %v\n", val)
-	}
-}
 
 //**************************************************************
 

@@ -182,14 +182,14 @@ func IsNewSection(para string) (bool,string,string) {
 
 // **************************************************************************
 
-func CheckAnnotations(para string) string {
+func CheckAnnotations(s string) string {
 
 	// Insert a *** annotation where boldface **x y z...** has been used
 	// Note, this assumes that *** is defined in the standard way
-	
-	modified := strings.ReplaceAll(para,"** ","` ")
-	modified = strings.ReplaceAll(para,"**","***`")
 
+	start := regexp.MustCompile("[*][*][ -_\"]") 
+	modified := start.ReplaceAllString(s,"`") 
+	modified = strings.ReplaceAll(modified,"**","***`")
 	return modified
 }
 

@@ -180,8 +180,10 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 	// 
 
+	fmt.Fprintf(fp,"\n#######################################")
 	fmt.Fprintf(fp,"\n :: _sequence_ , %s::\n", filealias)
-
+	fmt.Fprintf(fp,"#######################################\n")
+	
 	var partcheck = make(map[string]bool)
 	var parts []string
 	var lastpart string
@@ -206,7 +208,9 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 		
 		if part != lastpart {
 			if len(context) > 0 {
+				fmt.Fprintf(fp,"\n#######################################")
 				fmt.Fprintf(fp,"\n :: %s ::\n",context)
+				fmt.Fprintf(fp,"#######################################\n")
 			}
 			
 			lastpart = part

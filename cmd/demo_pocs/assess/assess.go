@@ -26,13 +26,12 @@ func main() {
 
 	// read and assess json files
 	
-	file := "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi-sonnet55-s3-20261004-131451/transcript.jsonl"
+	files := []string{"../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi-sonnet55-s3-20261004-131451/transcript.jsonl", "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi-sonnet55-s3-20261004-131451/run.json", "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi_consequence-sonnet55-s1-20261004-131046/manifest.json" }
 
-	//file = "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi-sonnet55-s3-20261004-131451/run.json"
-
-	//file = "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi_consequence-sonnet55-s1-20261004-131046/manifest.json"
-	
-	ProcessJsonType(file)
+	for _,file := range files {
+		fmt.Println("\nPROCESS ",file)
+		ProcessJsonType(file)
+	}
 
 }
 
@@ -43,21 +42,22 @@ func ProcessJsonType(filename string) {
 	filebytes, err := os.ReadFile(filename)
 	
 	if err != nil {
-		panic(err)
+		return
 	}
 	
 	ext := filepath.Ext(filename) 
 	
 	switch ext {
 	case ".json":
-		ProcessJson(filename,filebytes)
+		ProcessDeclaration(filename,filebytes)
 		
 	case ".jsonl":
 		
 		lines := bytes.Split(filebytes, []byte("\n"))
 
 		for _,runpart := range lines {
-			ProcessJson(filename,runpart)
+			ProcessTranscript(filename,runpart)
+			fmt.Println("-------------------------------------")
 		}
 
 	default:
@@ -68,20 +68,50 @@ func ProcessJsonType(filename string) {
 
 //**************************************************************
 
-func ProcessJson(filename string,filebytes []byte) {
+func ProcessTranscript(filename string,filebytes []byte) {
 
-	var result map[string]any // 'any' is an alias for interface{}
-	
-	if err := json.Unmarshal(filebytes, &result); err != nil {
-		
-		fmt.Println("Error:", err)
-		os.Exit(-1)
+	var json_file interface{}
+
+	if err := json.Unmarshal(filebytes, &json_file); err != nil {
+		return
 	}
 
-	nametype := GetFileType(filename)
+	var pathList []PathValue
 
-	AnalyzeJson(result,0,nametype)
-	DumpEverything(result,nametype)
+	ExtractPaths("", json_file, &pathList)
+
+	for _, item := range pathList {
+		switch item.Path {
+		case "text","agent","thinking":
+			fmt.Printf("%-10s : \"%v\" (%T)\n",item.Path, item.Value, item.Value)
+		}
+	}
+
+}
+
+//**************************************************************
+
+func ProcessDeclaration(filename string,filebytes []byte) {
+
+	var json_file interface{}
+
+	if err := json.Unmarshal(filebytes, &json_file); err != nil {
+		return
+	}
+
+	var pathList []PathValue
+	var important = []string{"principal","opening","prompt","world_event","escalation","think"}
+
+	ExtractPaths("", json_file, &pathList)
+
+	for _, item := range pathList {
+		for _,word := range important {
+			if strings.Contains(item.Path,word) {
+				fmt.Printf("%-10s : \"%v\" (%T)\n", item.Path, item.Value, item.Value)
+			}
+		}
+	}
+
 }
 
 //**************************************************************
@@ -104,100 +134,43 @@ func GetFileType(filename string) string {
 
 //**************************************************************
 
-func AnalyzeJson(v any,level int,prefix string) {
 
-	switch val := v.(type) {
+// PathValue represents a single extracted leaf entry.
 
-	// This is where the LHS key is handled at any level
+type PathValue struct {
+	Path  string      `json:"path"`
+	Value interface{} `json:"value"`
+}
 
-	case map[string]any:
-		fmt.Printf("%s [Struct]:\n", prefix)
-		for k, subVal := range val {
-			subprefix := fmt.Sprintf(" > ")
-			if level == 0 {
-				fmt.Printf("\t ***>  K: %q -> ",k)
-			} else {
-				fmt.Printf("\t\t --->  K: %q -> ",k)
+//**************************************************************
+
+func ExtractPaths(prefix string, value interface{}, list *[]PathValue) {
+
+	switch v := value.(type) {
+	case map[string]interface{}:
+		for key, child := range v {
+			newPath := key
+			if prefix != "" {
+				newPath = prefix + "." + key
 			}
-
-			AnalyzeJson(subVal,level, subprefix)
+			ExtractPaths(newPath, child, list)
 		}
 
-	// Below are all the RHS
-		
-	case []any:
-		fmt.Printf("%s [Array] (length %d):\n", prefix, len(val))
-		for i, subVal := range val {
-			fmt.Printf("\t\t\t  Idx [%d]: ", i)
-			AnalyzeJson(subVal,level,prefix)
+	case []interface{}:
+		for i, child := range v {
+			newPath := fmt.Sprintf("%s.%d", prefix, i)
+			ExtractPaths(newPath, child, list)
 		}
-	case string:
-		fmt.Printf("(string) %q\n", val)
-	case float64:
-		// Go unmarshals all JSON numbers to float64 by default
-		fmt.Printf("(number) %v\n", val)
-	case bool:
-		fmt.Printf("(boolean) %v\n", val)
-	case nil:
-		fmt.Printf("(null) nil\n")
+
 	default:
-		fmt.Printf("(unknown) %v\n", val)
+		// Reached a leaf node (string, float64, bool, nil)
+		*list = append(*list, PathValue{
+			Path:  prefix,
+			Value: v,
+		})
 	}
 }
 
-//**************************************************************
-
-func DumpEverything(v any,prefix string) {
-	
-	fmt.Println("------- DUMP START ------")
-
-	PrintTypedValue(v,0,prefix)
-}
-
-//**************************************************************
-
-func PrintTypedValue(v any, level int,prefix string) {
-
-	switch val := v.(type) {
-
-	// This is where the LHS key is handled at any level
-
-	case map[string]any:
-		fmt.Printf("%s [Struct]:\n", prefix)
-		for k, subVal := range val {
-			subprefix := fmt.Sprintf(" > ")
-			if level == 0 {
-				fmt.Printf("\t ***>  K: %q -> ",k)
-			} else {
-				fmt.Printf("\t\t --->  K: %q -> ",k)
-			}
-
-			PrintTypedValue(subVal,level+1,subprefix)
-		}
-
-	// Below are all the RHS
-		
-	case []any:
-		fmt.Printf("%s [Array] (length %d):\n", prefix, len(val))
-		for i, subVal := range val {
-			fmt.Printf("\t\t\t  Idx [%d]: ", i)
-			PrintTypedValue(subVal,level+1,prefix)
-		}
-	case string:
-		fmt.Printf("(string) %q\n", val)
-	case float64:
-		// Go unmarshals all JSON numbers to float64 by default
-		fmt.Printf("(number) %v\n", val)
-	case bool:
-		fmt.Printf("(boolean) %v\n", val)
-	case nil:
-		fmt.Printf("(null) nil\n")
-	default:
-		fmt.Printf("(unknown) %v\n", val)
-	}
-}
-
-//**************************************************************
 
 	// ***********
 

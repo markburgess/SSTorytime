@@ -4,6 +4,7 @@
 *.la
 *.kate-swp
 *.lo
+*GENERATED*.n4l
 *.out
 *.cmp
 *.bak

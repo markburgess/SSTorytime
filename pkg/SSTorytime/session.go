@@ -17,6 +17,18 @@ import (
 //
 //**************************************************************
 
+func InitSSTorytime() {
+	
+	for i := 1; i < N_GRAM_MAX; i++ {
+		
+		STM_NGRAM_FREQ[i] = make(map[string]float64)
+		STM_NGRAM_LOCA[i] = make(map[string][]int)
+		STM_NGRAM_LAST[i] = make(map[string]int)
+	}
+}
+
+//**************************************************************
+
 func Open(load_arrows bool) PoSST {
 
 	var sst PoSST

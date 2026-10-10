@@ -68,6 +68,141 @@ func ContextIntentAnalysis(spectrum map[string]int) ([]string,[]string) {
 }
 
 
+//*******************************************************************
+
+func SelectByRunningIntent(psf [][]Sentence,L int,percentage float64) []TextRank {
+
+	// Rank sentences
+
+	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
+
+	var sentences []TextRank
+	var sentence_counter int
+
+	for p := range psf {
+
+		for s := range psf[p] {
+
+			score := 0.0
+
+			for f := 0; f < len(psf[p][s].Frags); f++ {
+
+				score += RunningIntentionality(sentence_counter,psf[p][s].Frags[f])
+			}
+
+			var this TextRank
+			this.Fragment = psf[p][s].S
+			this.Title = psf[p][s].Title
+			this.Significance = score
+			this.Order = sentence_counter
+			this.Partition = sentence_counter / coherence_length
+			sentences = append(sentences,this)
+			sentence_counter++
+		}
+	}
+
+	skimmed := OrderAndRank(sentences,percentage)
+
+	return skimmed
+}
+
+// ***************************************************
+
+func SelectByStaticIntent(psf [][]Sentence,L int,percentage float64) []TextRank {
+
+	// Rank sentences
+
+	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
+
+	var sentences []TextRank
+	var sentence_counter int
+
+	for p := range psf {
+
+		for s := range psf[p] {
+
+			score := 0.0
+
+			for f := 0; f < len(psf[p][s].Frags); f++ {
+
+				score += AssessStaticIntent(psf[p][s].Frags[f],L,STM_NGRAM_FREQ,1)
+			}
+
+			var this TextRank
+			this.Fragment = psf[p][s].S
+			this.Title = psf[p][s].Title
+			this.Significance = score
+			this.Order = sentence_counter
+			this.Partition = sentence_counter / coherence_length
+			sentences = append(sentences,this)
+			sentence_counter++
+		}
+	}
+
+	skimmed := OrderAndRank(sentences,percentage)
+
+	return skimmed
+}
+
+//*********************************************************************************
+
+func OrderAndRank(sentences []TextRank,percentage float64) []TextRank {
+
+	var selections []TextRank
+
+	// Order by intentionality first to skim cream
+
+	sort.Slice(sentences, func(i, j int) bool {
+		return sentences[i].Significance > sentences[j].Significance
+	})
+
+	// Measure relative threshold for percentage of document
+	// the lower the threshold, the lower the significance of the document
+
+	threshold := percentage / 100.0
+
+	limit := int(threshold * float64(len(sentences)))
+
+	for i := 0; i < limit; i++ {
+		selections = append(selections,sentences[i])
+	}
+
+	// Order by line number again to restore causal order
+
+	sort.Slice(selections, func(i, j int) bool {
+		return selections[i].Order < selections[j].Order
+	})
+
+	return selections
+}
+
+//*********************************************************************************
+
+func MergeSelections(one []TextRank,two []TextRank) []TextRank{
+
+	var merge []TextRank
+	var already_selected = make(map[int]bool)
+
+	for i := range one {
+		merge = append(merge,one[i])
+		already_selected[one[i].Order] = true
+	}
+
+	for i := range two {
+		if !already_selected[two[i].Order] {
+			merge = append(merge,two[i])
+		}
+	}
+
+	// Order by line number again to restore causal order
+
+	sort.Slice(merge, func(i, j int) bool {
+		return merge[i].Order < merge[j].Order
+	})
+
+	return merge
+}
+
 // **************************************************************************
 
 func GetChaptersByChapContext(sst PoSST,chap string,cn []string,limit int) map[string][]string {

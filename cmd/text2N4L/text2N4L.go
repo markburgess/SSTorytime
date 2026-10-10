@@ -9,7 +9,6 @@ package main
 import (
 	"os"
 	"fmt"
-	"sort"
 	"flag"
 	"strings"
 
@@ -73,21 +72,16 @@ func Usage() {
 
 func RipFile2File(filename string,percentage float64) {
 
-	for i := 1; i < SST.N_GRAM_MAX; i++ {
-		
-		SST.STM_NGRAM_FREQ[i] = make(map[string]float64)
-		SST.STM_NGRAM_LOCA[i] = make(map[string][]int)
-		SST.STM_NGRAM_LAST[i] = make(map[string]int)
-	}
+	SST.InitSSTorytime()
 
 	fmt.Println("Fractionating txt file...",filename)
 	psf,L := SST.FractionateTextFile(filename)
 	fmt.Println("Analyzing longitudinal patterns")
-	ranking1 := SelectByRunningIntent(psf,L,percentage)
+	ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
 	fmt.Println("Analyzing transverse statistical patterns")
-	ranking2 := SelectByStaticIntent(psf,L,percentage)
+	ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
 	fmt.Println("Merging selections")
-	selection := MergeSelections(ranking1,ranking2)
+	selection := SST.MergeSelections(ranking1,ranking2)
 
 	fmt.Println("Extracting ambient phrases for context")
 
@@ -119,11 +113,11 @@ func RipMarkdown(filename string,percentage float64) {
 	SST.AnnotateFractionIntent(psf)
 
 	fmt.Println("Analyzing longitudinal patterns")
-	ranking1 := SelectByRunningIntent(psf,L,percentage)
+	ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
 	fmt.Println("Analyzing transverse statistical patterns")
-	ranking2 := SelectByStaticIntent(psf,L,percentage)
+	ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
 	fmt.Println("Merging selections")
-	selection := MergeSelections(ranking1,ranking2)
+	selection := SST.MergeSelections(ranking1,ranking2)
 
 	fmt.Println("Extracting ambient phrases for context")
 
@@ -196,7 +190,7 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 		}
 		
 		var part string
-		context := SpliceSet(ambi_by_part[selection[i].Partition])
+		context := SST.SpliceSet(ambi_by_part[selection[i].Partition])
 		
 		if len(selection[i].Title) > 0 {
 			part = selection[i].Title
@@ -217,7 +211,7 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 			
 		}
 
-		fmt.Fprintf(fp,"\n@sen%d   %s\n\n",selection[i].Order,Sanitize(selection[i].Fragment))		
+		fmt.Fprintf(fp,"\n@sen%d   %s\n\n",selection[i].Order,SST.SanitizeParen(selection[i].Fragment))		
 		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.INV_CONT_FOUND_IN_S,part)
 		
 		AddIntentionalContext(collected_fragments,part,anom_by_part[selection[i].Partition],already)
@@ -327,13 +321,6 @@ func PartName(p int,file string,context string) string {
 
 //*******************************************************************
 
-func SpliceSet(ctx []string) string {
-
-	return strings.Join(ctx, ", ")
-}
-
-//*******************************************************************
-
 func AddIntentionalContext(collected map[string][]string,key string,ctx []string,already map[string]bool) {
 
 	for w := 0; w < len(ctx); w++ {
@@ -345,145 +332,8 @@ func AddIntentionalContext(collected map[string][]string,key string,ctx []string
 	}
 }
 
-//*******************************************************************
 
-func Sanitize(s string) string {
+//
+// end text2N4L
+//
 
-	replacer := strings.NewReplacer("(", "[", ")", "]")
-	return replacer.Replace(s)
-}
-
-//*******************************************************************
-
-func SelectByRunningIntent(psf [][]SST.Sentence,L int,percentage float64) []SST.TextRank {
-
-	// Rank sentences
-
-	const coherence_length = SST.DUNBAR_30   // approx narrative range or #sentences before new point/topic
-
-	var sentences []SST.TextRank
-	var sentence_counter int
-
-	for p := range psf {
-
-		for s := range psf[p] {
-
-			score := 0.0
-
-			for f := 0; f < len(psf[p][s].Frags); f++ {
-
-				score += SST.RunningIntentionality(sentence_counter,psf[p][s].Frags[f])
-			}
-
-			var this SST.TextRank
-			this.Fragment = psf[p][s].S
-			this.Title = psf[p][s].Title
-			this.Significance = score
-			this.Order = sentence_counter
-			this.Partition = sentence_counter / coherence_length
-			sentences = append(sentences,this)
-			sentence_counter++
-		}
-	}
-
-	skimmed := OrderAndRank(sentences,percentage)
-
-	return skimmed
-}
-
-// ***************************************************
-
-func SelectByStaticIntent(psf [][]SST.Sentence,L int,percentage float64) []SST.TextRank {
-
-	// Rank sentences
-
-	const coherence_length = SST.DUNBAR_30   // approx narrative range or #sentences before new point/topic
-
-	var sentences []SST.TextRank
-	var sentence_counter int
-
-	for p := range psf {
-
-		for s := range psf[p] {
-
-			score := 0.0
-
-			for f := 0; f < len(psf[p][s].Frags); f++ {
-
-				score += SST.AssessStaticIntent(psf[p][s].Frags[f],L,SST.STM_NGRAM_FREQ,1)
-			}
-
-			var this SST.TextRank
-			this.Fragment = psf[p][s].S
-			this.Title = psf[p][s].Title
-			this.Significance = score
-			this.Order = sentence_counter
-			this.Partition = sentence_counter / coherence_length
-			sentences = append(sentences,this)
-			sentence_counter++
-		}
-	}
-
-	skimmed := OrderAndRank(sentences,percentage)
-
-	return skimmed
-}
-
-//*********************************************************************************
-
-func OrderAndRank(sentences []SST.TextRank,percentage float64) []SST.TextRank {
-
-	var selections []SST.TextRank
-
-	// Order by intentionality first to skim cream
-
-	sort.Slice(sentences, func(i, j int) bool {
-		return sentences[i].Significance > sentences[j].Significance
-	})
-
-	// Measure relative threshold for percentage of document
-	// the lower the threshold, the lower the significance of the document
-
-	threshold := percentage / 100.0
-
-	limit := int(threshold * float64(len(sentences)))
-
-	for i := 0; i < limit; i++ {
-		selections = append(selections,sentences[i])
-	}
-
-	// Order by line number again to restore causal order
-
-	sort.Slice(selections, func(i, j int) bool {
-		return selections[i].Order < selections[j].Order
-	})
-
-	return selections
-}
-
-//*********************************************************************************
-
-func MergeSelections(one []SST.TextRank,two []SST.TextRank) []SST.TextRank{
-
-	var merge []SST.TextRank
-	var already_selected = make(map[int]bool)
-
-	for i := range one {
-		merge = append(merge,one[i])
-		already_selected[one[i].Order] = true
-	}
-
-	for i := range two {
-		if !already_selected[two[i].Order] {
-			merge = append(merge,two[i])
-		}
-	}
-
-	// Order by line number again to restore causal order
-
-	sort.Slice(merge, func(i, j int) bool {
-		return merge[i].Order < merge[j].Order
-	})
-
-	return merge
-}

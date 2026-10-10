@@ -1,6 +1,6 @@
 //******************************************************************
 //
-// assess
+// assess the definitions of an AI agent
 //
 //******************************************************************
 
@@ -15,7 +15,6 @@ import (
 	"bytes"
 	"encoding/json"
 
-
 	SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
 )
 
@@ -23,40 +22,250 @@ import (
 
 func main() {
 
-
+	SST.InitSSTorytime()
+	
 	// read and assess json files
 	
-	files := []string{"../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi-sonnet55-s3-20261004-131451/transcript.jsonl", "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi-sonnet55-s3-20261004-131451/run.json", "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi_consequence-sonnet55-s1-20261004-131046/manifest.json" }
+	dir := "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi-sonnet55-s3-20261004-131451/"
 
+	HandleAgentMarkDown(dir)
+	
+	files := []string{"transcript.jsonl","run.json","manifest.json"}
+	
 	for _,file := range files {
-		fmt.Println("\nPROCESS ",file)
-		ProcessJsonType(file)
+		cmpt := dir+file
+		fmt.Println("\nAssessing run : ",cmpt)
+		AssessJsonType(cmpt)
 	}
 
 }
 
 //**************************************************************
 
-func ProcessJsonType(filename string) {
+func HandleAgentMarkDown(dir string) {
+
+	const percentage = 100
+
+	files, err := os.ReadDir(dir)
+	
+	if err != nil {
+		fmt.Println("Error",err)
+		return
+	}
+
+	outputfile := "AGENT_ASSESSMENT_GENERATED.n4l"
+
+	fp, err := os.Create(outputfile)
+
+	if err != nil {
+		fmt.Println("Failed to open file for writing: ",outputfile)
+		os.Exit(-1)
+	}
+
+	defer fp.Close()
+	
+	for _, entry := range files {
+		
+		ext := filepath.Ext(entry.Name())
+		name := entry.Name()
+
+		if strings.HasSuffix(ext,".md") {
+			_, err := entry.Info()
+			if err != nil {
+				fmt.Printf(" ** Could not get info for %s: %v\n", name, err)
+				continue
+			}
+
+			fmt.Println("Assess MD file",dir+name)
+
+			psf,L := SST.FractionateMarkdown(dir+name)
+
+			SST.AnnotateFractionIntent(psf)
+		
+			ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
+			ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
+			selection := SST.MergeSelections(ranking1,ranking2)
+			
+			const minN = 1 // >= N_GRAM_MIN
+			const maxN = 4 // <= N_GRAM_MAX
+
+			f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
+
+			GenerateOutput(fp,selection,L,percentage,f,s,ff,ss)
+		}		
+	}
+
+}
+
+//*******************************************************************
+
+func GenerateOutput(fp *os.File,selection []SST.TextRank,L int, percentage float64,anom_by_part[][]string,ambi_by_part[][]string,all_anom[]string,all_ambi[]string) {
+
+	// See AddMandatory() in N4L.go for reserved names (TBD, collect these one day as const)
+
+	var collected_fragments = make(map[string][]string)
+
+	filealias := "agent_assessment"
+	
+	fmt.Fprintf(fp," - System Prompt Declaration %s\n",filealias)
+
+	fmt.Fprintf(fp,"\n# (begin) ************\n")
+
+	// Lookup tables of contents from Markdown
+
+	SST.CompileTabular(fp,filealias,SST.TABLES)
+	SST.CompileTOC(fp,filealias,SST.SECTIONS)
+
+	// 
+
+	fmt.Fprintf(fp,"\n#######################################")
+	fmt.Fprintf(fp,"\n :: _sequence_ , %s::\n", filealias)
+	fmt.Fprintf(fp,"#######################################\n")
+	
+	var partcheck = make(map[string]bool)
+	var parts []string
+	var lastpart string
+	var already = make(map[string]bool)
+
+	for i := range selection {
+
+		if len(selection[i].Fragment) < 1 {
+			continue
+		}
+		
+		var part string
+		context := SST.SpliceSet(ambi_by_part[selection[i].Partition])
+		
+		if len(selection[i].Title) > 0 {
+			part = selection[i].Title
+		} else {
+			part = "No section"
+		}
+		
+		// Add context from n = 2,3 fractions
+		
+		if part != lastpart {
+			if len(context) > 0 {
+				fmt.Fprintf(fp,"\n#######################################")
+				fmt.Fprintf(fp,"\n :: %s ::\n",context)
+				fmt.Fprintf(fp,"#######################################\n")
+			}
+			
+			lastpart = part
+			
+		}
+
+		fmt.Fprintf(fp,"\n@sen%d   %s\n\n",selection[i].Order,SST.SanitizeParen(selection[i].Fragment))		
+		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.INV_CONT_FOUND_IN_S,part)
+		
+		AddIntentionalContext(collected_fragments,part,anom_by_part[selection[i].Partition],already)
+		
+		if !partcheck[part] {
+			parts = append(parts,part)
+			partcheck[part] = true
+		}
+	}
+	
+	fmt.Fprintf(fp,"\n -:: _sequence_ , %s::\n", filealias)
+	fmt.Fprintf(fp,"\n# (end) ************\n")
+
+	// some stats
+
+	fmt.Fprintf(fp,"\n# Final fraction %.2f of requested %.2f\n",float64(len(selection)*100)/float64(L),percentage)
+
+	//WriteSampleSelections(fp,selection,L)
+
+	// add the parts' fragments
+
+	fmt.Fprintf(fp,"\n #\n # Concepts by part / region \n #\n")
+
+	for key := range collected_fragments {
+
+		fmt.Fprintf(fp,"\n\n %s\n",key)
+		for _,s := range collected_fragments[key] {
+			fmt.Fprintf(fp,"              \" (%s) %s\n",SST.CONT_FRAG_S,s)
+		}
+	}
+
+	// document the parts
+
+	fmt.Fprintf(fp,"\n #\n # SUMMARY OF CONTEXT AND SIGNIFICANT FRAGMENTS\n #\n")
+
+	fmt.Fprintf(fp,"\n :: themes and topics you might want to annotate/replace ::\n")
+
+	fmt.Fprintf(fp,"\n :: parts, sections ::\n")
+
+	for p := range parts {
+		
+		container,exists := SST.DOC_DIRECTORY[parts[p]]
+
+		if exists {
+			fmt.Fprintf(fp,"\n %s (%s) %s \n",parts[p],SST.INV_CONT_FRAG_IN_S,container)
+		} else {
+			fmt.Fprintf(fp,"\n %s \n",parts[p])
+		}
+
+		if p < len(ambi_by_part) {
+			for w := range ambi_by_part[p] {
+				fmt.Fprintf(fp,"  #AMBI %s\n",ambi_by_part[p][w])
+			}
+		}
+
+		if p < len(anom_by_part) {
+			for w := range anom_by_part[p] {
+				fmt.Fprintf(fp,"   #INTENT %s\n",anom_by_part[p][w])
+			}
+		}
+	}
+
+
+	/* whole document summary
+
+	for w := range all_ambi {
+		fmt.Fprintf(fp," # %s\n",all_ambi[w])
+	}
+
+	for w := range all_anom {
+		fmt.Fprintf(fp,"  # %s\n",all_anom[w])
+	} */		
+}
+
+//*******************************************************************
+
+func AddIntentionalContext(collected map[string][]string,key string,ctx []string,already map[string]bool) {
+
+	for w := 0; w < len(ctx); w++ {
+
+		if !already[ctx[w]] {
+			collected[key] = append(collected[key],ctx[w])
+			already[ctx[w]] = true
+		}
+	}
+}
+
+//**************************************************************
+
+func AssessJsonType(filename string) {
 
 	filebytes, err := os.ReadFile(filename)
 	
 	if err != nil {
+		fmt.Println("Unable to read",filename,err)
 		return
 	}
 	
 	ext := filepath.Ext(filename) 
-	
+
 	switch ext {
 	case ".json":
-		ProcessDeclaration(filename,filebytes)
+		AssessDeclaration(filename,filebytes)
 		
 	case ".jsonl":
 		
 		lines := bytes.Split(filebytes, []byte("\n"))
 
 		for _,runpart := range lines {
-			ProcessTranscript(filename,runpart)
+			AssessTranscript(filename,runpart)
 			fmt.Println("-------------------------------------")
 		}
 
@@ -68,7 +277,7 @@ func ProcessJsonType(filename string) {
 
 //**************************************************************
 
-func ProcessTranscript(filename string,filebytes []byte) {
+func AssessTranscript(filename string,filebytes []byte) {
 
 	var json_file interface{}
 
@@ -91,7 +300,7 @@ func ProcessTranscript(filename string,filebytes []byte) {
 
 //**************************************************************
 
-func ProcessDeclaration(filename string,filebytes []byte) {
+func AssessDeclaration(filename string,filebytes []byte) {
 
 	var json_file interface{}
 
@@ -100,7 +309,7 @@ func ProcessDeclaration(filename string,filebytes []byte) {
 	}
 
 	var pathList []PathValue
-	var important = []string{"principal","opening","prompt","world_event","escalation","think"}
+	var important = []string{"principal","opening","world_event","escalation","think"}
 
 	ExtractPaths("", json_file, &pathList)
 

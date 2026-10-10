@@ -157,13 +157,11 @@ func CompileTabular(fp *os.File, filealias string, tables []MDTable) {
 			}
 		}
 
-		for j, row := range table.Rows {
+		for _, row := range table.Rows {
 
 			last := ""
 			
 			for _, cell := range row.Cells {
-				fmt.Fprintf(fp," # table row\n")
-				fmt.Fprintf(fp,"\n Associative row %d (%s) %s\n",j+1,EXPR_TABNAME_S,cell.Value)
 				fmt.Fprintf(fp," %s (%s) %s \n", table.Context,CONT_TABLE_NAME_L,cell.Value)
 				if !strings.HasPrefix(cell.Header,"col_") {
 					fmt.Fprintf(fp," %s (%s) %s \n", cell.Header,INV_EXPR_TAB_HEADER_L, cell.Value)

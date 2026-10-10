@@ -44,6 +44,21 @@ func SplitChapters(str string) []string {
 	return retval
 }
 
+//*******************************************************************
+
+func SpliceSet(ctx []string) string {
+
+	return strings.Join(ctx, ", ")
+}
+
+//*******************************************************************
+
+func SanitizeParen(s string) string {
+
+	replacer := strings.NewReplacer("(", "[", ")", "]")
+	return replacer.Replace(s)
+}
+
 // **************************************************************************
 
 func List2Map(l []string) map[string]int {

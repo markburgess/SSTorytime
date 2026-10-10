@@ -91,7 +91,9 @@ func HandleAgentMarkDown(dir string) {
 
 			f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
 
-			GenerateOutput(fp,selection,L,percentage,f,s,ff,ss)
+			name = name[:len(entry.Name())-len(".md")]
+			
+			GenerateOutput(fp,name,selection,L,percentage,f,s,ff,ss)
 		}		
 	}
 
@@ -99,15 +101,13 @@ func HandleAgentMarkDown(dir string) {
 
 //*******************************************************************
 
-func GenerateOutput(fp *os.File,selection []SST.TextRank,L int, percentage float64,anom_by_part[][]string,ambi_by_part[][]string,all_anom[]string,all_ambi[]string) {
+func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int, percentage float64,anom_by_part[][]string,ambi_by_part[][]string,all_anom[]string,all_ambi[]string) {
 
 	// See AddMandatory() in N4L.go for reserved names (TBD, collect these one day as const)
 
 	var collected_fragments = make(map[string][]string)
-
-	filealias := "agent_assessment"
 	
-	fmt.Fprintf(fp," - System Prompt Declaration %s\n",filealias)
+	fmt.Fprintf(fp,"-System Prompt Declaration %s\n",filealias)
 
 	fmt.Fprintf(fp,"\n# (begin) ************\n")
 

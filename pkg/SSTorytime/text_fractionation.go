@@ -187,10 +187,65 @@ func CheckAnnotations(s string) string {
 	// Insert a *** annotation where boldface **x y z...** has been used
 	// Note, this assumes that *** is defined in the standard way
 
-	start := regexp.MustCompile("[*][*][ -_\"]") 
-	modified := start.ReplaceAllString(s,"`") 
-	modified = strings.ReplaceAll(modified,"**","***`")
-	return modified
+	const searchtext = "**"
+
+	count := 0
+
+	index := strings.Index(s,searchtext)
+
+	if index < 0 {
+		return s
+	}
+	
+	for pos := index; pos < len(s); pos++ {
+
+		if pos < len(s) - len(searchtext) {
+			if s[pos:pos+2] == searchtext {
+				count++
+				pos += strings.Index(s[pos:],searchtext)
+			}
+		}
+	}
+
+	// Need matching **Start and end** to replace
+	
+	if count % 2 != 0 {
+		return s
+	}
+	
+	var openbrack bool = true
+	var modified []rune
+	runestring := []rune(s)
+	rlen := len(runestring)
+
+	for pos := 0; pos < rlen; pos++ {
+
+		switch runestring[pos] {
+		case '*':
+			if pos+1 < rlen && runestring[pos+1] == '*' {
+
+				if openbrack {
+					modified = append(modified,'*')
+					modified = append(modified,'*')
+					modified = append(modified,'*')
+					modified = append(modified,'`')
+					openbrack = false
+				} else {
+					modified = append(modified,'`')
+				}
+				
+				pos++
+				continue
+			} else {
+				modified = append(modified,'*')
+			}
+			
+		default:
+			modified = append(modified,runestring[pos])
+		}
+	}
+
+	return string(modified)
 }
 
 // **************************************************************************
@@ -340,6 +395,14 @@ func CleanText(s string) string {
 	// Start by stripping HTML / XML tags before para-split
 	// if they haven't been removed already
 
+	if strings.Contains(s,"\"") {
+		if strings.Contains(s,"'") {
+			strings.ReplaceAll(s,"\"","_")
+		} else {
+			s = "'"+s+"'"
+		}
+	}
+	
 	m := regexp.MustCompile("<[^>]+>") 
 	s = m.ReplaceAllString(s,"") 
 
@@ -351,6 +414,7 @@ func CleanText(s string) string {
 	s = strings.Replace(s,"Mrs.","Mrs",-1) 
 	s = strings.Replace(s,"Dr.","Dr",-1)
 	s = strings.Replace(s,"Ms.","Ms",-1)
+	s = strings.ReplaceAll(s,"$","CURRENCY-DOLLAR")
 	
 	// Encode sentence space boundaries and end of sentence markers with a # for later splitting
 

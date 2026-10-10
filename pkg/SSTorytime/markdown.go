@@ -85,7 +85,8 @@ func FractionateMarkdown(filename string) ([][]Sentence, int) {
 			TABLES = append(TABLES, tableData)
 
 		case *ast.Heading:
-			title = CleanText(string(n.Text(source)))
+			_,value,_ := IsNewSection(string(n.Text(source)))
+			title = value
 			level = n.Level
 
 		case *ast.Paragraph:

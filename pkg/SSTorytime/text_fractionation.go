@@ -388,6 +388,15 @@ func SanitizeSentence(extract []rune) string {
 
 //**************************************************************
 
+func SanitizeToken(s string) string {
+
+	s = strings.ReplaceAll(s,"***","")
+	s = strings.ReplaceAll(s,"`","")
+	return s
+}
+
+//**************************************************************
+
 func CleanText(s string) string {
 
 	s = strings.TrimSpace(s)
@@ -497,6 +506,7 @@ func AssemblePBSF(sections []ExtSentence)  ([][]Sentence,int) {
 			count++
 			
 			for f := range frags {
+				frags[f] = SanitizeToken(frags[f])
 				content := strings.TrimSpace(frags[f])
 				if len(content) > 2 {			
 					this.Frags = append(this.Frags,content)

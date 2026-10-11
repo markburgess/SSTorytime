@@ -9,7 +9,6 @@ package main
 import (
 	"fmt"
 	"os"
-	//	"slices"
 	"strings"
 	"path/filepath"
 	"bytes"
@@ -257,14 +256,14 @@ func AssessJsonType(filename string) {
 
 	switch ext {
 	case ".json":
-		AssessDeclaration(filename,filebytes)
+		AssessJsonDeclaration(filename,filebytes)
 		
 	case ".jsonl":
 		
 		lines := bytes.Split(filebytes, []byte("\n"))
 
 		for _,runpart := range lines {
-			AssessTranscript(filename,runpart)
+			AssessJsonTranscript(filename,runpart)
 			fmt.Println("-------------------------------------")
 		}
 
@@ -276,7 +275,7 @@ func AssessJsonType(filename string) {
 
 //**************************************************************
 
-func AssessTranscript(filename string,filebytes []byte) {
+func AssessJsonTranscript(filename string,filebytes []byte) {
 
 	var json_file interface{}
 
@@ -286,12 +285,13 @@ func AssessTranscript(filename string,filebytes []byte) {
 
 	var pathList []PathValue
 
-	ExtractPaths("", json_file, &pathList)
+	if ExtractPaths("", json_file, &pathList) {
 
-	for _, item := range pathList {
-		switch item.Path {
-		case "text","agent","thinking":
-			fmt.Printf("%-10s : \"%v\" (%T)\n",item.Path, item.Value, item.Value)
+		for _, item := range pathList {
+			switch item.Path {
+			case "text","agent","thinking":
+				fmt.Printf("%-10s : \"%v\" (%T)\n",item.Path, item.Value, item.Value)
+			}
 		}
 	}
 
@@ -299,7 +299,7 @@ func AssessTranscript(filename string,filebytes []byte) {
 
 //**************************************************************
 
-func AssessDeclaration(filename string,filebytes []byte) {
+func AssessJsonDeclaration(filename string,filebytes []byte) {
 
 	var json_file interface{}
 
@@ -310,12 +310,38 @@ func AssessDeclaration(filename string,filebytes []byte) {
 	var pathList []PathValue
 	var important = []string{"principal","opening","world_event","escalation","think"}
 
-	ExtractPaths("", json_file, &pathList)
+	if ExtractPaths("", json_file, &pathList) {
 
-	for _, item := range pathList {
-		for _,word := range important {
-			if strings.Contains(item.Path,word) {
-				fmt.Printf("%-10s : \"%v\" (%T)\n", item.Path, item.Value, item.Value)
+		for _, item := range pathList {
+			for _,word := range important {
+				if strings.Contains(item.Path,word) {
+					//fmt.Printf("%-10s : \"%v\" (%T)\n", item.Path, item.Value, item.Value)
+
+					rhs := item.Value.(string)
+					rhsbyte := []byte(rhs)
+
+					if json.Valid(rhsbyte) {
+						
+					} else {
+
+					}
+					
+					psf,_ := SST.FractionateSmallMarkdown(rhsbyte)
+					SST.AnalyzeFractionIntent(psf)
+					/*ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
+					ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
+					selection := SST.MergeSelections(ranking1,ranking2)
+					
+					const minN = 1 // >= N_GRAM_MIN
+					const maxN = 4 // <= N_GRAM_MAX
+
+					f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
+					
+					name = name[:len(entry.Name())-len(".md")]
+					
+					GenerateOutput(fp,name,selection,L,percentage,f,s,ff,ss)
+					*/
+				}
 			}
 		}
 	}
@@ -351,8 +377,10 @@ type PathValue struct {
 
 //**************************************************************
 
-func ExtractPaths(prefix string, value interface{}, list *[]PathValue) {
+func ExtractPaths(prefix string, value interface{}, list *[]PathValue) bool {
 
+	var result bool
+	
 	switch v := value.(type) {
 	case map[string]interface{}:
 		for key, child := range v {
@@ -360,22 +388,29 @@ func ExtractPaths(prefix string, value interface{}, list *[]PathValue) {
 			if prefix != "" {
 				newPath = prefix + "." + key
 			}
-			ExtractPaths(newPath, child, list)
+			result = ExtractPaths(newPath, child, list)
 		}
 
 	case []interface{}:
 		for i, child := range v {
 			newPath := fmt.Sprintf("%s.%d", prefix, i)
-			ExtractPaths(newPath, child, list)
+			result = ExtractPaths(newPath, child, list)
 		}
 
 	default:
 		// Reached a leaf node (string, float64, bool, nil)
-		*list = append(*list, PathValue{
-			Path:  prefix,
-			Value: v,
-		})
+
+		if result, ok := v.(string); ok {
+			*list = append(*list, PathValue{
+				Path:  prefix,
+				Value: result,
+			})
+
+			return true
+		}
 	}
+
+	return result
 }
 
 

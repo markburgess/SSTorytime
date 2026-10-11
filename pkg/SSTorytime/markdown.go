@@ -122,6 +122,64 @@ func FractionateMarkdown(filename string) ([][]Sentence, int) {
 }
 
 //*****************************************************************
+
+func FractionateSmallMarkdown(source []byte) ([][]Sentence, int) {
+
+	md := goldmark.New()
+	reader := text.NewReader(source)
+	doc := md.Parser().Parse(reader)
+
+	var current *ExtSentence
+	var title string = "introductory qprologue"
+	var level int
+	
+	ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+
+		if !entering {
+			return ast.WalkContinue, nil
+		}
+		
+		switch node := n.(type) {
+		case *ast.Heading:
+			_,value,_ := IsNewSection(GetNodeText(node,source))
+			title = value
+			level = node.Level
+			
+		case *ast.Paragraph:
+			
+			isnew, value, number := IsNewSection(GetNodeText(node,source))
+			
+			if isnew {
+				current = &ExtSentence{
+					Level: level,
+					Title: title,
+					Number: "unnumbered",
+					Content: value,
+				}
+			} else {
+				current = &ExtSentence{
+					Level: level,
+					Title: title,
+					Number: number,
+					Content: value,
+				}
+			}
+			
+			SECTIONS = append(SECTIONS, *current)
+		}
+		
+		return ast.WalkContinue, nil
+	})
+	
+	
+	// Now assemble normal text into pbsf format
+	
+	pbsf,count := AssemblePBSF(SECTIONS)
+	
+	return pbsf,count
+}
+	
+//*****************************************************************
 // Tools
 //*****************************************************************
 
@@ -217,6 +275,24 @@ func (r MDRow) GetByName(header string) (string, bool) {
 	return "", false
 }
 
+//*****************************************************************
+
+func GetNodeText(n ast.Node, source []byte) string {
+	var buf strings.Builder
+
+	var walk func(ast.Node)
+	walk = func(node ast.Node) {
+		for c := node.FirstChild(); c != nil; c = c.NextSibling() {
+			if textNode, ok := c.(*ast.Text); ok {
+				buf.Write(textNode.Segment.Value(source))
+			}
+			walk(c)
+		}
+	}
+
+	walk(n)
+	return strings.TrimSpace(buf.String())
+}
 
 //
 // markdown.go

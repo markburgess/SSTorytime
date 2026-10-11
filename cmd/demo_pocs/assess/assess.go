@@ -27,24 +27,6 @@ func main() {
 	
 	dir := "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi-sonnet55-s3-20261004-131451/"
 
-	HandleAgentMarkDown(dir)
-	
-	files := []string{"transcript.jsonl","run.json","manifest.json"}
-	
-	for _,file := range files {
-		cmpt := dir+file
-		fmt.Println("\nAssessing run : ",cmpt)
-		AssessJsonType(cmpt)
-	}
-
-}
-
-//**************************************************************
-
-func HandleAgentMarkDown(dir string) {
-
-	const percentage = 100
-
 	files, err := os.ReadDir(dir)
 	
 	if err != nil {
@@ -53,7 +35,6 @@ func HandleAgentMarkDown(dir string) {
 	}
 
 	outputfile := "AGENT_ASSESSMENT_GENERATED.n4l"
-
 	fp, err := os.Create(outputfile)
 
 	if err != nil {
@@ -62,36 +43,121 @@ func HandleAgentMarkDown(dir string) {
 	}
 
 	defer fp.Close()
-	
+
 	for _, entry := range files {
-		
+
 		ext := filepath.Ext(entry.Name())
 		name := entry.Name()
-
+		
 		if strings.HasSuffix(ext,".md") {
 			_, err := entry.Info()
 			if err != nil {
 				fmt.Printf(" ** Could not get info for %s: %v\n", name, err)
 				continue
 			}
-
 			fmt.Println("Assess MD file",dir+name)
+			HandleAgentMarkDown(fp,dir,name)
+		} 
+	}
 
-			psf,L := SST.FractionateMarkdown(dir+name)
-			SST.AnalyzeFractionIntent(psf)
-			ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
-			ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
-			selection := SST.MergeSelections(ranking1,ranking2)
+	namedfiles := []string{"transcript.jsonl","run.json","manifest.json"}
 			
-			const minN = 1 // >= N_GRAM_MIN
-			const maxN = 4 // <= N_GRAM_MAX
+	for _,file := range namedfiles {
+		cmpt := dir+file
+		fmt.Println("\nAssessing run : ",cmpt)
+		AssessJsonType(fp,cmpt)
+	}
+}
 
-			f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
+//**************************************************************
+		
+func HandleAgentMarkDown(fp *os.File,dir,name string) {
 
-			name = name[:len(entry.Name())-len(".md")]
-			
-			GenerateOutput(fp,name,selection,L,percentage,f,s,ff,ss)
-		}		
+	const percentage = 100
+
+	psf,L := SST.FractionateMarkdown(dir+name)
+	SST.AnalyzeFractionIntent(psf)
+	ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
+	ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
+	selection := SST.MergeSelections(ranking1,ranking2)
+	
+	const minN = 1 // >= N_GRAM_MIN
+	const maxN = 4 // <= N_GRAM_MAX
+	
+	f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
+	
+	name = name[:len(name)-len(".md")]
+	
+	GenerateOutput(fp,name,selection,L,percentage,f,s,ff,ss)
+}
+
+//**************************************************************
+
+func AssessJsonTranscript(fp *os.File,filename string,filebytes []byte) {
+
+	var json_file interface{}
+
+	if err := json.Unmarshal(filebytes, &json_file); err != nil {
+		return
+	}
+
+	var pathList []PathValue
+
+	if ExtractPaths("", json_file, &pathList) {
+
+		for _, item := range pathList {
+			switch item.Path {
+			case "text","agent","thinking":
+				//fmt.Printf("%-10s : \"%v\" (%T)\n",item.Path, item.Value, item.Value)
+			}
+		}
+	}
+}
+
+//**************************************************************
+
+func AssessJsonDeclaration(fp *os.File,filename string,filebytes []byte) {
+
+	var json_file interface{}
+
+	if err := json.Unmarshal(filebytes, &json_file); err != nil {
+		return
+	}
+	
+	var pathList []PathValue
+	var important = []string{"principal","opening","world_event","escalation","think"}
+
+	if ExtractPaths("", json_file, &pathList) {
+
+		for _, item := range pathList {
+			for _,word := range important {
+				if strings.Contains(item.Path,word) {
+					//fmt.Printf("%-10s : \"%v\" (%T)\n", item.Path, item.Value, item.Value)
+
+					rhs := item.Value.(string)
+					rhsbyte := []byte(rhs)
+
+					if json.Valid(rhsbyte) {
+						fmt.Println("This text looks like json:",string(rhsbyte))	
+					} else {
+						
+						const percentage = 100
+						psf,L := SST.FractionateSmallMarkdown(rhsbyte)
+						SST.AnalyzeFractionIntent(psf)
+						ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
+						ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
+						selection := SST.MergeSelections(ranking1,ranking2)
+						
+						const minN = 1 // >= N_GRAM_MIN
+						const maxN = 4 // <= N_GRAM_MAX
+						
+						f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
+						
+						GenerateOutput(fp,"agent definition",selection,L,percentage,f,s,ff,ss)
+					}
+				}
+			}
+		}
 	}
 
 }
@@ -243,7 +309,7 @@ func AddIntentionalContext(collected map[string][]string,key string,ctx []string
 
 //**************************************************************
 
-func AssessJsonType(filename string) {
+func AssessJsonType(fp *os.File,filename string) {
 
 	filebytes, err := os.ReadFile(filename)
 	
@@ -256,96 +322,20 @@ func AssessJsonType(filename string) {
 
 	switch ext {
 	case ".json":
-		AssessJsonDeclaration(filename,filebytes)
+		AssessJsonDeclaration(fp,filename,filebytes)
 		
 	case ".jsonl":
 		
 		lines := bytes.Split(filebytes, []byte("\n"))
 
 		for _,runpart := range lines {
-			AssessJsonTranscript(filename,runpart)
-			fmt.Println("-------------------------------------")
+			AssessJsonTranscript(fp,filename,runpart)
 		}
 
 	default:
 		fmt.Println("File suffix",ext)
 		os.Exit(0)
 	}
-}
-
-//**************************************************************
-
-func AssessJsonTranscript(filename string,filebytes []byte) {
-
-	var json_file interface{}
-
-	if err := json.Unmarshal(filebytes, &json_file); err != nil {
-		return
-	}
-
-	var pathList []PathValue
-
-	if ExtractPaths("", json_file, &pathList) {
-
-		for _, item := range pathList {
-			switch item.Path {
-			case "text","agent","thinking":
-				fmt.Printf("%-10s : \"%v\" (%T)\n",item.Path, item.Value, item.Value)
-			}
-		}
-	}
-
-}
-
-//**************************************************************
-
-func AssessJsonDeclaration(filename string,filebytes []byte) {
-
-	var json_file interface{}
-
-	if err := json.Unmarshal(filebytes, &json_file); err != nil {
-		return
-	}
-
-	var pathList []PathValue
-	var important = []string{"principal","opening","world_event","escalation","think"}
-
-	if ExtractPaths("", json_file, &pathList) {
-
-		for _, item := range pathList {
-			for _,word := range important {
-				if strings.Contains(item.Path,word) {
-					//fmt.Printf("%-10s : \"%v\" (%T)\n", item.Path, item.Value, item.Value)
-
-					rhs := item.Value.(string)
-					rhsbyte := []byte(rhs)
-
-					if json.Valid(rhsbyte) {
-						
-					} else {
-
-					}
-					
-					psf,_ := SST.FractionateSmallMarkdown(rhsbyte)
-					SST.AnalyzeFractionIntent(psf)
-					/*ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
-					ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
-					selection := SST.MergeSelections(ranking1,ranking2)
-					
-					const minN = 1 // >= N_GRAM_MIN
-					const maxN = 4 // <= N_GRAM_MAX
-
-					f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
-					
-					name = name[:len(entry.Name())-len(".md")]
-					
-					GenerateOutput(fp,name,selection,L,percentage,f,s,ff,ss)
-					*/
-				}
-			}
-		}
-	}
-
 }
 
 //**************************************************************

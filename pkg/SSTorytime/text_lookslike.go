@@ -195,7 +195,7 @@ func CompileTabular(fp *os.File, filealias string, tables []MDTable) {
 				fmt.Fprintf(fp," %s (%s) %s \n", table.Context,CONT_TABLE_NAME_L,cell.Value)
 				if !strings.HasPrefix(cell.Header,"col_") {
 					if LooksLikeProperName(cell.Value) || strings.Contains(cell.Value," ") {
-						fmt.Fprintf(fp," %s (%s) %s \n", cell.Header,INV_EXPR_TAB_HEADER_L, cell.Value)
+						fmt.Fprintf(fp,"Tabular category \"%s\" (%s) %s \n", cell.Header,INV_EXPR_TAB_HEADER_L, cell.Value)
 					}
 				}
 				if last != "" {

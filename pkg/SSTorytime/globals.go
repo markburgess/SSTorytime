@@ -82,10 +82,10 @@ const (
 	INV_EXPR_TABNAME_L = "is an association to"
 	INV_EXPR_TABNAME_S = "tabassocinv"
 
-	EXPR_TAB_HEADER_L = "has the interpretation/role-meaning"
+	EXPR_TAB_HEADER_L = "falls under the heading of"
 	EXPR_TAB_HEADER_S = "hasrm"
 
-	INV_EXPR_TAB_HEADER_L = "is the interpretation for"
+	INV_EXPR_TAB_HEADER_L = "is the header/category for"
 	INV_EXPR_TAB_HEADER_S = "hasrmfor"
 
 	CONT_TABLE_NAME_L = "table contains item"

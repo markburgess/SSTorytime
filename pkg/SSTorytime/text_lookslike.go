@@ -160,8 +160,10 @@ func CompileTOC(fp *os.File, filealias string, sections []ExtSentence) {
 	fmt.Fprintf(fp,"\n :: _sequence_, table of contents :: \n")
 	
 	for _,sec := range sections {
-		fmt.Fprintf(fp,"\n%s (%s) part/section in %s\n",sec.Title,EXPR_TAB_HEADER_L,filealias)
-		fmt.Fprintf(fp,"\n%s (%s) part in %s\n",sec.Title,EXPR_TABNAME_S,sec.Content)
+		if LooksLikeProperName(sec.Title) || strings.Contains(sec.Title," ") {
+			fmt.Fprintf(fp,"\n%s (%s) part/section in %s\n",sec.Title,EXPR_TAB_HEADER_L,filealias)
+			fmt.Fprintf(fp,"\n%s (%s) part in %s\n",sec.Title,EXPR_TABNAME_S,sec.Content)
+		}
 	}
 
 	fmt.Fprintf(fp,"\n -:: _sequence_ :: \n")
@@ -179,7 +181,7 @@ func CompileTabular(fp *os.File, filealias string, tables []MDTable) {
 		fmt.Fprintf(fp," :: _sequence_, %s :: \n",table.Context)
 
 		for _,h := range table.Headers {
-			if len(h) > 0 {
+			if len(h) > 0 && LooksLikeProperName(h) || strings.Contains(h," ") {{
 				fmt.Fprintf(fp,"\n # table %s  ############## \n",table.Context)
 				fmt.Fprintf(fp," %s  (%s) %s\n",h,INV_EXPR_TAB_HEADER_L,table.Context)	
 			}
@@ -192,20 +194,25 @@ func CompileTabular(fp *os.File, filealias string, tables []MDTable) {
 			for _, cell := range row.Cells {
 				fmt.Fprintf(fp," %s (%s) %s \n", table.Context,CONT_TABLE_NAME_L,cell.Value)
 				if !strings.HasPrefix(cell.Header,"col_") {
-					fmt.Fprintf(fp," %s (%s) %s \n", cell.Header,INV_EXPR_TAB_HEADER_L, cell.Value)
+					if LooksLikeProperName(cell.Value) || strings.Contains(cell.Value," ") {
+						fmt.Fprintf(fp," %s (%s) %s \n", cell.Header,INV_EXPR_TAB_HEADER_L, cell.Value)
+					}
 				}
 				if last != "" {
-					fmt.Fprintf(fp," %s (%s) %s \n", last,EXPR_TABNAME_S, cell.Value)
+					if LooksLikeProperName(cell.Value) || strings.Contains(cell.Value," ") {
+						fmt.Fprintf(fp," %s (%s) %s \n", last,EXPR_TABNAME_S, cell.Value)
+					}
 					last = cell.Value
 				}
 			}
 		}
-
+		}
+		
 		fmt.Fprintf(fp," -:: _sequence_ :: \n")
 	}
-
+	
 }
-
+	
 // *********************************************************************
 
 func CompileProperNames(fp *os.File, filealias string,selection []TextRank,tables []MDTable) {

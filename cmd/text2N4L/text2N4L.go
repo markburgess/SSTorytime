@@ -110,7 +110,7 @@ func RipMarkdown(filename string,percentage float64) {
 	fmt.Println("Fractionating markdown file...",filename)
 	psf,L := SST.FractionateMarkdown(filename)
 	fmt.Println("Analyzing frequencies")
-	SST.AnnotateFractionIntent(psf)
+	SST.AnalyzeFractionIntent(psf)
 
 	fmt.Println("Analyzing longitudinal patterns")
 	ranking1 := SST.SelectByRunningIntent(psf,L,percentage)

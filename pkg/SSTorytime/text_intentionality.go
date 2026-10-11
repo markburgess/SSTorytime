@@ -16,7 +16,7 @@ import (
 
 //**************************************************************
 
-func AnnotateFractionIntent(pbsf [][]Sentence) {
+func AnalyzeFractionIntent(pbsf [][]Sentence) {
 
 	var count int
 	
@@ -281,6 +281,24 @@ func GetChaptersByChapContext(sst PoSST,chap string,cn []string,limit int) map[s
 	}
 
 	return toc
+}
+
+// *********************************************************************
+
+func CompileProperNames(filealias string,selection []TextRank,tables []MDTable) {
+
+	// Run through selected sentences and link to meaningful names
+	// in tables and other places
+
+	// First look through tables, since these may have explanations
+
+	var s string
+	
+	if LooksLikeProperName(s) {
+
+	}
+
+	// Next look through all sentences
 }
 
 // *********************************************************************

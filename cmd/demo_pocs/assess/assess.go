@@ -79,9 +79,7 @@ func HandleAgentMarkDown(dir string) {
 			fmt.Println("Assess MD file",dir+name)
 
 			psf,L := SST.FractionateMarkdown(dir+name)
-
-			SST.AnnotateFractionIntent(psf)
-		
+			SST.AnalyzeFractionIntent(psf)
 			ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
 			ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
 			selection := SST.MergeSelections(ranking1,ranking2)
@@ -115,6 +113,7 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 
 	SST.CompileTabular(fp,filealias,SST.TABLES)
 	SST.CompileTOC(fp,filealias,SST.SECTIONS)
+	SST.CompileProperNames(filealias,selection,SST.TABLES)
 
 	// 
 
@@ -342,9 +341,8 @@ func GetFileType(filename string) string {
 }
 
 //**************************************************************
-
-
-// PathValue represents a single extracted leaf entry.
+// Json parsing
+//**************************************************************
 
 type PathValue struct {
 	Path  string      `json:"path"`

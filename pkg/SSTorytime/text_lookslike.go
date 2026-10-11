@@ -11,8 +11,6 @@ import (
 	"strings"
 	"unicode"
 	"os"
-	//"sort"
-	//"regexp"
 	_ "github.com/lib/pq"
 )
 
@@ -122,7 +120,31 @@ func LooksLikeNumber(s string) bool {
 
 func LooksLikeProperName(s string) bool {
 
+	var hasupper bool
 
+	for _, r := range s {
+
+		if unicode.IsLower(r) {
+			return false
+		}
+
+		if unicode.IsUpper(r) {
+			hasupper = true
+		}
+
+		if r == '-' || r == '_' || r == '/' || r == '\\' {
+			continue
+		}
+		
+		if unicode.IsPunct(r) {
+			return false
+		}
+	}
+
+	if hasupper {
+		return true
+	}
+	
 	return false
 }
 
@@ -199,30 +221,169 @@ func CompileProperNames(fp *os.File, filealias string,selection []TextRank,table
 	// Context string
         // }
 
-	for _, table := range tables {
+	fmt.Fprintf(fp,"\n\n :: proper names, identifiers  :: \n\n")
+
+	searchlist := GetTableStakes(tables)
+	
+	for _, str := range searchlist {
+
+		// Look for ID-like common strings
 		
-		fmt.Printf(" :: CONTEXT %s :: \n",table.Context)
-		
-		if LooksLikeProperName(table.Context) {
-			
-		}
-		
-		for _,h := range table.Headers {
-			if len(h) > 0 {
-				fmt.Printf("HEADER %s\n",h)	
-			}
-		}
-		
-		for _, row := range table.Rows {
-			
-			for _, cell := range row.Cells {
-				fmt.Printf("CELL %s \n",cell.Value)
-			}
-		}
+		names := SearchNames(str)
+		OutputProperNameAnnotation(fp,filealias,str,names)
+
+		// Consecutive Word phrases
+
+		names = ConsecutiveWordPhrase(str)
+		OutputProperNameAnnotation(fp,filealias,str,names)
+
 	}
 }
 
+// *********************************************************************
 
+func OutputProperNameAnnotation(fp *os.File, filealias string,parent string,list []string) {
+
+	for _,child := range list {
+		fmt.Fprintf(fp,"\n  %s (%s) %s\n",parent,CONT_REF_S,child)
+	}
+}
+
+// *********************************************************************
+
+func GetTableStakes(tables []MDTable) []string {
+
+	var list []string
+	
+	for _, table := range tables {
+
+		list = append(list,table.Context)
+		
+		for _,h := range table.Headers {
+
+			list = append(list,h)
+		}
+		
+		for _, row := range table.Rows {
+			for _, cell := range row.Cells {
+
+				list = append(list,cell.Value)
+			}
+		}
+	}
+	
+	return list
+}
+
+// *********************************************************************
+
+func ConsecutiveWordPhrase(s string) []string {
+
+	words := strings.Split(s," ")
+
+	var phrases []string
+	var tmp []string
+	
+	for _,w := range words {
+
+		if len(w) < 3 {
+			continue
+		}
+
+		if ExcludedByBindings(w,w,w) {
+			continue
+		}
+		
+		runes := []rune(w)
+
+		if unicode.IsUpper(runes[0]) && !unicode.IsUpper(runes[1]) {
+			
+			if unicode.IsPunct(runes[len(runes)-1]) {
+				tmp = append(tmp,w[0:len(w)-1])
+				if len(tmp) > 1 {
+					newphrase := strings.Join(tmp," ")
+					newphrase = strings.TrimSpace(newphrase)
+					if len(newphrase) > 0 {
+						phrases = append(phrases,newphrase)
+					}
+				}
+				tmp = nil
+			} else {
+				tmp = append(tmp,w)
+			}
+
+		} else {
+			if len(tmp) > 1 {
+				newphrase := strings.Join(tmp," ")
+				newphrase = strings.TrimSpace(newphrase)
+				if len(newphrase) > 0 {
+					phrases = append(phrases,newphrase)
+				}
+			}
+			tmp = nil
+		}
+	}
+
+	return phrases
+}
+
+// *********************************************************************
+
+func SearchNames(text string) []string {
+
+	if text == "" {
+		return nil
+	}
+
+	var list []string
+	
+	pbsf_table,_ := FractionateText(text)
+	
+	pieces := WalkPBSF(pbsf_table)
+
+	// Special looking identifiers "[A-Z0-9/-_]"
+
+	for _,txt := range pieces {
+
+		for _,word := range strings.Split(txt," ") {
+
+			word = strings.Trim(word,".")
+			
+			if LooksLikeProperName(word) {
+				list = append(list,word)
+			}
+		}
+	}
+
+	// A sequencee of worlds starting with CAPS
+	
+	return list
+}
+
+// *********************************************************************
+
+func WalkPBSF(pbsf [][]Sentence) []string {
+
+	// Concatenate significant strings from the decomposition
+	
+	var list []string
+
+	if pbsf == nil {
+		return nil
+	}
+
+	for _,p := range pbsf {
+		for _,s := range p {
+			list = append(list,s.S)
+			if s.Title != "" {
+				list = append(list,s.Title)
+			}
+		}
+
+	}
+
+	return list
+} 
 
 //
 // text_lookslike.go

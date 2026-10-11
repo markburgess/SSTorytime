@@ -102,7 +102,7 @@ const (
 
 	// This is a "contained-by something that expresses"
 
-	CONT_FRAG_L = "contains intented characteristic"      // intentional characteristic
+	CONT_FRAG_L = "contains intended characteristic"      // intentional characteristic
 	CONT_FRAG_S = "has-frag"
 
 	INV_CONT_FRAG_IN_L = "characteristic of"   // explains intentional context

@@ -436,7 +436,7 @@ func AssemblePBSF(sections []ExtSentence)  ([][]Sentence,int) {
 			this.S = sentences[s]
 
 			if len(sec.Title) > 0 {
-				number, name = SwallowTitle(sec.Title)
+				number, name = DeNumberItem(sec.Title)
 			}
 			
 			if len(name) > 0 {
@@ -471,7 +471,7 @@ func AssemblePBSF(sections []ExtSentence)  ([][]Sentence,int) {
 
 //*****************************************************************
 
-func SwallowTitle(text string) (string,string) {
+func DeNumberItem(text string) (string,string) {
 
 	var number,name string
 

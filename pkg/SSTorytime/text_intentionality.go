@@ -285,24 +285,6 @@ func GetChaptersByChapContext(sst PoSST,chap string,cn []string,limit int) map[s
 
 // *********************************************************************
 
-func CompileProperNames(filealias string,selection []TextRank,tables []MDTable) {
-
-	// Run through selected sentences and link to meaningful names
-	// in tables and other places
-
-	// First look through tables, since these may have explanations
-
-	var s string
-	
-	if LooksLikeProperName(s) {
-
-	}
-
-	// Next look through all sentences
-}
-
-// *********************************************************************
-
 func UpdateSTMContext(sst *PoSST,ambient,key string,now int64,params SearchParameters) string {
 
 	var context []string

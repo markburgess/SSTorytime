@@ -122,64 +122,6 @@ func FractionateMarkdown(filename string) ([][]Sentence, int) {
 }
 
 //*****************************************************************
-// Build ancillary structures
-//*****************************************************************
-
-func CompileTOC(fp *os.File, filealias string, sections []ExtSentence) {
-
-	// map to n4l
-
-	fmt.Fprintf(fp,"\n # BEG table of contents ############################\n")
-	fmt.Fprintf(fp,"\n :: _sequence_, table of contents :: \n")
-	
-	for _,sec := range sections {
-		fmt.Fprintf(fp,"\n%s (%s) part/section in %s\n",sec.Title,EXPR_TAB_HEADER_L,filealias)
-		fmt.Fprintf(fp,"\n%s (%s) part in %s\n",sec.Title,EXPR_TABNAME_S,sec.Content)
-	}
-
-	fmt.Fprintf(fp,"\n -:: _sequence_ :: \n")
-	fmt.Fprintf(fp,"\n # END table of contents ############################\n")
-}
-
-//*****************************************************************
-
-func CompileTabular(fp *os.File, filealias string, tables []MDTable) {
-
-	// Map to n4l
-
-	for _, table := range tables {
-
-		fmt.Fprintf(fp," :: _sequence_, %s :: \n",table.Context)
-
-		for _,h := range table.Headers {
-			if len(h) > 0 {
-				fmt.Fprintf(fp,"\n # table %s  ############## \n",table.Context)
-				fmt.Fprintf(fp," %s  (%s) %s\n",h,INV_EXPR_TAB_HEADER_L,table.Context)	
-			}
-		}
-
-		for _, row := range table.Rows {
-
-			last := ""
-			
-			for _, cell := range row.Cells {
-				fmt.Fprintf(fp," %s (%s) %s \n", table.Context,CONT_TABLE_NAME_L,cell.Value)
-				if !strings.HasPrefix(cell.Header,"col_") {
-					fmt.Fprintf(fp," %s (%s) %s \n", cell.Header,INV_EXPR_TAB_HEADER_L, cell.Value)
-				}
-				if last != "" {
-					fmt.Fprintf(fp," %s (%s) %s \n", last,EXPR_TABNAME_S, cell.Value)
-					last = cell.Value
-				}
-			}
-		}
-
-		fmt.Fprintf(fp," -:: _sequence_ :: \n")
-	}
-
-}
-
-//*****************************************************************
 // Tools
 //*****************************************************************
 
@@ -210,9 +152,11 @@ func ParseTable(table *extast.Table, source []byte) MDTable {
 					headerName = CleanText(headers[i])
 				}
 
+				_,name := DeNumberItem(val)
+				
 				row.Cells[i] = MDCell{
 					Header: headerName,
-					Value:  CleanText(val),
+					Value:  CleanText(name),
 				}
 			}
 

@@ -113,7 +113,7 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 
 	SST.CompileTabular(fp,filealias,SST.TABLES)
 	SST.CompileTOC(fp,filealias,SST.SECTIONS)
-	SST.CompileProperNames(filealias,selection,SST.TABLES)
+	SST.CompileProperNames(fp,filealias,selection,SST.TABLES)
 
 	// 
 

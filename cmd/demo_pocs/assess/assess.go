@@ -100,8 +100,45 @@ func HandleAgentMarkDown(fp *os.File,dir,name string) {
 
 //**************************************************************
 
-func AssessJsonTranscript(fp *os.File,filename string,filebytes []byte) {
+func AssessJsonType(fp *os.File,filename string) {
 
+	filebytes, err := os.ReadFile(filename)
+	
+	if err != nil {
+		fmt.Println("Unable to read",filename,err)
+		return
+	}
+	
+	ext := filepath.Ext(filename) 
+
+	switch ext {
+	case ".json":
+		AssessJsonDeclaration(fp,filename,filebytes)
+		
+	case ".jsonl":
+		
+		lines := bytes.Split(filebytes, []byte("\n"))
+
+		fmt.Fprintf(fp,"\n :: agent transcript, dialogue, log, stream, jsonl, _sequence_ :: \n\n")
+		
+		for _,runpart := range lines {
+			AssessSingleJsonEvent(fp,filename,runpart)
+		}
+
+		fmt.Fprintf(fp,"\n -:: _sequence_ :: \n\n")
+
+	default:
+		fmt.Println("File suffix",ext)
+		os.Exit(0)
+	}
+}
+
+//**************************************************************
+
+func AssessSingleJsonEvent(fp *os.File,filename string,filebytes []byte) {
+
+	// transcripts are files of events in sequence, coagulated into a single stream
+	
 	var json_file interface{}
 
 	if err := json.Unmarshal(filebytes, &json_file); err != nil {
@@ -109,14 +146,46 @@ func AssessJsonTranscript(fp *os.File,filename string,filebytes []byte) {
 	}
 
 	var pathList []PathValue
-
-	if ExtractPaths("", json_file, &pathList) {
+	var agent_speaking string
+	var callAPI bool
+	var json []byte
+	var callName string
+	var callBody string
+	var thinking string
+	
+	if FindJsonStructureAsPaths("",json_file, &pathList) {
 
 		for _, item := range pathList {
+
+			rhs := item.Value.(string)
+			
 			switch item.Path {
-			case "text","agent","thinking":
-				//fmt.Printf("%-10s : \"%v\" (%T)\n",item.Path, item.Value, item.Value)
+
+			case "agent":
+				agent_speaking = rhs
+
+			case "text","thinking":
+
+				callAPI, callName, json = CheckForAPICall(rhs)
+				callBody = string(json)
+				
+				if !callAPI {
+					thinking = rhs
+				}
 			}
+		}
+	}
+
+	// When each step is collected
+
+	if callAPI {
+		fmt.Fprintf(fp," Agent ***`%s` calls tool/API function: %s\n",agent_speaking,callName)
+		if callBody != "{}" {
+			fmt.Fprintf(fp,"    \"     (message body) 'json body: %s' \n\n",callBody)
+		}
+	} else {
+		if len(agent_speaking) > 0 && len(thinking) > 0 {
+			fmt.Fprintf(fp,"\n Agent ***`%s` thinks: '%s' \n",agent_speaking,thinking)
 		}
 	}
 }
@@ -134,18 +203,26 @@ func AssessJsonDeclaration(fp *os.File,filename string,filebytes []byte) {
 	var pathList []PathValue
 	var important = []string{"principal","opening","world_event","escalation","think"}
 
-	if ExtractPaths("", json_file, &pathList) {
+	if FindJsonStructureAsPaths("", json_file, &pathList) {
 
 		for _, item := range pathList {
 			for _,word := range important {
+				
 				if strings.Contains(item.Path,word) {
 					//fmt.Printf("%-10s : \"%v\" (%T)\n", item.Path, item.Value, item.Value)
 
 					rhs := item.Value.(string)
 					rhsbyte := []byte(rhs)
 
+					// First document the immediate signal
+
+					//			OutputJsonSignal(fp,item.Path,rhs)
+					// who is the principal for each agent?  (has principal/client)
+
+					// What to do with the RHS for linking etc
+					
 					if json.Valid(rhsbyte) {
-						fmt.Println("This text looks like json:",string(rhsbyte))	
+						fmt.Println("\nThis text looks like json:",string(rhsbyte))	
 					} else {
 						
 						const percentage = 100
@@ -316,37 +393,6 @@ func AddIntentionalContext(collected map[string][]string,key string,ctx []string
 
 //**************************************************************
 
-func AssessJsonType(fp *os.File,filename string) {
-
-	filebytes, err := os.ReadFile(filename)
-	
-	if err != nil {
-		fmt.Println("Unable to read",filename,err)
-		return
-	}
-	
-	ext := filepath.Ext(filename) 
-
-	switch ext {
-	case ".json":
-		AssessJsonDeclaration(fp,filename,filebytes)
-		
-	case ".jsonl":
-		
-		lines := bytes.Split(filebytes, []byte("\n"))
-
-		for _,runpart := range lines {
-			AssessJsonTranscript(fp,filename,runpart)
-		}
-
-	default:
-		fmt.Println("File suffix",ext)
-		os.Exit(0)
-	}
-}
-
-//**************************************************************
-
 func GetFileType(filename string) string {
 
 	prefix := []string{"run","manifest","transcript"}
@@ -364,6 +410,39 @@ func GetFileType(filename string) string {
 }
 
 //**************************************************************
+
+func CheckForAPICall(str string) (bool,string,[]byte) {
+
+	// Look for "function_name({json...})"
+	
+	if str[len(str)-1] != ')' {
+		return false,"",[]byte{}
+	}
+
+	before, after, found := strings.Cut(str, "(")
+	
+	if !found {
+		return false,"",[]byte{}
+	}
+
+	const function_name_size = 60
+
+	if len(before) > function_name_size {
+		return false,"",[]byte{}
+	}
+
+	look_for_json := []byte(after[:len(after)-1])
+	
+	// Ok, looks like it has the correct shape
+
+	if json.Valid(look_for_json) {
+		return true,before,look_for_json
+	}
+
+	return true,before,look_for_json
+}
+
+//**************************************************************
 // Json parsing
 //**************************************************************
 
@@ -374,28 +453,30 @@ type PathValue struct {
 
 //**************************************************************
 
-func ExtractPaths(prefix string, value interface{}, list *[]PathValue) bool {
+func FindJsonStructureAsPaths(prefix string, value interface{}, list *[]PathValue) bool {
 
 	var result bool
 	
 	switch v := value.(type) {
+
 	case map[string]interface{}:
+
 		for key, child := range v {
 			newPath := key
 			if prefix != "" {
 				newPath = prefix + "." + key
 			}
-			result = ExtractPaths(newPath, child, list)
+			result = FindJsonStructureAsPaths(newPath, child, list)
 		}
 
 	case []interface{}:
+
 		for i, child := range v {
 			newPath := fmt.Sprintf("%s.%d", prefix, i)
-			result = ExtractPaths(newPath, child, list)
+			result = FindJsonStructureAsPaths(newPath, child, list)
 		}
 
-	default:
-		// Reached a leaf node (string, float64, bool, nil)
+	default: // Reached a leaf node (string, float64, bool, nil)
 
 		if result, ok := v.(string); ok {
 			*list = append(*list, PathValue{

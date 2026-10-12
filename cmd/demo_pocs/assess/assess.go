@@ -27,6 +27,13 @@ func main() {
 	
 	dir := "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi-sonnet55-s3-20261004-131451/"
 
+	AssessAgentRun(dir)
+}
+
+//******************************************************************
+
+func AssessAgentRun(dir string) {
+	
 	files, err := os.ReadDir(dir)
 	
 	if err != nil {

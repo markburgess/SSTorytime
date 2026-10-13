@@ -19,6 +19,12 @@ import (
 
 //******************************************************************
 
+var MARKDOWN_FRAGMENT = make(map[string][]SST.TextRank)
+var MD_FRAGMENT_COUNTER int = 0
+var AGENTS = make(map[string]bool)
+
+//******************************************************************
+
 func main() {
 
 	SST.InitSSTorytime()
@@ -51,7 +57,17 @@ func AssessAgentRun(dir string) {
 
 	defer fp.Close()
 
-	for _, entry := range files {
+	namedfiles := []string{"transcript.jsonl","run.json","manifest.json"}
+			
+	for _,file := range namedfiles {
+		cmpt := dir+file
+		fmt.Println("\nAssessing data file: ",cmpt)
+		AssessJsonType(fp,cmpt)
+	}
+
+	// Markdown at end
+
+		for _, entry := range files {
 
 		ext := filepath.Ext(entry.Name())
 		name := entry.Name()
@@ -67,12 +83,20 @@ func AssessAgentRun(dir string) {
 		} 
 	}
 
-	namedfiles := []string{"transcript.jsonl","run.json","manifest.json"}
-			
-	for _,file := range namedfiles {
-		cmpt := dir+file
-		fmt.Println("\nAssessing data file: ",cmpt)
-		AssessJsonType(fp,cmpt)
+	// Final markdown fragments, caches during sequence
+
+	for alias := range MARKDOWN_FRAGMENT {
+		
+		const minN = SST.N_GRAM_MIN
+		const maxN = SST.N_GRAM_MAX
+		const percentage = 100
+		var fragment,L int
+		fmt.Sscanf(alias,"%d,%d",&fragment,&L)
+		selection := MARKDOWN_FRAGMENT[alias]
+		f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
+		name := fmt.Sprintf("agent report %d",fragment)
+		const no_title = false
+		GenerateOutput(fp,name,selection,L,percentage,f,s,ff,ss,no_title)
 	}
 }
 
@@ -88,15 +112,16 @@ func HandleAgentMarkDown(fp *os.File,dir,name string) {
 	ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
 	selection := SST.MergeSelections(ranking1,ranking2)
 	
-	const minN = 1 // >= N_GRAM_MIN
-	const maxN = 4 // <= N_GRAM_MAX
+	const minN = SST.N_GRAM_MIN
+	const maxN = SST.N_GRAM_MAX
 	
 	f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
 	
 	name = name[:len(name)-len(".md")]
 	alias := MakeTitle(name)
 
-	GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss)
+	const with_title = true
+	GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
 }
 
 //**************************************************************
@@ -173,6 +198,7 @@ func AssessSingleJsonEvent(fp *os.File,alias string,filebytes []byte) {
 
 			case "agent":
 				agent_speaking = rhs
+				AGENTS[rhs] = true
 
 			case "text","thinking":
 
@@ -194,8 +220,18 @@ func AssessSingleJsonEvent(fp *os.File,alias string,filebytes []byte) {
 			fmt.Fprintf(fp,"    \"     (message body) 'json body: %s' \n\n",callBody)
 		}
 	} else {
-		if len(agent_speaking) > 0 && len(thinking) > 0 {
-			fmt.Fprintf(fp,"\n Agent ***`%s` thinks/announces: '%s' \n",agent_speaking,thinking)
+		// Json might contain Markdown as content!!
+
+		ismd, notes, L := IsMarkdownFragment(thinking)
+		
+		if ismd {
+			fmt.Fprintf(fp,"\n Agent ***`%s` thinks/announces: status assessment %d\n",agent_speaking,MD_FRAGMENT_COUNTER)
+			fmt.Fprintf(fp,"    \"     (message body) agent report %d \n\n",MD_FRAGMENT_COUNTER)
+			key := fmt.Sprintf("%d,%d",MD_FRAGMENT_COUNTER,L)
+			MARKDOWN_FRAGMENT[key] = notes
+			MD_FRAGMENT_COUNTER++
+		} else {
+			fmt.Fprintf(fp,"\n Agent ***`%s` thinks/announces: '%s' \n",agent_speaking,CleanString(thinking))
 		}
 	}
 }
@@ -211,43 +247,36 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 	}
 	
 	var pathList []PathValue
-	var important = []string{"principal","opening","world_event","escalation","think"}
+	var important = []string{"principal","opening","escalation","reason"}
 
 	if FindJsonStructureAsPaths("", json_file, &pathList) {
 
 		for _, item := range pathList {
 			for _,word := range important {
-				
 				if strings.Contains(item.Path,word) {
-					//fmt.Printf("%-10s : \"%v\" (%T)\n", item.Path, item.Value, item.Value)
 
+					agent, action := InferPathMeaning(item.Path)
+					lhs := fmt.Sprintf("event where %s declares ",agent,action)
 					rhs := item.Value.(string)
 					rhsbyte := []byte(rhs)
-
-					// First document the immediate signal
-
-					//			OutputJsonSignal(fp,item.Path,rhs)
-					// who is the principal for each agent?  (has principal/client)
-
+					
 					// What to do with the RHS for linking etc
 					
 					if json.Valid(rhsbyte) {
-						fmt.Println("\nThis text looks like json:",string(rhsbyte))	
+						fmt.Fprintf(fp,"\n Declaration %d: %s\n",lhs,MD_FRAGMENT_COUNTER)
+						fmt.Fprintf(fp,"    \"     (message body) '%s' \n\n",string(rhsbyte))	
 					} else {
+						ismd, notes,L := IsMarkdownFragment(rhs)
 						
-						const percentage = 100
-						psf,L := SST.FractionateSmallMarkdown(rhsbyte)
-						SST.AnalyzeFractionIntent(psf)
-						ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
-						ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
-						selection := SST.MergeSelections(ranking1,ranking2)
-						
-						const minN = 1 // >= N_GRAM_MIN
-						const maxN = 4 // <= N_GRAM_MAX
-						
-						f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
-						
-						GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss)
+						if ismd {
+							fmt.Fprintf(fp,"\n Declaration %d\n",MD_FRAGMENT_COUNTER)
+							fmt.Fprintf(fp,"    \"     (message body) agent report %d \n\n",MD_FRAGMENT_COUNTER)
+							key := fmt.Sprintf("%d,%d",MD_FRAGMENT_COUNTER,L)
+							MARKDOWN_FRAGMENT[key] = notes
+							MD_FRAGMENT_COUNTER++
+						} else {
+							fmt.Fprintf(fp,"\n DEclartion '%s' \n",CleanString(rhs))
+						}
 					}
 				}
 			}
@@ -258,15 +287,17 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 
 //*******************************************************************
 
-func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int, percentage float64,anom_by_part[][]string,ambi_by_part[][]string,all_anom[]string,all_ambi[]string) {
+func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int, percentage float64,anom_by_part[][]string,ambi_by_part[][]string,all_anom[]string,all_ambi[]string,with_title bool) {
 
 	// See AddMandatory() in N4L.go for reserved names (TBD, collect these one day as const)
 
 	var collected_fragments = make(map[string][]string)
 
-	fmt.Fprintf(fp,"-Agent specification: %s\n",filealias)
-
-	fmt.Fprintf(fp,"\n# (begin) ************\n")
+	if with_title {
+		fmt.Fprintf(fp,"-Agent specification: %s\n",filealias)
+	}
+	
+	fmt.Fprintf(fp,"\n# (begin) ************ %s\n",filealias)
 
 	// Lookup tables of contents from Markdown
 
@@ -276,10 +307,6 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 
 	// 
 
-	fmt.Fprintf(fp,"\n#######################################")
-	fmt.Fprintf(fp,"\n :: _sequence_ , %s::\n", filealias)
-	fmt.Fprintf(fp,"#######################################\n")
-	
 	var partcheck = make(map[string]bool)
 	var parts []string
 	var lastpart string
@@ -293,6 +320,8 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 		
 		var part string
 		context := SST.SpliceSet(ambi_by_part[selection[i].Partition])
+
+		fmt.Fprintf(fp,"\n\n :: %s :: \n\n",context)
 		
 		if len(selection[i].Title) > 0 {
 			part = selection[i].Title
@@ -303,14 +332,7 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 		// Add context from n = 2,3 fractions
 		
 		if part != lastpart {
-			if len(context) > 0 {
-				fmt.Fprintf(fp,"\n#######################################")
-				fmt.Fprintf(fp,"\n :: %s ::\n",context)
-				fmt.Fprintf(fp,"#######################################\n")
-			}
-			
-			lastpart = part
-			
+			lastpart = part			
 		}
 
 		fmt.Fprintf(fp,"\n@sen%d   %s\n\n",selection[i].Order,SST.SanitizeParen(selection[i].Fragment))		
@@ -323,8 +345,7 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 			partcheck[part] = true
 		}
 	}
-	
-	fmt.Fprintf(fp,"\n -:: _sequence_ , %s::\n", filealias)
+
 	fmt.Fprintf(fp,"\n# (end) ************\n")
 
 	// some stats
@@ -344,48 +365,27 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 			fmt.Fprintf(fp,"              \" (%s) %s\n",SST.CONT_FRAG_S,s)
 		}
 	}
+}
 
-	// document the parts
+//*******************************************************************
 
-	fmt.Fprintf(fp,"\n #\n # SUMMARY OF CONTEXT AND SIGNIFICANT FRAGMENTS\n #\n")
+func IsMarkdownFragment(thinking string) (bool,[]SST.TextRank,int) {
 
-	fmt.Fprintf(fp,"\n :: themes and topics you might want to annotate/replace ::\n")
+	// Cache a lump of analyzed markdown for later, outside of a graph sequence
 
-	fmt.Fprintf(fp,"\n :: parts, sections ::\n")
-
-	for p := range parts {
-		
-		container,exists := SST.DOC_DIRECTORY[parts[p]]
-
-		if exists {
-			fmt.Fprintf(fp,"\n %s (%s) %s \n",parts[p],SST.INV_CONT_FRAG_IN_S,container)
-		} else {
-			fmt.Fprintf(fp,"\n %s \n",parts[p])
-		}
-
-		if p < len(ambi_by_part) {
-			for w := range ambi_by_part[p] {
-				fmt.Fprintf(fp,"  #AMBI %s\n",ambi_by_part[p][w])
-			}
-		}
-
-		if p < len(anom_by_part) {
-			for w := range anom_by_part[p] {
-				fmt.Fprintf(fp,"   #INTENT %s\n",anom_by_part[p][w])
-			}
-		}
+	if strings.Contains(thinking,"\n") {
+		const percentage = 100
+		rhsbyte := []byte(thinking)
+		psf,L := SST.FractionateSmallMarkdown(rhsbyte)
+		SST.AnalyzeFractionIntent(psf)
+		ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
+		ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
+		selection := SST.MergeSelections(ranking1,ranking2)
+		return true,selection,L
+	} else {
+		var dummy []SST.TextRank
+		return false,dummy,0
 	}
-
-
-	/* whole document summary
-
-	for w := range all_ambi {
-		fmt.Fprintf(fp," # %s\n",all_ambi[w])
-	}
-
-	for w := range all_anom {
-		fmt.Fprintf(fp,"  # %s\n",all_anom[w])
-	} */		
 }
 
 //*******************************************************************
@@ -404,6 +404,43 @@ func MakeTitle(filename string) string {
 	}
 
 	return main_name
+}
+
+//*******************************************************************
+
+func InferPathMeaning(path string) (string,string) {
+
+	var agent, answer string
+	parts := strings.Split(path,".")
+	
+	// Do we recognize the agent?
+	
+	for _,p := range parts {
+		if AGENTS[p] {
+			agent = p
+		}
+
+		if strings.Contains(p,"principal") || strings.Contains(p,"client") {
+			answer = p
+		}
+
+		if strings.Contains(p,"reason") {
+			answer = p
+		}
+	}
+
+	return agent,answer
+}
+
+//*******************************************************************
+
+func CleanString(s string) string {
+
+	s = strings.TrimSpace(s)
+	s = strings.ReplaceAll(s,"(","[")
+	s = strings.ReplaceAll(s,")","]")
+	s = strings.ReplaceAll(s,"- ","* ")
+	return s
 }
 
 //*******************************************************************

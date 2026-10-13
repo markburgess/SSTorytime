@@ -2368,8 +2368,14 @@ func CleanAndSeparateString(fulltext string) (string,map[string][]string) {
 		}
 		
 	}
-	
-	return string(cleaned),lookup
+
+	// Finally, check for embedded parentheses that we may need to quote
+
+	done := string(cleaned)
+	done = strings.ReplaceAll(done,"(","[")
+	done = strings.ReplaceAll(done,")","]")
+
+	return done,lookup
 }
 
 //**************************************************************

@@ -43,11 +43,12 @@ func AssessAgentRun(dir string) {
 	files, err := os.ReadDir(dir)
 	
 	if err != nil {
-		fmt.Println("Error",err)
+	fmt.Println("Error",err)
 		return
 	}
 
 	outputfile := "AGENT_ASSESSMENT_GENERATED.n4l"
+
 	fp, err := os.Create(outputfile)
 
 	if err != nil {
@@ -57,17 +58,9 @@ func AssessAgentRun(dir string) {
 
 	defer fp.Close()
 
-	namedfiles := []string{"transcript.jsonl","run.json","manifest.json"}
-			
-	for _,file := range namedfiles {
-		cmpt := dir+file
-		fmt.Println("\nAssessing data file: ",cmpt)
-		AssessJsonType(fp,cmpt)
-	}
+	// Start with defs
 
-	// Markdown at end
-
-		for _, entry := range files {
+	for _, entry := range files {
 
 		ext := filepath.Ext(entry.Name())
 		name := entry.Name()
@@ -78,11 +71,26 @@ func AssessAgentRun(dir string) {
 				fmt.Printf(" ** Could not get info for %s: %v\n", name, err)
 				continue
 			}
+			
 			fmt.Println("Assess Markdown descriptive file",dir+name)
 			HandleAgentMarkDown(fp,dir,name)
 		} 
 	}
 
+	// Specific run files
+	
+	namedfiles := []string{"transcript.jsonl","run.json","manifest.json"}
+			
+	for _,file := range namedfiles {
+		cmpt := dir+file
+		fmt.Println("\nAssessing data file: ",cmpt)
+		AssessJsonType(fp,cmpt)
+	}
+
+	// Mention the agents!
+
+	ListAgents(fp)
+	
 	// Final markdown fragments, caches during sequence
 
 	for alias := range MARKDOWN_FRAGMENT {
@@ -101,12 +109,23 @@ func AssessAgentRun(dir string) {
 }
 
 //**************************************************************
+
+func ListAgents(fp *os.File) {
+
+	fmt.Fprintf(fp,"\n\n :: agents :: \n\n")
+
+	for a := range AGENTS {
+		fmt.Fprintf(fp,"%s (role) agent in the collective task\n\n",a)
+	}
+}
+
+//**************************************************************
 		
 func HandleAgentMarkDown(fp *os.File,dir,name string) {
 
 	const percentage = 100
 
-	psf,L := SST.FractionateMarkdown(dir+name)
+	psf,L := SST.FractionateMarkdown(dir,name)
 	SST.AnalyzeFractionIntent(psf)
 	ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
 	ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
@@ -212,26 +231,29 @@ func AssessSingleJsonEvent(fp *os.File,alias string,filebytes []byte) {
 		}
 	}
 
+	if agent_speaking == "" {
+		return
+	}
 	// When each step is collected
 
 	if callAPI {
-		fmt.Fprintf(fp," Agent ***`%s` calls tool/API function: %s\n",agent_speaking,callName)
+		fmt.Fprintf(fp," Agent ****`%s` calls tool/API function: %s\n",agent_speaking,callName)
 		if callBody != "{}" {
 			fmt.Fprintf(fp,"    \"     (message body) 'json body: %s' \n\n",callBody)
 		}
 	} else {
 		// Json might contain Markdown as content!!
 
-		ismd, notes, L := IsMarkdownFragment(thinking)
+		ismd, notes, L := IsMarkdownFragment(thinking,"run history")
 		
 		if ismd {
-			fmt.Fprintf(fp,"\n Agent ***`%s` thinks/announces: status assessment %d\n",agent_speaking,MD_FRAGMENT_COUNTER)
+			fmt.Fprintf(fp,"\n Agent ****`%s` thinks/announces: status assessment %d\n",agent_speaking,MD_FRAGMENT_COUNTER)
 			fmt.Fprintf(fp,"    \"     (message body) agent report %d \n\n",MD_FRAGMENT_COUNTER)
 			key := fmt.Sprintf("%d,%d",MD_FRAGMENT_COUNTER,L)
 			MARKDOWN_FRAGMENT[key] = notes
 			MD_FRAGMENT_COUNTER++
 		} else {
-			fmt.Fprintf(fp,"\n Agent ***`%s` thinks/announces: '%s' \n",agent_speaking,CleanString(thinking))
+			fmt.Fprintf(fp,"\n Agent ****`%s` thinks/announces: '%s' \n",agent_speaking,CleanString(thinking))
 		}
 	}
 }
@@ -266,7 +288,7 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 						fmt.Fprintf(fp,"\n Declaration %d: %s\n",lhs,MD_FRAGMENT_COUNTER)
 						fmt.Fprintf(fp,"    \"     (message body) '%s' \n\n",string(rhsbyte))	
 					} else {
-						ismd, notes,L := IsMarkdownFragment(rhs)
+						ismd, notes,L := IsMarkdownFragment(rhs,"run declaration")
 						
 						if ismd {
 							fmt.Fprintf(fp,"\n Declaration %d\n",MD_FRAGMENT_COUNTER)
@@ -294,7 +316,7 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 	var collected_fragments = make(map[string][]string)
 
 	if with_title {
-		fmt.Fprintf(fp,"-Agent specification: %s\n",filealias)
+		fmt.Fprintf(fp,"\n-%s\n",filealias)
 	}
 	
 	fmt.Fprintf(fp,"\n# (begin) ************ %s\n",filealias)
@@ -312,16 +334,22 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 	var lastpart string
 	var already = make(map[string]bool)
 
+	last_context := ""
+	
+	
 	for i := range selection {
 
 		if len(selection[i].Fragment) < 1 {
 			continue
 		}
-		
-		var part string
+
 		context := SST.SpliceSet(ambi_by_part[selection[i].Partition])
 
-		fmt.Fprintf(fp,"\n\n :: %s :: \n\n",context)
+		if context != last_context {
+			fmt.Fprintf(fp,"\n\n :: %s :: \n\n",context)
+		}
+		
+		var part string
 		
 		if len(selection[i].Title) > 0 {
 			part = selection[i].Title
@@ -336,7 +364,7 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 		}
 
 		fmt.Fprintf(fp,"\n@sen%d   %s\n\n",selection[i].Order,SST.SanitizeParen(selection[i].Fragment))		
-		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.INV_CONT_FOUND_IN_S,part)
+		//fmt.Fprintf(fp,"              \" (%s) %s\n",SST.INV_CONT_FOUND_IN_S,part)
 		
 		AddIntentionalContext(collected_fragments,part,anom_by_part[selection[i].Partition],already)
 		
@@ -348,35 +376,18 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 
 	fmt.Fprintf(fp,"\n# (end) ************\n")
 
-	// some stats
-
-	fmt.Fprintf(fp,"\n# Final fraction %.2f of requested %.2f\n",float64(len(selection)*100)/float64(L),percentage)
-
-	//WriteSampleSelections(fp,selection,L)
-
-	// add the parts' fragments
-
-	fmt.Fprintf(fp,"\n #\n # Concepts by part / region \n #\n")
-
-	for key := range collected_fragments {
-
-		fmt.Fprintf(fp,"\n\n %s\n",key)
-		for _,s := range collected_fragments[key] {
-			fmt.Fprintf(fp,"              \" (%s) %s\n",SST.CONT_FRAG_S,s)
-		}
-	}
 }
 
 //*******************************************************************
 
-func IsMarkdownFragment(thinking string) (bool,[]SST.TextRank,int) {
+func IsMarkdownFragment(thinking string,name string) (bool,[]SST.TextRank,int) {
 
 	// Cache a lump of analyzed markdown for later, outside of a graph sequence
 
 	if strings.Contains(thinking,"\n") {
 		const percentage = 100
 		rhsbyte := []byte(thinking)
-		psf,L := SST.FractionateSmallMarkdown(rhsbyte)
+		psf,L := SST.FractionateSmallMarkdown(rhsbyte,name)
 		SST.AnalyzeFractionIntent(psf)
 		ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
 		ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
@@ -398,7 +409,7 @@ func MakeTitle(filename string) string {
 		subcat := strings.Split(filename,".")
 		main_name = subcat[len(subcat)-1]
 		main_name = strings.ReplaceAll(main_name,"_"," ")
-		main_name = fmt.Sprintf("%s [%s]",main_name,subcat[0])
+		main_name = fmt.Sprintf("%s",main_name)
 	} else {
 		main_name = strings.ReplaceAll(filename,"_"," ")
 	}
@@ -496,10 +507,14 @@ func CheckForAPICall(str string) (bool,string,[]byte) {
 		return false,"",[]byte{}
 	}
 
+	if !strings.Contains(after,"\n") {
+		after = strings.ReplaceAll(after,",",",\n")
+	}
+
 	look_for_json := []byte(after[:len(after)-1])
 	
 	// Ok, looks like it has the correct shape
-
+	
 	if json.Valid(look_for_json) {
 		return true,before,look_for_json
 	}

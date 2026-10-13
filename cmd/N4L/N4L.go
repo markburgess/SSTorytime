@@ -1367,16 +1367,16 @@ func AddMandatory(sst *SST.PoSST) {
         inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_AMBIENT_S, SST.INV_EXPR_AMBIENT_L,"-")
 	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
-	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_TABNAME_S,SST.EXPR_TABNAME_L,"+")
-	inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_TABNAME_S,SST.INV_EXPR_TABNAME_L,"-")
+	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_ASSNAME_S,SST.EXPR_ASSNAME_L,"+")
+	inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_ASSNAME_S,SST.INV_EXPR_ASSNAME_L,"-")
 	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
 	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_TAB_HEADER_S,SST.EXPR_TAB_HEADER_L,"+")
 	inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_TAB_HEADER_S,SST.INV_EXPR_TAB_HEADER_L,"-")
 	SST.InsertInverseArrowDirectory(sst,arr,inv)
 	
-	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_TABLE_NAME_S,SST.CONT_TABLE_NAME_L,"+")
-        inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_TABLE_NAME_S, SST.INV_CONT_TABLE_NAME_L,"-")
+	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_NAME_S,SST.CONT_NAME_L,"+")
+        inv = SST.InsertArrowDirectory(sst,"contains",SST.INV_CONT_NAME_S, SST.INV_CONT_NAME_L,"-")
 	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
 	

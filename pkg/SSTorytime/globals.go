@@ -76,23 +76,23 @@ const (
 	INV_CONT_FOUND_IN_L = "extract/quote from"
 	INV_CONT_FOUND_IN_S = "extract-fr"
 
-	EXPR_TABNAME_L = "tabular association to"
-	EXPR_TABNAME_S = "tabassoc"
+	EXPR_ASSNAME_L = "has association"
+	EXPR_ASSNAME_S = "tabassoc"
 
-	INV_EXPR_TABNAME_L = "is an association to"
-	INV_EXPR_TABNAME_S = "tabassocinv"
+	INV_EXPR_ASSNAME_L = "associated with"
+	INV_EXPR_ASSNAME_S = "tabassocinv"
 
-	EXPR_TAB_HEADER_L = "falls under the heading of"
+	EXPR_TAB_HEADER_L = "under the heading of"
 	EXPR_TAB_HEADER_S = "hasrm"
 
 	INV_EXPR_TAB_HEADER_L = "is the header/category for"
 	INV_EXPR_TAB_HEADER_S = "hasrmfor"
 
-	CONT_TABLE_NAME_L = "table contains item"
-	CONT_TABLE_NAME_S = "tabconit"
+	CONT_NAME_L = "contains item"
+	CONT_NAME_S = "tabconit"
 
-	INV_CONT_TABLE_NAME_L = "item in association table"
-	INV_CONT_TABLE_NAME_S = "itintab"
+	INV_CONT_NAME_L = "item in"
+	INV_CONT_NAME_S = "itintab"
 
 	CONT_REF_L = "uses/refers to"
 	CONT_REF_S = "refersto"

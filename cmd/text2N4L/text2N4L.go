@@ -11,7 +11,8 @@ import (
 	"fmt"
 	"flag"
 	"strings"
-
+	"path/filepath"
+	
 	SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
 )
 
@@ -74,8 +75,9 @@ func RipFile2File(filename string,percentage float64) {
 
 	SST.InitSSTorytime()
 
+	dir, file := filepath.Split(filename)
 	fmt.Println("Fractionating txt file...",filename)
-	psf,L := SST.FractionateTextFile(filename)
+	psf,L := SST.FractionateTextFile(dir,file)
 	fmt.Println("Analyzing longitudinal patterns")
 	ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
 	fmt.Println("Analyzing transverse statistical patterns")
@@ -107,8 +109,9 @@ func RipMarkdown(filename string,percentage float64) {
 		SST.STM_NGRAM_LAST[i] = make(map[string]int)
 	}
 
+	dir, file := filepath.Split(filename)
 	fmt.Println("Fractionating markdown file...",filename)
-	psf,L := SST.FractionateMarkdown(filename)
+	psf,L := SST.FractionateMarkdown(dir,file)
 	fmt.Println("Analyzing frequencies")
 	SST.AnalyzeFractionIntent(psf)
 

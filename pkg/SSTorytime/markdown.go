@@ -50,12 +50,12 @@ var TABLES []MDTable
 
 //*****************************************************************
 
-func FractionateMarkdown(filename string) ([][]Sentence, int) {
+func FractionateMarkdown(dir,filename string) ([][]Sentence, int) {
 	
-	source,err := ioutil.ReadFile(filename)
+	source,err := ioutil.ReadFile(dir+filename)
 
 	if err != nil {
-		fmt.Println("Couldn't find or open",filename)
+		fmt.Println("Couldn't find or open",dir+filename)
 		os.Exit(-1)
 	}
 
@@ -80,17 +80,17 @@ func FractionateMarkdown(filename string) ([][]Sentence, int) {
 		switch n := n.(type) {
 
 		case *extast.Table:
-			tableData := ParseTable(n, source)
+			tableData := ParseTable(n,source,filename)
 			tableData.Context = title
 			TABLES = append(TABLES, tableData)
 
 		case *ast.Heading:
-			_,value,_ := IsNewSection(string(n.Text(source)))
+			_,value,_ := IsNewSection(string(n.Text(source)),filename)
 			title = value
 			level = n.Level
 
 		case *ast.Paragraph:
-			isnew, value, number := IsNewSection(string(n.Text(source)))
+			isnew, value, number := IsNewSection(string(n.Text(source)),filename)
 			
 			if isnew {
 				current = &ExtSentence{
@@ -123,7 +123,7 @@ func FractionateMarkdown(filename string) ([][]Sentence, int) {
 
 //*****************************************************************
 
-func FractionateSmallMarkdown(source []byte) ([][]Sentence, int) {
+func FractionateSmallMarkdown(source []byte,name string) ([][]Sentence, int) {
 
 	md := goldmark.New()
 	reader := text.NewReader(source)
@@ -141,13 +141,13 @@ func FractionateSmallMarkdown(source []byte) ([][]Sentence, int) {
 		
 		switch node := n.(type) {
 		case *ast.Heading:
-			_,value,_ := IsNewSection(GetNodeText(node,source))
+			_,value,_ := IsNewSection(GetNodeText(node,source),name)
 			title = value
 			level = node.Level
 			
 		case *ast.Paragraph:
 			
-			isnew, value, number := IsNewSection(GetNodeText(node,source))
+			isnew, value, number := IsNewSection(GetNodeText(node,source),name)
 			
 			if isnew {
 				current = &ExtSentence{
@@ -183,7 +183,7 @@ func FractionateSmallMarkdown(source []byte) ([][]Sentence, int) {
 // Tools
 //*****************************************************************
 
-func ParseTable(table *extast.Table, source []byte) MDTable {
+func ParseTable(table *extast.Table, source []byte,filename string) MDTable {
 	var headers []string
 	var rows []MDRow
 
@@ -207,7 +207,7 @@ func ParseTable(table *extast.Table, source []byte) MDTable {
 				headerName := fmt.Sprintf("col_%d", i+1)
 
 				if i < len(headers) && headers[i] != "" {
-					headerName = CleanText(headers[i])
+					headerName = CleanText(filename+" "+headers[i])
 				}
 
 				_,name := DeNumberItem(val)

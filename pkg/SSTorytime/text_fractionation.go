@@ -102,25 +102,25 @@ func NewNgramMap() [N_GRAM_MAX]map[string]float64 {
 
 //******************************************************************
 
-func FractionateTextFile(name string) ([][]Sentence,int) {
+func FractionateTextFile(dir,name string) ([][]Sentence,int) {
 
-	file := ReadTextFile(name)
+	file := ReadTextFile(dir+name)
 	proto_text := CleanText(file)
-	return FractionateText(proto_text)
+	return FractionateText(proto_text,name)
 }
 
 //**************************************************************
 
-func FractionateText(proto_text string) ([][]Sentence,int) {
+func FractionateText(proto_text,filename string) ([][]Sentence,int) {
 
-	pbsf,count := SplitIntoParaSentences(proto_text)
+	pbsf,count := SplitIntoParaSentences(proto_text,filename)
 	AnalyzeFractionIntent(pbsf)
 	return pbsf,count
 }
 
 //**************************************************************
 
-func SplitIntoParaSentences(file string) ([][]Sentence,int) {
+func SplitIntoParaSentences(file,filename string) ([][]Sentence,int) {
 
 	var sections []ExtSentence
 	var current *ExtSentence
@@ -131,7 +131,7 @@ func SplitIntoParaSentences(file string) ([][]Sentence,int) {
 
 	for _,sec := range paras {
 
-		issection,value,number := IsNewSection(sec)
+		issection,value,number := IsNewSection(sec,filename)
 		
 		if issection {
 			title = value
@@ -160,7 +160,7 @@ func SplitIntoParaSentences(file string) ([][]Sentence,int) {
 
 // **************************************************************************
 
-func IsNewSection(para string) (bool,string,string) {
+func IsNewSection(para string,filename string) (bool,string,string) {
 
 	// See if we can classify a lump of text
 
@@ -170,7 +170,7 @@ func IsNewSection(para string) (bool,string,string) {
 
 	// Sections tend to start with a number or letter a),iv), 6.2.1, etc
 
-	ischap, number, name := LooksLikeChapSection(para)
+	ischap, number, name := LooksLikeChapSection(para,filename)
 
 	if ischap {
 		return true,name,number

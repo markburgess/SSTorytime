@@ -16,21 +16,23 @@ import (
 
 // **************************************************************************
 
-func LooksLikeChapSection(org string) (bool,string,string) {
+func LooksLikeChapSection(org,filename string) (bool,string,string) {
 
 	if len(org) == 0 {
 		return false,"unnumbered",""
 	}
 
-	org = strings.TrimSpace(strings.ToLower(org))
+	org = strings.TrimSpace(org)
 
 	if strings.HasPrefix(org,"I ") {
 		return false,"unnumbered",""
 	}
 
-	if strings.HasPrefix(org,"chapter ") {
+	if strings.HasPrefix(org,"chapter ") || strings.HasPrefix(org,"Chapter ") {
 		name := org[len("chapter "):]
 		fmt.Println("\n Found chapter:",name)
+
+		name = filename+" "+name
 
 		namestart := strings.Split(name," ")[0]
 		hasnumber := LooksLikeNumber(namestart)
@@ -45,13 +47,14 @@ func LooksLikeChapSection(org string) (bool,string,string) {
 	// Is the line ALL CAPS? This could be a Note To Self, but fine.
 	
 	if IsAllUpper(org) {
-		return true,org,"unnumbered"
+		name := filename+" "+org
+		return true,name,"unnumbered"
 	}
 
 	line := strings.Split(org," ")
 	linestart := line[0]
 
-	rest := strings.Join(line[1:]," ")
+	rest := filename + " " + strings.Join(line[1:]," ")
 	
 	if len(linestart) > 2 && linestart[len(linestart)-1] == ')' {
 		rest = linestart[:len(linestart)-1]
@@ -161,8 +164,9 @@ func CompileTOC(fp *os.File, filealias string, sections []ExtSentence) {
 	
 	for _,sec := range sections {
 		if LooksLikeProperName(sec.Title) || strings.Contains(sec.Title," ") {
-			fmt.Fprintf(fp,"\n%s (%s) part/section in %s\n",sec.Title,EXPR_TAB_HEADER_L,filealias)
-			fmt.Fprintf(fp,"\n%s (%s) part in %s\n",sec.Title,EXPR_TABNAME_S,sec.Content)
+			fmt.Fprintf(fp,"\n%s (%s) Table of Contents - %s (%s) Overview\n",sec.Title,INV_CONT_NAME_L,filealias,INV_CONT_NAME_L)
+			fmt.Fprintf(fp,"\n%s (%s) %s\n",sec.Title,EXPR_TAB_HEADER_L,filealias)
+			fmt.Fprintf(fp,"\n%s (%s) part in %s\n",sec.Title,EXPR_ASSNAME_S,sec.Content)
 		}
 	}
 
@@ -192,15 +196,15 @@ func CompileTabular(fp *os.File, filealias string, tables []MDTable) {
 			last := ""
 			
 			for _, cell := range row.Cells {
-				fmt.Fprintf(fp," %s (%s) %s \n", table.Context,CONT_TABLE_NAME_L,cell.Value)
+				fmt.Fprintf(fp," %s (%s) %s \n", table.Context,CONT_NAME_L,cell.Value)
 				if !strings.HasPrefix(cell.Header,"col_") {
 					if LooksLikeProperName(cell.Value) || strings.Contains(cell.Value," ") {
-						fmt.Fprintf(fp,"Tabular category \"%s\" (%s) %s \n", cell.Header,INV_EXPR_TAB_HEADER_L, cell.Value)
+						fmt.Fprintf(fp,"%s (%s) %s \n", cell.Header,INV_EXPR_TAB_HEADER_L, cell.Value)
 					}
 				}
 				if last != "" {
 					if LooksLikeProperName(cell.Value) || strings.Contains(cell.Value," ") {
-						fmt.Fprintf(fp," %s (%s) %s \n", last,EXPR_TABNAME_S, cell.Value)
+						fmt.Fprintf(fp," %s (%s) %s \n", last,EXPR_ASSNAME_S, cell.Value)
 					}
 					last = cell.Value
 				}
@@ -252,7 +256,7 @@ func CompileProperNames(fp *os.File, filealias string,selection []TextRank,table
 func OutputProperNameAnnotation(fp *os.File, filealias string,parent string,list []string) {
 
 	for _,child := range list {
-		fmt.Fprintf(fp,"\n  %s (%s) %s\n",parent,CONT_REF_S,child)
+		fmt.Fprintf(fp,"\n%s\n",child)
 	}
 }
 
@@ -344,7 +348,7 @@ func SearchNames(text string) []string {
 
 	var list []string
 	
-	pbsf_table,_ := FractionateText(text)
+	pbsf_table,_ := FractionateText(text,"proper names")
 	
 	pieces := WalkPBSF(pbsf_table)
 

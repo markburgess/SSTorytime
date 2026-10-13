@@ -62,7 +62,7 @@ func AssessAgentRun(dir string) {
 				fmt.Printf(" ** Could not get info for %s: %v\n", name, err)
 				continue
 			}
-			fmt.Println("Assess MD file",dir+name)
+			fmt.Println("Assess Markdown descriptive file",dir+name)
 			HandleAgentMarkDown(fp,dir,name)
 		} 
 	}
@@ -71,7 +71,7 @@ func AssessAgentRun(dir string) {
 			
 	for _,file := range namedfiles {
 		cmpt := dir+file
-		fmt.Println("\nAssessing run : ",cmpt)
+		fmt.Println("\nAssessing data file: ",cmpt)
 		AssessJsonType(fp,cmpt)
 	}
 }
@@ -94,8 +94,9 @@ func HandleAgentMarkDown(fp *os.File,dir,name string) {
 	f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
 	
 	name = name[:len(name)-len(".md")]
-	
-	GenerateOutput(fp,name,selection,L,percentage,f,s,ff,ss)
+	alias := MakeTitle(name)
+
+	GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss)
 }
 
 //**************************************************************
@@ -110,11 +111,17 @@ func AssessJsonType(fp *os.File,filename string) {
 	}
 	
 	ext := filepath.Ext(filename) 
+	alias := MakeTitle(filename)
 
 	switch ext {
+
+	// These files are declarations of intent
+
 	case ".json":
-		AssessJsonDeclaration(fp,filename,filebytes)
-		
+		AssessJsonDeclaration(fp,alias,filebytes)
+
+	// These files are run-transcripts
+
 	case ".jsonl":
 		
 		lines := bytes.Split(filebytes, []byte("\n"))
@@ -122,10 +129,12 @@ func AssessJsonType(fp *os.File,filename string) {
 		fmt.Fprintf(fp,"\n :: agent transcript, dialogue, log, stream, jsonl, _sequence_ :: \n\n")
 		
 		for _,runpart := range lines {
-			AssessSingleJsonEvent(fp,filename,runpart)
+			AssessSingleJsonEvent(fp,alias,runpart)
 		}
 
 		fmt.Fprintf(fp,"\n -:: _sequence_ :: \n\n")
+
+	// Junk?
 
 	default:
 		fmt.Println("File suffix",ext)
@@ -135,9 +144,10 @@ func AssessJsonType(fp *os.File,filename string) {
 
 //**************************************************************
 
-func AssessSingleJsonEvent(fp *os.File,filename string,filebytes []byte) {
+func AssessSingleJsonEvent(fp *os.File,alias string,filebytes []byte) {
 
-	// transcripts are files of events in sequence, coagulated into a single stream
+	// transcripts are files of events in sequence, taken
+	// one by one and coagulated into a single stream
 	
 	var json_file interface{}
 
@@ -185,14 +195,14 @@ func AssessSingleJsonEvent(fp *os.File,filename string,filebytes []byte) {
 		}
 	} else {
 		if len(agent_speaking) > 0 && len(thinking) > 0 {
-			fmt.Fprintf(fp,"\n Agent ***`%s` thinks: '%s' \n",agent_speaking,thinking)
+			fmt.Fprintf(fp,"\n Agent ***`%s` thinks/announces: '%s' \n",agent_speaking,thinking)
 		}
 	}
 }
 
 //**************************************************************
 
-func AssessJsonDeclaration(fp *os.File,filename string,filebytes []byte) {
+func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 
 	var json_file interface{}
 
@@ -237,7 +247,7 @@ func AssessJsonDeclaration(fp *os.File,filename string,filebytes []byte) {
 						
 						f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
 						
-						GenerateOutput(fp,"agent definition",selection,L,percentage,f,s,ff,ss)
+						GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss)
 					}
 				}
 			}
@@ -253,8 +263,8 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 	// See AddMandatory() in N4L.go for reserved names (TBD, collect these one day as const)
 
 	var collected_fragments = make(map[string][]string)
-	
-	fmt.Fprintf(fp,"-System Prompt Declaration %s\n",filealias)
+
+	fmt.Fprintf(fp,"-Agent specification: %s\n",filealias)
 
 	fmt.Fprintf(fp,"\n# (begin) ************\n")
 
@@ -376,6 +386,24 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 	for w := range all_anom {
 		fmt.Fprintf(fp,"  # %s\n",all_anom[w])
 	} */		
+}
+
+//*******************************************************************
+
+func MakeTitle(filename string) string {
+
+	var main_name string
+	
+	if strings.Contains(filename,".") {
+		subcat := strings.Split(filename,".")
+		main_name = subcat[len(subcat)-1]
+		main_name = strings.ReplaceAll(main_name,"_"," ")
+		main_name = fmt.Sprintf("%s [%s]",main_name,subcat[0])
+	} else {
+		main_name = strings.ReplaceAll(filename,"_"," ")
+	}
+
+	return main_name
 }
 
 //*******************************************************************

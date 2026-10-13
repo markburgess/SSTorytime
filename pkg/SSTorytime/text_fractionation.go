@@ -369,16 +369,6 @@ func CleanText(s string) string {
 	s = strings.Replace(s,"Dr.","Dr",-1)
 	s = strings.Replace(s,"Ms.","Ms",-1)
 	s = strings.ReplaceAll(s,"$","CURRENCY-DOLLAR")
-	
-	// Encode sentence space boundaries and end of sentence markers with a # for later splitting
-
-	/* ellipsis
-	m = regexp.MustCompile("([.][.][.])+")  // end of sentence punctuation
-	s = m.ReplaceAllString(s,"---")
-
-	m = regexp.MustCompile("[—]+")  // endash
-	s = m.ReplaceAllString(s,", ") */
-	
 	s = strings.ReplaceAll(s,"\t"," ")
 	lquote := fmt.Sprintf("%c",NON_ASCII_LQUOTE)
 	s = strings.ReplaceAll(s,lquote,"\"")
@@ -923,7 +913,9 @@ func CoherenceSet(ngram_loc [N_GRAM_MAX]map[string][]int, L,coherence_length int
 
 			for s := range ngram_loc[n][ngram] {
 				p := ngram_loc[n][ngram][s] / coherence_length
-				C[n][p][ngram]++
+				if p < partitions {
+					C[n][p][ngram]++
+				}
 			}
 		}
 	}

@@ -169,10 +169,7 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 	filealias := strings.Split(filename,".")[0]
 
-
-	// Lookup tables of contents from Markdown
-
-	SST.CompileTabular(fp,filealias,SST.TABLES)
+	//SST.CompileTabular(fp,filealias,SST.TABLES)
 	SST.CompileTOC(fp,filealias,SST.SECTIONS)
 
 	// 

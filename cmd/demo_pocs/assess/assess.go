@@ -125,9 +125,13 @@ func HandleAgentMarkDown(fp *os.File,dir,name string) {
 
 	const percentage = 100
 
+	fmt.Println(" - fractionating",name)
 	psf,L := SST.FractionateMarkdown(dir,name)
+	fmt.Println(" - scanning")
 	SST.AnalyzeFractionIntent(psf)
+	fmt.Println(" - ranking longitudinally")
 	ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
+	fmt.Println(" - ranking transversely")
 	ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
 	selection := SST.MergeSelections(ranking1,ranking2)
 	
@@ -135,11 +139,11 @@ func HandleAgentMarkDown(fp *os.File,dir,name string) {
 	const maxN = SST.N_GRAM_MAX
 	
 	f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
-	
-	name = name[:len(name)-len(".md")]
+
 	alias := SST.MakeTitle(name)
 
 	const with_title = true
+	fmt.Println(" - writing results for",alias)
 	GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
 }
 
@@ -247,6 +251,7 @@ func AssessSingleJsonEvent(fp *os.File,alias string,filebytes []byte) {
 		ismd, notes, L := IsMarkdownFragment(thinking,"run history")
 		
 		if ismd {
+			fmt.Println(" ... found embedded markdown in json",alias)
 			fmt.Fprintf(fp,"\n Agent ****`%s` thinks/announces: status assessment %d\n",agent_speaking,MD_FRAGMENT_COUNTER)
 			fmt.Fprintf(fp,"    \"     (message body) agent report %d \n\n",MD_FRAGMENT_COUNTER)
 			key := fmt.Sprintf("%d,%d",MD_FRAGMENT_COUNTER,L)
@@ -291,13 +296,14 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 						ismd, notes,L := IsMarkdownFragment(rhs,"run declaration")
 						
 						if ismd {
+							fmt.Println(" ... found embedded markdown in json",alias)
 							fmt.Fprintf(fp,"\n Declaration %d\n",MD_FRAGMENT_COUNTER)
 							fmt.Fprintf(fp,"    \"     (message body) agent report %d \n\n",MD_FRAGMENT_COUNTER)
 							key := fmt.Sprintf("%d,%d",MD_FRAGMENT_COUNTER,L)
 							MARKDOWN_FRAGMENT[key] = notes
 							MD_FRAGMENT_COUNTER++
 						} else {
-							fmt.Fprintf(fp,"\n DEclartion '%s' \n",CleanString(rhs))
+							fmt.Fprintf(fp,"\n Declartion '%s' \n",CleanString(rhs))
 						}
 					}
 				}

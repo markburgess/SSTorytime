@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sort"
 	"unicode"
+	"path/filepath"
 	"regexp"
 	"net/http"
 	"io/ioutil"
@@ -21,19 +22,32 @@ import (
 
 //*******************************************************************
 
-func MakeTitle(filename string) string {
+func NameValue(s string) (string,string) {
 
-	var main_name string
+	before,after,hasparen := strings.Cut(s,"[")
+
+	before = strings.TrimSpace(before)
 	
-	if strings.Contains(filename,".") {
-		subcat := strings.Split(filename,".")
-		main_name = subcat[len(subcat)-1]
-		main_name = strings.ReplaceAll(main_name,"_"," ")
-		main_name = fmt.Sprintf("%s",main_name)
-	} else {
-		main_name = strings.ReplaceAll(filename,"_"," ")
+	if hasparen {
+		// implicit value declaration
+		after = after[:len(after)-1]
+		fmt.Printf("**** %s (has value) %s\n",before,after)
 	}
 
+	if LooksLikeProperName(before) {
+		PROPER_NAME[before] = after
+	}
+
+	return before,after
+}
+
+//*******************************************************************
+
+func MakeTitle(filename string) string {
+
+	_,file := filepath.Split(filename)
+	main_name,_,_ := strings.Cut(file,".")
+	main_name = strings.ReplaceAll(main_name,"_"," ")
 	return main_name
 }
 

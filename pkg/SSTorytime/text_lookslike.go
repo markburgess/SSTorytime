@@ -45,10 +45,14 @@ func LooksLikeChapSection(org,filename string) (bool,string,string) {
 	}
 	
 	// Is the line ALL CAPS? This could be a Note To Self, but fine.
+
+	const concept_length = 10
 	
 	if IsAllUpper(org) {
 		name := org + " ["+filename+"]"
-		fmt.Println("\n Found possible chapter:",name)
+		if len(org) > concept_length {
+			fmt.Println("\n Found possible chapter:",name)
+		}
 		return true,name,"unnumbered"
 	}
 
@@ -180,47 +184,82 @@ func CompileTOC(fp *os.File, filealias string, sections []ExtSentence) {
 
 //*****************************************************************
 
-func CompileTabular(fp *os.File, filealias string, tables []MDTable) {
+func CompileTabular(fp *os.File, alias string, tables []MDTable) {
 
 	// Map to n4l
 
+	fmt.Println("TABLES......",alias)
 	for _, table := range tables {
-
-		fmt.Fprintf(fp," :: _sequence_, %s :: \n",table.Context)
-
+		
+		fmt.Printf(" :: %s, table, %s :: \n",alias,strings.ToLower(table.Context))
+		
 		for _,h := range table.Headers {
-			if len(h) > 0 && LooksLikeProperName(h) || strings.Contains(h," ") {{
-				fmt.Fprintf(fp,"\n # table %s  ############## \n",table.Context)
-				fmt.Fprintf(fp," %s  (%s) %s\n",h,INV_EXPR_HEADER_L,table.Context)	
-			}
-		}
 
-		for _, row := range table.Rows {
-
-			last := ""
-			
-			for _, cell := range row.Cells {
-				fmt.Fprintf(fp," %s (%s) %s \n", table.Context,CONT_NAME_L,cell.Value)
-				if !strings.HasPrefix(cell.Header,"col_") {
-					if LooksLikeProperName(cell.Value) || strings.Contains(cell.Value," ") {
-						fmt.Fprintf(fp,"%s (%s) %s \n", cell.Header,INV_EXPR_HEADER_L, cell.Value)
-					}
-				}
-				if last != "" {
-					if LooksLikeProperName(cell.Value) || strings.Contains(cell.Value," ") {
-						fmt.Fprintf(fp," %s (%s) %s \n", last,EXPR_ASSNAME_S, cell.Value)
-					}
-					last = cell.Value
-				}
+			fmt.Println("HEADER:",h)
+			if len(h) > 0 && LooksLikeProperName(h) || strings.Contains(h," ") {
+				fmt.Printf("\n # table %s  ############## \n",table.Context)
+				fmt.Printf(" %s  (%s) %s\n",h,INV_EXPR_HEADER_L,table.Context)	
 			}
-		}
 		}
 		
-		fmt.Fprintf(fp," -:: _sequence_ :: \n")
+		for _,row := range table.Rows {
+
+			var first string
+
+			for pos, cell := range row.Cells {
+
+				head := cell.Header
+				colval := cell.Value
+
+				CheckTabularValues(colval)
+				
+				if pos == 0 && (head == "Term" || strings.Contains(head,"col")) {
+					if LooksLikeProperName(colval) {
+						fmt.Printf("PROPER NAME: %s \n",colval)
+						if val,ok := PROPER_NAME[colval]; ok {
+							if len(val) == 0 {
+								PROPER_NAME[colval] = ""
+							}
+						}
+					}
+					first = colval
+				}
+
+				if pos > 0 && (head == "Meaning"  || strings.Contains(head,"col")) {
+					head = "Value"
+					fmt.Printf("%s --> %s (stands for) %s\n",alias, first,colval)
+					//deliver
+				}
+				
+				if pos == 0 {
+					head = ""
+					fmt.Printf("%s ITEM: %s %s \n",alias, head,colval)
+					first = head + " " + colval
+				} else {
+					fmt.Printf("%s %s (has policy) %s ****`%s` \n",alias, first,head,colval)
+				}
+			}
+		}
 	}
 	
+	fmt.Println("END TABLES......")
 }
 	
+// *********************************************************************
+
+func CheckTabularValues(s string) {
+
+	list := strings.Split(s,",")
+
+	for _,v := range list {
+		name,value := NameValue(v)
+		if LooksLikeProperName(name) {
+			fmt.Printf("PROPER NAME: %s WITH VALUE %s\n",name,value)
+			PROPER_NAME[name] = value
+		}
+	}
+}
+
 // *********************************************************************
 
 func CompileProperNames(fp *os.File, filealias string,selection []TextRank,tables []MDTable) {
@@ -236,7 +275,7 @@ func CompileProperNames(fp *os.File, filealias string,selection []TextRank,table
 	// Context string
         // }
 
-	fmt.Fprintf(fp,"\n\n :: proper names, identifiers  :: \n\n")
+	//fmt.Fprintf(fp,"\n\n :: proper names, identifiers  :: \n\n")
 
 	searchlist := GetTableStakes(tables)
 	
@@ -260,7 +299,8 @@ func CompileProperNames(fp *os.File, filealias string,selection []TextRank,table
 func OutputProperNameAnnotation(fp *os.File, filealias string,parent string,list []string) {
 
 	for _,child := range list {
-		fmt.Fprintf(fp,"\n%s\n",child)
+		
+		fmt.Fprintf(fp,"\n%s (stands for) %s\n",child,PROPER_NAME[child])
 	}
 }
 

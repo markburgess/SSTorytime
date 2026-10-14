@@ -59,6 +59,8 @@ var EXCLUSIONS []string
 var STM_NGRAM_FREQ [N_GRAM_MAX]map[string]float64
 var STM_NGRAM_LOCA [N_GRAM_MAX]map[string][]int
 var STM_NGRAM_LAST [N_GRAM_MAX]map[string]int
+var PROPER_NAME = make(map[string]string)
+var TEXT_TABLE = make(map[string]string)
 
 //**************************************************************
 

@@ -141,14 +141,14 @@ func DecodeSearchField(cmd string) SearchParameters {
 	cmd = m.ReplaceAllString(cmd," ") 
 
 	cmd = strings.TrimSpace(cmd)
-	pts := SplitQuotes(cmd)
+	pts := SplitQuotedString(cmd)
 
 	var parts [][]string
 	var part []string
 
 	for p := 0; p < len(pts); p++ {
 
-		subparts := SplitQuotes(pts[p])
+		subparts := SplitQuotedString(pts[p])
 
 		for w := 0; w < len(subparts); w++ {
 
@@ -443,7 +443,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 
 				for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 					p++
-					ult := SplitQuotes(cmd_parts[c][pp])
+					ult := SplitQuotedString(cmd_parts[c][pp])
 					for u := range ult {
 						if ult[u] == "any" {
 							ult[u] = "%%"
@@ -461,7 +461,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 
 				for pp := p; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 					p++
-					ult := SplitQuotes(cmd_parts[c][pp])
+					ult := SplitQuotedString(cmd_parts[c][pp])
 					for u := range ult {
 						if ult[u] == "any" {
 							ult[u] = "%%"
@@ -774,7 +774,7 @@ func AddOrphan(param SearchParameters,orphan string) SearchParameters {
 
 //******************************************************************
 
-func SplitQuotes(s string) []string {
+func SplitQuotedString(s string) []string {
 
 	var items []string
 	var upto []rune
@@ -808,8 +808,8 @@ func SplitQuotes(s string) []string {
 			if len(upto) > 0 {
 				items = append(items,string(upto))
 			}
-			upto = nil
 
+			upto = nil
 			continue
 
 		case '(':
@@ -821,7 +821,7 @@ func SplitQuotes(s string) []string {
 
 			if len(array) > 0 {
 				items = append(items,string(array))
-				r += offset
+				r = offset
 			}
 			continue
 

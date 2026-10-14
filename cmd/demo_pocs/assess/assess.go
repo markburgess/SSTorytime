@@ -137,7 +137,7 @@ func HandleAgentMarkDown(fp *os.File,dir,name string) {
 	f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
 	
 	name = name[:len(name)-len(".md")]
-	alias := MakeTitle(name)
+	alias := SST.MakeTitle(name)
 
 	const with_title = true
 	GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
@@ -155,7 +155,7 @@ func AssessJsonType(fp *os.File,filename string) {
 	}
 	
 	ext := filepath.Ext(filename) 
-	alias := MakeTitle(filename)
+	alias := SST.MakeTitle(filename)
 
 	switch ext {
 
@@ -351,20 +351,20 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 		
 		var part string
 		
-		if len(selection[i].Title) > 0 {
-			part = selection[i].Title
-		} else {
-			part = "No section"
-		}
-		
-		// Add context from n = 2,3 fractions
-		
 		if part != lastpart {
-			lastpart = part			
+			if len(context) > 0 {
+				fmt.Fprintf(fp,"\n-:: _sequence_ ::")
+				fmt.Fprintf(fp,"\n#######################################")
+				fmt.Fprintf(fp,"\n :: %s, %s, _sequence_ ::\n",context,part)
+				fmt.Fprintf(fp,"#######################################\n")
+				fmt.Fprintf(fp,"\n %s\n\n",part)		
+			}
+			
+			lastpart = part
+			
 		}
 
-		fmt.Fprintf(fp,"\n@sen%d   %s\n\n",selection[i].Order,SST.SanitizeParen(selection[i].Fragment))		
-		//fmt.Fprintf(fp,"              \" (%s) %s\n",SST.INV_CONT_FOUND_IN_S,part)
+		fmt.Fprintf(fp,"\n@sen%d   %s\n\n",selection[i].Order,SST.SanitizeParen(selection[i].Fragment))	
 		
 		AddIntentionalContext(collected_fragments,part,anom_by_part[selection[i].Partition],already)
 		
@@ -397,24 +397,6 @@ func IsMarkdownFragment(thinking string,name string) (bool,[]SST.TextRank,int) {
 		var dummy []SST.TextRank
 		return false,dummy,0
 	}
-}
-
-//*******************************************************************
-
-func MakeTitle(filename string) string {
-
-	var main_name string
-	
-	if strings.Contains(filename,".") {
-		subcat := strings.Split(filename,".")
-		main_name = subcat[len(subcat)-1]
-		main_name = strings.ReplaceAll(main_name,"_"," ")
-		main_name = fmt.Sprintf("%s",main_name)
-	} else {
-		main_name = strings.ReplaceAll(filename,"_"," ")
-	}
-
-	return main_name
 }
 
 //*******************************************************************

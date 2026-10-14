@@ -76,17 +76,17 @@ const (
 	INV_CONT_FOUND_IN_L = "extract/quote from"
 	INV_CONT_FOUND_IN_S = "extract-fr"
 
-	EXPR_ASSNAME_L = "has association"
+	EXPR_ASSNAME_L = "might suggest"
 	EXPR_ASSNAME_S = "tabassoc"
 
-	INV_EXPR_ASSNAME_L = "associated with"
+	INV_EXPR_ASSNAME_L = "might be suggested by"
 	INV_EXPR_ASSNAME_S = "tabassocinv"
 
-	EXPR_TAB_HEADER_L = "under the heading of"
-	EXPR_TAB_HEADER_S = "hasrm"
+	EXPR_HEADER_L = "under the heading of"
+	EXPR_HEADER_S = "hasrm"
 
-	INV_EXPR_TAB_HEADER_L = "is the header/category for"
-	INV_EXPR_TAB_HEADER_S = "hasrmfor"
+	INV_EXPR_HEADER_L = "is the header/category for"
+	INV_EXPR_HEADER_S = "hasrmfor"
 
 	CONT_NAME_L = "contains item"
 	CONT_NAME_S = "tabconit"

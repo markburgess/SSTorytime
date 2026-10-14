@@ -106,6 +106,7 @@ func FractionateTextFile(dir,name string) ([][]Sentence,int) {
 
 	file := ReadTextFile(dir+name)
 	proto_text := CleanText(file)
+	name,_,_ = strings.Cut(name,".") // strip extension
 	return FractionateText(proto_text,name)
 }
 
@@ -122,11 +123,21 @@ func FractionateText(proto_text,filename string) ([][]Sentence,int) {
 
 func SplitIntoParaSentences(file,filename string) ([][]Sentence,int) {
 
-	var sections []ExtSentence
 	var current *ExtSentence
 	var title string = ""
 	var level int
 
+	intro := fmt.Sprintf("Introduction of %s",filename)
+
+	current = &ExtSentence{
+		Level: level,
+		Title: intro,
+		Number: "",
+		Content: "",
+	}
+	
+	SECTIONS = append(SECTIONS, *current)
+	
 	paras := strings.Split(file,"\n\n")
 
 	for _,sec := range paras {
@@ -135,26 +146,19 @@ func SplitIntoParaSentences(file,filename string) ([][]Sentence,int) {
 		
 		if issection {
 			title = value
-			
-			current = &ExtSentence{
-				Level: level,
-				Title: title,
-				Number: number,
-				Content: value,
-			}
-		} else {
-			current = &ExtSentence{
-				Level: level,
-				Title: title,
-				Number: number,
-				Content: value,
-			}
+		}	
+
+		current = &ExtSentence{
+			Level: level,
+			Title: title,
+			Number: number,
+			Content: value,
 		}
-		
-		sections = append(sections, *current)
+
+		SECTIONS = append(SECTIONS, *current)
 	}
 	
-	pbsf,count := AssemblePBSF(sections)
+	pbsf,count := AssemblePBSF(SECTIONS)
 	return pbsf,count
 }
 
@@ -430,7 +434,8 @@ func AssemblePBSF(sections []ExtSentence)  ([][]Sentence,int) {
 			}
 			
 			if len(name) > 0 {
-				this.Title = "section with name: " + name
+				
+				this.Title = name
 				if number != "unnumbered" {
 					this.Title += " [numbered in the document as: " + number + "]"
 				}

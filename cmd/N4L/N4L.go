@@ -1371,8 +1371,8 @@ func AddMandatory(sst *SST.PoSST) {
 	inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_ASSNAME_S,SST.INV_EXPR_ASSNAME_L,"-")
 	SST.InsertInverseArrowDirectory(sst,arr,inv)
 
-	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_TAB_HEADER_S,SST.EXPR_TAB_HEADER_L,"+")
-	inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_TAB_HEADER_S,SST.INV_EXPR_TAB_HEADER_L,"-")
+	arr = SST.InsertArrowDirectory(sst,"properties",SST.EXPR_HEADER_S,SST.EXPR_HEADER_L,"+")
+	inv = SST.InsertArrowDirectory(sst,"properties",SST.INV_EXPR_HEADER_S,SST.INV_EXPR_HEADER_L,"-")
 	SST.InsertInverseArrowDirectory(sst,arr,inv)
 	
 	arr = SST.InsertArrowDirectory(sst,"contains",SST.CONT_NAME_S,SST.CONT_NAME_L,"+")
@@ -1624,7 +1624,7 @@ func AssessGrammarCompletions(sst *SST.PoSST,token string, prior_state int) {
 	}
 
 	this_item := token
-
+	
 	const BOM_UTF8 = "\xef\xbb\xbf"
 
 	if this_item == BOM_UTF8 {

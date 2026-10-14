@@ -28,11 +28,11 @@ func LooksLikeChapSection(org,filename string) (bool,string,string) {
 		return false,"unnumbered",""
 	}
 
-	if strings.HasPrefix(org,"chapter ") || strings.HasPrefix(org,"Chapter ") {
+	if strings.HasPrefix(strings.ToLower(org),"chapter ") {
 		name := org[len("chapter "):]
 		fmt.Println("\n Found chapter:",name)
 
-		name = filename+" "+name
+		name = name + " [" + filename + "]"
 
 		namestart := strings.Split(name," ")[0]
 		hasnumber := LooksLikeNumber(namestart)
@@ -47,7 +47,8 @@ func LooksLikeChapSection(org,filename string) (bool,string,string) {
 	// Is the line ALL CAPS? This could be a Note To Self, but fine.
 	
 	if IsAllUpper(org) {
-		name := filename+" "+org
+		name := org + " ["+filename+"]"
+		fmt.Println("\n Found possible chapter:",name)
 		return true,name,"unnumbered"
 	}
 
@@ -158,15 +159,18 @@ func LooksLikeProperName(s string) bool {
 func CompileTOC(fp *os.File, filealias string, sections []ExtSentence) {
 
 	// map to n4l
+	
+	var done = make(map[string]bool)
 
 	fmt.Fprintf(fp,"\n # BEG table of contents ############################\n")
-	fmt.Fprintf(fp,"\n :: _sequence_, table of contents :: \n")
+	fmt.Fprintf(fp,"\n :: _sequence_, table of contents, overview :: \n")
 	
 	for _,sec := range sections {
-		if LooksLikeProperName(sec.Title) || strings.Contains(sec.Title," ") {
-			fmt.Fprintf(fp,"\n%s (%s) Table of Contents - %s (%s) Overview\n",sec.Title,INV_CONT_NAME_L,filealias,INV_CONT_NAME_L)
-			fmt.Fprintf(fp,"\n%s (%s) %s\n",sec.Title,EXPR_TAB_HEADER_L,filealias)
-			fmt.Fprintf(fp,"\n%s (%s) part in %s\n",sec.Title,EXPR_ASSNAME_S,sec.Content)
+		if !done[sec.Title] {
+			if LooksLikeProperName(sec.Title) || strings.Contains(sec.Title," ") {
+				done[sec.Title] = true
+				fmt.Fprintf(fp,"\n%s (%s) Table of Contents - %s\n  \" (%s) Overview - %s\n",sec.Title,INV_CONT_NAME_L,filealias,INV_CONT_NAME_L,filealias)
+			}
 		}
 	}
 
@@ -187,7 +191,7 @@ func CompileTabular(fp *os.File, filealias string, tables []MDTable) {
 		for _,h := range table.Headers {
 			if len(h) > 0 && LooksLikeProperName(h) || strings.Contains(h," ") {{
 				fmt.Fprintf(fp,"\n # table %s  ############## \n",table.Context)
-				fmt.Fprintf(fp," %s  (%s) %s\n",h,INV_EXPR_TAB_HEADER_L,table.Context)	
+				fmt.Fprintf(fp," %s  (%s) %s\n",h,INV_EXPR_HEADER_L,table.Context)	
 			}
 		}
 
@@ -199,7 +203,7 @@ func CompileTabular(fp *os.File, filealias string, tables []MDTable) {
 				fmt.Fprintf(fp," %s (%s) %s \n", table.Context,CONT_NAME_L,cell.Value)
 				if !strings.HasPrefix(cell.Header,"col_") {
 					if LooksLikeProperName(cell.Value) || strings.Contains(cell.Value," ") {
-						fmt.Fprintf(fp,"%s (%s) %s \n", cell.Header,INV_EXPR_TAB_HEADER_L, cell.Value)
+						fmt.Fprintf(fp,"%s (%s) %s \n", cell.Header,INV_EXPR_HEADER_L, cell.Value)
 					}
 				}
 				if last != "" {

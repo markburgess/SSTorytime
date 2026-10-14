@@ -69,6 +69,9 @@ func FractionateMarkdown(dir,filename string) ([][]Sentence, int) {
 	var title string = "introductory qprologue"
 	var level int
 
+	// strip extension
+	filename = MakeTitle(filename)
+	
 	// collect together into current to assemble in an ExtSentence
 	
 	ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {

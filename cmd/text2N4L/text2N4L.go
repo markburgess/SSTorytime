@@ -194,24 +194,26 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 		
 		var part string
 		context := SST.SpliceSet(ambi_by_part[selection[i].Partition])
-		
+
 		if len(selection[i].Title) > 0 {
 			part = selection[i].Title
 		} else {
 			part = PartName(selection[i].Partition,filealias,context)
 		}
-		
+
 		// Add context from n = 2,3 fractions
 		
 		if part != lastpart {
 			if len(context) > 0 {
+				fmt.Fprintf(fp,"\n-:: _sequence_ ::")
 				fmt.Fprintf(fp,"\n#######################################")
-				fmt.Fprintf(fp,"\n :: %s ::\n",context)
+				fmt.Fprintf(fp,"\n :: %s, %s, _sequence_ ::\n",context,part)
 				fmt.Fprintf(fp,"#######################################\n")
+				fmt.Fprintf(fp,"\n %s\n\n",part)
 			}
 			
 			lastpart = part
-			
+			fmt.Println(" compiling ...",part)
 		}
 
 		fmt.Fprintf(fp,"\n@sen%d   %s\n\n",selection[i].Order,SST.SanitizeParen(selection[i].Fragment))		
@@ -228,6 +230,8 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	fmt.Fprintf(fp,"\n -:: _sequence_ , %s::\n", filealias)
 	fmt.Fprintf(fp,"\n# (end) ************\n")
 
+	// DONE!
+	
 	// some stats
 
 	fmt.Fprintf(fp,"\n# Final fraction %.2f of requested %.2f\n",float64(len(selection)*100)/float64(L),percentage)
@@ -246,6 +250,7 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 		}
 	}
 
+	
 	// document the parts
 
 	fmt.Fprintf(fp,"\n #\n # SUMMARY OF CONTEXT AND SIGNIFICANT FRAGMENTS\n #\n")
@@ -311,12 +316,18 @@ func WriteSampleSelections(fp *os.File, selection []SST.TextRank, L int) {
 
 func PartName(p int,file string,context string) string {
 
-	basename := fmt.Sprintf("part %d of %s",p,file)
-
+	var basename string
+	
+	if p == 0 {
+		basename = fmt.Sprintf("Introduction of %s",file)
+	} else {
+		basename = fmt.Sprintf("part %d of %s",p,file)
+	}
+	
 	// include ambient context in the section name
 
 	if len(context) > 0 {
-		return fmt.Sprintf("%s about: %s",basename,context)
+		return fmt.Sprintf("%s: %s",basename,context)
 	} else {
 		return basename
 	}
@@ -333,6 +344,8 @@ func AddIntentionalContext(collected map[string][]string,key string,ctx []string
 			already[ctx[w]] = true
 		}
 	}
+
+	collected[key] = append(collected[key],"Table of Contents")
 }
 
 

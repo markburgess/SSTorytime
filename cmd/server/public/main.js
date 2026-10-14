@@ -726,10 +726,11 @@ for (let chpblk of obj.Content)
    }*/
 
    //Spacer ?
-   
+       
    if (chpblk.Intent != null)
-      {
-      for (let ctx_frag of chpblk.Intent.sort())
+       {
+      chpblk.Intent.sort((a, b) => a.Text.localeCompare(b.Text));
+      for (let ctx_frag of chpblk.Intent)
          {
          let link = document.createElement("a");
 	 let action = "\\notes \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx_frag.Text);
@@ -753,7 +754,8 @@ for (let chpblk of obj.Content)
 
    if (chpblk.Ambient != null)
       {
-      for (let ctx_frag of chpblk.Ambient.sort())
+      chpblk.Ambient.sort((a, b) => a.Text.localeCompare(b.Text));
+      for (let ctx_frag of chpblk.Ambient)
          {
          let link = document.createElement("a");
          let sitem = document.createElement("span");

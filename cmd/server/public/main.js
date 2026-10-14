@@ -729,7 +729,7 @@ for (let chpblk of obj.Content)
    
    if (chpblk.Intent != null)
       {
-      for (let ctx_frag of chpblk.Intent)
+      for (let ctx_frag of chpblk.Intent.sort())
          {
          let link = document.createElement("a");
 	 let action = "\\notes \\chapter "+ Quote(chpblk.Chapter) +" \\context " + CtxSplice(ctx_frag.Text);
@@ -753,7 +753,7 @@ for (let chpblk of obj.Content)
 
    if (chpblk.Ambient != null)
       {
-      for (let ctx_frag of chpblk.Ambient)
+      for (let ctx_frag of chpblk.Ambient.sort())
          {
          let link = document.createElement("a");
          let sitem = document.createElement("span");

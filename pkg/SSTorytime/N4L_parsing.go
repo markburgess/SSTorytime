@@ -313,7 +313,7 @@ func InsertArrowDirectory(sst *PoSST,stname,alias,name,pm string) ArrowPtr {
 		}
 
 		if sst.ARROW_DIRECTORY[a].Short == alias {
-			fmt.Printf(" !! Info, short name (%s) is previously found with long name: %s\n",sst.ARROW_DIRECTORY[a].Long,sst.ARROW_DIRECTORY[a].Short)
+			fmt.Printf(" !! Info, short name (%s) is previously found with long name: %s\n",sst.ARROW_DIRECTORY[a].Long,sst.ARROW_DIRECTORY[a].Long)
 			fmt.Println(" !! You might need to wipe and recompile if an old definition is cached")
 			return ArrowPtr(-1)
 		}

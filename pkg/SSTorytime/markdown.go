@@ -50,7 +50,7 @@ var TABLES []MDTable
 
 //*****************************************************************
 
-func FractionateMarkdown(dir,filename string) ([][]Sentence, int) {
+func FractionateMarkdown(dir,filename string) ([][]Sentence, int, []string) {
 	
 	source,err := ioutil.ReadFile(dir+filename)
 
@@ -59,19 +59,19 @@ func FractionateMarkdown(dir,filename string) ([][]Sentence, int) {
 		os.Exit(-1)
 	}
 
+	alias,_ := MakeTitleFromFileName(filename)
+	
 	md := goldmark.New(
 		goldmark.WithExtensions(extension.Table),
 	)
 	
 	doc := md.Parser().Parse(text.NewReader(source))
 
+	var text_notes []string
 	var current *ExtSentence
 	var title string = "introductory qprologue"
 	var level int
 
-	// strip extension
-	filename,_ = MakeTitleFromFileName(filename)
-	
 	// collect together into current to assemble in an ExtSentence
 	
 	ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
@@ -83,17 +83,17 @@ func FractionateMarkdown(dir,filename string) ([][]Sentence, int) {
 		switch n := n.(type) {
 
 		case *extast.Table:
-			tableData := ParseTable(n,source,filename)
+			tableData := ParseTable(n,source,alias)
 			tableData.Context = title
 			TABLES = append(TABLES, tableData)
 
 		case *ast.Heading:
-			_,value,_ := IsNewSection(string(n.Text(source)),filename)
+			_,value,_ := IsNewSection(string(n.Text(source)),alias)
 			title = value
 			level = n.Level
 
 		case *ast.Paragraph:
-			isnew, value, number := IsNewSection(string(n.Text(source)),filename)
+			isnew, value, number := IsNewSection(string(n.Text(source)),alias)
 			
 			if isnew {
 				current = &ExtSentence{
@@ -111,6 +111,7 @@ func FractionateMarkdown(dir,filename string) ([][]Sentence, int) {
 				}
 			}
 
+			CheckVocabulary(title,value,alias,&text_notes)
 			SECTIONS = append(SECTIONS, *current)
 		}
 
@@ -121,12 +122,12 @@ func FractionateMarkdown(dir,filename string) ([][]Sentence, int) {
 
 	pbsf,count := AssemblePBSF(SECTIONS)
 
-	return pbsf,count
+	return pbsf,count,text_notes
 }
 
 //*****************************************************************
 
-func FractionateSmallMarkdown(source []byte,name string) ([][]Sentence, int) {
+func FractionateSmallMarkdown(source []byte,name string) ([][]Sentence, int,[]string) {
 
 	md := goldmark.New()
 	reader := text.NewReader(source)
@@ -135,6 +136,7 @@ func FractionateSmallMarkdown(source []byte,name string) ([][]Sentence, int) {
 	var current *ExtSentence
 	var title string = "introductory qprologue"
 	var level int
+	var text_notes []string
 	
 	ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 
@@ -167,7 +169,8 @@ func FractionateSmallMarkdown(source []byte,name string) ([][]Sentence, int) {
 					Content: value,
 				}
 			}
-			
+
+			CheckVocabulary(title,value,name,&text_notes)
 			SECTIONS = append(SECTIONS, *current)
 		}
 		
@@ -179,9 +182,24 @@ func FractionateSmallMarkdown(source []byte,name string) ([][]Sentence, int) {
 	
 	pbsf,count := AssemblePBSF(SECTIONS)
 	
-	return pbsf,count
+	return pbsf,count,text_notes
 }
 	
+//*****************************************************************
+
+func CheckVocabulary(header,content,alias string,text_notes *[]string) {
+	
+	vocab := []string{"what you do","how you work","your objective"}
+
+	for _,v := range vocab {
+		if strings.Contains(strings.ToLower(header),v) {
+			ent := fmt.Sprintf("\n %s [%s] (policy) '%s'\n",header,alias,content)
+			*text_notes = append(*text_notes,ent)
+		}
+
+	}
+}
+
 //*****************************************************************
 // Tools
 //*****************************************************************

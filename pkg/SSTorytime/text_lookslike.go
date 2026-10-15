@@ -195,8 +195,6 @@ func ListProperNames(fp *os.File) {
 		fmt.Fprintf(fp,"\n %s (is explained by) %s \n",name,PROPER_NAME[name])
 		
 	}
-
-	fmt.Println("\nEnd proper names....")
 }
 
 //*****************************************************************
@@ -228,6 +226,7 @@ func CompileTabular(fp *os.File, alias string, tables []MDTable) {
 					if LooksLikeProperName(colval) {
 						if val,ok := PROPER_NAME[colval]; ok {
 							if len(val) == 0 {
+								// save it until we know rhs
 								PROPER_NAME[colval] = ""
 							}
 						}
@@ -255,8 +254,15 @@ func CompileTabular(fp *os.File, alias string, tables []MDTable) {
 				
 				// rest of row
 				
-				if pos > 0 && head == "Meaning" {
-					fmt.Fprintf(fp,"%s --> %s (stands for) %s\n",alias, first,colval)
+				if pos > 0 && head == "Meaning" && len(colval) > 0 {
+					if val,ok := PROPER_NAME[colval]; ok {
+						if len(val) == 0 {
+							PROPER_NAME[first] = colval
+						}
+					} else {
+						PROPER_NAME[first] = colval
+					}
+					fmt.Fprintf(fp,"%s [%s] (stands for) %s\n",first,alias,colval)
 				}
 			}
 		}
@@ -330,8 +336,12 @@ func CompileProperNames(fp *os.File, filealias string,selection []TextRank,table
 func OutputProperNameAnnotation(fp *os.File, alias string,parent string,list []string) {
 
 	for _,child := range list {
-		
-		fmt.Fprintf(fp,"\n %s %s (stands for) %s\n",alias,child,PROPER_NAME[child])
+
+		if len(PROPER_NAME[child]) > 0 {
+			fmt.Fprintf(fp,"\n %s %s (stands for) %s\n",alias,child,PROPER_NAME[child])
+		} else {
+			fmt.Fprintf(fp,"\n %s %s\n",alias,child)
+		}
 	}
 }
 

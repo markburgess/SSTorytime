@@ -167,13 +167,16 @@ func CompileTOC(fp *os.File, filealias string, sections []ExtSentence) {
 	var done = make(map[string]bool)
 
 	fmt.Fprintf(fp,"\n # BEG table of contents ############################\n")
-	fmt.Fprintf(fp,"\n :: _sequence_, table of contents, overview :: \n")
+	fmt.Fprintf(fp,"\n :: _sequence_, table of contents [%s] :: \n",filealias)
 	
 	for _,sec := range sections {
-		if !done[sec.Title] {
-			if LooksLikeProperName(sec.Title) || strings.Contains(sec.Title," ") {
-				done[sec.Title] = true
-				fmt.Fprintf(fp,"\n%s (%s) Table of Contents - %s\n  \" (%s) Overview - %s\n",sec.Title,INV_CONT_NAME_L,filealias,INV_CONT_NAME_L,filealias)
+
+		title := strings.ToLower(sec.Title)
+		
+		if !done[title] {
+			if LooksLikeProperName(title) || strings.Contains(title," ") {
+				done[title] = true
+				fmt.Fprintf(fp,"\n%s [%s] (%s) Table of Contents - %s\n",sec.Title,filealias,INV_CONT_NAME_L,filealias)
 			}
 		}
 	}
@@ -246,10 +249,10 @@ func CompileTabular(fp *os.File, alias string, tables []MDTable) {
 					if strings.Contains(head,"col") || strings.Contains(head,alias) {
 						fmt.Fprintf(fp,"%s (has concept) %s \n",head,colval)
 					} else {
-						fmt.Fprintf(fp,"%s x %s (has concept) %s \n",alias,head,colval)
+						fmt.Fprintf(fp,"%s [%s] (has concept) %s \n",head,alias,colval)
 					}
 				} else {
-					fmt.Fprintf(fp,"%s %s %s (has policy) %s \n",alias,first,head,colval)
+					fmt.Fprintf(fp,"%s [%s] %s (has policy) %s \n",first,alias,head,colval)
 				}
 				
 				// rest of row

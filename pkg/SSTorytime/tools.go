@@ -14,6 +14,7 @@ import (
 	"unicode"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"net/http"
 	"io/ioutil"
 	_ "github.com/lib/pq"
@@ -31,7 +32,6 @@ func NameValue(s string) (string,string) {
 	if hasparen {
 		// implicit value declaration
 		after = after[:len(after)-1]
-		fmt.Printf("**** %s (has value) %s\n",before,after)
 	}
 
 	if LooksLikeProperName(before) {
@@ -43,12 +43,24 @@ func NameValue(s string) (string,string) {
 
 //*******************************************************************
 
-func MakeTitle(filename string) string {
+func IsNumber(s string) bool {
+	_, err := strconv.ParseFloat(s, 64)
+	return err == nil
+}
+
+//*******************************************************************
+
+func MakeTitleFromFileName(filename string) (string,string) {
 
 	_,file := filepath.Split(filename)
-	main_name,_,_ := strings.Cut(file,".")
+	ext := filepath.Ext(filename)
+
+	file = strings.ReplaceAll(file,ext,"")
+	name_parts := strings.Split(file,".")
+	main_name := name_parts[len(name_parts)-1]
 	main_name = strings.ReplaceAll(main_name,"_"," ")
-	return main_name
+
+	return main_name,ext
 }
 
 // **************************************************************************

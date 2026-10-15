@@ -90,6 +90,7 @@ func AssessAgentRun(dir string) {
 	// Mention the agents!
 
 	ListAgents(fp)
+	SST.ListProperNames(fp)
 	
 	// Final markdown fragments, caches during sequence
 
@@ -140,7 +141,7 @@ func HandleAgentMarkDown(fp *os.File,dir,name string) {
 	
 	f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
 
-	alias := SST.MakeTitle(name)
+	alias,_ := SST.MakeTitleFromFileName(name)
 
 	const with_title = true
 	fmt.Println(" - writing results for",alias)
@@ -157,9 +158,8 @@ func AssessJsonType(fp *os.File,filename string) {
 		fmt.Println("Unable to read",filename,err)
 		return
 	}
-	
-	ext := filepath.Ext(filename) 
-	alias := SST.MakeTitle(filename)
+
+	alias, ext := SST.MakeTitleFromFileName(filename)
 
 	switch ext {
 
@@ -251,7 +251,6 @@ func AssessSingleJsonEvent(fp *os.File,alias string,filebytes []byte) {
 		ismd, notes, L := IsMarkdownFragment(thinking,"run history")
 		
 		if ismd {
-			fmt.Println(" ... found embedded markdown in json",alias)
 			fmt.Fprintf(fp,"\n Agent ****`%s` thinks/announces: status assessment %d\n",agent_speaking,MD_FRAGMENT_COUNTER)
 			fmt.Fprintf(fp,"    \"     (message body) agent report %d \n\n",MD_FRAGMENT_COUNTER)
 			key := fmt.Sprintf("%d,%d",MD_FRAGMENT_COUNTER,L)
@@ -331,7 +330,7 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 
 	SST.CompileTabular(fp,filealias,SST.TABLES)
 	SST.CompileTOC(fp,filealias,SST.SECTIONS)
-	SST.CompileProperNames(fp,filealias,selection,SST.TABLES)
+	//SST.CompileProperNames(fp,filealias,selection,SST.TABLES)
 
 	// 
 
@@ -381,7 +380,6 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 	}
 
 	fmt.Fprintf(fp,"\n# (end) ************\n")
-
 }
 
 //*******************************************************************

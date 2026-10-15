@@ -184,23 +184,30 @@ func CompileTOC(fp *os.File, filealias string, sections []ExtSentence) {
 
 //*****************************************************************
 
+func ListProperNames(fp *os.File) {
+
+	fmt.Println("\nCompiling proper names ....\n\n")
+
+	fmt.Fprintf(fp,"\n\n :: proper names :: \n\n")
+	
+	for name := range PROPER_NAME {
+
+		fmt.Fprintf(fp,"\n %s (is explained by) %s \n",name,PROPER_NAME[name])
+		
+	}
+
+	fmt.Println("\nEnd proper names....")
+}
+
+//*****************************************************************
+
 func CompileTabular(fp *os.File, alias string, tables []MDTable) {
 
 	// Map to n4l
 
-	fmt.Println("TABLES......",alias)
 	for _, table := range tables {
 		
-		fmt.Printf(" :: %s, table, %s :: \n",alias,strings.ToLower(table.Context))
-		
-		for _,h := range table.Headers {
-
-			fmt.Println("HEADER:",h)
-			if len(h) > 0 && LooksLikeProperName(h) || strings.Contains(h," ") {
-				fmt.Printf("\n # table %s  ############## \n",table.Context)
-				fmt.Printf(" %s  (%s) %s\n",h,INV_EXPR_HEADER_L,table.Context)	
-			}
-		}
+		fmt.Fprintf(fp,"\n\n :: %s tabular spec, %s :: \n\n",alias,strings.ToLower(table.Context))
 		
 		for _,row := range table.Rows {
 
@@ -208,14 +215,17 @@ func CompileTabular(fp *os.File, alias string, tables []MDTable) {
 
 			for pos, cell := range row.Cells {
 
-				head := cell.Header
-				colval := cell.Value
+				head := strings.ToLower(cell.Header)
+				colval := strings.ToLower(cell.Value)
 
-				CheckTabularValues(colval)
+				if !CheckTabularValues(head,colval) {
+					continue
+				}
+
+				// Cache and come back to proper names later
 				
 				if pos == 0 && (head == "Term" || strings.Contains(head,"col")) {
 					if LooksLikeProperName(colval) {
-						fmt.Printf("PROPER NAME: %s \n",colval)
 						if val,ok := PROPER_NAME[colval]; ok {
 							if len(val) == 0 {
 								PROPER_NAME[colval] = ""
@@ -223,41 +233,62 @@ func CompileTabular(fp *os.File, alias string, tables []MDTable) {
 						}
 					}
 					first = colval
-				}
-
-				if pos > 0 && (head == "Meaning"  || strings.Contains(head,"col")) {
-					head = "Value"
-					fmt.Printf("%s --> %s (stands for) %s\n",alias, first,colval)
-					//deliver
+					continue
 				}
 				
+				// start of row, subject title?
+				
 				if pos == 0 {
-					head = ""
-					fmt.Printf("%s ITEM: %s %s \n",alias, head,colval)
-					first = head + " " + colval
+					if IsNumber(colval) {
+						// random numbers have no semantic value
+						continue
+					}
+					
+					if strings.Contains(head,"col") || strings.Contains(head,alias) {
+						fmt.Fprintf(fp,"%s (has concept) %s \n",head,colval)
+					} else {
+						fmt.Fprintf(fp,"%s x %s (has concept) %s \n",alias,head,colval)
+					}
 				} else {
-					fmt.Printf("%s %s (has policy) %s ****`%s` \n",alias, first,head,colval)
+					fmt.Fprintf(fp,"%s %s %s (has policy) %s \n",alias,first,head,colval)
+				}
+				
+				// rest of row
+				
+				if pos > 0 && head == "Meaning" {
+					fmt.Fprintf(fp,"%s --> %s (stands for) %s\n",alias, first,colval)
 				}
 			}
 		}
 	}
-	
-	fmt.Println("END TABLES......")
 }
 	
 // *********************************************************************
 
-func CheckTabularValues(s string) {
+func CheckTabularValues(head,value string) bool {
 
-	list := strings.Split(s,",")
+	if head == "" && IsNumber(value) {
+		return false
+	}
 
-	for _,v := range list {
-		name,value := NameValue(v)
-		if LooksLikeProperName(name) {
-			fmt.Printf("PROPER NAME: %s WITH VALUE %s\n",name,value)
-			PROPER_NAME[name] = value
+	// Numbered header items?
+	
+	if IsNumber(value) {
+		value = head + " " + value
+	}
+	
+	if len(value) < 3 {
+		NameValue(value)
+	} else {
+
+		list := strings.Split(value,",")
+
+		for _,v := range list {
+			NameValue(v)
 		}
 	}
+
+	return true
 }
 
 // *********************************************************************
@@ -296,11 +327,11 @@ func CompileProperNames(fp *os.File, filealias string,selection []TextRank,table
 
 // *********************************************************************
 
-func OutputProperNameAnnotation(fp *os.File, filealias string,parent string,list []string) {
+func OutputProperNameAnnotation(fp *os.File, alias string,parent string,list []string) {
 
 	for _,child := range list {
 		
-		fmt.Fprintf(fp,"\n%s (stands for) %s\n",child,PROPER_NAME[child])
+		fmt.Fprintf(fp,"\n %s %s (stands for) %s\n",alias,child,PROPER_NAME[child])
 	}
 }
 

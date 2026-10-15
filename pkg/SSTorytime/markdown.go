@@ -70,7 +70,7 @@ func FractionateMarkdown(dir,filename string) ([][]Sentence, int) {
 	var level int
 
 	// strip extension
-	filename = MakeTitle(filename)
+	filename,_ = MakeTitleFromFileName(filename)
 	
 	// collect together into current to assemble in an ExtSentence
 	

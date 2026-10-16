@@ -1641,9 +1641,9 @@ func AssessGrammarCompletions(sst *SST.PoSST,token string, prior_state int) {
 		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
 		last_iptr := LINE_ITEM_REFS[LINE_ITEM_COUNTER-2]
-		this_iptr := HandleNode(sst,this_item)
+		this_iptr, this_cleaned := HandleNode(sst,this_item)
 		const annotation = false
-		IdempAddLink(sst,last_item,last_iptr,last_reln,this_item,this_iptr,annotation)
+		IdempAddLink(sst,last_item,last_iptr,last_reln,this_cleaned,this_iptr,annotation)
 		CheckSection(this_item)
 
 	case ROLE_CONTEXT:
@@ -1673,8 +1673,8 @@ func AssessGrammarCompletions(sst *SST.PoSST,token string, prior_state int) {
 			ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
 		}
 
-		HandleNode(sst,this_item)
-		LinkUpStorySequence(sst,this_item)
+		_,cleaned := HandleNode(sst,this_item)
+		LinkUpStorySequence(sst,cleaned)
 	}
 }
 
@@ -1812,7 +1812,7 @@ func IdempAddLink(sst *SST.PoSST,from string, frptr SST.NodePtr, link SST.Link,t
 
 //**************************************************************
 
-func HandleNode(sst *SST.PoSST,annotated string) SST.NodePtr {
+func HandleNode(sst *SST.PoSST,annotated string) (SST.NodePtr,string) {
 
 	annotated = SkipUnreadable(annotated)
 	
@@ -1829,7 +1829,7 @@ func HandleNode(sst *SST.PoSST,annotated string) SST.NodePtr {
 	}
 
 	IdempAddContextToNode(sst,clean_ptr)
-	return clean_ptr
+	return clean_ptr,clean
 }
 
 //**************************************************************

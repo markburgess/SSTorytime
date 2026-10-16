@@ -111,7 +111,7 @@ func RipMarkdown(filename string,percentage float64) {
 
 	dir, file := filepath.Split(filename)
 	fmt.Println("Fractionating markdown file...",filename)
-	psf,L := SST.FractionateMarkdown(dir,file)
+	psf,L,_ := SST.FractionateMarkdown(dir,file)
 	fmt.Println("Analyzing frequencies")
 	SST.AnalyzeFractionIntent(psf)
 

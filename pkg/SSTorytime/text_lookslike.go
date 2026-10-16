@@ -252,7 +252,10 @@ func CompileTabular(fp *os.File, alias string, tables []MDTable) {
 						fmt.Fprintf(fp,"%s [%s] (has concept) %s \n",head,alias,colval)
 					}
 				} else {
-					fmt.Fprintf(fp,"%s [%s] %s (has policy) %s \n",first,alias,head,colval)
+					if strings.Contains(head,"col") {
+						head = "specification"
+					}
+					fmt.Fprintf(fp,"%s [%s] (has policy) %s \n",head,alias,colval)
 				}
 				
 				// rest of row
@@ -342,8 +345,6 @@ func OutputProperNameAnnotation(fp *os.File, alias string,parent string,list []s
 
 		if len(PROPER_NAME[child]) > 0 {
 			fmt.Fprintf(fp,"\n %s %s (stands for) %s\n",alias,child,PROPER_NAME[child])
-		} else {
-			fmt.Fprintf(fp,"\n %s %s\n",alias,child)
 		}
 	}
 }
@@ -352,26 +353,26 @@ func OutputProperNameAnnotation(fp *os.File, alias string,parent string,list []s
 
 func GetTableStakes(tables []MDTable) []string {
 
-	var list []string
+	// Look through identifiers
+
+	var idemplist = make(map[string]int)
 	
 	for _, table := range tables {
 
-		list = append(list,table.Context)
+		idemplist[table.Context]++
 		
 		for _,h := range table.Headers {
-
-			list = append(list,h)
+			idemplist[h]++
 		}
 		
 		for _, row := range table.Rows {
 			for _, cell := range row.Cells {
-
-				list = append(list,cell.Value)
+				idemplist[cell.Value]++
 			}
 		}
 	}
 	
-	return list
+	return Map2List(idemplist)
 }
 
 // *********************************************************************

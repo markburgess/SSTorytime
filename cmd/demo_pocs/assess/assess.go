@@ -20,6 +20,8 @@ import (
 //******************************************************************
 
 var AGENTS = make(map[string]bool)
+var AGENT_OPENING = make(map[string]string)
+var AGENT_TOOLS = make(map[string]bool)
 
 //******************************************************************
 
@@ -75,9 +77,9 @@ func AssessAgentRun(dir string) {
 		} 
 	}
 
-	// Specific run files
+	// Specific run files, run last so we can pick up intel first
 	
-	namedfiles := []string{"transcript.jsonl","run.json","manifest.json"}
+	namedfiles := []string{"transcript.jsonl","manifest.json","run.json"}
 			
 	for _,file := range namedfiles {
 		cmpt := dir+file
@@ -88,6 +90,7 @@ func AssessAgentRun(dir string) {
 	// Mention the agents!
 
 	ListAgents(fp)
+	ListTools(fp,AGENT_TOOLS)
 	SST.ListProperNames(fp)
 }
 
@@ -157,10 +160,22 @@ func AssessJsonType(fp *os.File,filename string) {
 		
 		lines := bytes.Split(filebytes, []byte("\n"))
 
-		fmt.Fprintf(fp,"\n :: agent transcript, agent trace, _sequence_ :: \n\n")
+		fmt.Fprintf(fp,"\n :: _sequence_, agent transcript, agent trace :: \n\n")
+
+		fmt.Fprintf(fp,"\nExecution starts\n")
+
+		// Look for initial statements
 		
-		for _,runpart := range lines {
-			AssessSingleJsonEvent(fp,alias,runpart)
+		for agent := range AGENT_OPENING {
+			if AGENT_OPENING[agent] != "" {
+				fmt.Fprintf(fp,"\nAgent [%s] begins (message body) '%s'\n",AGENT_OPENING[agent])
+			}
+		}
+
+		// Now unfold the log
+		
+		for n,runpart := range lines {
+			AssessSingleJsonEvent(fp,n,alias,runpart)
 		}
 
 		fmt.Fprintf(fp,"\n -:: _sequence_ :: \n\n")
@@ -175,7 +190,7 @@ func AssessJsonType(fp *os.File,filename string) {
 
 //**************************************************************
 
-func AssessSingleJsonEvent(fp *os.File,alias string,filebytes []byte) {
+func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 
 	// transcripts are files of events in sequence, taken
 	// one by one and coagulated into a single stream
@@ -210,14 +225,7 @@ func AssessSingleJsonEvent(fp *os.File,alias string,filebytes []byte) {
 
 				callAPI, call_name, json = CheckForAPICall(rhs)
 				call_body = string(json)
-
-				fmt.Fprintf(fp,"agent %s event\n\n",agent_speaking)
-				
-				if callAPI {
-					fmt.Fprintf(fp,"   \"    (api) %s\n",call_name)
-				} else {
-					thinking = rhs
-				}
+				AGENT_TOOLS[call_name] = true
 			}
 		}
 	}
@@ -227,7 +235,7 @@ func AssessSingleJsonEvent(fp *os.File,alias string,filebytes []byte) {
 	}
 	
 	if callAPI {
-		fmt.Fprintf(fp,"agent %s calls tool/API function: %s\n",agent_speaking,call_name)
+		fmt.Fprintf(fp,"agent event %d [%s] call to tool/API function: ****`%s`[..]\n",n,agent_speaking,call_name)
 		if call_body != "{}" {
 			fmt.Fprintf(fp,"  \"  (message body) 'json body: %s' \n",call_body)
 		}
@@ -252,13 +260,18 @@ func AssessSingleJsonEvent(fp *os.File,alias string,filebytes []byte) {
 
 			for _,sel := range f {
 				for _,s := range sel {
-					fmt.Fprintf(fp,"  \" (action) %s\n",s)
-					ScanForDanger(s)
+					if s != "" {
+						fmt.Fprintf(fp,"  \" (action) %s\n",s)
+						ScanForDanger(s)
+					}
 				}
 			}
 
 		} else {
-			fmt.Fprintf(fp,"     \"  (action) '%s' \n",CleanString(thinking))
+			cln := CleanString(thinking)
+			if cln != "" {
+				fmt.Fprintf(fp,"     \"  (action) '%s' \n",cln)
+			}
 		}
 	}
 }
@@ -267,48 +280,72 @@ func AssessSingleJsonEvent(fp *os.File,alias string,filebytes []byte) {
 
 func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 
+	// Assess a json declaration file telling us aboout an agent deployment
+	
 	var json_file interface{}
 
 	if err := json.Unmarshal(filebytes, &json_file); err != nil {
 		return
 	}
 
-	var underway []string
+	var summary []string
 	var pathList []PathValue
-	var important = []string{"principal","opening","escalation","reason"}
 
 	if FindJsonStructureAsPaths("", json_file, &pathList) {
 
+		// parse the items in the runlog
+		
 		for _, item := range pathList {
-			for _,word := range important {
-				if strings.Contains(item.Path,word) {
 
-					agent, action := InferPathMeaning(item.Path)
-					lhs := fmt.Sprintf("event where %s declares ",agent,action)
-					rhs := item.Value.(string)
-					rhsbyte := []byte(rhs)
-					
-					// What to do with the RHS for linking etc
-					
-					if json.Valid(rhsbyte) {
-						fmt.Printf("%s    (message body) '%s' \n\n",lhs,string(rhsbyte))	
-					} else {
-						ismd,selections,notes,_ := IsMarkdownFragment(rhs,"run declaration")
-						underway = notes
-						
-						if ismd {
-							fmt.Fprintf(fp,"\n Declaration '%s' \n",selections)
-						} else {
-							fmt.Fprintf(fp,"\n Declaration '%s' \n",CleanString(rhs))
-						}
+			agent, action := InferPathMeaning(item.Path)
+
+			if agent == "" {
+				continue
+			}
+
+			lhs := fmt.Sprintf("event where [%s] declares %s",agent,action)
+			rhs := item.Value.(string)
+			rhsbyte := []byte(rhs)
+			
+			// Handle different types
+			
+			if strings.Contains(action,"opening") {
+				AGENT_OPENING[agent] = rhs
+			}
+	
+			if json.Valid(rhsbyte) {
+				if len(lhs) > 0 {
+					fmt.Fprintf(fp,"%s (message body) '%s' \n\n",lhs,string(rhsbyte))
+				}
+			} else {
+				ismd,selections,notes,L := IsMarkdownFragment(rhs,"run declaration")
+				summary = notes
+				
+				if ismd {
+					//markdown already scanned
+					const minN = SST.N_GRAM_MIN
+					const maxN = SST.N_GRAM_MAX
+					fmt.Println(" - writing embedded markdown fragment")
+					f,s,_,_ := SST.ExtractIntentionalTokens(L,selections,minN,maxN)
+					//GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
+					fmt.Println("\n*******************\n")
+					for _,st := range f {
+						fmt.Println(" [[[ %s",st)
 					}
+					for _,st := range s {
+						fmt.Println(" <<< %s",st)
+					}
+					fmt.Println("\n*********************\n")
+					fmt.Fprintf(fp,"\n%s (message body) '%s' \n",agent,selections)
+				} else {
+					// plain text
+					fmt.Fprintf(fp,"\n%s (message body) '%s' \n",agent,CleanString(rhs))
 				}
 			}
 		}
 	}
-
-	AddNotes(fp,underway)
-
+	
+	AddNotes(fp,summary)
 }
 
 //*******************************************************************
@@ -330,7 +367,7 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 	SST.CompileTabular(fp,filealias,SST.TABLES)
 	SST.CompileTOC(fp,filealias,SST.SECTIONS)
 	SST.CompileProperNames(fp,filealias,selection,SST.TABLES)
-
+	
 	// 
 
 	var partcheck = make(map[string]bool)
@@ -368,7 +405,7 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 			
 		}
 
-		fmt.Fprintf(fp,"\n@sen%d %s [%s]\n\n",selection[i].Order,filealias,SST.SanitizeParen(selection[i].Fragment))	
+		fmt.Fprintf(fp,"\n %s [%s]\n\n",SST.SanitizeParen(selection[i].Fragment),filealias)
 		
 		AddIntentionalContext(collected_fragments,part,anom_by_part[selection[i].Partition],already)
 		
@@ -386,12 +423,30 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 func AddNotes(fp *os.File,notes []string) {
 
 	// Drop the out of sequence annotations at the end
-	
-	fmt.Fprintf(fp,"  :: action, agent interactions  :: \n\n")
 
-	for _,action := range notes {
-		fmt.Fprintf(fp," %s\n",action)
+	if notes != nil {
+		fmt.Fprintf(fp,"  :: actions, unstructured notes, agent interactions  :: \n\n")
+
+		for _,action := range notes {
+			fmt.Fprintf(fp," %s\n",action)
+		}
 	}
+}
+
+//*******************************************************************
+
+func ListTools(fp *os.File,tools map[string]bool) {
+
+	fmt.Fprintf(fp,"\n :: tools :: \n\n")
+
+	for tool := range tools {
+
+		tool = strings.TrimSpace(tool)
+		if tool != "" {
+			fmt.Fprintf(fp,"\n %s (role) agent API/tool \n",tool)
+		}
+	}
+
 }
 
 //*******************************************************************
@@ -421,21 +476,25 @@ func InferPathMeaning(path string) (string,string) {
 
 	var agent, answer string
 	parts := strings.Split(path,".")
-	
-	// Do we recognize the agent?
+
+	recognize := []string{"principal","opening","client","reason","escalation","reason"}	
 	
 	for _,p := range parts {
+
+		// Do we recognize the agent?
+
 		if AGENTS[p] {
 			agent = p
 		}
-
-		if strings.Contains(p,"principal") || strings.Contains(p,"client") {
-			answer = p
+		
+		for _,v := range recognize {
+			
+			if strings.Contains(p,v) {
+				answer = p
+				continue
+			}
 		}
 
-		if strings.Contains(p,"reason") {
-			answer = p
-		}
 	}
 
 	return agent,answer

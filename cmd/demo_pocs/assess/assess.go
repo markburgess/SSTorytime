@@ -14,6 +14,7 @@ import (
 	"strings"
 	"path/filepath"
 	"bytes"
+	"flag"
 	"encoding/json"
 
 	SST "github.com/markburgess/SSTorytime/pkg/SSTorytime"
@@ -41,12 +42,30 @@ func main() {
 	SST.InitSSTorytime()
 	
 	// read and assess json files
-	
-	dir := "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi-sonnet55-s3-20261004-131451/"
 
+	dir := GetArgs()
+	
 	AssessAgentRun(dir)
 }
 
+//**************************************************************
+
+func GetArgs() string {
+
+	dirPtr := flag.String("dir", "none", "A directory containing the agent run transcript files")
+	flag.Parse()
+
+	dir := "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi-sonnet55-s3-20261004-131451/"
+
+	if *dirPtr != "none" {
+		dir = *dirPtr
+	}
+
+	return dir
+}
+
+//******************************************************************
+// begin
 //******************************************************************
 
 func AssessAgentRun(dir string) {

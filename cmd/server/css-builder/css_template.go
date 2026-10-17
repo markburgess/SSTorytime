@@ -146,7 +146,7 @@ func main() {
 	theme["red"]["LINE_NUM_COLOUR"] = "var(--yellow-4)"
 
 	theme["style"] = make(map[string]string)
-	theme["style"]["PAGE_BACKGROUND_COLOUR"] = "var(--brown-0)" // "var(--sand-0)"
+	theme["style"]["PAGE_BACKGROUND_COLOUR"] = "#faf6ef" //"var(--brown-0)" // "var(--sand-0)"
 	theme["style"]["LINK_ITEM_BACKGROUND_COLOUR"] = "var(--blue-8)"
 	theme["style"]["LINK_SECONDARY_COLOUR"] = "var(--blue-11)"
 	theme["style"]["FULL_TEXT_COLOUR"] = "var(--teal-12)"

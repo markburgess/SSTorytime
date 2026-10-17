@@ -7,7 +7,7 @@ body {
 }
 
 page {
-  background-color: var(--brown-0);
+  background-color: #faf6ef;
   min-height: 100svh;
   max-width: 100svw;
   overflow: hidden;

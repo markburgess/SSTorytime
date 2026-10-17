@@ -150,6 +150,7 @@ func LooksLikeProperName(s string) bool {
 	}
 
 	if hasupper {
+		KeepProperName(s,"")
 		return true
 	}
 	
@@ -195,8 +196,34 @@ func ListProperNames(fp *os.File) {
 	
 	for name := range PROPER_NAME {
 
-		fmt.Fprintf(fp,"\n %s (is explained by) %s \n",name,PROPER_NAME[name])
+		if PROPER_NAME[name] != "" {
+			fmt.Fprintf(fp,"\n %s (is explained by) %s \n",name,PROPER_NAME[name])
+		} else {
+			fmt.Fprintf(fp,"\n %s\n",name)
+		}
 		
+	}
+}
+
+//*****************************************************************
+
+func KeepProperName(name,explain string) {
+
+	const minimum_name_length = 3
+	
+	if len(name) < minimum_name_length {
+		return
+	}
+
+	_,ok := PROPER_NAME[name]
+
+	if explain == "" && !ok {
+		PROPER_NAME[name] = ""
+	} else {
+	
+		if PROPER_NAME[name] == "" {
+			PROPER_NAME[name] = explain
+		}
 	}
 }
 
@@ -227,12 +254,7 @@ func CompileTabular(fp *os.File, alias string, tables []MDTable) {
 				
 				if pos == 0 && (head == "Term" || strings.Contains(head,"col")) {
 					if LooksLikeProperName(colval) {
-						if val,ok := PROPER_NAME[colval]; ok {
-							if len(val) == 0 {
-								// save it until we know rhs
-								PROPER_NAME[colval] = ""
-							}
-						}
+						KeepProperName(colval,"")
 					}
 					first = colval
 					continue
@@ -256,20 +278,15 @@ func CompileTabular(fp *os.File, alias string, tables []MDTable) {
 						head = "specification"
 					}
 					fmt.Fprintf(fp,"%s [%s] (has policy) %s \n",head,alias,colval)
+					KeepProperName(head,colval)
 				}
 				
 				// rest of row
 				
 				if pos > 0 && head == "Meaning" && len(colval) > 0 {
-					if val,ok := PROPER_NAME[colval]; ok {
-						if len(val) == 0 {
-							PROPER_NAME[first] = colval
-						}
-					} else {
-						PROPER_NAME[first] = colval
-					}
-					fmt.Fprintf(fp,"%s [%s] (stands for) %s\n",first,alias,colval)
+					KeepProperName(head,colval)
 				}
+				fmt.Fprintf(fp,"%s [%s] (stands for) %s\n",first,alias,colval)
 			}
 		}
 	}

@@ -597,33 +597,28 @@ func HandleInferences(agent,action,path,value string) {
 	case "opening":
 		_, ok := AGENT_OPENING[agent]
 		if !ok {
-			fmt.Println(" ---> Got",agent,"opening",value)
 			AGENT_OPENING[agent] = value
 		}
 
 	case "principal":
 		_,ok := AGENT_PRINCIPAL[agent]
 		if !ok {
-			fmt.Println(" ---> Got",agent,"principal",value)
 			AGENT_PRINCIPAL[agent] = value
 		}
 	case "escalat":
 		_,ok := AGENT_ESCALATE[agent]
 		if !ok {
-			fmt.Println(" ---> Got",agent,"escalation",value)
 			AGENT_ESCALATE[agent] = value
 		}
 	case "objective":
 		_,ok := AGENT_OBJECTIVE[agent]
 		if !ok {
-			fmt.Println(" ---> Got",agent,"objective",value)
 			AGENT_OBJECTIVE[agent] = value
 		}
 
 	case "replies":
 		_,ok := AGENT_REPLY[agent]
 		if !ok {
-			fmt.Println(" ---> Got",agent,"programmed reply",value)
 			AGENT_REPLY[agent] = value
 		}
 

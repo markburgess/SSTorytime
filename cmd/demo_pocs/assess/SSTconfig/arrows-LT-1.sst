@@ -1,0 +1,30 @@
+
+#
+# LEADSTO relations are about processes and events (sequences of)
+#
+# Note that passive things cannot cause or affect changes, only active processes
+# (meaning events) so events always affect events
+#
+
+
+- leadsto 
+
+  + affects   (aff)          - is affected by   (aff-by)
+  + creates   (cr)           - is created by    (crtd)
+  + redirects (redir)        - is redirected by (redir-by)
+  + worked on (worked)       - was a work project by (work-proj)
+
+  + binds to   (bind-to)     - is bound by  (bound-by)
+
+  + results in       (result)  - was a result of        (result-of)
+  + reduces to    (reduce)     - is reduced from        (redfr)
+  + approximates to (approx)   - is an approximation of (appfr)
+  + determines    (det)        - is determined by       (det-by)
+  + should precede/come before (sh-precede) - should follow/come after (sh-follow)
+  + authenticates (auth)       - is authenticated by    (auth-by)
+  + injects       (inject)     - is injected by         (inj-by) 
+
+
+
+
+

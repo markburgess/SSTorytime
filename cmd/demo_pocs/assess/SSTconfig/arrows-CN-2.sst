@@ -1,0 +1,14 @@
+
+
+- contains
+
+  :: identity orientation::
+
+ + may contain        (c)  - may make up part of    (cb)
+ + contains           (contain)   - belongs to          (belong)
+ + includes           (incl)      - is included in      (is-incl)
+ + contains fragment  (has frag)  - is a fragment in    (is-frag)
+ + has message body   (message body) - is the body of message (isbodmsg)
+
+ + may be triggered by (>?) - may violate (<?)
+ 

@@ -1,0 +1,28 @@
+
+
+- properties
+
+
+  // THE FIRST PART IS TYPICALLY MADE BY THINGS OR CONCEPTS
+
+ :: basic annotation ::
+
+ + note/remark             (note)         - is a note or remark about (isnotefor)
+ + requirement             (require)      - is a requirement of (isreq)
+ + to be decided           (tbd)          - to be figured out    (tbf)
+ + has example             (e.g.)         - is an example of     (ex)
+ + in other words          (i.e.)         - is a clarification of (clarify)
+ + danger score            (danger)       - is a danger score for (isdanger)
+ + violates policy         (violation)    - is a violation assessment (isvio)
+ + has possible value      (valis)        - is a value for (isval)
+ + could indicate          (i)            - may be indicated by (ib)
+ + has name (name)       - is the name of (isnameof)
+ + in the role of (role) - is a role for (isrole)
+ + uses the tool (tool)  - is a tool used by (toolused) 
+ 
+ + is working for (client) - is the work client of (isclient)
+ + has policy (policy) - is a policy of (ispolicy)
+ + has concept  (concept) - is a concept about (isconcept)
+ + calls API function (api) - API function called at (isapi)
+ + acts or expounds (action) - took place at (isaction)
+ + is explained by (expl) - expands detail on (expdet) 

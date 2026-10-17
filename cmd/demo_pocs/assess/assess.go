@@ -1,6 +1,8 @@
 //******************************************************************
 //
-// assess the definitions of an AI agent
+// Assess the policy definitions of an AI agent
+//
+// (as model unspecific as possible)
 //
 //******************************************************************
 
@@ -19,9 +21,18 @@ import (
 
 //******************************************************************
 
+// Model specific .. probably...
+
 var AGENTS = make(map[string]bool)
+var AGENT_TOOLS = make(map[string][]string)
+var AGENT_PRINCIPAL = make(map[string]string)
 var AGENT_OPENING = make(map[string]string)
-var AGENT_TOOLS = make(map[string]bool)
+var AGENT_ESCALATE = make(map[string]string)
+var AGENT_OBJECTIVE = make(map[string]string)
+var AGENT_REPLY = make(map[string]string)
+
+var RECOGNIZE = []string{"principal","opening","client","escalat","tool","replies","objective"}
+const AGENT_INSTRUCTION = "system_prompt"
 
 //******************************************************************
 
@@ -40,10 +51,10 @@ func main() {
 
 func AssessAgentRun(dir string) {
 	
-	files, err := os.ReadDir(dir)
+	entries, err := os.ReadDir(dir)
 	
 	if err != nil {
-	fmt.Println("Error",err)
+		fmt.Println("Error",err)
 		return
 	}
 
@@ -60,26 +71,18 @@ func AssessAgentRun(dir string) {
 
 	// Start with defs
 
-	for _, entry := range files {
+	for _, entry := range entries {
 
-		ext := filepath.Ext(entry.Name())
-		name := entry.Name()
+		_, name, ismd := IsMarkdownFile(entry.Name())
 		
-		if strings.HasSuffix(ext,".md") {
-			_, err := entry.Info()
-			if err != nil {
-				fmt.Printf(" ** Could not get info for %s: %v\n", name, err)
-				continue
-			}
-			
-			fmt.Println("Assess Markdown descriptive file",dir+name)
+		if ismd {
 			HandleAgentMarkDown(fp,dir,name)
 		} 
 	}
 
 	// Specific run files, run last so we can pick up intel first
 	
-	namedfiles := []string{"transcript.jsonl","manifest.json","run.json"}
+	namedfiles := []string{"manifest.json","run.json","transcript.jsonl"}
 			
 	for _,file := range namedfiles {
 		cmpt := dir+file
@@ -90,8 +93,28 @@ func AssessAgentRun(dir string) {
 	// Mention the agents!
 
 	ListAgents(fp)
-	ListTools(fp,AGENT_TOOLS)
+	ListSundries(fp)
 	SST.ListProperNames(fp)
+}
+
+//**************************************************************
+
+func IsMarkdownFile(path string) (string,string,bool) {
+
+	var ismd bool = false
+
+	dir, file := filepath.Split(path)
+	ext := filepath.Ext(file)
+
+	name := strings.ReplaceAll(file,ext,"")
+	
+	if ext == ".md" {
+		ismd = true
+		fmt.Println("Assess Markdown descriptive file",dir+name)
+		InferPathMeaning(name)
+	}
+
+	return dir,file,ismd
 }
 
 //**************************************************************
@@ -162,13 +185,18 @@ func AssessJsonType(fp *os.File,filename string) {
 
 		fmt.Fprintf(fp,"\n :: _sequence_, agent transcript, agent trace :: \n\n")
 
-		fmt.Fprintf(fp,"\nExecution starts\n")
+		fmt.Fprintf(fp,"\n START! Agent execution launch ....\n\n")
 
+		for agent := range AGENTS {
+			fmt.Fprintf(fp,"\n \" (incl) %s\n",agent)
+		}
+		
 		// Look for initial statements
 		
 		for agent := range AGENT_OPENING {
 			if AGENT_OPENING[agent] != "" {
-				fmt.Fprintf(fp,"\nAgent [%s] begins (message body) '%s'\n",AGENT_OPENING[agent])
+				fmt.Println(" M Collected opening statement from",agent)
+				fmt.Fprintf(fp,"\nAgent [%s] begins with opening statement (message body) '%s'\n",agent,AGENT_OPENING[agent])
 			}
 		}
 
@@ -222,10 +250,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 				AGENTS[rhs] = true
 
 			case "text","thinking":
-
-				callAPI, call_name, json = CheckForAPICall(rhs)
-				call_body = string(json)
-				AGENT_TOOLS[call_name] = true
+				thinking = rhs
 			}
 		}
 	}
@@ -233,6 +258,11 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 	if agent_speaking == "" {
 		agent_speaking = "unknown agent"
 	}
+
+	callAPI, call_name, json = CheckForAPICall(thinking)
+	call_body = string(json)
+	
+	AGENT_TOOLS[agent_speaking] = append(AGENT_TOOLS[agent_speaking],call_name)
 	
 	if callAPI {
 		fmt.Fprintf(fp,"agent event %d [%s] call to tool/API function: ****`%s`[..]\n",n,agent_speaking,call_name)
@@ -247,26 +277,23 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		const exposition_threshold = 100
 		
 		if L > exposition_threshold {
-			fmt.Printf(" ** agent %s makes a noteworthy action/assertion!\n",agent_speaking)
-			fmt.Fprintf(fp,"   \" (note)  agent %s makes an extensive action/assertion!\n",agent_speaking)
-		}
-		
-		if ismd {
-			fmt.Fprintf(fp,"\n agent %s thinks/announces: status assessment\n",agent_speaking)
-			const minN = SST.N_GRAM_MIN
-			const maxN = SST.N_GRAM_MAX
-			const percentage = 100
-			f,_,_,_ := SST.ExtractIntentionalTokens(L,selections,minN,maxN)
+			fmt.Printf(" ** agent [%s] makes a noteworthy action/assertion!\n",agent_speaking)
+			fmt.Fprintf(fp,"   \" (note) agent [%s] makes an extensive noteworthy action/assertion!\n",agent_speaking)
 
-			for _,sel := range f {
-				for _,s := range sel {
-					if s != "" {
-						fmt.Fprintf(fp,"  \" (action) %s\n",s)
-						ScanForDanger(s)
+			if ismd {
+				fmt.Fprintf(fp,"\n agent %s thinks/announces: status assessment\n",agent_speaking)
+				f,_,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
+				
+				for _,sel := range f {
+					for _,s := range sel {
+						if s != "" {
+							fmt.Fprintf(fp,"  \" (action) %s\n",s)
+							ScanForDanger(s)
+						}
 					}
 				}
+				
 			}
-
 		} else {
 			cln := CleanString(thinking)
 			if cln != "" {
@@ -306,13 +333,11 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 			lhs := fmt.Sprintf("event where [%s] declares %s",agent,action)
 			rhs := item.Value.(string)
 			rhsbyte := []byte(rhs)
+
+			HandleInferences(agent,action,item.Path,rhs)
 			
 			// Handle different types
 			
-			if strings.Contains(action,"opening") {
-				AGENT_OPENING[agent] = rhs
-			}
-	
 			if json.Valid(rhsbyte) {
 				if len(lhs) > 0 {
 					fmt.Fprintf(fp,"%s (message body) '%s' \n\n",lhs,string(rhsbyte))
@@ -323,19 +348,18 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 				
 				if ismd {
 					//markdown already scanned
-					const minN = SST.N_GRAM_MIN
-					const maxN = SST.N_GRAM_MAX
 					fmt.Println(" - writing embedded markdown fragment")
-					f,s,_,_ := SST.ExtractIntentionalTokens(L,selections,minN,maxN)
+					f,s,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
+
 					//GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
-					fmt.Println("\n*******************\n")
+
 					for _,st := range f {
 						fmt.Println(" [[[ %s",st)
 					}
 					for _,st := range s {
 						fmt.Println(" <<< %s",st)
 					}
-					fmt.Println("\n*********************\n")
+
 					fmt.Fprintf(fp,"\n%s (message body) '%s' \n",agent,selections)
 				} else {
 					// plain text
@@ -424,6 +448,7 @@ func AddNotes(fp *os.File,notes []string) {
 
 	// Drop the out of sequence annotations at the end
 
+	fmt.Println(" >>> Adding notes .... \n")
 	if notes != nil {
 		fmt.Fprintf(fp,"  :: actions, unstructured notes, agent interactions  :: \n\n")
 
@@ -435,18 +460,56 @@ func AddNotes(fp *os.File,notes []string) {
 
 //*******************************************************************
 
-func ListTools(fp *os.File,tools map[string]bool) {
+func ListSundries(fp *os.File) {
 
 	fmt.Fprintf(fp,"\n :: tools :: \n\n")
 
-	for tool := range tools {
-
-		tool = strings.TrimSpace(tool)
-		if tool != "" {
-			fmt.Fprintf(fp,"\n %s (role) agent API/tool \n",tool)
+	for a := range AGENT_TOOLS {
+		mytools := AGENT_TOOLS[a]
+		for _,tool := range mytools {
+			tool = strings.TrimSpace(tool)
+			if tool != "" {
+				fmt.Fprintf(fp,"\n %s (role) agent API / tool \n",tool)
+				fmt.Fprintf(fp," \" (tool) %s \n",a)
+			}
 		}
 	}
 
+	fmt.Fprintf(fp,"\n :: objectives, promises :: \n\n")
+
+	for a := range AGENT_OBJECTIVE {
+		ob := strings.TrimSpace(AGENT_OBJECTIVE[a])
+		if ob != "" {
+			fmt.Fprintf(fp,"\n %s (role) agent [%s]'s promised objective \n",ob,a)
+		}
+	}
+
+	fmt.Fprintf(fp,"\n :: agent replies :: \n\n")
+
+	for a := range AGENT_REPLY {
+		ob := strings.TrimSpace(AGENT_REPLY[a])
+		if ob != "" {
+			fmt.Fprintf(fp,"\n %s (role) agent [%s]'s specified replies \n",ob,a)
+		}
+	}
+
+	fmt.Fprintf(fp,"\n :: escalation, human intervention :: \n\n")
+	
+	for a := range AGENT_ESCALATE {
+		esc := strings.TrimSpace(AGENT_ESCALATE[a])
+		if esc != "" {
+			fmt.Fprintf(fp,"\n %s (role) agent [%s]'s intended escalation \n",esc,a)
+		}
+	}
+
+	fmt.Fprintf(fp,"\n :: principal, agent client, promisee :: \n\n")
+	
+	for a := range AGENT_PRINCIPAL {
+		princ := strings.TrimSpace(AGENT_PRINCIPAL[a])
+		if princ != "" {
+			fmt.Fprintf(fp,"\n %s (role) agent [%s]'s principal client / promisee \n",princ,a)
+		}
+	}
 }
 
 //*******************************************************************
@@ -474,30 +537,98 @@ func IsMarkdownFragment(thinking string,name string) (bool,[]SST.TextRank,[]stri
 
 func InferPathMeaning(path string) (string,string) {
 
+	var parts []string
 	var agent, answer string
-	parts := strings.Split(path,".")
 
-	recognize := []string{"principal","opening","client","reason","escalation","reason"}	
-	
+	if strings.Contains(path,AGENT_INSTRUCTION) {
+		
+		path = strings.ReplaceAll(path,AGENT_INSTRUCTION,"")
+		parts = strings.Split(path,".")
+
+		for _,p := range parts {
+			if len(p) > 1 && !strings.Contains(p,"role") {
+				fmt.Println("\n ** inferring agent name: ",p)
+				if AGENTS[p] {
+					fmt.Println(" ... ( already known)")
+				} else {
+					AGENTS[p] = true
+				}
+				return p,"system prompt"
+			}
+		}
+	}
+
+	parts = strings.Split(path,".")
+
 	for _,p := range parts {
-
-		// Do we recognize the agent?
 
 		if AGENTS[p] {
 			agent = p
+			continue
 		}
 		
-		for _,v := range recognize {
-			
+		for _,v := range RECOGNIZE {	
 			if strings.Contains(p,v) {
-				answer = p
-				continue
+				answer = v
+				break
 			}
+		}
+
+		if answer != "" && agent != "" {
+			break
+		}
+	}
+
+	return agent,answer
+}
+
+//*******************************************************************
+
+func HandleInferences(agent,action,path,value string) {
+	
+	if action == "" || agent == "" {
+		return
+	}
+
+	// the cases should be taken from var RECOGNIZE
+	
+	switch action {
+
+	case "opening":
+		_, ok := AGENT_OPENING[agent]
+		if !ok {
+			fmt.Println(" ---> Got",agent,"opening",value)
+			AGENT_OPENING[agent] = value
+		}
+
+	case "principal":
+		_,ok := AGENT_PRINCIPAL[agent]
+		if !ok {
+			fmt.Println(" ---> Got",agent,"principal",value)
+			AGENT_PRINCIPAL[agent] = value
+		}
+	case "escalat":
+		_,ok := AGENT_ESCALATE[agent]
+		if !ok {
+			fmt.Println(" ---> Got",agent,"escalation",value)
+			AGENT_ESCALATE[agent] = value
+		}
+	case "objective":
+		_,ok := AGENT_OBJECTIVE[agent]
+		if !ok {
+			fmt.Println(" ---> Got",agent,"objective",value)
+			AGENT_OBJECTIVE[agent] = value
+		}
+
+	case "replies":
+		_,ok := AGENT_REPLY[agent]
+		if !ok {
+			fmt.Println(" ---> Got",agent,"programmed reply",value)
+			AGENT_REPLY[agent] = value
 		}
 
 	}
 
-	return agent,answer
 }
 
 //*******************************************************************
@@ -548,7 +679,7 @@ func CheckForAPICall(str string) (bool,string,[]byte) {
 
 	// Look for "function_name({json...})"
 	
-	if str[len(str)-1] != ')' {
+	if len(str) > 0 && str[len(str)-1] != ')' {
 		return false,"",[]byte{}
 	}
 

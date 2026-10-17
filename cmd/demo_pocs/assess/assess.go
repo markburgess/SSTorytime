@@ -95,6 +95,7 @@ func AssessAgentRun(dir string) {
 	ListAgents(fp)
 	ListSundries(fp)
 	SST.ListProperNames(fp)
+	Togetherness(fp)
 }
 
 //**************************************************************
@@ -536,6 +537,22 @@ func ListSundries(fp *os.File) {
 			fmt.Fprintf(fp,"\n %s (role) agent [%s]'s principal client / promisee \n",princ,a)
 		}
 	}
+}
+
+//*******************************************************************
+
+func Togetherness(fp *os.File) {
+
+	fmt.Fprintf(fp,"\n\n-Agent Runaround - Table Of Contents\n\n")
+
+	fmt.Fprintf(fp,"\n\n  :: structural overview, table of contents :: \n\n")
+
+	for a := range AGENTS {
+		
+		fmt.Fprintf(fp,"\nTable of Contents - %s\n",a)
+	}
+
+	
 }
 
 //*******************************************************************

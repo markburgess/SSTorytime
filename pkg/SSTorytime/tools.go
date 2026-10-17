@@ -43,6 +43,21 @@ func NameValue(s string) (string,string) {
 
 //*******************************************************************
 
+func IsQuotedString(s string) bool {
+
+	if s[0] == '"' && s[len(s)-1] == '"' {
+		return true
+	}
+
+	if s[0] == '\'' && s[len(s)-1] == '\'' {
+		return true
+	}
+
+	return false
+}
+
+//*******************************************************************
+
 func IsNumber(s string) bool {
 	_, err := strconv.ParseFloat(s, 64)
 	return err == nil

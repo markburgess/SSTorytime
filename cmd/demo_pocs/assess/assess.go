@@ -429,7 +429,11 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 			
 		}
 
-		fmt.Fprintf(fp,"\n %s [%s]\n\n",SST.SanitizeParen(selection[i].Fragment),filealias)
+		// Output an event
+
+		event := fmt.Sprintf("\n %s [%s]\n\n",SST.SanitizeParen(selection[i].Fragment),filealias)
+
+		fmt.Fprintf(fp, CrossReference(event))
 		
 		AddIntentionalContext(collected_fragments,part,anom_by_part[selection[i].Partition],already)
 		
@@ -444,11 +448,33 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 
 //*******************************************************************
 
+func CrossReference(event string) string {
+
+	// Add some cross references
+
+	event = strings.TrimSpace(event)
+	
+	if SST.IsQuotedString(event) {
+		return event
+	}
+
+	event = strings.ReplaceAll(event,"%","%%")
+	
+	for lookfor := range SST.PROPER_NAME {
+		repl := fmt.Sprintf("****`%s`",lookfor)
+		event = strings.Replace(event,lookfor,repl,1)
+	}
+
+	return event
+}
+
+//*******************************************************************
+
 func AddNotes(fp *os.File,notes []string) {
 
 	// Drop the out of sequence annotations at the end
 
-	fmt.Println(" >>> Adding notes .... \n")
+	fmt.Println("\n >>> Adding notes .... \n")
 	if notes != nil {
 		fmt.Fprintf(fp,"  :: actions, unstructured notes, agent interactions  :: \n\n")
 

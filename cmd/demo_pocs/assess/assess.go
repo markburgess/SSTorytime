@@ -111,10 +111,11 @@ func AssessAgentRun(dir string) {
 
 	// Mention the agents!
 
+	Togetherness(fp)  // Start a new chapter to isolate shared stuff
 	ListAgents(fp)
 	ListSundries(fp)
 	SST.ListProperNames(fp)
-	Togetherness(fp)
+
 }
 
 //**************************************************************

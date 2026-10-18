@@ -275,7 +275,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 				AGENTS[rhs] = true
 
 			case "text","thinking":
-				thinking = rhs
+				thinking = strings.TrimSpace(rhs)
 			}
 		}
 	}
@@ -284,11 +284,16 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		agent_speaking = "unknown agent"
 	}
 
+	const exposition_threshold = 100
+	
+	if len(thinking) < exposition_threshold {
+		return 
+	}
+
 	isAPIcall, call_name, json = CheckForAPICall(thinking)
 	call_body = string(json)
 	
 	if isAPIcall {
-		
 		AGENT_TOOLS[agent_speaking] = append(AGENT_TOOLS[agent_speaking],call_name)
 
 		fmt.Fprintf(fp,"agent event %d [%s] call to tool/API function: ****`%s`[..]\n",n,agent_speaking,call_name)
@@ -300,35 +305,27 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 
 		ismd,selections,_,L := IsMarkdownFragment(thinking,"run history")
 		
-		const exposition_threshold = 100
-		
-		if L > exposition_threshold {
-			fmt.Printf(" ** agent [%s] makes a noteworthy action/assertion!\n",agent_speaking)
-			fmt.Fprintf(fp,"   \" (note) agent [%s] makes an extensive noteworthy action/assertion!\n",agent_speaking)
+		fmt.Printf(" ** agent event [%s] makes a noteworthy action/assertion!\n",agent_speaking)
 
-			if ismd {
-				fmt.Fprintf(fp,"\n agent %s thinks/announces: status assessment\n",agent_speaking)
-				f,_,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
-				
-				for _,sel := range f {
-					for _,s := range sel {
-						if s != "" {
-							fmt.Fprintf(fp,"  \" (action) %s\n",s)
-							ScanForDanger(s)
-						}
+		fmt.Fprintf(fp,"\n agent event [%s] makes a noteworthy action/assertion!\n",agent_speaking)
+
+		if ismd {
+
+			fmt.Fprintf(fp,"\n agent %s thinks/announces: status assessment\n",agent_speaking)
+			f,_,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
+			
+			for _,sel := range f {
+				for _,s := range sel {
+					if s != "" {
+						fmt.Fprintf(fp,"  \" (action) %s\n",s)
+						ScanForDanger(s)
 					}
 				}
-				
-			} else {
-				if strings.Contains(thinking,"no need") {
-					fmt.Println(">>>>",thinking,"by",agent_speaking)
-				}
-				
-				cln := CleanString(thinking)
-				if cln != "" {
-					fmt.Fprintf(fp,"     \"  (action) '%s' \n",cln)
-				}
 			}
+			
+		} else {
+			cln := CleanString(thinking)
+			fmt.Fprintf(fp,"     \"  (action) '%s' \n",cln)
 		}
 	}
 }
@@ -590,7 +587,7 @@ func IsMarkdownFragment(thinking string,name string) (bool,[]SST.TextRank,[]stri
 
 	// Cache a lump of analyzed markdown for later, outside of a graph sequence
 
-	if strings.Contains(thinking,"\n") {
+	if strings.Contains(thinking,"\n") && strings.Contains(thinking,"**") {
 		const percentage = 100
 		rhsbyte := []byte(thinking)
 		psf,L,notes := SST.FractionateSmallMarkdown(rhsbyte,name)

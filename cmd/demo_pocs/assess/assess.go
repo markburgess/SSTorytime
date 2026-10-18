@@ -291,7 +291,12 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 	}
 
 	isAPIcall, call_name, json = CheckForAPICall(thinking)
+
 	call_body = string(json)
+
+	if JunkMessage(call_body) {
+		return
+	}
 	
 	if isAPIcall {
 		AGENT_TOOLS[agent_speaking] = append(AGENT_TOOLS[agent_speaking],call_name)
@@ -307,7 +312,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		
 		fmt.Printf(" ** agent event [%s] makes a noteworthy action/assertion!\n",agent_speaking)
 
-		fmt.Fprintf(fp,"\n agent event [%s] makes a noteworthy action/assertion!\n",agent_speaking)
+		fmt.Fprintf(fp,"\n agent event %d [%s] makes a noteworthy action/assertion!\n",n,agent_speaking)
 
 		if ismd {
 
@@ -328,6 +333,21 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 			fmt.Fprintf(fp,"     \"  (action) '%s' \n",cln)
 		}
 	}
+}
+
+//**************************************************************
+
+func JunkMessage(s string) bool {
+
+	const small_message = 50
+
+	// Not words
+	
+	if len(s) > small_message && !strings.Contains(s," ") {
+		return true
+	}
+
+	return false
 }
 
 //**************************************************************
@@ -407,17 +427,21 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 
 	var collected_fragments = make(map[string][]string)
 
+	
+	fmt.Fprintf(fp,"\n### BEGIN main file: %s \n",filealias)
+	
 	if with_title {
 		fmt.Fprintf(fp,"\n-%s\n",filealias)
 	}
 	
-	fmt.Fprintf(fp,"\n# (begin) ************ %s\n",filealias)
-
 	// Lookup tables of contents from Markdown
 
 	SST.CompileTabular(fp,filealias,SST.TABLES)
 	SST.CompileTOC(fp,filealias,SST.SECTIONS)
 	SST.CompileProperNames(fp,filealias,selection,SST.TABLES)
+
+	
+	fmt.Fprintf(fp,"\n### BEGIN raw content: %s \n",filealias)
 	
 	// 
 
@@ -428,10 +452,13 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 
 	last_context := ""
 	
+	const minimum_length = 15
 	
 	for i := range selection {
 
-		if len(selection[i].Fragment) < 1 {
+		// Skip spurious
+		
+		if len(selection[i].Fragment) < minimum_length {
 			continue
 		}
 
@@ -470,7 +497,7 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 		}
 	}
 
-	fmt.Fprintf(fp,"\n# (end) ************\n")
+	fmt.Fprintf(fp,"\n### END main file: %s\n",filealias)
 }
 
 //*******************************************************************
@@ -492,6 +519,8 @@ func CrossReference(event string) string {
 		event = strings.Replace(event,lookfor,repl,1)
 	}
 
+	event = fmt.Sprintf("\n%s\n",event)
+
 	return event
 }
 
@@ -503,10 +532,10 @@ func AddNotes(fp *os.File,notes []string) {
 
 	fmt.Println("\n >>> Adding notes .... \n")
 	if notes != nil {
-		fmt.Fprintf(fp,"  :: actions, unstructured notes, agent interactions  :: \n\n")
+		fmt.Fprintf(fp,"  :: actions, directives, agent instructions  :: \n\n")
 
 		for _,action := range notes {
-			fmt.Fprintf(fp," %s\n",action)
+			fmt.Fprintf(fp,"\n %s\n",action)
 		}
 	}
 }
@@ -523,7 +552,7 @@ func ListSundries(fp *os.File) {
 			tool = strings.TrimSpace(tool)
 			if tool != "" {
 				fmt.Fprintf(fp,"\n %s (role) agent API / tool \n",tool)
-				fmt.Fprintf(fp," \" (tool) %s \n",a)
+				fmt.Fprintf(fp," \" (toolused) %s \n",a)
 			}
 		}
 	}
@@ -568,7 +597,8 @@ func ListSundries(fp *os.File) {
 //*******************************************************************
 
 func Togetherness(fp *os.File) {
-
+	
+	fmt.Fprintf(fp,"\n### BEG Table of Contents - TOGETHERNESS\n")
 	fmt.Fprintf(fp,"\n\n-Agent Runaround - Table Of Contents\n\n")
 
 	fmt.Fprintf(fp,"\n\n  :: structural overview, table of contents :: \n\n")
@@ -578,7 +608,7 @@ func Togetherness(fp *os.File) {
 		fmt.Fprintf(fp,"\nTable of Contents - %s\n",a)
 	}
 
-	
+	fmt.Fprintf(fp,"\n### END Table of Contents - TOGETHERNESS\n")
 }
 
 //*******************************************************************

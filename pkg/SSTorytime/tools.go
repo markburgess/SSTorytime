@@ -23,19 +23,21 @@ import (
 
 //*******************************************************************
 
-func NameValue(s string) (string,string) {
+func NameValue(s,splitter string) (string,string) {
 
-	before,after,hasparen := strings.Cut(s,"[")
+	before,after,hasparen := strings.Cut(s,splitter)
 
 	before = strings.TrimSpace(before)
 	
 	if hasparen {
 		// implicit value declaration
 		after = after[:len(after)-1]
+	} else {
+		return "",""
 	}
 
 	if LooksLikeProperName(before) {
-		PROPER_NAME[before] = after
+		KeepProperName(before,after)
 	}
 
 	return before,after
@@ -59,8 +61,26 @@ func IsQuotedString(s string) bool {
 //*******************************************************************
 
 func IsNumber(s string) bool {
-	_, err := strconv.ParseFloat(s, 64)
-	return err == nil
+
+	arr := strings.Split(s," ")
+
+	for _,st := range arr {
+		_, err := strconv.ParseFloat(st, 64)
+		if err == nil {
+			return true
+		}
+	}
+	
+	arr = strings.Split(s,"-")
+
+	for _,st := range arr {
+		_, err := strconv.ParseFloat(st, 64)
+		if err == nil {
+			return true
+		}
+	}
+
+	return false
 }
 
 //*******************************************************************

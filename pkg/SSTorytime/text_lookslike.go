@@ -175,7 +175,7 @@ func CompileTOC(fp *os.File, filealias string, sections []ExtSentence) {
 		title := strings.ToLower(sec.Title)
 		
 		if !done[title] {
-			if LooksLikeProperName(title) || strings.Contains(title," ") {
+			if LooksLikeProperName(sec.Title) || strings.Contains(sec.Title," ") {
 				done[title] = true
 				fmt.Fprintf(fp,"\n%s [%s] (%s) Table of Contents - %s\n",sec.Title,filealias,INV_CONT_NAME_L,filealias)
 			}
@@ -183,7 +183,7 @@ func CompileTOC(fp *os.File, filealias string, sections []ExtSentence) {
 	}
 
 	fmt.Fprintf(fp,"\n -:: _sequence_ :: \n")
-	fmt.Fprintf(fp,"\n # END table of contents ############################\n")
+	fmt.Fprintf(fp,"\n # END table of contents for %s ############################\n",filealias)
 }
 
 //*****************************************************************
@@ -210,6 +210,10 @@ func ListProperNames(fp *os.File) {
 func KeepProperName(name,explain string) {
 
 	const minimum_name_length = 3
+
+	if strings.Contains(name,"date") {
+		return
+	}
 	
 	if len(name) < minimum_name_length {
 		return
@@ -219,12 +223,36 @@ func KeepProperName(name,explain string) {
 
 	if explain == "" && !ok {
 		PROPER_NAME[name] = ""
-	} else {
-	
-		if PROPER_NAME[name] == "" {
+		return
+	}
+
+	// What if explain is a list with parentheses?
+	// NO (Norway), UK (United Kingdom), DE (Germany) ... etc
+	// Now name is not the important part
+
+	if !ListExplainer(explain) {
+		if PROPER_NAME[name] == "" && explain != "" {
 			PROPER_NAME[name] = explain
 		}
 	}
+}
+
+//*****************************************************************
+
+func ListExplainer(str string) bool {
+
+	if strings.Contains(str,",") && strings.Contains(str,"[") {
+
+		list := strings.Split(str,",")
+
+		for _,each := range list {
+			NameValue(each,"[")
+		}
+		
+		return true
+	}
+
+	return false
 }
 
 //*****************************************************************
@@ -239,85 +267,43 @@ func CompileTabular(fp *os.File, alias string, tables []MDTable) {
 		
 		for _,row := range table.Rows {
 
-			var first string
+			var term string
+			var meaning string
 
-			for pos, cell := range row.Cells {
+			for _,cell := range row.Cells {
 
-				head := strings.ToLower(cell.Header)
-				colval := strings.ToLower(cell.Value)
+				head := cell.Header
+				colval := cell.Value
 
-				if !CheckTabularValues(head,colval) {
-					continue
+				if IsNumber(colval) {
+					// random numbers have no semantic value
+					break
 				}
 
-				// Cache and come back to proper names later
-				
-				if pos == 0 && (head == "Term" || strings.Contains(head,"col")) {
-					if LooksLikeProperName(colval) {
-						KeepProperName(colval,"")
-					}
-					first = colval
-					continue
-				}
-				
-				// start of row, subject title?
-				
-				if pos == 0 {
-					if IsNumber(colval) {
-						// random numbers have no semantic value
+				if head == "Term" || strings.Contains(head,"col") {
+					if term == "" {
+						term = colval
 						continue
 					}
-					
-					if strings.Contains(head,"col") || strings.Contains(head,alias) {
-						fmt.Fprintf(fp,"%s (has concept) %s \n",head,colval)
-					} else {
-						fmt.Fprintf(fp,"%s [%s] (has concept) %s \n",head,alias,colval)
-					}
-				} else {
-					if strings.Contains(head,"col") {
-						head = "specification"
-					}
-					fmt.Fprintf(fp,"%s [%s] (has policy) %s \n",head,alias,colval)
-					KeepProperName(head,colval)
 				}
-				
+
 				// rest of row
-				
-				if pos > 0 && head == "Meaning" && len(colval) > 0 {
-					KeepProperName(head,colval)
+
+				if term == "" {
+					term = colval
+					continue
 				}
-				fmt.Fprintf(fp,"%s [%s] (stands for) %s\n",first,alias,colval)
+
+				meaning = colval
+				
+				if term != "" && meaning != "" {
+					KeepProperName(term,meaning)
+					term = ""
+					meaning = ""
+				}
 			}
 		}
 	}
-}
-	
-// *********************************************************************
-
-func CheckTabularValues(head,value string) bool {
-
-	if head == "" && IsNumber(value) {
-		return false
-	}
-
-	// Numbered header items?
-	
-	if IsNumber(value) {
-		value = head + " " + value
-	}
-	
-	if len(value) < 3 {
-		NameValue(value)
-	} else {
-
-		list := strings.Split(value,",")
-
-		for _,v := range list {
-			NameValue(v)
-		}
-	}
-
-	return true
 }
 
 // *********************************************************************
@@ -335,34 +321,11 @@ func CompileProperNames(fp *os.File, filealias string,selection []TextRank,table
 	// Context string
         // }
 
-	//fmt.Fprintf(fp,"\n\n :: proper names, identifiers  :: \n\n")
-
 	searchlist := GetTableStakes(tables)
 	
 	for _, str := range searchlist {
-
-		// Look for ID-like common strings
-		
-		names := SearchNames(str)
-		OutputProperNameAnnotation(fp,filealias,str,names)
-
-		// Consecutive Word phrases
-
-		names = ConsecutiveWordPhrase(str)
-		OutputProperNameAnnotation(fp,filealias,str,names)
-
-	}
-}
-
-// *********************************************************************
-
-func OutputProperNameAnnotation(fp *os.File, alias string,parent string,list []string) {
-
-	for _,child := range list {
-
-		if len(PROPER_NAME[child]) > 0 {
-			fmt.Fprintf(fp,"\n %s %s (stands for) %s\n",alias,child,PROPER_NAME[child])
-		}
+		SearchNames(str)
+		ConsecutiveWordPhrase(str)
 	}
 }
 

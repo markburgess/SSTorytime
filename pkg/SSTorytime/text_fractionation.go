@@ -371,7 +371,6 @@ func CleanText(s string) string {
 	// Weird English abbrev
 	s = strings.Replace(s,"[","",-1) 
 	s = strings.Replace(s,"]","",-1)
-	s = strings.Replace(s,"&","and",-1)
 
 	s = strings.Replace(s,"Mr.","Mr",-1)
 	s = strings.Replace(s,"Mrs.","Mrs",-1) 

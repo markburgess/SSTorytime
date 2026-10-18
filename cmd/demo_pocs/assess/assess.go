@@ -227,10 +227,6 @@ func AssessJsonType(fp *os.File,filename string) {
 		// Now unfold the log
 		
 		for n,runpart := range lines {
-			if strings.Contains(string(runpart),"no need") {
-
-				fmt.Println("XXXXX",string(runpart))
-			}
 			
 			AssessSingleJsonEvent(fp,n,alias,runpart)
 		}

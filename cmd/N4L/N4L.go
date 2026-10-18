@@ -1505,7 +1505,6 @@ func GetToken(sst *SST.PoSST,src []rune, pos int) (string,int) {
 		token,pos = ReadToLast(src,pos,ALPHATEXT)
 
 	}
-
 	return token, pos
 }
 
@@ -1518,7 +1517,6 @@ func ClassifyTokenRole(sst *SST.PoSST,token string,last rune) {
 	}
 
 	// Chapter definition must be at the top
-
 
 	switch token[0] {
 
@@ -1622,9 +1620,9 @@ func AssessGrammarCompletions(sst *SST.PoSST,token string, prior_state int) {
 	if len(token) == 0 {
 		return
 	}
-
-	this_item := token
 	
+	this_item := token
+
 	const BOM_UTF8 = "\xef\xbb\xbf"
 
 	if this_item == BOM_UTF8 {

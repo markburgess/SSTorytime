@@ -260,7 +260,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 
 	var pathList []PathValue
 	var agent_speaking string
-	var callAPI bool
+	var isAPIcall bool
 	var json []byte
 	var call_name string
 	var call_body string

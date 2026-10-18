@@ -55,10 +55,13 @@ func GetArgs() string {
 	dirPtr := flag.String("dir", "none", "A directory containing the agent run transcript files")
 	flag.Parse()
 
-	dir := "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-kpi-sonnet55-s3-20261004-131451/"
+	dir := "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-none-sonnet55-s2-20261004-130935"
 
 	if *dirPtr != "none" {
 		dir = *dirPtr
+		if dir[len(dir)-1] != '/' {
+			dir += "/"
+		}
 	}
 
 	return dir
@@ -224,6 +227,11 @@ func AssessJsonType(fp *os.File,filename string) {
 		// Now unfold the log
 		
 		for n,runpart := range lines {
+			if strings.Contains(string(runpart),"no need") {
+
+				fmt.Println("XXXXX",string(runpart))
+			}
+			
 			AssessSingleJsonEvent(fp,n,alias,runpart)
 		}
 
@@ -280,12 +288,13 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		agent_speaking = "unknown agent"
 	}
 
-	callAPI, call_name, json = CheckForAPICall(thinking)
+	isAPIcall, call_name, json = CheckForAPICall(thinking)
 	call_body = string(json)
 	
-	AGENT_TOOLS[agent_speaking] = append(AGENT_TOOLS[agent_speaking],call_name)
-	
-	if callAPI {
+	if isAPIcall {
+		
+		AGENT_TOOLS[agent_speaking] = append(AGENT_TOOLS[agent_speaking],call_name)
+
 		fmt.Fprintf(fp,"agent event %d [%s] call to tool/API function: ****`%s`[..]\n",n,agent_speaking,call_name)
 		if call_body != "{}" {
 			fmt.Fprintf(fp,"  \"  (message body) 'json body: %s' \n",call_body)
@@ -314,11 +323,15 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 					}
 				}
 				
-			}
-		} else {
-			cln := CleanString(thinking)
-			if cln != "" {
-				fmt.Fprintf(fp,"     \"  (action) '%s' \n",cln)
+			} else {
+				if strings.Contains(thinking,"no need") {
+					fmt.Println(">>>>",thinking,"by",agent_speaking)
+				}
+				
+				cln := CleanString(thinking)
+				if cln != "" {
+					fmt.Fprintf(fp,"     \"  (action) '%s' \n",cln)
+				}
 			}
 		}
 	}

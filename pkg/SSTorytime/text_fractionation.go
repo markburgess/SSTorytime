@@ -344,6 +344,7 @@ func SanitizeToken(s string) string {
 
 	s = strings.ReplaceAll(s,"***","")
 	s = strings.ReplaceAll(s,"`","")
+
 	return s
 }
 
@@ -435,6 +436,7 @@ func AssemblePBSF(sections []ExtSentence)  ([][]Sentence,int) {
 
 			if len(sec.Title) > 0 {
 				number, name = DeNumberItem(sec.Title)
+				name = SanitizeToken(name)
 			}
 			
 			if len(name) > 0 {

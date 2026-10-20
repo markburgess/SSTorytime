@@ -32,14 +32,19 @@ var AGENT_ESCALATE = make(map[string]string)
 var AGENT_OBJECTIVE = make(map[string]string)
 var AGENT_REPLY = make(map[string]string)
 
+var SST_COORDS = make(map[string][]string)
+var SST_SCORES = make(map[string][]int)
+
 var RECOGNIZE = []string{"principal","opening","client","escalat","tool","replies","objective"}
 const AGENT_INSTRUCTION = "system_prompt"
 
 //******************************************************************
 
 func main() {
-
+	
 	SST.InitSSTorytime()
+
+	InitDetection()
 	
 	// read and assess json files
 
@@ -66,6 +71,28 @@ func GetArgs() string {
 
 	return dir
 }
+
+//**************************************************************
+
+func InitDetection() {
+
+	// In the operational response to an LLM, the tooling vocabulary will be more constrained
+	// so we can try to look for "DNA" spectral coordinate basis directions
+
+	SST_COORDS["risk"] = []string{"marginal","failed","exposure","weak-buffer-thin","not required here","no need to","limit/threshold","empty"}
+
+	SST_COORDS["promise-failed"] = []string{"missed-deadline","removed"}
+
+	SST_COORDS["future"] = []string{"expected,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value"}
+	
+	SST_COORDS["unexpected"] = []string{"removed"}
+
+	SST_COORDS["other/anomaly"] = []string{"violate","competing","no need to"}
+
+}
+
+//**************************************************************
+
 
 //******************************************************************
 // begin
@@ -247,7 +274,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 
 	// transcripts are files of events in sequence, taken
 	// one by one and coagulated into a single stream
-	
+
 	var json_file interface{}
 
 	if err := json.Unmarshal(filebytes, &json_file); err != nil {
@@ -304,26 +331,35 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		fmt.Fprintf(fp,"agent event %d [%s] call to tool/API function: ****`%s`[..]\n",n,agent_speaking,call_name)
 		if call_body != "{}" {
 			fmt.Fprintf(fp,"  \"  (message body) 'json body: %s' \n",call_body)
+			signal, bad := ScanForDanger(call_body)
+
+			if bad {
+				fmt.Fprintf(fp,"  \"  (warn) 'possible warning signal %s' \n",signal)
+			}
 		}
 	} else {
 		// Json might contain Markdown as content!!
 
 		ismd,selections,_,L := IsMarkdownFragment(thinking,"run history")
 		
-		fmt.Printf(" ** agent event [%s] makes a noteworthy action/assertion!\n",agent_speaking)
+		fmt.Printf(" ** agent event %d [%s] action/assertion!\n",n,agent_speaking)
 
-		fmt.Fprintf(fp,"\n agent event %d [%s] makes a noteworthy action/assertion!\n",n,agent_speaking)
+		fmt.Fprintf(fp,"\n agent event %d [%s]\n",n,agent_speaking)
 
 		if ismd {
 
-			fmt.Fprintf(fp,"\n agent %s thinks/announces: status assessment\n",agent_speaking)
+			fmt.Fprintf(fp,"\n agent %s thinks/announces [seq %d]\n",agent_speaking,n)
 			f,_,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
 			
 			for _,sel := range f {
 				for _,s := range sel {
 					if s != "" {
 						fmt.Fprintf(fp,"  \" (action) %s\n",s)
-						ScanForDanger(s)
+						signal, bad := ScanForDanger(s)
+						
+						if bad {
+							fmt.Fprintf(fp,"  \"  (warn) 'possible warning signal %s' \n",signal)
+						}
 					}
 				}
 			}
@@ -331,6 +367,10 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		} else {
 			cln := CleanString(thinking)
 			fmt.Fprintf(fp,"     \"  (action) '%s' \n",cln)
+			signal, bad := ScanForDanger(cln)
+			if bad {
+				fmt.Fprintf(fp,"  \"  (warn) 'possible warning signal %s' \n",signal)
+			}
 		}
 	}
 }
@@ -788,7 +828,7 @@ func CheckForAPICall(str string) (bool,string,[]byte) {
 	if len(before) > function_name_size {
 		return false,"",[]byte{}
 	}
-
+	
 	if !strings.Contains(after,"\n") {
 		after = strings.ReplaceAll(after,",",",\n")
 	}
@@ -808,9 +848,62 @@ func CheckForAPICall(str string) (bool,string,[]byte) {
 // Scanning for danger
 //**************************************************************
 
-func ScanForDanger(s string) {
+func ScanForDanger(str string) (string,bool) {
+	
+	for category := range SST_COORDS {
+		
+		for _,check := range SST_COORDS[category] {
+			
+			if ScanFractionPatterns(category,str,check) {
 
-	//fmt.Println(" . . . scan:",s)
+				fmt.Println("\n !!    ----> Potential danger signal",check,"for NGRAM '",check,"'\n")
+				return check, true
+			}
+		}
+		
+	}
+	
+	return "",false
+}
+
+//**************************************************************
+
+func ScanFractionPatterns(category, text, check string) bool {
+
+	order := strings.Split(check,"-")
+	working := text
+	result := true
+	after := ""
+	
+	for _,word := range order {
+
+		found_word := false
+		word_result := false
+		
+		if strings.Contains(word,"/") {
+
+			alts := strings.Split(word,"/")
+
+			for _,sub_word := range alts {
+				_, after, found_word = strings.Cut(working,sub_word)
+				if found_word {
+					word_result = true
+					break
+				}
+			}
+		} else {
+			_, after, found_word = strings.Cut(working,word)
+
+			if found_word {
+				word_result = true
+			}
+		}
+
+		working = after
+		result = result && word_result
+	}
+
+	return result
 }
 
 //**************************************************************

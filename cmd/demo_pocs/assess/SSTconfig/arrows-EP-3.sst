@@ -25,4 +25,6 @@
  + has concept  (concept) - is a concept about (isconcept)
  + calls API function (api) - API function called at (isapi)
  + acts or expounds (action) - took place at (isaction)
- + is explained by (expl) - expands detail on (expdet) 
+ + is explained by (expl) - expands detail on (expdet)
+
+ + signal possible warning (warn) - is a possible warning (iswarn) 

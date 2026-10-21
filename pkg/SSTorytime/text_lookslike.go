@@ -404,7 +404,76 @@ func ConsecutiveWordPhrase(s string) []string {
 		}
 	}
 
+
 	return phrases
+}
+
+//*******************************************************************
+
+func SearchStringForProperNames(text string) []string {
+
+	// first break the string by punctuated regions
+
+	fields := strings.FieldsFunc(text, func(r rune) bool {
+		return unicode.IsPunct(r)
+	})
+
+	const minimum_string = 2
+	var retval = make(map[string]int)
+	
+	for _, part := range fields {
+
+		if len(part) < minimum_string {
+			continue
+		}
+
+		// Now split each field on spaces
+
+		words := strings.Split(part," ")
+		
+		if len(words) < minimum_string {
+			continue
+		}
+		
+		var keep []string
+		
+		for _,w := range words {
+
+			l := strings.ToLower(w)
+			
+			if ExcludedByBindings(l,l,l) {
+				continue
+			}
+			
+			if IsCapitalized(w) {
+				keep = append(keep,w)
+			} else {
+				if len(keep) > 1 {
+					name := strings.Join(keep," ")
+					KeepProperName(name,"")
+					retval[name]++
+					keep = nil
+				}
+			}
+		}
+	}
+
+	return Map2List(retval)
+}
+
+// *********************************************************************
+
+func IsCapitalized(s string) bool {
+
+	word := []rune(s)
+
+	if len(word) > 2 {
+		if unicode.IsUpper(word[0]) && unicode.IsLower(word[1]) {
+			return true
+		}
+	}
+	
+	return false
 }
 
 // *********************************************************************

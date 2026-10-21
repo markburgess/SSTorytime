@@ -190,8 +190,8 @@ func IsNewSection(para string,filename string) (bool,string,string) {
 
 func CheckAnnotations(s string) string {
 
-	// Insert a *** annotation where boldface **x y z...** has been used
-	// Note, this assumes that *** is defined in the standard way
+	// Insert a "****" annotation where boldface **x y z...** has been used
+	// Note, this assumes that **** is defined in the standard way
 
 	const searchtext = "**"
 
@@ -231,6 +231,7 @@ func CheckAnnotations(s string) string {
 			if pos+1 < rlen && runestring[pos+1] == '*' {
 
 				if openbrack {
+					modified = append(modified,'*')
 					modified = append(modified,'*')
 					modified = append(modified,'*')
 					modified = append(modified,'*')

@@ -27,7 +27,7 @@ func ExcludedByBindings(firstword,whole,lastword string) bool {
 	
 	var forbidden_ending = []string{"but", "and", "the", "or", "a", "an", "its", "it's", "their", "your", "my", "our", "of", "as", "are", "is", "was", "has", "be", "been", "with", "using", "that", "who", "to" ,"no", "not", "because", "at", "but", "yes", "no", "yeah", "yay", "in", "which", "what", "as", "he", "him", "she", "her","they", "all", "I", "my", "they", "from", "for", "then", "any", "however", "its", "it's", "get", "don't", "this", "one", "shall"}
 
-	var forbidden_starter = []string{"its", "it's", "and", "or", "of", "the", "it", "because", "in", "that", "these", "those", "is", "are", "was", "were", "but", "yes", "no", "yeah", "yay", "also", "me", "them", "him", "his", "her", "but", "been", "however", "get", "do", "don't", "soon", "own", "all", "their", "suppose", "for", "said", "shall", "will"}
+	var forbidden_starter = []string{"its", "it's", "and", "or", "of", "the", "it", "because", "in", "that", "these", "those", "is", "are", "was", "were", "but", "yes", "no", "you", "your", "yeah", "yay", "also", "me", "them", "him", "his", "her", "but", "been", "however", "get", "do", "don't", "soon", "own", "all", "their", "suppose", "for", "said", "shall", "will"}
 
 	if (len(firstword) <= 2) || len(lastword) <= 2 {
 		return true

@@ -517,7 +517,13 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 
 		event := fmt.Sprintf("\n %s [%s]\n\n",SST.SanitizeParen(selection[i].Fragment),filealias)
 
-		fmt.Fprintf(fp, CrossReference(event))
+		fmt.Fprintf(fp,"%s",event)
+
+		names := SST.SearchStringForProperNames(event)
+		
+		for _,n := range names {
+			fmt.Fprintf(fp,"    \"  (refersto) %s\n",n)
+		}
 		
 		AddIntentionalContext(collected_fragments,part,anom_by_part[selection[i].Partition],already)
 		
@@ -528,30 +534,6 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 	}
 
 	fmt.Fprintf(fp,"\n### END main file: %s\n",filealias)
-}
-
-//*******************************************************************
-
-func CrossReference(event string) string {
-
-	// Add some cross references
-
-	event = strings.TrimSpace(event)
-	
-	if SST.IsQuotedString(event) {
-		return event
-	}
-
-	event = strings.ReplaceAll(event,"%","%%")
-	
-	for lookfor := range SST.PROPER_NAME {
-		repl := fmt.Sprintf("****`%s`",lookfor)
-		event = strings.Replace(event,lookfor,repl,1)
-	}
-
-	event = fmt.Sprintf("\n%s\n",event)
-
-	return event
 }
 
 //*******************************************************************

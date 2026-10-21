@@ -64,11 +64,12 @@ func GetArgs() string {
 
 	if *dirPtr != "none" {
 		dir = *dirPtr
-		if dir[len(dir)-1] != '/' {
-			dir += "/"
-		}
 	}
-
+	
+	if dir[len(dir)-1] != '/' {
+		dir += "/"
+	}
+	
 	return dir
 }
 
@@ -90,9 +91,6 @@ func InitDetection() {
 	SST_COORDS["other/anomaly"] = []string{"violate","competing","no need to"}
 
 }
-
-//**************************************************************
-
 
 //******************************************************************
 // begin
@@ -185,6 +183,7 @@ func HandleAgentMarkDown(fp *os.File,dir,name string) {
 
 	const percentage = 100
 
+	SST.SECTIONS = nil
 	fmt.Println(" - fractionating",name)
 	psf,L,notes := SST.FractionateMarkdown(dir,name)
 	fmt.Println(" - scanning")
@@ -430,23 +429,13 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 					fmt.Fprintf(fp,"%s (message body) '%s' \n\n",lhs,string(rhsbyte))
 				}
 			} else {
-				ismd,selections,notes,L := IsMarkdownFragment(rhs,"run declaration")
+				ismd,selections,notes,_ := IsMarkdownFragment(rhs,"run declaration")
 				summary = notes
 				
 				if ismd {
 					//markdown already scanned
 					fmt.Println(" - writing embedded markdown fragment")
-					f,s,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
-
-					//GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
-
-					for _,st := range f {
-						fmt.Println(" [[[ %s",st)
-					}
-					for _,st := range s {
-						fmt.Println(" <<< %s",st)
-					}
-
+					//f,s,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
 					fmt.Fprintf(fp,"\n%s (message body) '%s' \n",agent,selections)
 				} else {
 					// plain text
@@ -506,6 +495,7 @@ func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int,
 
 		if context != last_context {
 			fmt.Fprintf(fp,"\n\n :: %s [%s] :: \n\n",context,filealias)
+			last_context = context
 		}
 		
 		var part string
@@ -828,10 +818,11 @@ func CheckForAPICall(str string) (bool,string,[]byte) {
 	if len(before) > function_name_size {
 		return false,"",[]byte{}
 	}
-	
-	if !strings.Contains(after,"\n") {
-		after = strings.ReplaceAll(after,",",",\n")
-	}
+
+	// Readability
+	//	if !strings.Contains(after,"\n") {
+	//	after = strings.ReplaceAll(after,",",",\n")
+	//}
 
 	look_for_json := []byte(after[:len(after)-1])
 	

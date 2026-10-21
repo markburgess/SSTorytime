@@ -59,7 +59,7 @@ func LooksLikeChapSection(org,filename string) (bool,string,string) {
 	line := strings.Split(org," ")
 	linestart := line[0]
 
-	rest := filename + " " + strings.Join(line[1:]," ")
+	rest := strings.Join(line[1:]," ")
 	
 	if len(linestart) > 2 && linestart[len(linestart)-1] == ')' {
 		rest = linestart[:len(linestart)-1]

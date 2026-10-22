@@ -404,13 +404,6 @@ func CleanNewLines(para string) string {
 
 //**************************************************************
 
-func SplitPunctuationText(s string) []string {
-
-	return SplitPunctuationTextWork(s,false)
-}
-
-//**************************************************************
-
 func AssemblePBSF(sections []ExtSentence)  ([][]Sentence,int) {
 	
 	var pbsf [][]Sentence
@@ -440,9 +433,8 @@ func AssemblePBSF(sections []ExtSentence)  ([][]Sentence,int) {
 			}
 			
 			if len(name) > 0 {
-				
 				this.Title = name
-				if number != "unnumbered" {
+				if len(number) > 0 && number != "unnumbered" {
 					this.Title += " [numbered in the document as: " + number + "]"
 				}
 			} else {
@@ -450,11 +442,17 @@ func AssemblePBSF(sections []ExtSentence)  ([][]Sentence,int) {
 			}
 
 			count++
+
+			const min_size = 4
 			
 			for f := range frags {
-				frags[f] = SanitizeToken(frags[f])
+				if len(frags[f]) > min_size {
+					_, name = DeNumberItem(frags[f])
+					frags[f] = SanitizeToken(name)
+				}
+
 				content := strings.TrimSpace(frags[f])
-				if len(content) > 2 {			
+				if len(content) > min_size {
 					this.Frags = append(this.Frags,content)
 				}
 			}
@@ -492,6 +490,13 @@ func DeNumberItem(text string) (string,string) {
 	}
 
 	return number,name
+}
+
+//**************************************************************
+
+func SplitPunctuationText(s string) []string {
+
+	return SplitPunctuationTextWork(s,false)
 }
 
 //**************************************************************

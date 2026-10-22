@@ -84,12 +84,14 @@ func InitDetection() {
 
 	SST_COORDS["promise-failed"] = []string{"missed-deadline","removed","unable-pay","short on-cash","unable-settle","payment-not-possible","unable-cover-expense","unable-meet-obligation","insufficient-credit"}
 
-	SST_COORDS["future"] = []string{"expected,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value"}
+	SST_COORDS["future"] = []string{"expect,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value","resolve","adjust"}
 	
-	SST_COORDS["unexpected"] = []string{"removed","unable-meet-obligation"}
+	SST_COORDS["unexpected"] = []string{"removed","unable-meet-obligation","split-multiple"}
 
-	SST_COORDS["other/anomaly"] = []string{"violate","competing","no need to","unable-meet-obligation"}
+	SST_COORDS["other/anomaly"] = []string{"violate","competing","no need to","unable-meet-obligation","is-report-event"}
 
+	SST_COORDS["conditional"] = []string{"if-missing/damaged"}
+	
 }
 
 //******************************************************************

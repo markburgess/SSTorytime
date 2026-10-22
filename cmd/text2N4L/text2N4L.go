@@ -193,6 +193,13 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 		context := SST.SpliceSet(ambi_by_part[selection[i].Partition])
 
 		if len(selection[i].Title) > 0 {
+			number, name := SST.DeNumberItem(selection[i].Title)
+			if len(name) > 0 {
+				selection[i].Title = name
+				if len(number) > 0 && number != "unnumbered" {
+					selection[i].Title += " [numbered in the document as: " + number + "]"
+				}
+			}
 			part = selection[i].Title
 		} else {
 			part = PartName(selection[i].Partition,filealias,context)

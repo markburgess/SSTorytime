@@ -80,15 +80,15 @@ func InitDetection() {
 	// In the operational response to an LLM, the tooling vocabulary will be more constrained
 	// so we can try to look for "DNA" spectral coordinate basis directions
 
-	SST_COORDS["risk"] = []string{"marginal","failed","exposure","weak-buffer-thin","not required here","no need to","limit/threshold","empty"}
+	SST_COORDS["risk"] = []string{"marginal","failed","exposure","weak-buffer-thin","not required here","no need to","limit/threshold","empty","finance/financial-difficult"}
 
-	SST_COORDS["promise-failed"] = []string{"missed-deadline","removed"}
+	SST_COORDS["promise-failed"] = []string{"missed-deadline","removed","unable-pay","short on-cash","unable-settle","payment-not-possible","unable-cover-expense","unable-meet-obligation","insufficient-credit"}
 
 	SST_COORDS["future"] = []string{"expected,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value"}
 	
-	SST_COORDS["unexpected"] = []string{"removed"}
+	SST_COORDS["unexpected"] = []string{"removed","unable-meet-obligation"}
 
-	SST_COORDS["other/anomaly"] = []string{"violate","competing","no need to"}
+	SST_COORDS["other/anomaly"] = []string{"violate","competing","no need to","unable-meet-obligation"}
 
 }
 
@@ -333,7 +333,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		fmt.Fprintf(fp,"agent event %d [%s] call to tool/API function: ****`%s`[..]\n",n,agent_speaking,call_name)
 		if call_body != "{}" {
 			fmt.Fprintf(fp,"  \"  (message body) 'json body: %s' \n",call_body)
-			signal, bad := ScanForDanger(call_body)
+			signal, bad := ScanForSemanticAnomaly(call_body)
 
 			if bad {
 				fmt.Fprintf(fp,"  \"  (warn) 'possible warning signal %s' \n",signal)
@@ -357,7 +357,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 				for _,s := range sel {
 					if s != "" {
 						fmt.Fprintf(fp,"  \" (action) %s\n",s)
-						signal, bad := ScanForDanger(s)
+						signal, bad := ScanForSemanticAnomaly(s)
 						
 						if bad {
 							fmt.Fprintf(fp,"  \"  (warn) 'possible warning signal %s' \n",signal)
@@ -369,7 +369,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		} else {
 			cln := CleanString(thinking)
 			fmt.Fprintf(fp,"     \"  (action) '%s' \n",cln)
-			signal, bad := ScanForDanger(cln)
+			signal, bad := ScanForSemanticAnomaly(cln)
 			if bad {
 				fmt.Fprintf(fp,"  \"  (warn) 'possible warning signal %s' \n",signal)
 			}
@@ -824,7 +824,7 @@ func CheckForAPICall(str string) (bool,string,[]byte) {
 // Scanning for danger
 //**************************************************************
 
-func ScanForDanger(str string) (string,bool) {
+func ScanForSemanticAnomaly(str string) (string,bool) {
 	
 	for category := range SST_COORDS {
 		

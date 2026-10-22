@@ -221,7 +221,7 @@ func KeepProperName(name,explain string) {
 
 	_,ok := PROPER_NAME[name]
 
-	if explain == "" && !ok {
+	if IsEmptyExplainer(explain) && !ok {
 		PROPER_NAME[name] = ""
 		return
 	}
@@ -230,8 +230,8 @@ func KeepProperName(name,explain string) {
 	// NO (Norway), UK (United Kingdom), DE (Germany) ... etc
 	// Now name is not the important part
 
-	if !ListExplainer(explain) {
-		if PROPER_NAME[name] == "" && explain != "" {
+	if !IsListExplainer(explain) {
+		if PROPER_NAME[name] == "" && !IsEmptyExplainer(explain) {
 			PROPER_NAME[name] = explain
 		}
 	}
@@ -239,7 +239,24 @@ func KeepProperName(name,explain string) {
 
 //*****************************************************************
 
-func ListExplainer(str string) bool {
+func IsEmptyExplainer(str string) bool {
+
+	if str == "" {
+		return true
+	}
+
+	const reasonable_word_length = 50
+
+	if len(str) > reasonable_word_length && !strings.Contains(str," ") {
+		return true
+	}
+	
+	return false
+}
+
+//*****************************************************************
+
+func IsListExplainer(str string) bool {
 
 	if strings.Contains(str,",") && strings.Contains(str,"[") {
 

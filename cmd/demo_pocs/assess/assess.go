@@ -183,7 +183,10 @@ func HandleAgentMarkDown(fp *os.File,dir,name string) {
 
 	const percentage = 100
 
-	SST.SECTIONS = nil
+	// Don't reset the vocabulary reservoir after each document
+	// SST.SECTIONS = nil
+	// because we wan to find overlaps
+
 	fmt.Println(" - fractionating",name)
 	psf,L,notes := SST.FractionateMarkdown(dir,name)
 	fmt.Println(" - scanning")

@@ -455,94 +455,6 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 
 //*******************************************************************
 
-func GenerateOutput(fp *os.File,filealias string,selection []SST.TextRank,L int, percentage float64,anom_by_part[][]string,ambi_by_part[][]string,all_anom[]string,all_ambi[]string,with_title bool) {
-
-	// See AddMandatory() in N4L.go for reserved names (TBD, collect these one day as const)
-
-	var collected_fragments = make(map[string][]string)
-
-	
-	fmt.Fprintf(fp,"\n### BEGIN main file: %s \n",filealias)
-	
-	if with_title {
-		fmt.Fprintf(fp,"\n-%s\n",filealias)
-	}
-	
-	// Lookup tables of contents from Markdown
-
-	SST.CompileTabular(fp,filealias,SST.TABLES)
-	SST.CompileTOC(fp,filealias,SST.SECTIONS)
-	SST.CompileProperNames(fp,filealias,selection,SST.TABLES)
-
-	
-	fmt.Fprintf(fp,"\n### BEGIN raw content: %s \n",filealias)
-	
-	// 
-
-	var partcheck = make(map[string]bool)
-	var parts []string
-	var lastpart string
-	var already = make(map[string]bool)
-
-	last_context := ""
-	
-	const minimum_length = 15
-	
-	for i := range selection {
-
-		// Skip spurious
-		
-		if len(selection[i].Fragment) < minimum_length {
-			continue
-		}
-
-		context := SST.SpliceSet(ambi_by_part[selection[i].Partition])
-
-		if context != last_context {
-			fmt.Fprintf(fp,"\n\n :: %s [%s] :: \n\n",context,filealias)
-			last_context = context
-		}
-		
-		var part string
-		
-		if part != lastpart {
-			if len(context) > 0 {
-				fmt.Fprintf(fp,"\n-:: _sequence_ ::")
-				fmt.Fprintf(fp,"\n#######################################")
-				fmt.Fprintf(fp,"\n :: %s, %s, _sequence_ ::\n",context,part)
-				fmt.Fprintf(fp,"#######################################\n")
-				fmt.Fprintf(fp,"\n %s\n\n",part)		
-			}
-			
-			lastpart = part
-			
-		}
-
-		// Output an event
-
-		event := fmt.Sprintf("\n %s [%s]\n\n",SST.SanitizeParen(selection[i].Fragment),filealias)
-
-		fmt.Fprintf(fp,"%s",event)
-
-		names := SST.SearchStringForProperNames(event)
-		
-		for _,n := range names {
-			fmt.Fprintf(fp,"    \"  (refersto) %s\n",n)
-		}
-		
-		AddIntentionalContext(collected_fragments,part,anom_by_part[selection[i].Partition],already)
-		
-		if !partcheck[part] {
-			parts = append(parts,part)
-			partcheck[part] = true
-		}
-	}
-
-	fmt.Fprintf(fp,"\n### END main file: %s\n",filealias)
-}
-
-//*******************************************************************
-
 func AddNotes(fp *os.File,notes []string) {
 
 	// Drop the out of sequence annotations at the end
@@ -751,19 +663,6 @@ func CleanString(s string) string {
 	s = strings.ReplaceAll(s,")","]")
 	s = strings.ReplaceAll(s,"- ","* ")
 	return s
-}
-
-//*******************************************************************
-
-func AddIntentionalContext(collected map[string][]string,key string,ctx []string,already map[string]bool) {
-
-	for w := 0; w < len(ctx); w++ {
-
-		if !already[ctx[w]] {
-			collected[key] = append(collected[key],ctx[w])
-			already[ctx[w]] = true
-		}
-	}
 }
 
 //**************************************************************

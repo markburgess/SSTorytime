@@ -16,6 +16,21 @@ import (
 
 // **************************************************************************
 
+func CheckNewContext(fp *os.File, last_context string, ctxset []string, filealias string) (string,string) {
+
+	context := SpliceSet(ctxset)
+
+	if context != last_context {
+		fmt.Fprintf(fp,"\n-:: _sequence_ ::")
+		fmt.Fprintf(fp,"\n\n :: %s / %s :: \n\n",context,filealias)
+		last_context = context
+	}
+	
+	return context,last_context
+}
+
+// **************************************************************************
+
 func LooksLikeChapSection(org,filename string) (bool,string,string) {
 
 	if len(org) == 0 {
@@ -30,7 +45,7 @@ func LooksLikeChapSection(org,filename string) (bool,string,string) {
 
 	if strings.HasPrefix(strings.ToLower(org),"chapter ") {
 		name := org[len("chapter "):]
-		fmt.Println("\n Found chapter:",name)
+		fmt.Println(" Found chapter:",name)
 
 		name = name + " [" + filename + "]"
 
@@ -58,7 +73,6 @@ func LooksLikeChapSection(org,filename string) (bool,string,string) {
 
 	line := strings.Split(org," ")
 	linestart := line[0]
-
 	rest := strings.Join(line[1:]," ")
 	
 	if len(linestart) > 2 && linestart[len(linestart)-1] == ')' {
@@ -107,6 +121,7 @@ func LooksLikeNumber(s string) bool {
 
 		for _,t := range numbers {
 			if t == c {
+				havedigit++
 				goaround = true
 				break
 			}
@@ -155,54 +170,6 @@ func LooksLikeProperName(s string) bool {
 	}
 	
 	return false
-}
-
-//*****************************************************************
-// Build ancillary structures
-//*****************************************************************
-
-func CompileTOC(fp *os.File, filealias string, sections []ExtSentence) {
-
-	// map to n4l
-	
-	var done = make(map[string]bool)
-
-	fmt.Fprintf(fp,"\n # BEG table of contents ############################\n")
-	fmt.Fprintf(fp,"\n :: _sequence_, table of contents [%s] :: \n",filealias)
-	
-	for _,sec := range sections {
-
-		title := strings.ToLower(sec.Title)
-		
-		if !done[title] {
-			if LooksLikeProperName(sec.Title) || strings.Contains(sec.Title," ") {
-				done[title] = true
-				fmt.Fprintf(fp,"\n%s [%s] (%s) Table of Contents - %s\n",sec.Title,filealias,INV_CONT_NAME_L,filealias)
-			}
-		}
-	}
-
-	fmt.Fprintf(fp,"\n -:: _sequence_ :: \n")
-	fmt.Fprintf(fp,"\n # END table of contents for %s ############################\n",filealias)
-}
-
-//*****************************************************************
-
-func ListProperNames(fp *os.File) {
-
-	fmt.Println("\nCompiling proper names ....\n\n")
-
-	fmt.Fprintf(fp,"\n\n :: proper names :: \n\n")
-	
-	for name := range PROPER_NAME {
-
-		if PROPER_NAME[name] != "" {
-			fmt.Fprintf(fp,"\n %s (is explained by) %s \n",name,PROPER_NAME[name])
-		} else {
-			fmt.Fprintf(fp,"\n %s\n",name)
-		}
-		
-	}
 }
 
 //*****************************************************************

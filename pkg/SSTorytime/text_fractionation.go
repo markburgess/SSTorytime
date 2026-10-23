@@ -13,32 +13,8 @@ import (
 	"strings"
 	"sort"
 	"regexp"
-	"math"
 	_ "github.com/lib/pq"
 )
-
-//*****************************************************************
-
-func ReadTextFile(filename string) string {
-
-	// Read a string and strip out characters that can't be used in kenames
-	// to yield a "pure" text for n-gram classification, with fewer special chars
-	// The text marks end of sentence with a # for later splitting
-
-	content,err := ioutil.ReadFile(filename)
-
-	if err != nil {
-		fmt.Println("Couldn't find or open",filename)
-		os.Exit(-1)
-	}
-
-	// Start by stripping HTML / XML tags before para-split
-	// if they haven't been removed already
-
-	m1 := regexp.MustCompile("<[^>]*>") 
-	cleaned := m1.ReplaceAllString(string(content),";") 
-	return cleaned
-}
 
 //**************************************************************
 // Text Fractionation (alphabetic language)
@@ -81,7 +57,7 @@ type Sentence struct {
 	Frags []string
 }
 
-type ExtSentence struct { // hangover from goldmark processing, tb-elim
+type AuxTxtMDSentence struct { // hangover from goldmark processing, tb-elim
 	Level   int
 	Title   string
 	Number  string
@@ -90,17 +66,27 @@ type ExtSentence struct { // hangover from goldmark processing, tb-elim
 
 //**************************************************************
 // Begin
-//**************************************************************
+//*****************************************************************
 
-func NewNgramMap() [N_GRAM_MAX]map[string]float64 {
+func ReadTextFile(filename string) string {
 
-	var thismap [N_GRAM_MAX]map[string]float64
+	// Read a string and strip out characters that can't be used in kenames
+	// to yield a "pure" text for n-gram classification, with fewer special chars
+	// The text marks end of sentence with a # for later splitting
 
-	for i := 1; i < N_GRAM_MAX; i++ {
-		thismap[i] = make(map[string]float64)
+	content,err := ioutil.ReadFile(filename)
+
+	if err != nil {
+		fmt.Println("Couldn't find or open",filename)
+		os.Exit(-1)
 	}
 
-	return thismap
+	// Start by stripping HTML / XML tags before para-split
+	// if they haven't been removed already
+
+	m1 := regexp.MustCompile("<[^>]*>") 
+	cleaned := m1.ReplaceAllString(string(content),";") 
+	return cleaned
 }
 
 //******************************************************************
@@ -117,48 +103,47 @@ func FractionateTextFile(dir,name string) ([][]Sentence,int) {
 
 func FractionateText(proto_text,filename string) ([][]Sentence,int) {
 
-	pbsf,count := SplitIntoParaSentences(proto_text,filename)
+	pbsf,count := SplitIntoSectionsOfSentences(proto_text,filename)
 	AnalyzeFractionIntent(pbsf)
 	return pbsf,count
 }
 
 //**************************************************************
 
-func SplitIntoParaSentences(file,filename string) ([][]Sentence,int) {
+func SplitIntoSectionsOfSentences(file,filename string) ([][]Sentence,int) {
 
-	var current *ExtSentence
+	var current AuxTxtMDSentence
 	var title string = ""
 	var level int
 
 	intro := fmt.Sprintf("Introduction of %s",filename)
 
-	current = &ExtSentence{
-		Level: level,
-		Title: intro,
-		Number: "",
-		Content: "",
-	}
+	current.Level = level
+	current.Title = intro
+	current.Number = ""
+	current.Content = ""
 	
-	SECTIONS = append(SECTIONS, *current)
+	SECTIONS = append(SECTIONS, current)
 	
 	paras := strings.Split(file,"\n\n")
 
 	for _,sec := range paras {
 
+		// This is where we detect section headers
+
 		issection,value,number := IsNewSection(sec,filename)
 		
 		if issection {
+			// Set section.Title
 			title = value
 		}	
 
-		current = &ExtSentence{
-			Level: level,
-			Title: title,
-			Number: number,
-			Content: value,
-		}
+		current.Level = level
+		current.Title = title
+		current.Number = number
+		current.Content = value
 
-		SECTIONS = append(SECTIONS, *current)
+		SECTIONS = append(SECTIONS, current)
 	}
 	
 	pbsf,count := AssemblePBSF(SECTIONS)
@@ -182,6 +167,8 @@ func IsNewSection(para string,filename string) (bool,string,string) {
 	if ischap {
 		return true,name,number
 	}
+
+	// This is not a header, just a normal paragraph
 
 	return false,para,"unnumbered"
 }
@@ -387,7 +374,7 @@ func CleanText(s string) string {
 	s = strings.ReplaceAll(s,"’","'")
 	s = strings.ReplaceAll(s,"(","[")
 	s = strings.ReplaceAll(s,")","]")
-
+	s = strings.TrimSpace(s)
 	return s
 }
 
@@ -404,7 +391,7 @@ func CleanNewLines(para string) string {
 
 //**************************************************************
 
-func AssemblePBSF(sections []ExtSentence)  ([][]Sentence,int) {
+func AssemblePBSF(sections []AuxTxtMDSentence)  ([][]Sentence,int) {
 	
 	var pbsf [][]Sentence
 	var count int
@@ -414,40 +401,26 @@ func AssemblePBSF(sections []ExtSentence)  ([][]Sentence,int) {
 		sentences := SplitSentences(sec.Content)
 
 		var cleaned []Sentence
-		var number,name string
 		
 		for s := range sentences {
 
-			if len(sentences[s]) == 0 {
+			const min_size = 4
+			
+			if len(sentences[s]) < min_size {
 				continue
 			}
 
-			frags := SplitPunctuationText(sentences[s])
-
 			var this Sentence
 			this.S = sentences[s]
-
-			if len(sec.Title) > 0 {
-				number, name = DeNumberItem(sec.Title)
-				name = SanitizeToken(name)
-			}
-			
-			if len(name) > 0 {
-				this.Title = name
-				if len(number) > 0 && number != "unnumbered" {
-					this.Title += " [numbered in the document as: " + number + "]"
-				}
-			} else {
-				this.Title = ""
-			}
+			this.Title = sec.Title
 
 			count++
-
-			const min_size = 4
+			
+			frags := SplitPunctuationText(sentences[s])
 			
 			for f := range frags {
 				if len(frags[f]) > min_size {
-					_, name = DeNumberItem(frags[f])
+					_, name := DeNumberItem(frags[f])
 					frags[f] = SanitizeToken(name)
 				}
 
@@ -485,7 +458,7 @@ func DeNumberItem(text string) (string,string) {
 
 		if LooksLikeNumber(first) {
 			name = CleanText(text[len(first):])
-			number = first
+			number = strings.Trim(first,".")
 		}
 	}
 
@@ -1008,219 +981,287 @@ func CleanNgram(s string) string {
 	return strings.ToLower(s)
 }
 
-//**************************************************************
+//*******************************************************************
 
-func ExtractIntentionalTokens(L int,selected []TextRank,Nmin,Nmax int) ([][]string,[][]string,[]string,[]string) {
+func GenerateOutput(fp *os.File,filealias string,selection []TextRank,L int, percentage float64,anom_by_part[][]string,ambi_by_part[][]string,all_anom[]string,all_ambi[]string,with_title bool) {
 
-	// This function examines a fractionation of text for fractions, only for
-	// sentences that are selected, and extracts some shared context
+	// See AddMandatory() in N4L.go for reserved names (TBD, collect these one day as const)
 
-	const policy_skim = 15
-	const reuse_threshold = 0
-	const intent_threshold = 1
-
-	slow,fast,doc_parts := AssessTextFastSlow(L,STM_NGRAM_LOCA)
-
-	var grad_amb [N_GRAM_MAX]map[string]float64
-	var grad_oth [N_GRAM_MAX]map[string]float64
-
-	// returns
-
-	var fastparts = make([][]string,doc_parts)
-	var slowparts = make([][]string,doc_parts)
-	var fastwhole []string
-	var slowwhole []string
-
-	for n := 1; n < Nmax; n++ {
-		grad_amb[n] = make(map[string]float64)
-		grad_oth[n] = make(map[string]float64)
-	}
-
-	for p := 0; p < doc_parts; p++ {
-
-		for n := Nmin; n < Nmax; n++ {
-
-			var amb []string
-			var other []string
-
-			for ngram := range fast[n][p] {
-				if fast[n][p][ngram] > reuse_threshold {
-					other = append(other,ngram)
-				}
-			}
-
-			for ngram := range slow[n][p] {
-				if slow[n][p][ngram] > reuse_threshold {
-					amb = append(amb,ngram)
-				}
-			}
-			
-			// Sort by intentionality
-
-			sort.Slice(amb, func(i, j int) bool {
-				ambi :=	StaticIntentionality(L,amb[i],STM_NGRAM_FREQ[n][amb[i]])
-				ambj := StaticIntentionality(L,amb[j],STM_NGRAM_FREQ[n][amb[j]])
-				return ambi > ambj
-			})
-
-			sort.Slice(other, func(i, j int) bool {
-				inti := StaticIntentionality(L,other[i],STM_NGRAM_FREQ[n][other[i]])
-				intj := StaticIntentionality(L,other[j],STM_NGRAM_FREQ[n][other[j]])
-				return inti > intj
-			})
-			
-			for i := 0 ; i < policy_skim && i < len(amb); i++ {
-				v := StaticIntentionality(L,amb[i],STM_NGRAM_FREQ[n][amb[i]])
-				slowparts[p] = append(slowparts[p],amb[i])
-				if v > intent_threshold {
-					grad_amb[n][amb[i]] += v
-				}
-			}
-			
-			for i := 0 ; i < policy_skim && i < len(other); i++ {
-				v := StaticIntentionality(L,other[i],STM_NGRAM_FREQ[n][other[i]])
-				fastparts[p] = append(fastparts[p],other[i])
-				if v > intent_threshold {
-					grad_oth[n][other[i]] += v
-				}
-			}
-		}
+	fmt.Fprintf(fp,"\n### BEGIN main file: %s \n",filealias)
+	
+	if with_title {
+		fmt.Fprintf(fp,"\n-%s\n",filealias)
 	}
 	
-	// Summary ranking of whole doc, but pick only if selected
+	// Lookup tables of contents from Markdown
+
+	CompileTabular(fp,filealias,TABLES)
+	CompileProperNames(fp,filealias,selection,TABLES)
+	CompileTOC(fp,filealias,SECTIONS)
+
 	
-	for n := Nmin; n < Nmax; n++ {
+	fmt.Fprintf(fp,"\n### BEGIN content from: %s \n",filealias)
+
+	// 
+
+	var collected_fragments = make(map[string][]string)
+	var partcheck = make(map[string]bool)
+	var parts []string
+	var context, last_context string
+	var last_part string
+	var already = make(map[string]bool)
+	
+	const minimum_length = 15
+	
+	for i := range selection {
+
+		// Skip spurious
 		
-		var amb []string
-		var other []string
+		if len(selection[i].Fragment) < minimum_length {
+			continue
+		}
 
-		for s := range selected {
-			for ngram := range grad_amb[n] {
-				if !strings.Contains(selected[s].Fragment,ngram) {
-					delete(grad_amb[n],ngram)
-				}
-			}
+		context,last_context = CheckNewContext(fp,last_context,ambi_by_part[selection[i].Partition],filealias)
 
-			for ngram := range grad_oth[n] {
-				if !strings.Contains(selected[s].Fragment,ngram) {
-					delete(grad_oth[n],ngram)
-				}
+		part := GetSectionTitle(selection[i],context,filealias)
+
+		// Switch section, new sequence
+		
+		if part != last_part {
+			fmt.Fprintf(fp,"\n-:: _sequence_ ::")
+			
+			fmt.Fprintf(fp,"\n######## Section name and subsequence ########")
+			fmt.Fprintf(fp,"\n %s\n\n",part)
+			fmt.Fprintf(fp,"\n :: %s, %s, _sequence_ ::\n",context,part)
+			fmt.Fprintf(fp,"#######################################\n")
+			
+			last_part = part
+		
+			if !partcheck[part] {
+				parts = append(parts,part)
+				partcheck[part] = true
 			}
 		}
+
+		// !!!!!  Output an event - subordinate to a part/section  !!!!!
+
+		OutputDocumentEvent(fp,selection[i],filealias,part)
+		
+		AddIntentionalContext(collected_fragments,part,anom_by_part[selection[i].Partition],already)
+	}
+
+	fmt.Fprintf(fp,"\n-:: _sequence_ ::")
+	fmt.Fprintf(fp,"\n### END content from: %s\n",filealias)
+
+	// ********************************************************
+	// Remainder is purely for debugging and analysis .....
+	// ********************************************************
+
+	fmt.Fprintf(fp,"\n# Final fraction %.2f of requested %.2f\n",float64(len(selection)*100)/float64(L),percentage)
+
+	WriteSampleSelections(fp,selection,L)
+
+	// Add in the section/part fragments to the context/toc/index
+
+	WriteCollectedContext(fp,collected_fragments)
+	
+	// Document the parts
+
+	fmt.Fprintf(fp,"\n #\n # SUMMARY OF CONTEXT AND SIGNIFICANT FRAGMENTS\n #\n")
+
+	fmt.Fprintf(fp,"\n :: themes and topics you might want to annotate/replace ::\n")
+
+	for p := range parts {
+		
+		container,exists := DOC_DIRECTORY[parts[p]]
+
+		if exists {
+			fmt.Fprintf(fp,"\n %s (%s) %s \n",parts[p],INV_CONT_FRAG_IN_S,container)
+		} else {
+			fmt.Fprintf(fp,"\n %s \n",parts[p])
+		}
+
+		if p < len(ambi_by_part) {
+			for w := range ambi_by_part[p] {
+				fmt.Fprintf(fp,"  #AMBI %s\n",ambi_by_part[p][w])
+			}
+		}
+
+		if p < len(anom_by_part) {
+			for w := range anom_by_part[p] {
+				fmt.Fprintf(fp,"   #INTENT %s\n",anom_by_part[p][w])
+			}
+		}
+	}
+
+
+	/* whole document summary
+
+	for w := range all_ambi {
+		fmt.Fprintf(fp," # %s\n",all_ambi[w])
+	}
+
+	for w := range all_anom {
+		fmt.Fprintf(fp,"  # %s\n",all_anom[w])
+	} */
+
+	fmt.Printf("Final fraction %.2f of requested %.2f sampled\n",float64(len(selection)*100)/float64(L),percentage)
+
+}
+
+//*******************************************************************
+
+func OutputDocumentEvent(fp *os.File, selection TextRank,alias string,part_title string) {
+
+	event := fmt.Sprintf("\n %s [%s]",SanitizeParen(selection.Fragment),alias)
+	
+	fmt.Fprintf(fp,"%s (%s) %s \n",event,INV_CONT_NAME_S,part_title)
+
+	// Now add cross referencing anchors to proper names
+	
+	names := SearchStringForProperNames(event)
+	
+	for _,n := range names {
+		fmt.Fprintf(fp,"    \"  (refersto) %s\n",n)
+	}
+}
+
+//*******************************************************************
+
+func WriteSampleSelections(fp *os.File, selection []TextRank, L int) {
+
+	fmt.Fprintf(fp,"\n# Selected %d samples of %d: ",len(selection),L)
+
+	for i := range selection {
+		fmt.Fprintf(fp,"%d ",selection[i].Order)
+		}
+
+	fmt.Fprintf(fp,"\n#\n")
+}
+
+//*******************************************************************
+
+func WriteCollectedContext(fp *os.File, collected_fragments map[string][]string) {
+
+	fmt.Fprintf(fp,"\n #\n # Concepts by part / region \n #\n")
+
+	for key := range collected_fragments {
+
+		fmt.Fprintf(fp,"\n\n %s\n",key)
+		for _,s := range collected_fragments[key] {
+			fmt.Fprintf(fp,"              \" (%s) %s\n",CONT_FRAG_S,s)
+		}
+	}
+
+}
+
+//*******************************************************************
+
+func AddIntentionalContext(collected map[string][]string,key string,ctx []string,already map[string]bool) {
+	for w := 0; w < len(ctx); w++ {
+
+		if !already[ctx[w]] {
+			collected[key] = append(collected[key],ctx[w])
+			already[ctx[w]] = true
+		}
+	}
+
+	collected[key] = append(collected[key],"Table of Contents")
+}
+
+// **************************************************************************
+
+func GetSectionTitle(selection TextRank,context string,filealias string) string {
+
+	// The title is originally set in SplitIntoSectionsOfSentences()
+	
+	if selection.Title != "" {
+		return selection.Title
+	}
+
+	// Make up a stand-in title
+
+	return MissingTitle(selection.Partition,filealias,context)
+}
+
+//*******************************************************************
+
+func MissingTitle(p int,filealias string,context string) string {
+
+	var basename string
+	
+	if p == 0 {
+		basename = fmt.Sprintf("Introduction to %s",filealias)
+	} else {
+		basename = fmt.Sprintf("part %d of %s",p,filealias)
+	}
+	
+	// include ambient context in the section name
+
+	if len(context) > 0 {
+		return fmt.Sprintf("%s: %s",basename,context)
+	} else {
+		return basename
+	}
+}
+
+//*****************************************************************
+// Build ancillary structures
+//*****************************************************************
+
+func CompileTOC(fp *os.File, filealias string, sections []AuxTxtMDSentence) {
+
+	// map to n4l
+	
+	var done = make(map[string]bool)
+
+	fmt.Fprintf(fp,"\n # BEG table of contents ############################\n")
+	fmt.Fprintf(fp,"\n :: _sequence_, Table of Contents - %s :: \n",filealias)
+
+	fmt.Fprintf(fp,"\n Table of Contents - %s \n",filealias)
+	
+	for _,sec := range sections {
+
+		title := strings.ToLower(sec.Title)
+		
+		if !done[title] {
+			
+			if LooksLikeProperName(sec.Title) || strings.Contains(sec.Title," ") {
+
+				done[title] = true
+
+				// Avoid double annotation
 				
-		// there is possible overlap
-
-		for ngram := range grad_oth[n] {
-			_,dup := grad_amb[n][ngram]
-			if dup {
-				continue
-			}
-			other = append(other,ngram)
-		}
-
-		for ngram := range grad_amb[n] {
-			amb = append(amb,ngram)
-		}
-
-		// Sort by intentionality
-		
-		sort.Slice(amb, func(i, j int) bool {
-			ambi := StaticIntentionality(L,amb[i],STM_NGRAM_FREQ[n][amb[i]])
-			ambj := StaticIntentionality(L,amb[j],STM_NGRAM_FREQ[n][amb[j]])
-			return ambi > ambj
-		})
-		sort.Slice(other, func(i, j int) bool {
-			inti := StaticIntentionality(L,other[i],STM_NGRAM_FREQ[n][other[i]])
-			intj := StaticIntentionality(L,other[j],STM_NGRAM_FREQ[n][other[j]])
-			return inti > intj
-		})
-		
-		for i := 0 ; i < policy_skim && i < len(amb); i++ {
-			slowwhole = append(slowwhole,amb[i])
-		}
-
-		for i := 0 ; i < policy_skim && i < len(other); i++ {
-			fastwhole = append(fastwhole,other[i])
-		}
-	}	
-
-	return fastparts,slowparts,fastwhole,slowwhole
-}
-
-//**************************************************************
-
-func RunningIntentionality(t int, frag string) float64 {
-
-	// A round robin cyclic buffer for taking fragments and extracting
-	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
-
-	var change_set [N_GRAM_MAX][]string
-	var rrbuffer [N_GRAM_MAX][]string
-	var score float64
-
-	words := strings.Split(frag," ")
-	decayrate := float64(DUNBAR_30)
-
-	for w := range words {
-
-		rrbuffer,change_set = NextWord(words[w],rrbuffer)
-
-		for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
-
-			for ng := range change_set[n] {
-				ngram := change_set[n][ng]
-				work := float64(len(ngram))
-				lastseen := STM_NGRAM_LAST[n][ngram]
-
-				if lastseen == 0 {
-					score = work
+				if strings.Contains(sec.Title,filealias) {
+					fmt.Fprintf(fp,"\n   \"  (%s) %s\n",CONT_NAME_L,sec.Title)
 				} else {
-					score += work * (1 - math.Exp(-float64(t-lastseen)/decayrate))
+					fmt.Fprintf(fp,"\n   \"  (%s) %s [%s]\n",CONT_NAME_L,sec.Title,filealias)
 				}
-
-				STM_NGRAM_LAST[n][ngram] = t
 			}
 		}
 	}
 
-	return score
-
+	fmt.Fprintf(fp,"\n -:: _sequence_ :: \n")
+	fmt.Fprintf(fp,"\n # END table of contents for %s ############################\n",filealias)
 }
 
-//**************************************************************
+//*****************************************************************
 
-func StaticIntentionality(L int, s string, freq float64) float64 {
+func ListProperNames(fp *os.File) {
 
-	// Compute the effective significance of a string s
-	// within a document of many sentences. The weighting due to
-	// inband learning uses an exponential deprecation based on
-	// SST scales (see "leg" meaning).
+	fmt.Println("\nCompiling proper names ....\n\n")
 
-	work := float64(len(s)) 
+	fmt.Fprintf(fp,"\n\n :: proper names :: \n\n")
+	
+	for name := range PROPER_NAME {
 
-	// if this doesn't occur at least 3 times, then why do we care?
-
-	const ignore = 2
-
-	if freq < ignore {
-		return 0
+		if PROPER_NAME[name] != "" {
+			fmt.Fprintf(fp,"\n %s (is explained by) %s \n",name,PROPER_NAME[name])
+		} else {
+			fmt.Fprintf(fp,"\n %s\n",name)
+		}
+		
 	}
-
-	// tempting to measure occurrences relative to total length L in sentences
-	// but this is not the relevant scale. Coherence is on a shorter scale
-	// set by cognitive limits, not author expansiveness / article scope ...
-
-	phi := freq
-	phi_0 := float64(DUNBAR_30) // not float64(L)
-
-	// How often is too often for a concept?
-	const rho = 1/30.0 
-
-	crit := phi/phi_0 - rho
-
-	meaning := phi * work / (1.0 + math.Exp(crit))
-
-	return meaning
 }
 
 

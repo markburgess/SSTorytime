@@ -127,7 +127,15 @@ func SplitChapters(str string) []string {
 
 func SpliceSet(ctx []string) string {
 
-	return strings.Join(ctx, ", ")
+	var set []string
+
+	for _,item := range ctx {
+		if !strings.Contains(item,"part ") {
+			set = append(set,item)
+		}
+	}
+	
+	return strings.Join(set, ", ")
 }
 
 //*******************************************************************

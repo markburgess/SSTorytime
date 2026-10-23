@@ -45,7 +45,7 @@ type MDTable struct {
 }
 
 var DOC_DIRECTORY = make(map[string]string)
-var SECTIONS []ExtSentence
+var SECTIONS []AuxTxtMDSentence
 var TABLES []MDTable
 
 //*****************************************************************
@@ -68,11 +68,11 @@ func FractionateMarkdown(dir,filename string) ([][]Sentence, int, []string) {
 	doc := md.Parser().Parse(text.NewReader(source))
 
 	var text_notes []string
-	var current *ExtSentence
+	var current *AuxTxtMDSentence
 	var title string = "introductory qprologue"
 	var level int
 
-	// collect together into current to assemble in an ExtSentence
+	// collect together into current to assemble in an AuxTxtMDSentence
 	
 	ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 
@@ -96,14 +96,14 @@ func FractionateMarkdown(dir,filename string) ([][]Sentence, int, []string) {
 			isnew, value, number := IsNewSection(string(n.Text(source)),alias)
 			
 			if isnew {
-				current = &ExtSentence{
+				current = &AuxTxtMDSentence{
 					Level: level,
 					Title: title,
 					Number: "unnumbered",
 					Content: value,
 				}
 			} else {
-				current = &ExtSentence{
+				current = &AuxTxtMDSentence{
 					Level: level,
 					Title: title,
 					Number: number,
@@ -133,7 +133,7 @@ func FractionateSmallMarkdown(source []byte,name string) ([][]Sentence, int,[]st
 	reader := text.NewReader(source)
 	doc := md.Parser().Parse(reader)
 
-	var current *ExtSentence
+	var current *AuxTxtMDSentence
 	var title string = "introductory qprologue"
 	var level int
 	var text_notes []string
@@ -155,14 +155,14 @@ func FractionateSmallMarkdown(source []byte,name string) ([][]Sentence, int,[]st
 			isnew, value, number := IsNewSection(GetNodeText(node,source),name)
 			
 			if isnew {
-				current = &ExtSentence{
+				current = &AuxTxtMDSentence{
 					Level: level,
 					Title: title,
 					Number: "unnumbered",
 					Content: value,
 				}
 			} else {
-				current = &ExtSentence{
+				current = &AuxTxtMDSentence{
 					Level: level,
 					Title: title,
 					Number: number,

@@ -10,9 +10,225 @@ import (
 	"fmt"
 	"strings"
 	"sort"
+	"math"
 	"time"
 	_ "github.com/lib/pq"
 )
+
+//**************************************************************
+
+func ExtractIntentionalTokens(L int,selected []TextRank,Nmin,Nmax int) ([][]string,[][]string,[]string,[]string) {
+
+	// This function examines a fractionation of text for fractions, only for
+	// sentences that are selected, and extracts some shared context
+
+	const policy_skim = 15
+	const reuse_threshold = 0
+	const intent_threshold = 1
+
+	slow,fast,doc_parts := AssessTextFastSlow(L,STM_NGRAM_LOCA)
+
+	var grad_amb [N_GRAM_MAX]map[string]float64
+	var grad_oth [N_GRAM_MAX]map[string]float64
+
+	// returns
+
+	var fastparts = make([][]string,doc_parts)
+	var slowparts = make([][]string,doc_parts)
+	var fastwhole []string
+	var slowwhole []string
+
+	for n := 1; n < Nmax; n++ {
+		grad_amb[n] = make(map[string]float64)
+		grad_oth[n] = make(map[string]float64)
+	}
+
+	for p := 0; p < doc_parts; p++ {
+
+		for n := Nmin; n < Nmax; n++ {
+
+			var amb []string
+			var other []string
+
+			for ngram := range fast[n][p] {
+				if fast[n][p][ngram] > reuse_threshold {
+					other = append(other,ngram)
+				}
+			}
+
+			for ngram := range slow[n][p] {
+				if slow[n][p][ngram] > reuse_threshold {
+					amb = append(amb,ngram)
+				}
+			}
+			
+			// Sort by intentionality
+
+			sort.Slice(amb, func(i, j int) bool {
+				ambi :=	StaticIntentionality(L,amb[i],STM_NGRAM_FREQ[n][amb[i]])
+				ambj := StaticIntentionality(L,amb[j],STM_NGRAM_FREQ[n][amb[j]])
+				return ambi > ambj
+			})
+
+			sort.Slice(other, func(i, j int) bool {
+				inti := StaticIntentionality(L,other[i],STM_NGRAM_FREQ[n][other[i]])
+				intj := StaticIntentionality(L,other[j],STM_NGRAM_FREQ[n][other[j]])
+				return inti > intj
+			})
+			
+			for i := 0 ; i < policy_skim && i < len(amb); i++ {
+				v := StaticIntentionality(L,amb[i],STM_NGRAM_FREQ[n][amb[i]])
+				slowparts[p] = append(slowparts[p],amb[i])
+				if v > intent_threshold {
+					grad_amb[n][amb[i]] += v
+				}
+			}
+			
+			for i := 0 ; i < policy_skim && i < len(other); i++ {
+				v := StaticIntentionality(L,other[i],STM_NGRAM_FREQ[n][other[i]])
+				fastparts[p] = append(fastparts[p],other[i])
+				if v > intent_threshold {
+					grad_oth[n][other[i]] += v
+				}
+			}
+		}
+	}
+	
+	// Summary ranking of whole doc, but pick only if selected
+	
+	for n := Nmin; n < Nmax; n++ {
+		
+		var amb []string
+		var other []string
+
+		for s := range selected {
+			for ngram := range grad_amb[n] {
+				if !strings.Contains(selected[s].Fragment,ngram) {
+					delete(grad_amb[n],ngram)
+				}
+			}
+
+			for ngram := range grad_oth[n] {
+				if !strings.Contains(selected[s].Fragment,ngram) {
+					delete(grad_oth[n],ngram)
+				}
+			}
+		}
+				
+		// there is possible overlap
+
+		for ngram := range grad_oth[n] {
+			_,dup := grad_amb[n][ngram]
+			if dup {
+				continue
+			}
+			other = append(other,ngram)
+		}
+
+		for ngram := range grad_amb[n] {
+			amb = append(amb,ngram)
+		}
+
+		// Sort by intentionality
+		
+		sort.Slice(amb, func(i, j int) bool {
+			ambi := StaticIntentionality(L,amb[i],STM_NGRAM_FREQ[n][amb[i]])
+			ambj := StaticIntentionality(L,amb[j],STM_NGRAM_FREQ[n][amb[j]])
+			return ambi > ambj
+		})
+		sort.Slice(other, func(i, j int) bool {
+			inti := StaticIntentionality(L,other[i],STM_NGRAM_FREQ[n][other[i]])
+			intj := StaticIntentionality(L,other[j],STM_NGRAM_FREQ[n][other[j]])
+			return inti > intj
+		})
+		
+		for i := 0 ; i < policy_skim && i < len(amb); i++ {
+			slowwhole = append(slowwhole,amb[i])
+		}
+
+		for i := 0 ; i < policy_skim && i < len(other); i++ {
+			fastwhole = append(fastwhole,other[i])
+		}
+	}	
+
+	return fastparts,slowparts,fastwhole,slowwhole
+}
+
+//**************************************************************
+
+func RunningIntentionality(t int, frag string) float64 {
+
+	// A round robin cyclic buffer for taking fragments and extracting
+	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
+
+	var change_set [N_GRAM_MAX][]string
+	var rrbuffer [N_GRAM_MAX][]string
+	var score float64
+
+	words := strings.Split(frag," ")
+	decayrate := float64(DUNBAR_30)
+
+	for w := range words {
+
+		rrbuffer,change_set = NextWord(words[w],rrbuffer)
+
+		for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
+
+			for ng := range change_set[n] {
+				ngram := change_set[n][ng]
+				work := float64(len(ngram))
+				lastseen := STM_NGRAM_LAST[n][ngram]
+
+				if lastseen == 0 {
+					score = work
+				} else {
+					score += work * (1 - math.Exp(-float64(t-lastseen)/decayrate))
+				}
+
+				STM_NGRAM_LAST[n][ngram] = t
+			}
+		}
+	}
+
+	return score
+
+}
+
+//**************************************************************
+
+func StaticIntentionality(L int, s string, freq float64) float64 {
+
+	// Compute the effective significance of a string s
+	// within a document of many sentences. The weighting due to
+	// inband learning uses an exponential deprecation based on
+	// SST scales (see "leg" meaning).
+
+	work := float64(len(s)) 
+
+	// if this doesn't occur at least 3 times, then why do we care?
+
+	const ignore = 2
+
+	if freq < ignore {
+		return 0
+	}
+
+	// tempting to measure occurrences relative to total length L in sentences
+	// but this is not the relevant scale. Coherence is on a shorter scale
+	// set by cognitive limits, not author expansiveness / article scope ...
+
+	phi := freq
+	phi_0 := float64(DUNBAR_30) // not float64(L)
+
+	// How often is too often for a concept?
+	const rho = 1/30.0 
+
+	crit := phi/phi_0 - rho
+
+	meaning := phi * work / (1.0 + math.Exp(crit))
+
+	return meaning
+}
 
 //**************************************************************
 
@@ -149,7 +365,7 @@ func SelectByStaticIntent(psf [][]Sentence,L int,percentage float64) []TextRank 
 func OrderAndRank(sentences []TextRank,percentage float64) []TextRank {
 
 	var selections []TextRank
-
+	
 	// Order by intentionality first to skim cream
 
 	sort.Slice(sentences, func(i, j int) bool {

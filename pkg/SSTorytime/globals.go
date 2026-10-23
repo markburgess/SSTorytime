@@ -91,7 +91,7 @@ const (
 	CONT_NAME_L = "contains item"
 	CONT_NAME_S = "tabconit"
 
-	INV_CONT_NAME_L = "item in"
+	INV_CONT_NAME_L = "is text from"
 	INV_CONT_NAME_S = "itintab"
 
 	CONT_REF_L = "uses/refers to"

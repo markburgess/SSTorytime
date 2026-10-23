@@ -158,6 +158,8 @@ func WriteOutput(filename,alias string,selection []SST.TextRank,L int, percentag
 	defer fp.Close()
 
 	SST.GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
+	SST.ListProperNames(fp)
+
 }
 
 

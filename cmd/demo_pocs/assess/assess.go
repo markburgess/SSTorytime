@@ -208,7 +208,7 @@ func HandleAgentMarkDown(fp *os.File,dir,name string) {
 
 	const with_title = true
 	fmt.Println(" - writing results for",alias)
-	GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
+	SST.GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
 	AddNotes(fp,notes)
 }
 

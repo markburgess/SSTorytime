@@ -33,7 +33,8 @@ var AGENT_OBJECTIVE = make(map[string]string)
 var AGENT_REPLY = make(map[string]string)
 
 var SST_COORDS = make(map[string][]string)
-var SST_SCORES = make(map[string][]int)
+var SST_SCORES = make(map[string]int)
+var SST_EVENTS []string
 
 var RECOGNIZE = []string{"principal","opening","client","escalat","tool","replies","objective"}
 const AGENT_INSTRUCTION = "system_prompt"
@@ -80,13 +81,15 @@ func InitDetection() {
 	// In the operational response to an LLM, the tooling vocabulary will be more constrained
 	// so we can try to look for "DNA" spectral coordinate basis directions
 
-	SST_COORDS["risk"] = []string{"marginal","failed","exposure","weak-buffer-thin","not required here","no need to","limit/threshold","empty","finance/financial-difficult"}
+	// we are looking for a subset of language characterizing important context states
+	
+	SST_COORDS["risk"] = []string{"marginal","failed","exposure","weak-buffer-thin","not required here","no need to","limit/threshold","empty","finance/financial-difficult","should-be-honest"}
 
 	SST_COORDS["promise-failed"] = []string{"missed-deadline","removed","unable-pay","short on-cash","unable-settle","payment-not-possible","unable-cover-expense","unable-meet-obligation","insufficient-credit"}
 
-	SST_COORDS["future"] = []string{"expect,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value","resolve","adjust"}
+	SST_COORDS["future"] = []string{"expect,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value","resolve"}
 	
-	SST_COORDS["unexpected"] = []string{"removed","unable-meet-obligation","split-multiple"}
+	SST_COORDS["unexpected"] = []string{"removed","broken","unable-meet-obligation","split-multiple"}
 
 	SST_COORDS["other/anomaly"] = []string{"violate","competing","no need to","unable-meet-obligation","is-report-event"}
 
@@ -141,11 +144,12 @@ func AssessAgentRun(dir string) {
 
 	// Mention the agents!
 
+	ShowScores()
+	
 	Togetherness(fp)  // Start a new chapter to isolate shared stuff
 	ListAgents(fp)
 	ListSundries(fp)
 	SST.ListProperNames(fp)
-
 }
 
 //**************************************************************
@@ -176,6 +180,24 @@ func ListAgents(fp *os.File) {
 
 	for a := range AGENTS {
 		fmt.Fprintf(fp,"%s (role) agent in the collective task\n\n",a)
+	}
+}
+
+//**************************************************************
+
+func ShowScores() {
+
+	fmt.Println("\n")
+
+	for i := range SST_EVENTS {
+		fmt.Println(" highlighted event .. ",i,SST_EVENTS[i])
+	}
+
+	fmt.Println("\n")
+	
+	for category := range SST_SCORES {
+
+		fmt.Printf(" - %s score = %d\n",category,SST_SCORES[category])
 	}
 }
 
@@ -346,7 +368,9 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 
 		ismd,selections,_,L := IsMarkdownFragment(thinking,"run history")
 		
-		fmt.Printf(" ** agent event %d [%s] action/assertion!\n",n,agent_speaking)
+		//fmt.Printf(" ** agent event %d [%s] action/assertion!\n",n,agent_speaking)
+
+		fmt.Print("*")
 
 		fmt.Fprintf(fp,"\n agent event %d [%s]\n",n,agent_speaking)
 
@@ -732,8 +756,14 @@ func ScanForSemanticAnomaly(str string) (string,bool) {
 		for _,check := range SST_COORDS[category] {
 			
 			if ScanFractionPatterns(category,str,check) {
-
-				fmt.Println("\n !!    ----> Potential danger signal",check,"for NGRAM '",check,"'\n")
+				switch category {
+				case "risk","anomaly","other/anomaly":
+					remember := Excerpt(str,check)
+					if len(remember) > 0 {
+						SST_EVENTS = append(SST_EVENTS,remember)
+					}
+				}
+				SST_SCORES[category]++
 				return check, true
 			}
 		}
@@ -781,6 +811,31 @@ func ScanFractionPatterns(category, text, check string) bool {
 	}
 
 	return result
+}
+
+//**************************************************************
+
+func Excerpt(whole,part string) string {
+
+	before,after,found := strings.Cut(whole,part)
+
+	if found {
+		const bracket = 40
+		var retval string
+
+		start := max(0, len(before)-bracket)
+		lastbracket := before[start:]
+		retval += lastbracket
+
+		retval += "[[" + strings.ToUpper(part) + "]]"
+
+		limit := min(bracket, len(after))
+		firstbracket := after[:limit]
+		retval += firstbracket
+		return retval
+	}
+
+	return ""
 }
 
 //**************************************************************

@@ -1032,7 +1032,7 @@ func GenerateOutput(fp *os.File,filealias string,selection []TextRank,L int, per
 			
 			fmt.Fprintf(fp,"\n######## Section name and subsequence ########")
 			fmt.Fprintf(fp,"\n %s\n\n",part)
-			fmt.Fprintf(fp,"\n :: %s, %s, _sequence_ ::\n",context,part)
+			fmt.Fprintf(fp,"\n :: %s, _sequence_ ::\n",context)
 			fmt.Fprintf(fp,"#######################################\n")
 			
 			last_part = part
@@ -1158,7 +1158,12 @@ func WriteCollectedContext(fp *os.File, collected_fragments map[string][]string)
 //*******************************************************************
 
 func AddIntentionalContext(collected map[string][]string,key string,ctx []string,already map[string]bool) {
+
 	for w := 0; w < len(ctx); w++ {
+
+		if !LooksLikeContext(ctx[w]) {
+			continue
+		}
 
 		if !already[ctx[w]] {
 			collected[key] = append(collected[key],ctx[w])

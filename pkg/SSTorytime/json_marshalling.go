@@ -96,7 +96,11 @@ func LinkWebPaths(sst *PoSST,cone [][]Link,nth int,chapter string,context []stri
 			path = append(path,wn)
 
 		}
-		conepaths = append(conepaths,path)
+		
+		if len(path) > 1 {
+			// Prune empty paths
+			conepaths = append(conepaths,path)
+		}
 	}
 
 	return conepaths

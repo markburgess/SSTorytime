@@ -18,8 +18,8 @@ import (
 
 func CheckNewContext(fp *os.File, last_context string, ctxset []string, filealias string) (string,string) {
 
-	context := SpliceSet(ctxset)
-
+	context := SpliceContextSet(ctxset)
+	
 	if context != last_context {
 		fmt.Fprintf(fp,"\n-:: _sequence_ ::")
 		fmt.Fprintf(fp,"\n\n :: %s / %s :: \n\n",context,filealias)
@@ -27,6 +27,32 @@ func CheckNewContext(fp *os.File, last_context string, ctxset []string, filealia
 	}
 	
 	return context,last_context
+}
+
+//*******************************************************************
+
+func SpliceContextSet(ctx []string) string {
+
+	var set []string
+
+	for _,item := range ctx {
+		if LooksLikeContext(item) {
+			set = append(set,item)
+		}
+	}
+	
+	return strings.Join(set, ", ")
+}
+
+// **************************************************************************
+
+func LooksLikeContext(item string) bool {
+	
+	if strings.Contains(item,"part ") || strings.Contains(item,"[") {
+		return false
+	}
+
+	return true
 }
 
 // **************************************************************************
@@ -247,7 +273,9 @@ func CompileTabular(fp *os.File, alias string, tables []MDTable) {
 
 	for _, table := range tables {
 		
-		fmt.Fprintf(fp,"\n\n :: %s tabular spec, %s :: \n\n",alias,strings.ToLower(table.Context))
+		fmt.Fprintf(fp,"\n\n :: %s  :: \n\n",strings.ToLower(table.Context))
+
+		KeepProperName(table.Context,"")
 		
 		for _,row := range table.Rows {
 

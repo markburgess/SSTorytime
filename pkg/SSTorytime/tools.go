@@ -125,21 +125,6 @@ func SplitChapters(str string) []string {
 
 //*******************************************************************
 
-func SpliceSet(ctx []string) string {
-
-	var set []string
-
-	for _,item := range ctx {
-		if !strings.Contains(item,"part ") {
-			set = append(set,item)
-		}
-	}
-	
-	return strings.Join(set, ", ")
-}
-
-//*******************************************************************
-
 func SanitizeParen(s string) string {
 
 	replacer := strings.NewReplacer("(", "[", ")", "]")

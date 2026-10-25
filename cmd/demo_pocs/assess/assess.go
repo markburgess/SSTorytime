@@ -42,7 +42,7 @@ const AGENT_INSTRUCTION = "system_prompt"
 //******************************************************************
 
 func main() {
-	
+
 	SST.InitSSTorytime()
 
 	InitDetection()
@@ -87,9 +87,9 @@ func InitDetection() {
 
 	SST_COORDS["promise-failed"] = []string{"missed-deadline","removed","unable-pay","short on-cash","unable-settle","payment-not-possible","unable-cover-expense","unable-meet-obligation","insufficient-credit"}
 
-	SST_COORDS["future"] = []string{"expect,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value","resolve"}
+	SST_COORDS["future"] = []string{"expect,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value","resolve","still--before/until-deadline","still-time"}
 	
-	SST_COORDS["unexpected"] = []string{"removed","broken","unable-meet-obligation","split-multiple"}
+	SST_COORDS["unexpected"] = []string{"removed","broken","unable-meet-obligation","split-multiple","tampering"}
 
 	SST_COORDS["other/anomaly"] = []string{"violate","competing","no need to","unable-meet-obligation","is-report-event"}
 
@@ -138,7 +138,7 @@ func AssessAgentRun(dir string) {
 			
 	for _,file := range namedfiles {
 		cmpt := dir+file
-		fmt.Println("\nAssessing data file: ",cmpt)
+		fmt.Println("Assessing data file: ",file)
 		AssessJsonType(fp,cmpt)
 	}
 
@@ -190,7 +190,7 @@ func ShowScores() {
 	fmt.Println("\n")
 
 	for i := range SST_EVENTS {
-		fmt.Println(" highlighted event .. ",i,SST_EVENTS[i])
+		fmt.Println("\n Highlighted event .. ",i,SST_EVENTS[i])
 	}
 
 	fmt.Println("\n")
@@ -272,7 +272,7 @@ func AssessJsonType(fp *os.File,filename string) {
 		
 		for agent := range AGENT_OPENING {
 			if AGENT_OPENING[agent] != "" {
-				fmt.Println(" M Collected opening statement from",agent)
+				//fmt.Println(" M Collected opening statement from",agent)
 				fmt.Fprintf(fp,"\nAgent [%s] begins with opening statement (message body) '%s'\n",agent,AGENT_OPENING[agent])
 			}
 		}
@@ -370,7 +370,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		
 		//fmt.Printf(" ** agent event %d [%s] action/assertion!\n",n,agent_speaking)
 
-		fmt.Print("*")
+		fmt.Print(".")
 
 		fmt.Fprintf(fp,"\n agent event %d [%s]\n",n,agent_speaking)
 
@@ -483,7 +483,8 @@ func AddNotes(fp *os.File,notes []string) {
 
 	// Drop the out of sequence annotations at the end
 
-	fmt.Println("\n >>> Adding notes .... \n")
+	fmt.Println("Adding supplementary notes .... \n")
+
 	if notes != nil {
 		fmt.Fprintf(fp,"  :: actions, directives, agent instructions  :: \n\n")
 
@@ -599,9 +600,9 @@ func InferPathMeaning(path string) (string,string) {
 
 		for _,p := range parts {
 			if len(p) > 1 && !strings.Contains(p,"role") {
-				fmt.Println("\n ** inferring agent name: ",p)
+				//fmt.Println("\n ** inferring agent name: ",p)
 				if AGENTS[p] {
-					fmt.Println(" ... ( already known)")
+					//fmt.Println(" ... ( already known)")
 				} else {
 					AGENTS[p] = true
 				}
@@ -750,22 +751,23 @@ func CheckForAPICall(str string) (bool,string,[]byte) {
 //**************************************************************
 
 func ScanForSemanticAnomaly(str string) (string,bool) {
-	
+
 	for category := range SST_COORDS {
 		
 		for _,check := range SST_COORDS[category] {
 			
-			if ScanFractionPatterns(category,str,check) {
+			score,note := ScanFractionPatterns(category,str,check)
+
+			if score > 0 {
 				switch category {
 				case "risk","anomaly","other/anomaly":
-					remember := Excerpt(str,check)
-					if len(remember) > 0 {
-						SST_EVENTS = append(SST_EVENTS,remember)
-					}
+					remember := fmt.Sprintf("%s(%s)-->(%s)",category,check,note)
+					SST_EVENTS = append(SST_EVENTS,remember)
+					return check, true
 				}
-				SST_SCORES[category]++
-				return check, true
 			}
+			
+			SST_SCORES[category] += score
 		}
 		
 	}
@@ -775,42 +777,110 @@ func ScanForSemanticAnomaly(str string) (string,bool) {
 
 //**************************************************************
 
-func ScanFractionPatterns(category, text, check string) bool {
+func ScanFractionPatterns(category, text, check string) (int,string) {
 
-	order := strings.Split(check,"-")
-	working := text
-	result := true
-	after := ""
+	var paths [][]string
+	var matches int
+	var all_paths int = 1
+	var note string
 	
-	for _,word := range order {
-
-		found_word := false
-		word_result := false
+	// expand the compact encoding
 		
-		if strings.Contains(word,"/") {
+	for _,order := range strings.Split(check,"-") {
 
-			alts := strings.Split(word,"/")
+		var seq []string
+		
+		for _,alt := range strings.Split(order,"/") {
+			seq = append(seq,alt)
+		}
 
-			for _,sub_word := range alts {
-				_, after, found_word = strings.Cut(working,sub_word)
-				if found_word {
-					word_result = true
-					break
+		paths = append(paths,seq)
+		all_paths *= len(seq)
+	}
+
+	var clock = make([]int,len(paths))
+	
+	for turn := 0; turn < all_paths; turn++ {
+
+		var pattern []string
+		var found bool
+
+		for pos := 0; pos < len(paths); pos++ {
+			pattern = append(pattern,paths[pos][clock[pos]])
+		}
+		
+		found,note = PatternMatches(text,pattern)
+
+		if found {
+			matches++
+		}
+
+		// advance clock, fast hand first
+		
+		if clock[0] < len(paths[0]) {
+			clock[0]++
+		}
+		
+		// clock wraps around
+
+		for pos := 0; pos < len(paths); pos++ {
+			
+			if clock[pos] == len(paths[pos]) {
+				clock[pos] = 0
+
+				if pos < len(paths)-1 {
+					clock[pos+1]++
+				} else {
+					continue
 				}
-			}
-		} else {
-			_, after, found_word = strings.Cut(working,word)
-
-			if found_word {
-				word_result = true
 			}
 		}
 
-		working = after
-		result = result && word_result
+		if clock[len(paths)-1] == len(paths) {
+			break
+		}
 	}
 
-	return result
+	
+	return matches,note
+}
+
+//**************************************************************
+
+func PatternMatches(ref string,pattern []string) (bool,string) {
+
+	working := ref
+	found_word := false
+	found := ""
+	before := ""
+	
+	// check the whole sequence of words in order
+	
+	for occur, word := range pattern {
+
+		before, working, found_word = strings.Cut(working,word)
+		
+		if !found_word {
+			return false,""
+		}
+
+		const together_range_limit = 20
+		
+		if occur > 1 && len(before) > together_range_limit {
+			return false,""
+		}
+		
+		// extract an source reference / annotation
+		
+		const margin = 30
+		start := max(0, len(before)-margin)
+		found += before[start:] + "[" + strings.ToUpper(word) + "] "
+		end := min(margin, len(working))
+		found += working[:end] + " / "
+
+	}
+	
+	return true,found
 }
 
 //**************************************************************
@@ -820,7 +890,7 @@ func Excerpt(whole,part string) string {
 	before,after,found := strings.Cut(whole,part)
 
 	if found {
-		const bracket = 40
+		const bracket = 50
 		var retval string
 
 		start := max(0, len(before)-bracket)
@@ -832,6 +902,7 @@ func Excerpt(whole,part string) string {
 		limit := min(bracket, len(after))
 		firstbracket := after[:limit]
 		retval += firstbracket
+
 		return retval
 	}
 

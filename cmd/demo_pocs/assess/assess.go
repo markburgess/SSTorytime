@@ -36,9 +36,6 @@ var SST_COORDS = make(map[string][]string)
 var SST_SCORES = make(map[string]int)
 var SST_EVENTS []string
 
-var TOTAL int = 0
-var CHECKS int = 0
-
 var RECOGNIZE = []string{"principal","opening","client","escalat","tool","replies","objective"}
 const AGENT_INSTRUCTION = "system_prompt"
 
@@ -128,11 +125,16 @@ func AssessAgentRun(dir string) {
 
 	for _, entry := range entries {
 
-		_, name, ismd := IsMarkdownFile(entry.Name())
+		_, name, isft := IsFileType(entry.Name())
 		
-		if ismd {
+		if isft == ".md" {
 			HandleAgentMarkDown(fp,dir,name)
 		} 
+
+		if isft == ".txt" {
+			HandleAgentText(fp,dir,name)
+		} 
+
 	}
 
 	// Specific run files, run last so we can pick up intel first
@@ -157,9 +159,7 @@ func AssessAgentRun(dir string) {
 
 //**************************************************************
 
-func IsMarkdownFile(path string) (string,string,bool) {
-
-	var ismd bool = false
+func IsFileType(path string) (string,string,string) {
 
 	dir, file := filepath.Split(path)
 	ext := filepath.Ext(file)
@@ -167,12 +167,16 @@ func IsMarkdownFile(path string) (string,string,bool) {
 	name := strings.ReplaceAll(file,ext,"")
 	
 	if ext == ".md" {
-		ismd = true
 		fmt.Println("Assess Markdown descriptive file",dir+name)
 		InferPathMeaning(name)
 	}
 
-	return dir,file,ismd
+	if ext == ".txt" {
+		fmt.Println("Assess Plain Text descriptive file",dir+name)
+		InferPathMeaning(name)
+	}
+
+	return dir,file,ext
 }
 
 //**************************************************************
@@ -204,11 +208,6 @@ func ShowScores() {
 			fmt.Printf(" - %s score = %d\n",category,SST_SCORES[category]/len(SST_COORDS[category]))
 		}
 	}
-
-	fmt.Println("\n----\nConsistency checks:")
-	fmt.Println("TOTAL events",TOTAL)
-	fmt.Println("TOTAL checks",CHECKS/TOTAL)
-	fmt.Println("\n----\n")
 }
 
 //**************************************************************
@@ -242,6 +241,39 @@ func HandleAgentMarkDown(fp *os.File,dir,name string) {
 	fmt.Println(" - writing results for",alias)
 	SST.GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
 	AddNotes(fp,notes)
+}
+
+//**************************************************************
+		
+func HandleAgentText(fp *os.File,dir,name string) {
+
+	const percentage = 100
+
+	// Don't reset the vocabulary reservoir after each document
+	// SST.SECTIONS = nil
+	// because we wan to find overlaps
+
+	fmt.Println(" - fractionating",name)
+	psf,L := SST.FractionateText(dir,name)
+	fmt.Println(" - scanning")
+	SST.AnalyzeFractionIntent(psf)
+	fmt.Println(" - ranking longitudinally")
+	ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
+	fmt.Println(" - ranking transversely")
+	ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
+	selection := SST.MergeSelections(ranking1,ranking2)
+	
+	const minN = SST.N_GRAM_MIN
+	const maxN = SST.N_GRAM_MAX
+	
+	f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
+
+	alias,_ := SST.MakeTitleFromFileName(name)
+
+	const with_title = true
+	fmt.Println(" - writing results for",alias)
+	SST.GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
+
 }
 
 //**************************************************************
@@ -311,8 +343,6 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 	// transcripts are files of events in sequence, taken
 	// one by one and coagulated into a single stream
 
-	TOTAL++
-	
 	var json_file interface{}
 
 	if err := json.Unmarshal(filebytes, &json_file); err != nil {
@@ -772,8 +802,6 @@ func ScanForSemanticAnomaly(str string,n int) (string,bool) {
 	for category := range SST_COORDS {
 		
 		for _,check := range SST_COORDS[category] {
-
-			CHECKS++
 
 			score,note := ScanFractionPatterns(category,str,check)
 

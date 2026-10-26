@@ -327,7 +327,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 	var call_name string
 	var call_body string
 	var thinking string
-	
+
 	if FindJsonStructureAsPaths("",json_file, &pathList) {
 
 		for _, item := range pathList {
@@ -350,8 +350,8 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		agent_speaking = "unknown agent"
 	}
 
-	const exposition_threshold = 100
-	
+	const exposition_threshold = 20
+
 	if len(thinking) < exposition_threshold {
 		return 
 	}
@@ -409,6 +409,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 			cln := CleanString(thinking)
 			fmt.Fprintf(fp,"     \"  (action) '%s' \n",cln)
 			signal, bad := ScanForSemanticAnomaly(cln,n)
+
 			if bad {
 				fmt.Fprintf(fp,"  \"  (warn) 'possible warning signal %s' \n",signal)
 			}
@@ -772,9 +773,10 @@ func ScanForSemanticAnomaly(str string,n int) (string,bool) {
 		
 		for _,check := range SST_COORDS[category] {
 
+			CHECKS++
+
 			score,note := ScanFractionPatterns(category,str,check)
 
-			CHECKS++
 			warning += note + "; "
 
 			if score > 0 {
@@ -946,7 +948,7 @@ type PathValue struct {
 func FindJsonStructureAsPaths(prefix string, value interface{}, list *[]PathValue) bool {
 
 	var result bool
-	
+
 	switch v := value.(type) {
 
 	case map[string]interface{}:

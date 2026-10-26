@@ -36,6 +36,9 @@ var SST_COORDS = make(map[string][]string)
 var SST_SCORES = make(map[string]int)
 var SST_EVENTS []string
 
+var TOTAL int = 0
+var CHECKS int = 0
+
 var RECOGNIZE = []string{"principal","opening","client","escalat","tool","replies","objective"}
 const AGENT_INSTRUCTION = "system_prompt"
 
@@ -197,8 +200,15 @@ func ShowScores() {
 	
 	for category := range SST_SCORES {
 
-		fmt.Printf(" - %s score = %d\n",category,SST_SCORES[category])
+		if SST_SCORES[category] > 0 {
+			fmt.Printf(" - %s score = %d\n",category,SST_SCORES[category]/len(SST_COORDS[category]))
+		}
 	}
+
+	fmt.Println("\n----\nConsistency checks:")
+	fmt.Println("TOTAL events",TOTAL)
+	fmt.Println("TOTAL checks",CHECKS/TOTAL)
+	fmt.Println("\n----\n")
 }
 
 //**************************************************************
@@ -301,9 +311,12 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 	// transcripts are files of events in sequence, taken
 	// one by one and coagulated into a single stream
 
+	TOTAL++
+	
 	var json_file interface{}
 
 	if err := json.Unmarshal(filebytes, &json_file); err != nil {
+		fmt.Println("\n? Error unmarshalling",n,err)
 		return
 	}
 
@@ -357,7 +370,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		fmt.Fprintf(fp,"agent event %d [%s] call to tool/API function: ****`%s`[..]\n",n,agent_speaking,call_name)
 		if call_body != "{}" {
 			fmt.Fprintf(fp,"  \"  (message body) 'json body: %s' \n",call_body)
-			signal, bad := ScanForSemanticAnomaly(call_body)
+			signal, bad := ScanForSemanticAnomaly(call_body,n)
 
 			if bad {
 				fmt.Fprintf(fp,"  \"  (warn) 'possible warning signal %s' \n",signal)
@@ -383,7 +396,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 				for _,s := range sel {
 					if s != "" {
 						fmt.Fprintf(fp,"  \" (action) %s\n",s)
-						signal, bad := ScanForSemanticAnomaly(s)
+						signal, bad := ScanForSemanticAnomaly(s,n)
 						
 						if bad {
 							fmt.Fprintf(fp,"  \"  (warn) 'possible warning signal %s' \n",signal)
@@ -395,7 +408,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		} else {
 			cln := CleanString(thinking)
 			fmt.Fprintf(fp,"     \"  (action) '%s' \n",cln)
-			signal, bad := ScanForSemanticAnomaly(cln)
+			signal, bad := ScanForSemanticAnomaly(cln,n)
 			if bad {
 				fmt.Fprintf(fp,"  \"  (warn) 'possible warning signal %s' \n",signal)
 			}
@@ -750,26 +763,36 @@ func CheckForAPICall(str string) (bool,string,[]byte) {
 // Scanning for danger
 //**************************************************************
 
-func ScanForSemanticAnomaly(str string) (string,bool) {
+func ScanForSemanticAnomaly(str string,n int) (string,bool) {
 
+	var scored bool
+	var warning string
+	
 	for category := range SST_COORDS {
 		
 		for _,check := range SST_COORDS[category] {
-			
+
 			score,note := ScanFractionPatterns(category,str,check)
 
+			CHECKS++
+			warning += note + "; "
+
 			if score > 0 {
+				scored = true
+				SST_SCORES[category] += score
+				
 				switch category {
 				case "risk","anomaly","other/anomaly":
-					remember := fmt.Sprintf("%s(%s)-->(%s)",category,check,note)
+					remember := fmt.Sprintf("event %d, %s(%s)-->(%s)",n,category,check,note)
 					SST_EVENTS = append(SST_EVENTS,remember)
-					return check, true
 				}
 			}
-			
-			SST_SCORES[category] += score
 		}
 		
+	}
+
+	if scored {
+		return warning, true
 	}
 	
 	return "",false

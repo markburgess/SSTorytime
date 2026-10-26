@@ -125,8 +125,9 @@ func SplitIntoSectionsOfSentences(file,filename string) ([][]Sentence,int) {
 	
 	SECTIONS = append(SECTIONS, current)
 	
-	paras := strings.Split(file,"\n\n")
-
+	//paras := strings.Split(file,"\n\n")
+	paras := LooksLikeParagraph(file)
+	
 	for _,sec := range paras {
 
 		// This is where we detect section headers

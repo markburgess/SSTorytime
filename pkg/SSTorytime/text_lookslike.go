@@ -16,6 +16,66 @@ import (
 
 // **************************************************************************
 
+func LooksLikeParagraph(para string) []string {
+
+	const paragraph_threshold = 200
+
+	// Start by obvious intent
+
+	var splits []string
+	var next_part string
+	var ended_in_stop bool
+
+	paras := strings.Split(para,"\n\n")
+
+	// Now look for plausible subsplits
+	
+	for _,part := range paras {
+
+		part = strings.ReplaceAll(part,"\n"," ")
+		next_part = ""
+
+		if len(part) < paragraph_threshold {
+			splits = append(splits,part)
+			ended_in_stop = true
+			continue
+		}
+
+		// Split on spaces and check
+
+		subparts := strings.Split(part," ")
+
+		for _,subpart := range subparts {
+
+			isnum := LooksLikeNumber(subpart)
+			
+			if isnum && ended_in_stop {
+				if len(next_part) > 0 {
+					splits = append(splits,next_part)
+					next_part = ""
+				}
+			}
+			
+			next_part += subpart + " "
+			
+			if len(subpart) > 1 && subpart[len(subpart)-1] == '.' {
+				ended_in_stop = true
+			} else {
+				ended_in_stop = false
+			}
+		}
+
+		if len(next_part) > 0 {
+			splits = append(splits,next_part)
+		}
+
+	}
+
+	return splits
+}
+
+// **************************************************************************
+
 func CheckNewContext(fp *os.File, last_context string, ctxset []string, filealias string) (string,string) {
 
 	context := SpliceContextSet(ctxset)
@@ -118,11 +178,16 @@ func LooksLikeChapSection(org,filename string) (bool,string,string) {
 
 //*****************************************************************
 
-func LooksLikeNumber(s string) bool {
+func LooksLikeNumber(line string) bool {
 	
 	var numbers = []rune{'i','v','x','c','l'}
 	var havedigit int
+	var s string
 
+	// Take the first space-separated piece of the string
+
+	fmt.Sscanf(line,"%s",&s)
+	
 	if len(s) < 2 {
 		return false
 	}

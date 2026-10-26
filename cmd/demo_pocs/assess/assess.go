@@ -45,7 +45,7 @@ const AGENT_INSTRUCTION = "system_prompt"
 //******************************************************************
 
 func main() {
-
+	
 	SST.InitSSTorytime()
 
 	InitDetection()

@@ -332,6 +332,7 @@ func SanitizeSentence(extract []rune) string {
 func SanitizeToken(s string) string {
 
 	s = strings.ReplaceAll(s,"***","")
+	s = strings.ReplaceAll(s,"*'","'")
 	s = strings.ReplaceAll(s,"`","")
 
 	return s

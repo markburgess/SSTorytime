@@ -633,6 +633,10 @@ func GetLinkArrowByName(sst *SST.PoSST,token string) SST.Link {
 		}
 	}
 
+	if len(ctx) == 0 {
+		ctx = append(ctx,"any")
+	}
+
 	var link SST.Link
 	link.Arr = ptr
 	link.Wgt = weight

@@ -254,7 +254,8 @@ func HandleAgentText(fp *os.File,dir,name string) {
 	// because we wan to find overlaps
 
 	fmt.Println(" - fractionating",name)
-	psf,L := SST.FractionateText(dir,name)
+	psf,L := SST.FractionateTextFile(dir,name)
+
 	fmt.Println(" - scanning")
 	SST.AnalyzeFractionIntent(psf)
 	fmt.Println(" - ranking longitudinally")

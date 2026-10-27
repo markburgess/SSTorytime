@@ -125,7 +125,6 @@ func SplitIntoSectionsOfSentences(file,filename string) ([][]Sentence,int) {
 	
 	SECTIONS = append(SECTIONS, current)
 	
-	//paras := strings.Split(file,"\n\n")
 	paras := LooksLikeParagraph(file)
 	
 	for _,sec := range paras {
@@ -133,7 +132,7 @@ func SplitIntoSectionsOfSentences(file,filename string) ([][]Sentence,int) {
 		// This is where we detect section headers
 
 		issection,value,number := IsNewSection(sec,filename)
-		
+
 		if issection {
 			// Set section.Title
 			title = value
@@ -1117,7 +1116,7 @@ func OutputDocumentEvent(fp *os.File, selection TextRank,alias string,part_title
 
 	event := fmt.Sprintf("\n %s [%s]",SanitizeParen(selection.Fragment),alias)
 	
-	fmt.Fprintf(fp,"%s (%s) %s \n",event,INV_CONT_NAME_S,part_title)
+	fmt.Fprintf(fp,"%s \n  \" (%s) %s \n",event,INV_CONT_NAME_S,part_title)
 
 	// Now add cross referencing anchors to proper names
 	

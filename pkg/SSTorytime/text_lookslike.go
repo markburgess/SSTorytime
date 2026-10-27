@@ -59,6 +59,8 @@ func LooksLikeParagraph(para string) []string {
 			next_part += subpart + " "
 			
 			if len(subpart) > 1 && subpart[len(subpart)-1] == '.' {
+				splits = append(splits,next_part)
+				next_part = ""
 				ended_in_stop = true
 			} else {
 				ended_in_stop = false

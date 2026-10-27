@@ -404,7 +404,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 			signal, bad := ScanForSemanticAnomaly(call_body,n)
 
 			if bad {
-				fmt.Fprintf(fp,"  \"  (warn) 'possible warning signal %s' \n",signal)
+				fmt.Fprintf(fp,"  \"  (warn) 'possible warning signal containing: %s' \n",signal)
 			}
 		}
 	} else {
@@ -493,6 +493,10 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 			lhs := fmt.Sprintf("event where [%s] declares %s",agent,action)
 			rhs := item.Value.(string)
 			rhsbyte := []byte(rhs)
+
+			if JunkMessage(rhs) {
+				return
+			}
 
 			HandleInferences(agent,action,item.Path,rhs)
 			
@@ -806,7 +810,11 @@ func ScanForSemanticAnomaly(str string,n int) (string,bool) {
 
 			score,note := ScanFractionPatterns(category,str,check)
 
-			warning += note + "; "
+			warning += note
+			
+			if !strings.HasSuffix(warning,"..") {
+				warning += ".."
+			}
 
 			if score > 0 {
 				scored = true
@@ -822,7 +830,7 @@ func ScanForSemanticAnomaly(str string,n int) (string,bool) {
 		
 	}
 
-	if scored {
+	if scored && len(warning) > 0 {
 		return warning, true
 	}
 	

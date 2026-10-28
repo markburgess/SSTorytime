@@ -733,6 +733,7 @@ func HandleInferences(agent,action,path,value string) {
 func CleanString(s string) string {
 
 	s = strings.TrimSpace(s)
+	s = strings.ReplaceAll(s,"''","DBL-QU")
 	s = strings.ReplaceAll(s,"(","[")
 	s = strings.ReplaceAll(s,")","]")
 	s = strings.ReplaceAll(s,"- ","* ")

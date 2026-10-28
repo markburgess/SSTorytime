@@ -358,6 +358,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 	var call_name string
 	var call_body string
 	var thinking string
+	var action string
 
 	if FindJsonStructureAsPaths("",json_file, &pathList) {
 
@@ -371,7 +372,10 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 				agent_speaking = rhs
 				AGENTS[rhs] = true
 
-			case "text","thinking":
+			case "text":
+				action = strings.TrimSpace(rhs)
+				
+			case "thinking":
 				thinking = strings.TrimSpace(rhs)
 			}
 		}
@@ -387,7 +391,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		return 
 	}
 
-	isAPIcall, call_name, json = CheckForAPICall(thinking)
+	isAPIcall, call_name, json = CheckForAPICall(action)
 
 	call_body = string(json)
 
@@ -416,7 +420,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 
 		fmt.Print(".")
 
-		fmt.Fprintf(fp,"\n agent event %d [%s]\n",n,agent_speaking)
+		fmt.Fprintf(fp,"\n agent thinking event %d [%s]\n",n,agent_speaking)
 
 		if ismd {
 

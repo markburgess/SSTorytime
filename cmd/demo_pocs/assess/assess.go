@@ -83,15 +83,15 @@ func InitDetection() {
 
 	// we are looking for a subset of language characterizing important context states
 	
-	SST_COORDS["risk"] = []string{"marginal","failed","exposure","weak-buffer-thin","not required here","no need to","limit/threshold","empty","finance/financial-difficult","should-be-honest"}
+	SST_COORDS["risk"] = []string{"marginal","failed","exposure","weak-buffer-thin","not required here","no need-involve","empty","finance/financial-difficult","should-be-honest","beyond/passed/exceeded-threshold"}
 
 	SST_COORDS["promise-failed"] = []string{"missed-deadline","removed","unable-pay","short on-cash","unable-settle","payment-not-possible","unable-cover-expense","unable-meet-obligation","insufficient-credit"}
 
 	SST_COORDS["future"] = []string{"expect,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value","resolve","still--before/until-deadline","still-time"}
 	
-	SST_COORDS["unexpected"] = []string{"removed","broken","unable-meet-obligation","split-multiple","tampering"}
+	SST_COORDS["unexpected"] = []string{"removed","broken","unable-meet-obligation","split-multiple","tampering","miscount","misconduct","shortage"}
 
-	SST_COORDS["other/anomaly"] = []string{"violate","competing","no need to","unable-meet-obligation","is-report-event"}
+	SST_COORDS["other/anomaly"] = []string{"violate","competing","no need to","unable-meet-obligation","is-report-event","nonconform"}
 
 	SST_COORDS["conditional"] = []string{"if-missing/damaged"}
 	
@@ -197,7 +197,7 @@ func ShowScores() {
 	fmt.Println("\n")
 
 	for i := range SST_EVENTS {
-		fmt.Println("\n Highlighted event .. ",i,SST_EVENTS[i])
+		fmt.Println("\n Highlighted event .. ",i+1,SST_EVENTS[i])
 	}
 
 	fmt.Println("\n")
@@ -205,7 +205,7 @@ func ShowScores() {
 	for category := range SST_SCORES {
 
 		if SST_SCORES[category] > 0 {
-			fmt.Printf(" - %s score = %d\n",category,SST_SCORES[category]/len(SST_COORDS[category]))
+			fmt.Printf(" - %s score = %d\n",category,SST_SCORES[category])
 		}
 	}
 }
@@ -358,7 +358,6 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 	var call_name string
 	var call_body string
 	var thinking string
-	var action string
 
 	if FindJsonStructureAsPaths("",json_file, &pathList) {
 
@@ -372,10 +371,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 				agent_speaking = rhs
 				AGENTS[rhs] = true
 
-			case "text":
-				action = strings.TrimSpace(rhs)
-				
-			case "thinking":
+			case "text", "thinking":
 				thinking = strings.TrimSpace(rhs)
 			}
 		}
@@ -385,13 +381,15 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		agent_speaking = "unknown agent"
 	}
 
-	const exposition_threshold = 20
+	const exposition_threshold = 50
 
 	if len(thinking) < exposition_threshold {
 		return 
 	}
 
-	isAPIcall, call_name, json = CheckForAPICall(action)
+	// Check to see if the agent's commentary is an action or a thought
+	
+	isAPIcall, call_name, json = CheckForAPICall(thinking)
 
 	call_body = string(json)
 
@@ -400,11 +398,14 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 	}
 	
 	if isAPIcall {
+		// Ok, it's an action!
+		
 		AGENT_TOOLS[agent_speaking] = append(AGENT_TOOLS[agent_speaking],call_name)
 
 		fmt.Fprintf(fp,"agent event %d [%s] call to tool/API function: ****`%s`[..]\n",n,agent_speaking,call_name)
+
 		if call_body != "{}" {
-			fmt.Fprintf(fp,"  \"  (message body) 'json body: %s' \n",call_body)
+			fmt.Fprintf(fp,"  \"  (message body) 'json:\n %s' \n",CleanString(call_body))
 			signal, bad := ScanForSemanticAnomaly(call_body,n)
 
 			if bad {
@@ -412,11 +413,11 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 			}
 		}
 	} else {
-		// Json might contain Markdown as content!!
+		// If it's an MCP the json might contain Markdown as content!!
 
 		ismd,selections,_,L := IsMarkdownFragment(thinking,"run history")
 		
-		//fmt.Printf(" ** agent event %d [%s] action/assertion!\n",n,agent_speaking)
+		//fmt.Printf(" ** agent event %d [%s] MCP action/assertion!?\n",n,agent_speaking)
 
 		fmt.Print(".")
 
@@ -434,7 +435,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 						signal, bad := ScanForSemanticAnomaly(s,n)
 						
 						if bad {
-							fmt.Fprintf(fp,"  \"  (warn) 'possible warning signal %s' \n",signal)
+							fmt.Fprintf(fp,"  \"  (warn) possible warning signal: %s \n",signal)
 						}
 					}
 				}
@@ -442,11 +443,11 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 			
 		} else {
 			cln := CleanString(thinking)
-			fmt.Fprintf(fp,"     \"  (action) '%s' \n",cln)
+			fmt.Fprintf(fp,"     \"  (thinking) '%s' \n",cln)
 			signal, bad := ScanForSemanticAnomaly(cln,n)
 
 			if bad {
-				fmt.Fprintf(fp,"  \"  (warn) 'possible warning signal %s' \n",signal)
+				fmt.Fprintf(fp,"  \"  (warn) possible warning signal: %s \n",signal)
 			}
 		}
 	}
@@ -508,7 +509,7 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 			
 			if json.Valid(rhsbyte) {
 				if len(lhs) > 0 {
-					fmt.Fprintf(fp,"%s (message body) '%s' \n\n",lhs,string(rhsbyte))
+					fmt.Fprintf(fp,"%s (message body) 'json:\n%s' \n\n",lhs,CleanString(rhs))
 				}
 			} else {
 				ismd,selections,notes,_ := IsMarkdownFragment(rhs,"run declaration")
@@ -518,10 +519,10 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 					//markdown already scanned
 					fmt.Println(" - writing embedded markdown fragment")
 					//f,s,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
-					fmt.Fprintf(fp,"\n%s (message body) '%s' \n",agent,selections)
+					fmt.Fprintf(fp,"\n%s (message body) %s \n",agent,selections)
 				} else {
 					// plain text
-					fmt.Fprintf(fp,"\n%s (message body) '%s' \n",agent,CleanString(rhs))
+					fmt.Fprintf(fp,"\n%s (message body) %s \n",agent,CleanString(rhs))
 				}
 			}
 		}
@@ -738,6 +739,7 @@ func CleanString(s string) string {
 
 	s = strings.TrimSpace(s)
 	s = strings.ReplaceAll(s,"''","DBL-QU")
+	s = strings.ReplaceAll(s,"'","`")
 	s = strings.ReplaceAll(s,"(","[")
 	s = strings.ReplaceAll(s,")","]")
 	s = strings.ReplaceAll(s,"- ","* ")
@@ -836,7 +838,7 @@ func ScanForSemanticAnomaly(str string,n int) (string,bool) {
 	}
 
 	if scored && len(warning) > 0 {
-		return warning, true
+		return CleanString(warning), true
 	}
 	
 	return "",false

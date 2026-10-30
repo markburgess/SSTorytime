@@ -26,8 +26,9 @@
   + injects       (inject)     - is injected by         (inj-by) 
   + imposes       (imp)        - is imposed by          (isimp)
 
-  + generates message (offered) - message generated at (offat)
-  + message accepted at  (accgen)  - accepts message  (accepted)
+
+  + transfers control by message (offered) - control flow message generated at (offat)
+  + control message accepted at  (accgen)  - accepts control flow message  (accepted)
 
 
 

@@ -454,12 +454,12 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		return
 	}
 
-	this_event := ThisEvent(seqnr,event_type,agent_speaking)
+	this_event := ThisEvent(seqnr,n,event_type,agent_speaking)
 
 	// Start with tool calls
 	
 	if len(tool_name) > 0 && len(text_body) > 0 {
-		toolevent := RecordToolEvent(fp,seqnr,event_type,agent_speaking,tool_name,msg_body,is_fault)
+		toolevent := RecordToolEvent(fp,seqnr,n,event_type,agent_speaking,tool_name,msg_body,is_fault)
 		AGENT_TOOL_CALLS[tool_name] = append(AGENT_TOOL_CALLS[tool_name],toolevent)
 		return
 	}
@@ -542,9 +542,9 @@ func JunkMessage(s string) bool {
 
 //**************************************************************
 
-func ThisEvent(seq int,event,agent_speaking string) string {
+func ThisEvent(seq,n int,event,agent_speaking string) string {
 
-	return fmt.Sprintf("event: %s %d [%s]",event,seq,agent_speaking)
+	return fmt.Sprintf("event %d: %s [%s], ref x%x",seq,event,agent_speaking,n)
 }
 
 //**************************************************************
@@ -556,9 +556,9 @@ func RecordEvent(fp *os.File,event string) {
 
 //**************************************************************
 
-func RecordToolEvent(fp *os.File,seq int,event_type,agent_speaking,tool,body string,fault bool) string {
+func RecordToolEvent(fp *os.File,seq,n int,event_type,agent_speaking,tool,body string,fault bool) string {
 
-	event := fmt.Sprintf("%s %d [%s] call to tool %s\n",event_type,seq,agent_speaking,tool)
+	event := fmt.Sprintf("%s at %d [%s] call to tool %s, ref x%x",event_type,seq,agent_speaking,tool,n)
 
 	fmt.Fprintf(fp,"\n%s\n",event)
 	fmt.Fprintf(fp,"    \"   (tool) %s\n",tool)
@@ -731,9 +731,18 @@ func ListSundries(fp *os.File) {
 		msg := P2P_MESSAGE[a]
 
 		if len(msg.From) > 0 && len(msg.To) > 0 && len(msg.OfferEvent) > 0 && len(msg.AcceptEvent) > 0 {
-			fmt.Fprintf(fp,"\n '%s' (role) agent [%s]'s message body to [%s] initiated by api/tool\n",a,msg.From,msg.To)
-			fmt.Fprintf(fp,"\n  \" (offat) %s \n",msg.OfferEvent)
-			fmt.Fprintf(fp,"\n  \" (accgen) %s \n",msg.AcceptEvent)
+
+			// Connect the p2p sub-process around a shared message
+			fmt.Fprintf(fp,"\n agent [%s]'s message body to [%s] initiated by api/tool\n",msg.From,msg.To)
+			fmt.Fprintf(fp,"\n  \" (then) %s \n",msg.OfferEvent)
+			fmt.Fprintf(fp,"\n  \" (then) %s \n",msg.AcceptEvent)
+			fmt.Fprintf(fp,"\n  \" (message body) '%s' \n",a)
+
+			fmt.Fprintf(fp,"\n '%s' (message body) '%s' \n",a,msg.OfferEvent)
+			fmt.Fprintf(fp,"\n '%s' (message body) '%s' \n",a,msg.AcceptEvent)
+			
+			fmt.Fprintf(fp,"\n '%s' (offered) '%s' \n",msg.OfferEvent,msg.AcceptEvent)
+			fmt.Fprintf(fp,"\n '%s' (accepted) '%s' \n",msg.AcceptEvent,msg.OfferEvent)
 		}
 	}
 

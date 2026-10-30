@@ -18,14 +18,15 @@
  + could indicate          (i)            - may be indicated by (ib)
  + has name (name)       - is the name of (isnameof)
  + in the role of (role) - is a role for (isrole)
- + uses the tool (tool)  - is a tool used by (toolused) 
  
  + is working for (client) - is the work client of (isclient)
  + has policy (policy) - is a policy of (ispolicy)
  + has concept  (concept) - is a concept about (isconcept)
  
- + calls API function (api) - API function called at (isapi)
+ + calls API function  (api) - API function called at (isapi)
+ + employs a tool     (tool) - is a tool used at (toolused)
  + acts or expounds (action) - took place at (isaction)
- + thinks out loud (thinking) - is an internal thought spoken by (thght)
- + is explained by (expl) - expands detail on (expdet)
+ + reasons          (reason) - is an internal thought spoken by (thght)
+ + is explained by    (expl) - expands detail on (expdet)
  + signal possible warning (warn) - is a possible warning (iswarn) 
+

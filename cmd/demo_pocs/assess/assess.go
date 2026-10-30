@@ -375,6 +375,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 	var is_fault bool
 	var event_type string
 	var message_type string
+	var seqnr int
 
 	// CAUTION - this is inherently fragile due to the specific model detail.
 	// An event can be a report, a tool invocation/response, or internal reasoning
@@ -401,6 +402,8 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 				if rhs == "true" {
 					is_fault = true
 				}
+			case "seq":
+				fmt.Sscanf(rhs,"%d",&seqnr)
 				
 			case "input.content":
 				// only for tool_call
@@ -451,12 +454,12 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		return
 	}
 
-	this_event := ThisEvent(n,event_type,agent_speaking)
+	this_event := ThisEvent(seqnr,event_type,agent_speaking)
 
-	// Start witt tool calls
+	// Start with tool calls
 	
 	if len(tool_name) > 0 && len(text_body) > 0 {
-		toolevent := RecordToolEvent(fp,n,event_type,agent_speaking,tool_name,msg_body,is_fault)
+		toolevent := RecordToolEvent(fp,seqnr,event_type,agent_speaking,tool_name,msg_body,is_fault)
 		AGENT_TOOL_CALLS[tool_name] = append(AGENT_TOOL_CALLS[tool_name],toolevent)
 		return
 	}
@@ -1143,8 +1146,8 @@ func Excerpt(whole,part string) string {
 //**************************************************************
 
 type PathValue struct {
-	Path  string      `json:"path"`
-	Value interface{} `json:"value"`
+	Path  string
+	Value interface{}
 }
 
 //**************************************************************
@@ -1174,6 +1177,15 @@ func FindJsonStructureAsPaths(prefix string, value interface{}, list *[]PathValu
 
 	default: // Reached a leaf node (string, float64, bool, nil)
 
+		if result, ok := v.(float64); ok {
+			*list = append(*list, PathValue{
+				Path:  prefix,
+				Value: fmt.Sprintf("%d",int(result)),
+			})
+
+			return true
+		}
+		
 		if result, ok := v.(string); ok {
 			*list = append(*list, PathValue{
 				Path:  prefix,

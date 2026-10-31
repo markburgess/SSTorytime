@@ -11,3 +11,5 @@ Agent, Requirements: require
 Agent, Requested actions (imposition): action requested
 Agent, General requests: request
 Agent, Authorization: authorization authorize
+Agent, Waiting: waiting
+Agent, Cost and payment: 

@@ -6,3 +6,8 @@ Agent, Agent messages: \notes \chapter "Agent Runaround - Table Of Contents" \co
 Agent, Peer communications: \notes \chapter "Agent Runaround - Table Of Contents" \context "peer communication"
 Agent, Tools used: \notes \chapter "Agent Runaround - Table Of Contents" \context "tools"
 Agent, Agent promises: \notes \context "agent instructions"
+Agent, Please send: "please send"
+Agent, Requirements: require
+Agent, Requested actions (imposition): action requested
+Agent, General requests: request
+Agent, Authorization: authorization authorize

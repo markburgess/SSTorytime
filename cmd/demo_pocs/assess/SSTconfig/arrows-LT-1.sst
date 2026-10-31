@@ -17,18 +17,8 @@
   + binds to   (bind-to)       - is bound by  (bound-by)
 
   + results in   (result)      - was a result of        (result-of)
-  + reduces to    (reduce)     - is reduced from        (redfr)
-  + approximates to (approx)   - is an approximation of (appfr)
-  + determines    (det)        - is determined by       (det-by)
-  + should precede/come before (sh-precede) - should follow/come after (sh-follow)
-  + authenticates (auth)       - is authenticated by    (auth-by)
-  
-  + injects       (inject)     - is injected by         (inj-by) 
-  + imposes       (imp)        - is imposed by          (isimp)
 
-
-  + transfers control by message (offered) - control flow message generated at (offat)
-  + control message accepted at  (accgen)  - accepts control flow message  (accepted)
-
-
+  + initiate p2p channel (p2p-init)  - p2p channel iniated by   (p2pinitinv)
+  + p2p offer message    (p2p-plus)  - p2p message offered at   (p2p-pinv)
+  + p2p accept message   (p2p-minus) - p2p message accepted at  (p2p-minv)
 

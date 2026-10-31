@@ -28,5 +28,9 @@
  + acts or expounds (action) - took place at (isaction)
  + reasons          (reason) - is an internal thought spoken by (thght)
  + is explained by    (expl) - expands detail on (expdet)
- + signal possible warning (warn) - is a possible warning (iswarn) 
+ + signal possible warning (warn) - is a possible warning (iswarn)
 
+ + imposes (impose) - is classifed as an imposition from (isimp)
+
+ + has message sender   (sender)   - is the sender of (issend)
+ + has message receiver (receiver) - is the receiver of (isrecv)

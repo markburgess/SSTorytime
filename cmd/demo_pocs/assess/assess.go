@@ -21,25 +21,28 @@ import (
 )
 
 //******************************************************************
-
-// Model specific .. probably...but have to start somewhere
+// This model is specific to this example...but have to start somewhere
+//******************************************************************
 
 type P2Pair struct {
-	From        string
-	To          string
-	OfferEvent  string
-	AcceptEvent string
+	From        string // agent sender
+	To          string // agent receiver
+	ToolStart   string // the tool call that opens the channel
+	OfferEvent  string // the sender event
+	AcceptEvent string // the receiver event
 }
 
 var AGENTS = make(map[string]bool)
-var AGENT_TOOL_CALLS = make(map[string][]string)
-var LAST_TOOL_CALL = make(map[string]string)
 var AGENT_REQUEST = make(map[string][]string)
 var AGENT_PRINCIPAL = make(map[string]string)
 var AGENT_OPENING = make(map[string]string)
 var AGENT_ESCALATE = make(map[string]string)
 var AGENT_OBJECTIVE = make(map[string]string)
-var AGENT_REPLY = make(map[string]string)
+var AGENT_REPLY []string
+
+var AGENT_TOOL_CALLS = make(map[string][]string)
+var LAST_TOOL_CALL = make(map[P2Pair]string)
+var LAST_ACCEPT  = make(map[P2Pair]string)
 var P2P_MESSAGE = make(map[string]P2Pair)
 
 var SST_COORDS = make(map[string][]string)
@@ -375,6 +378,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 	var is_fault bool
 	var event_type string
 	var message_type string
+	var other_agent string
 	var seqnr int
 
 	// CAUTION - this is inherently fragile due to the specific model detail.
@@ -393,7 +397,7 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 
 			case "agent":
 				agent_speaking = rhs
-				AGENTS[rhs] = true
+				AGENTS[rhs] = true	
 			case "text":
 				text_body = rhs
 			case "tool":
@@ -408,7 +412,11 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 			case "input.content":
 				// only for tool_call
 				msg_body = rhs
-				
+			case "input.to":
+				other_agent = rhs
+			case "counterpart":
+				other_agent = rhs
+
 			case "channel":
 				// can only be one of these at a time
 				channel = rhs
@@ -416,17 +424,18 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 				switch rhs {
 
 				case "tool_call":
-					message_type = "p2p"
+					message_type = "tool_call"
 					event_type = "agent invokes a tool/API call"
 
 				case "tool_result":
+					message_type = "tool_result"
 					event_type = "agent accepts a tool response"
 
 				case "peer_out":
-					message_type = "+"
+					message_type = "+p2p"
 					event_type = "peer message [+] offered"
 				case "peer_in" :
-					message_type = "-"
+					message_type = "-p2p"
 					event_type = "peer message [-] accepted"
 
 				// intro/extrospection
@@ -450,24 +459,33 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 		}
 	}
 
-	if JunkMessage(text_body) {
+	if JunkMessage(message_type,text_body) {
 		return
 	}
-
+	
 	this_event := ThisEvent(seqnr,n,event_type,agent_speaking)
 
 	// Start with tool calls
-	
-	if len(tool_name) > 0 && len(text_body) > 0 {
-		toolevent := RecordToolEvent(fp,seqnr,n,event_type,agent_speaking,tool_name,msg_body,is_fault)
+
+	promise_direction := MakeP2P(agent_speaking,other_agent)
+
+	if message_type == "tool_call" {
+		toolevent := RecordToolCall(fp,seqnr,n,event_type,promise_direction,tool_name,msg_body,is_fault)
 		AGENT_TOOL_CALLS[tool_name] = append(AGENT_TOOL_CALLS[tool_name],toolevent)
 		return
 	}
 
 	// tool call may induce p2p communication channel
 
-	ConnectP2PMessages(this_event,text_body,message_type,agent_speaking)
+	ConnectP2PMessages(this_event,text_body,message_type,promise_direction)
 
+	// Collect tool result
+
+	if message_type == "tool_result" {
+		RecordToolResult(this_event,text_body,promise_direction,is_fault)
+		return
+	}
+	
 	// MCP markdown tooling?
 
 	if channel == "say" {
@@ -498,9 +516,19 @@ func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
 
 //**************************************************************
 
-func ConnectP2PMessages(this_event,msg_body,mt,agent string) {
+func MakeP2P(start,end string) P2Pair {
 
-	if mt == "+" || mt == "-" {
+	var vector P2Pair
+	vector.From = start
+	vector.To = end
+	return vector
+}
+
+//**************************************************************
+
+func ConnectP2PMessages(this_event,msg_body,mt string,p2p P2Pair) {
+
+	if mt == "+p2p" || mt == "-p2p" {
 
 		// store P2P between-interaction from independent events
 		// for later, as we can't connect them yet...
@@ -509,12 +537,18 @@ func ConnectP2PMessages(this_event,msg_body,mt,agent string) {
 		
 		switch mt {
 			
-		case "-":
-			msg.To = agent
+		case "-p2p":
+			msg.To = p2p.From
 			msg.AcceptEvent = this_event
-		case "+":
-			msg.From = agent
-			msg.OfferEvent = LAST_TOOL_CALL[agent]
+			// Now we are receiving, so need to invert the promise arrow
+			var invp2p P2Pair
+			invp2p.To = p2p.From
+			invp2p.From = p2p.To
+			LAST_ACCEPT[invp2p] = this_event
+		case "+p2p":
+			msg.From = p2p.From
+			msg.OfferEvent = this_event
+			msg.ToolStart = LAST_TOOL_CALL[p2p]
 		}
 		
 		P2P_MESSAGE[msg_body] = msg
@@ -523,8 +557,12 @@ func ConnectP2PMessages(this_event,msg_body,mt,agent string) {
 
 //**************************************************************
 
-func JunkMessage(s string) bool {
+func JunkMessage(thistype,s string) bool {
 
+	if thistype == "tool_result" {
+		return false
+	}
+	
 	const exposition_threshold = 50
 
 	if len(s) < exposition_threshold {
@@ -544,7 +582,7 @@ func JunkMessage(s string) bool {
 
 func ThisEvent(seq,n int,event,agent_speaking string) string {
 
-	return fmt.Sprintf("event %d: %s [%s], ref x%x",seq,event,agent_speaking,n)
+	return fmt.Sprintf("event at %d: %s [%s], ref x%x",seq,event,agent_speaking,n)
 }
 
 //**************************************************************
@@ -556,8 +594,9 @@ func RecordEvent(fp *os.File,event string) {
 
 //**************************************************************
 
-func RecordToolEvent(fp *os.File,seq,n int,event_type,agent_speaking,tool,body string,fault bool) string {
+func RecordToolCall(fp *os.File,seq,n int,event_type string,p2p P2Pair,tool,body string,fault bool) string {
 
+	agent_speaking := p2p.From
 	event := fmt.Sprintf("%s at %d [%s] call to tool %s, ref x%x",event_type,seq,agent_speaking,tool,n)
 
 	fmt.Fprintf(fp,"\n%s\n",event)
@@ -566,7 +605,7 @@ func RecordToolEvent(fp *os.File,seq,n int,event_type,agent_speaking,tool,body s
 
 	// cache the sender of the P2P message for future linkage / a reasonable gamble
 
-	LAST_TOOL_CALL[agent_speaking] = event
+	LAST_TOOL_CALL[p2p] = event
 
 	// Now formulate the graph
 	
@@ -586,6 +625,42 @@ func RecordToolEvent(fp *os.File,seq,n int,event_type,agent_speaking,tool,body s
 	}
 
 	return event
+}
+
+//**************************************************************
+
+func RecordToolResult(this_event,body_text string,p2p P2Pair,fault bool) {
+
+	other_agent := LookForAgentInString(body_text)
+	p2p.To = other_agent
+
+	// Connect current event to past p2p recv, if it exists
+	previous := LAST_ACCEPT[p2p]
+
+	if len(previous) > 0 {
+		result := fmt.Sprintf("\n '%s' \n",this_event)
+		result += fmt.Sprintf("    \"   (result-of) '%s'\n",previous)
+
+		if fault {
+			result += fmt.Sprintf("    \" (warn) Tool call failed!\n\n")
+		}
+
+		// Append for later sundry
+		AGENT_REPLY = append(AGENT_REPLY,result)
+	}
+}
+
+//**************************************************************
+
+func LookForAgentInString(s string) string {
+
+	for a := range AGENTS {
+		if strings.Contains(s,a) {
+			return a
+		}
+	}
+
+	return ""
 }
 
 //**************************************************************
@@ -649,7 +724,7 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 			rhs := item.Value.(string)
 			rhsbyte := []byte(rhs)
 
-			if JunkMessage(rhs) {
+			if JunkMessage("",rhs) {
 				return
 			}
 
@@ -715,14 +790,6 @@ func ListSundries(fp *os.File) {
 		fmt.Fprintf(fp,"\n %s (role) agent API / tool \n",tool)
 	}
 
-	fmt.Fprintf(fp,"\n :: objectives, promises :: \n\n")
-
-	for a := range AGENT_OBJECTIVE {
-		ob := strings.TrimSpace(AGENT_OBJECTIVE[a])
-		if ob != "" {
-			fmt.Fprintf(fp,"\n %s (role) agent [%s]'s promised objective \n",ob,a)
-		}
-	}
 
 	fmt.Fprintf(fp,"\n :: messages, peer communication :: \n\n")
 
@@ -733,25 +800,34 @@ func ListSundries(fp *os.File) {
 		if len(msg.From) > 0 && len(msg.To) > 0 && len(msg.OfferEvent) > 0 && len(msg.AcceptEvent) > 0 {
 
 			// Connect the p2p sub-process around a shared message
-			fmt.Fprintf(fp,"\n agent [%s]'s message body to [%s] initiated by api/tool\n",msg.From,msg.To)
-			fmt.Fprintf(fp,"\n  \" (then) %s \n",msg.OfferEvent)
-			fmt.Fprintf(fp,"\n  \" (then) %s \n",msg.AcceptEvent)
-			fmt.Fprintf(fp,"\n  \" (message body) '%s' \n",a)
 
-			fmt.Fprintf(fp,"\n '%s' (message body) '%s' \n",a,msg.OfferEvent)
-			fmt.Fprintf(fp,"\n '%s' (message body) '%s' \n",a,msg.AcceptEvent)
-			
-			fmt.Fprintf(fp,"\n '%s' (offered) '%s' \n",msg.OfferEvent,msg.AcceptEvent)
-			fmt.Fprintf(fp,"\n '%s' (accepted) '%s' \n",msg.AcceptEvent,msg.OfferEvent)
+			// Message, contents, and start event
+			fmt.Fprintf(fp,"\n '%s' (p2p-init) '%s' \n",msg.ToolStart,msg.OfferEvent)
+			fmt.Fprintf(fp,"\n  \"  (message body) '%s' \n",a)
+			fmt.Fprintf(fp,"\n '%s' (sender) '%s'\n",a,msg.From)
+			fmt.Fprintf(fp,"\n   \" (receiver) '%s'\n",msg.To)
+
+			// p2p channel forward direction
+			fmt.Fprintf(fp,"\n '%s' (p2p-plus) '%s' \n",msg.OfferEvent,msg.AcceptEvent)
+			//fmt.Fprintf(fp,"\n  \" (message body) '%s' \n",a)
+			fmt.Fprintf(fp,"\n '%s' (p2p-minus) '%s' \n",msg.OfferEvent,msg.AcceptEvent)
+			//fmt.Fprintf(fp,"\n  \" (message body) '%s' \n",a)
 		}
 	}
 
 	fmt.Fprintf(fp,"\n :: agent replies :: \n\n")
 
-	for a := range AGENT_REPLY {
-		ob := strings.TrimSpace(AGENT_REPLY[a])
+	for _,reply := range AGENT_REPLY {
+		fmt.Fprintf(fp,"\n %s \n",reply)
+	}
+
+
+	fmt.Fprintf(fp,"\n :: objectives, promises :: \n\n")
+
+	for a := range AGENT_OBJECTIVE {
+		ob := strings.TrimSpace(AGENT_OBJECTIVE[a])
 		if ob != "" {
-			fmt.Fprintf(fp,"\n %s (role) agent [%s]'s specified replies \n",ob,a)
+			fmt.Fprintf(fp,"\n %s (role) agent [%s]'s promised objective \n",ob,a)
 		}
 	}
 
@@ -894,13 +970,6 @@ func HandleInferences(agent,action,path,value string) {
 		if !ok {
 			AGENT_OBJECTIVE[agent] = value
 		}
-
-	case "replies":
-		_,ok := AGENT_REPLY[agent]
-		if !ok {
-			AGENT_REPLY[agent] = value
-		}
-
 	}
 
 }

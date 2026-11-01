@@ -16,3 +16,4 @@ Agent, Cost and payment: cost
 Agent, Violations: violation
 Agent, Consequence, result, outcome: consequence result outcome
 Agent, Escalations: escalate
+Agent, Authorizations and approvals: authorize approve \limit 30

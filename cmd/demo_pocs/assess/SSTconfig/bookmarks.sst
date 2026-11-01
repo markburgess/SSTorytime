@@ -1,5 +1,5 @@
 Agent, No need to : "no need to"
-Agent, Execution path: \from START \limit 200
+Agent, Agent Execution trace: \from "begins with opening" \limit 500
 Agent, Warnings: any \arrow warn \limit 30
 Agent, Warning messages: warnings \limit 100
 Agent, Agent messages: \notes \chapter "Agent Runaround - Table Of Contents" \context messages

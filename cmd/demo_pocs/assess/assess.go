@@ -32,12 +32,17 @@ type P2Pair struct {
 	AcceptEvent string // the receiver event
 }
 
+// Spacetime structure
+
 var AGENTS = make(map[string]bool)
+var AGENT_TIMELINE = make(map[string][]string)
+
+// Feature extraction
+
 var AGENT_REQUEST = make(map[string][]string)
 var AGENT_PRINCIPAL = make(map[string]string)
 var AGENT_OPENING = make(map[string]string)
 var AGENT_ESCALATE = make(map[string]string)
-var AGENT_OBJECTIVE = make(map[string]string)
 var AGENT_REPLY []string
 
 var AGENT_TOOL_CALLS = make(map[string][]string)
@@ -47,7 +52,8 @@ var P2P_MESSAGE = make(map[string]P2Pair)
 
 var SST_COORDS = make(map[string][]string)
 var SST_SCORES = make(map[string]int)
-var SST_EVENTS []string
+var SST_ANOMALIES []string
+var SST_DUPLICATES []string
 
 var RECOGNIZE = []string{"principal","opening","client","escalat","tool","replies","objective"}
 
@@ -103,7 +109,7 @@ func InitDetection() {
 
 	SST_COORDS["future"] = []string{"expect,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value","resolve","still--before/until-deadline","still-time"}
 	
-	SST_COORDS["unexpected"] = []string{"removed","broken","unable-meet-obligation","split-multiple","tampering","miscount","misconduct","shortage"}
+	SST_COORDS["unexpected"] = []string{"removed","broken","unable-meet-obligation","split-multiple","tampering","miscount","misconduct"}
 
 	SST_COORDS["other/anomaly"] = []string{"violate","competing","no need to","unable-meet-obligation","is-report-event","nonconform","asking-but"}
 
@@ -166,7 +172,7 @@ func AssessAgentRun(dir string) {
 	// Mention the agents!
 
 	ShowScores()
-	
+	TimeLines(fp)
 	Togetherness(fp)  // Start a new chapter to isolate shared stuff
 	ListAgents(fp)
 	ListSundries(fp)
@@ -212,8 +218,8 @@ func ShowScores() {
 
 	fmt.Println("\n")
 
-	for i := range SST_EVENTS {
-		fmt.Println("\n Highlighted event .. ",i+1,SST_EVENTS[i])
+	for i := range SST_ANOMALIES {
+		fmt.Println("\n Highlighted event .. ",i+1,SST_ANOMALIES[i])
 	}
 
 	fmt.Println("\n")
@@ -319,31 +325,13 @@ func AssessJsonType(fp *os.File,filename string) {
 		
 		lines := bytes.Split(filebytes, []byte("\n"))
 
-		fmt.Fprintf(fp,"\n :: _sequence_, agent transcript, agent trace :: \n\n")
-
-		fmt.Fprintf(fp,"\n START! Agent execution launch ....\n\n")
-
-		for agent := range AGENTS {
-			fmt.Fprintf(fp,"\n \" (incl) %s\n",agent)
-		}
+		// Now analyze the log
+		var previous_line []byte
 		
-		// Look for initial statements
-		
-		for agent := range AGENT_OPENING {
-			if AGENT_OPENING[agent] != "" {
-				//fmt.Println(" M Collected opening statement from",agent)
-				fmt.Fprintf(fp,"\nAgent [%s] begins with opening statement (message body) '%s'\n",agent,AGENT_OPENING[agent])
-			}
+		for n,this_line := range lines {
+			AssessSingleJsonEvent(n,alias,this_line,previous_line)
+			previous_line = this_line
 		}
-
-		// Now unfold the log
-		
-		for n,runpart := range lines {
-			
-			AssessSingleJsonEvent(fp,n,alias,runpart)
-		}
-
-		fmt.Fprintf(fp,"\n -:: _sequence_ :: \n\n")
 
 	// Junk?
 
@@ -354,345 +342,7 @@ func AssessJsonType(fp *os.File,filename string) {
 }
 
 //**************************************************************
-
-func AssessSingleJsonEvent(fp *os.File,n int,alias string,filebytes []byte) {
-
-	// transcripts are files of events in sequence, taken
-	// one by one and coagulated into a single stream
-
-	// Revsied version knowns a lot more about the json format than before
-
-	var json_file interface{}
-
-	if err := json.Unmarshal(filebytes, &json_file); err != nil {
-		fmt.Println("\n? Error unmarshalling",n,err)
-		return
-	}
-
-	var pathList []PathValue
-	var agent_speaking string = "unknown agent"
-	var tool_name string
-	var text_body string
-	var msg_body string
-	var channel string
-	var is_fault bool
-	var event_type string
-	var message_type string
-	var other_agent string
-	var seqnr int
-
-	// CAUTION - this is inherently fragile due to the specific model detail.
-	// An event can be a report, a tool invocation/response, or internal reasoning
-
-	fmt.Print(".")
-
-	if FindJsonStructureAsPaths("",json_file, &pathList) {
-
-		for _, item := range pathList {
-
-			lhs := item.Path
-			rhs := CleanString(item.Value.(string))
-
-			switch lhs {
-
-			case "agent":
-				agent_speaking = rhs
-				AGENTS[rhs] = true	
-			case "text":
-				text_body = rhs
-			case "tool":
-				tool_name = rhs
-			case "error":
-				if rhs == "true" {
-					is_fault = true
-				}
-			case "seq":
-				fmt.Sscanf(rhs,"%d",&seqnr)
-				
-			case "input.content":
-				// only for tool_call
-				msg_body = rhs
-			case "input.to":
-				other_agent = rhs
-			case "counterpart":
-				other_agent = rhs
-
-			case "channel":
-				// can only be one of these at a time
-				channel = rhs
-
-				switch rhs {
-
-				case "tool_call":
-					message_type = "tool_call"
-					event_type = "agent invokes a tool/API call"
-
-				case "tool_result":
-					message_type = "tool_result"
-					event_type = "agent accepts a tool response"
-
-				case "peer_out":
-					message_type = "+p2p"
-					event_type = "peer message [+] offered"
-				case "peer_in" :
-					message_type = "-p2p"
-					event_type = "peer message [-] accepted"
-
-				// intro/extrospection
-					
-				case "thinking":
-					event_type = "introspective reasoning"
-				case "note":
-					event_type = "status report/reasoning"
-				case "say":
-					event_type = "agent speaks [to MCP?] in markdown format"
-				case "principal":
-					event_type = "agent reports to its principal/boss"
-
-				// Observed event?
-
-				case "world":
-					event_type = "world observation"
-					// actor =?
-				}
-			}
-		}
-	}
-
-	if JunkMessage(message_type,text_body) {
-		return
-	}
-	
-	this_event := ThisEvent(seqnr,n,event_type,agent_speaking)
-
-	// Start with tool calls
-
-	promise_direction := MakeP2P(agent_speaking,other_agent)
-
-	if message_type == "tool_call" {
-		toolevent := RecordToolCall(fp,seqnr,n,event_type,promise_direction,tool_name,msg_body,is_fault)
-		AGENT_TOOL_CALLS[tool_name] = append(AGENT_TOOL_CALLS[tool_name],toolevent)
-		return
-	}
-
-	// tool call may induce p2p communication channel
-
-	ConnectP2PMessages(this_event,text_body,message_type,promise_direction)
-
-	// Collect tool result
-
-	if message_type == "tool_result" {
-		RecordToolResult(this_event,text_body,promise_direction,is_fault)
-		return
-	}
-	
-	// MCP markdown tooling?
-
-	if channel == "say" {
-		// If it's an MCP the json might contain Markdown as content!!
-		
-		ismd,selections,_,L := IsMarkdownFragment(text_body,"run history")
-
-		if ismd {
-			RecordEvent(fp,this_event)
-			f,_,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
-			CheckAnomalies(fp,f,n)
-			return
-		}
-	}
-
-	// Default is introspective
-
-	RecordEvent(fp,this_event)
-	fmt.Fprintf(fp,"     \"  (message body) '%s' \n",text_body)
-
-	CheckImpositionRequests(fp,agent_speaking,text_body)
-	signal, bad := ScanForSemanticAnomaly(text_body,n)
-	
-	if bad {
-		fmt.Fprintf(fp,"  \"  (warn) possible warning signal: %s \n",signal)
-	}
-}
-
-//**************************************************************
-
-func MakeP2P(start,end string) P2Pair {
-
-	var vector P2Pair
-	vector.From = start
-	vector.To = end
-	return vector
-}
-
-//**************************************************************
-
-func ConnectP2PMessages(this_event,msg_body,mt string,p2p P2Pair) {
-
-	if mt == "+p2p" || mt == "-p2p" {
-
-		// store P2P between-interaction from independent events
-		// for later, as we can't connect them yet...
-		
-		msg := P2P_MESSAGE[msg_body]
-		
-		switch mt {
-			
-		case "-p2p":
-			msg.To = p2p.From
-			msg.AcceptEvent = this_event
-			// Now we are receiving, so need to invert the promise arrow
-			var invp2p P2Pair
-			invp2p.To = p2p.From
-			invp2p.From = p2p.To
-			LAST_ACCEPT[invp2p] = this_event
-		case "+p2p":
-			msg.From = p2p.From
-			msg.OfferEvent = this_event
-			msg.ToolStart = LAST_TOOL_CALL[p2p]
-		}
-		
-		P2P_MESSAGE[msg_body] = msg
-	}
-}
-
-//**************************************************************
-
-func JunkMessage(thistype,s string) bool {
-
-	if thistype == "tool_result" {
-		return false
-	}
-	
-	const exposition_threshold = 50
-
-	if len(s) < exposition_threshold {
-		return  true
-	}
-
-	// Not words
-	
-	if !strings.Contains(s," ") {
-		return true
-	}
-
-	return false
-}
-
-//**************************************************************
-
-func ThisEvent(seq,n int,event,agent_speaking string) string {
-
-	return fmt.Sprintf("event at %d: %s [%s], ref x%x",seq,event,agent_speaking,n)
-}
-
-//**************************************************************
-
-func RecordEvent(fp *os.File,event string) {
-
-	fmt.Fprintf(fp,"\n%s\n",event)
-}
-
-//**************************************************************
-
-func RecordToolCall(fp *os.File,seq,n int,event_type string,p2p P2Pair,tool,body string,fault bool) string {
-
-	agent_speaking := p2p.From
-	event := fmt.Sprintf("%s at %d [%s] call to tool %s, ref x%x",event_type,seq,agent_speaking,tool,n)
-
-	fmt.Fprintf(fp,"\n%s\n",event)
-	fmt.Fprintf(fp,"    \"   (tool) %s\n",tool)
-	fmt.Fprintf(fp,"    \"   (%s) %s\n",SST.CONT_REF_S,agent_speaking)
-
-	// cache the sender of the P2P message for future linkage / a reasonable gamble
-
-	LAST_TOOL_CALL[p2p] = event
-
-	// Now formulate the graph
-	
-	if fault {
-		fmt.Fprintf(fp,"  \"  (warn) execution fault\n")
-	}
-
-	if body != "{}" && len(body) > 0 {
-		fmt.Fprintf(fp,"  \"  (message body) '%s' \n",body)
-
-		CheckImpositionRequests(fp,agent_speaking,body)
-		signal, bad := ScanForSemanticAnomaly(body,seq)
-		
-		if bad {
-			fmt.Fprintf(fp,"  \"  (warn) 'possible warning signal containing: %s' \n",signal)
-		}
-	}
-
-	return event
-}
-
-//**************************************************************
-
-func RecordToolResult(this_event,body_text string,p2p P2Pair,fault bool) {
-
-	other_agent := LookForAgentInString(body_text)
-	p2p.To = other_agent
-
-	// Connect current event to past p2p recv, if it exists
-	previous := LAST_ACCEPT[p2p]
-
-	if len(previous) > 0 {
-		result := fmt.Sprintf("\n '%s' \n",this_event)
-		result += fmt.Sprintf("    \"   (result-of) '%s'\n",previous)
-
-		if fault {
-			result += fmt.Sprintf("    \" (warn) Tool call failed!\n\n")
-		}
-
-		// Append for later sundry
-		AGENT_REPLY = append(AGENT_REPLY,result)
-	}
-}
-
-//**************************************************************
-
-func LookForAgentInString(s string) string {
-
-	for a := range AGENTS {
-		if strings.Contains(s,a) {
-			return a
-		}
-	}
-
-	return ""
-}
-
-//**************************************************************
-
-func CheckImpositionRequests(fp *os.File,agent_speaking,message string) {
-	
-	if strings.Contains(strings.ToLower(message),"request") {
-		fmt.Fprintf(fp,"  \"  (imposes) action requested\n")
-		AGENT_REQUEST[agent_speaking] = append(AGENT_REQUEST[agent_speaking],message)
-	}
-}
-
-//**************************************************************
-
-func CheckAnomalies(fp *os.File,mdfractions [][]string,seq int) {
-
-	const small_text = 50
-	
-	for _,sel := range mdfractions {
-		for _,s := range sel {
-			if len(s) > small_text {
-				fmt.Fprintf(fp,"  \" (action) %s\n",s)
-				signal, bad := ScanForSemanticAnomaly(s,seq)
-				
-				if bad {
-					fmt.Fprintf(fp,"  \"  (warn) possible warning signal: %s \n",signal)
-				}
-			}
-		}
-	}
-}
-
+// Declarative json
 //**************************************************************
 
 func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
@@ -773,6 +423,366 @@ func AddNotes(fp *os.File,notes []string) {
 	}
 }
 
+//**************************************************************
+// Timeline transcript decomp/analysis
+//**************************************************************
+
+func AssessSingleJsonEvent(n int,alias string,log_event,previous_event []byte) {
+
+	// Revised version knowns a lot more about the json format than before
+
+	var json_file interface{}
+
+	if err := json.Unmarshal(log_event, &json_file); err != nil {
+		fmt.Println("\n? Error unmarshalling",n,err)
+		return
+	}
+
+	var pathList []PathValue
+	var agent_speaking string = "unknown agent"
+	var tool_name string
+	var text_body string
+	var msg_body string
+	var channel string
+	var is_fault bool
+	var event_type string
+	var message_type string
+	var other_agent string
+	var seqnr int
+	var speaks string
+	
+	// CAUTION - this is inherently fragile due to the specific model detail.
+	// An event can be a report, a tool invocation/response, or internal reasoning
+
+	fmt.Print(".")
+
+	if FindJsonStructureAsPaths("",json_file, &pathList) {
+
+		for _, item := range pathList {
+
+			lhs := item.Path
+			rhs := CleanString(item.Value.(string))
+
+			switch lhs {
+
+			case "agent":
+				agent_speaking = rhs
+				AGENTS[rhs] = true	
+			case "text":
+				text_body = rhs
+			case "tool":
+				tool_name = rhs
+			case "error":
+				if rhs == "true" {
+					is_fault = true
+				}
+			case "seq":
+				fmt.Sscanf(rhs,"%d",&seqnr)
+				
+			case "input.content":
+				// only for tool_call
+				msg_body = rhs
+			case "input.to":
+				other_agent = rhs
+			case "counterpart":
+				other_agent = rhs
+
+			case "channel":
+				// can only be one of these at a time
+				channel = rhs
+
+				switch rhs {
+
+				case "tool_call":
+					message_type = "tool_call"
+					event_type = "agent invokes a tool / API call"
+
+				case "tool_result":
+					message_type = "tool_result"
+					event_type = "agent accepts a tool response"
+
+				case "peer_out":
+					message_type = "+p2p"
+					event_type = "peer message [+] offered"
+				case "peer_in" :
+					message_type = "-p2p"
+					event_type = "peer message [-] accepted"
+
+				// intro/extrospection
+					
+				case "thinking":
+					event_type = "introspective reasoning"
+				case "note":
+					event_type = "status report / reasoning"
+				case "say":
+					event_type = "agent speaks to the principal in rich markdown format"
+				case "principal":
+					event_type = "the user / principal / boss instructs"
+				case "world":
+					event_type = "report world state / observation"
+					// actor =?
+				}
+			}
+		}
+	}
+
+	this_event := ThisEvent(seqnr,n,event_type,agent_speaking,tool_name)
+
+	if string(log_event) == string(previous_event) {
+		fmt.Println("\n!! Retry of agent operation:",this_event)
+		SST_DUPLICATES = append(SST_DUPLICATES,this_event)
+	}
+	
+	if JunkMessage(message_type,text_body) {
+		return
+	}
+
+	// Start with tool calls
+
+	speaks += RecordEvent(agent_speaking,this_event)
+	
+	promise_direction := MakeP2P(agent_speaking,other_agent)
+
+	if message_type == "tool_call" {
+		speaks := RecordToolCall(this_event,seqnr,n,event_type,promise_direction,tool_name,msg_body,is_fault)
+		AGENT_TOOL_CALLS[tool_name] = append(AGENT_TOOL_CALLS[tool_name],this_event)
+		AGENT_TIMELINE[agent_speaking] = append(AGENT_TIMELINE[agent_speaking],speaks)
+		return
+	}
+
+	// tool call may induce p2p communication channel
+
+	ConnectP2PMessages(this_event,text_body,message_type,promise_direction)
+
+	// Collect tool result
+
+	if message_type == "tool_result" {
+		speaks += RecordToolResult(this_event,text_body,promise_direction,is_fault)
+		AGENT_TIMELINE[agent_speaking] = append(AGENT_TIMELINE[agent_speaking],speaks)
+		return
+	}
+	
+	// MCP markdown tooling?
+
+	if channel == "say" {
+		// If it's an MCP the json might contain Markdown as content!!
+		
+		ismd,selections,_,L := IsMarkdownFragment(text_body,"run history")
+
+		if ismd {
+			speaks += RecordEvent(agent_speaking,this_event)
+			f,_,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
+			speaks += CheckAnomalies(agent_speaking,f,n)
+			return
+		}
+	}
+
+	// Default is introspective
+
+	speaks += RecordEvent(agent_speaking,this_event)
+	speaks += AppendMessageToEvent(agent_speaking,text_body)
+	speaks += AppendImpositionRequests(agent_speaking,text_body)
+	speaks += ScanForSemanticAnomaly(text_body,n)
+
+	// If there is retrying in the timeline, repeated entries may occur
+	
+	AGENT_TIMELINE[agent_speaking] = append(AGENT_TIMELINE[agent_speaking],speaks)
+}
+
+//**************************************************************
+
+func MakeP2P(start,end string) P2Pair {
+
+	var vector P2Pair
+	vector.From = start
+	vector.To = end
+	return vector
+}
+
+//**************************************************************
+
+func ConnectP2PMessages(this_event,msg_body,mt string,p2p P2Pair) {
+
+	if mt == "+p2p" || mt == "-p2p" {
+
+		// store P2P between-interaction from independent events
+		// for later, as we can't connect them yet...
+		
+		msg := P2P_MESSAGE[msg_body]
+		
+		switch mt {
+			
+		case "-p2p":
+			msg.To = p2p.From
+			msg.AcceptEvent = this_event
+			// Now we are receiving, so need to invert the promise arrow
+			var invp2p P2Pair
+			invp2p.To = p2p.From
+			invp2p.From = p2p.To
+			LAST_ACCEPT[invp2p] = this_event
+
+		case "+p2p":
+			msg.From = p2p.From
+			msg.OfferEvent = this_event
+			msg.ToolStart = LAST_TOOL_CALL[p2p]
+		}
+		
+		P2P_MESSAGE[msg_body] = msg
+	}
+}
+
+//**************************************************************
+
+func JunkMessage(thistype,s string) bool {
+
+	if thistype == "tool_result" {
+		return false
+	}
+	
+	const exposition_threshold = 50
+
+	if len(s) < exposition_threshold {
+		return  true
+	}
+
+	// Not words
+	
+	if !strings.Contains(s," ") {
+		return true
+	}
+
+	return false
+}
+
+//**************************************************************
+
+func ThisEvent(seq,n int,event,agent_speaking,tool_name string) string {
+
+	if tool_name != "" {
+		event += fmt.Sprintf(" from %s ",tool_name)
+	}
+	
+	return fmt.Sprintf("event at %d: %s [%s], ref x%x",seq,event,agent_speaking,n)
+}
+
+//**************************************************************
+
+func RecordEvent(agent,event string) string {
+
+	return fmt.Sprintf("\n%s\n",event)
+}
+
+//**************************************************************
+
+func RecordToolCall(this_event string,seq,n int,event_type string,p2p P2Pair,tool,body string,fault bool) string {
+
+	agent_speaking := p2p.From
+	speaks := ""
+
+	// A tool event is an access of a centrally shared tool API
+	speaks += fmt.Sprintf("\n%s\n",this_event)
+
+	// The tool acts as a hub for such interactions
+	speaks += fmt.Sprintf("    \"   (tool) %s\n",tool)
+	// The agent calling also acts as a hub for such interactions
+	speaks += fmt.Sprintf("    \"   (%s) %s\n",SST.CONT_REF_S,agent_speaking)
+
+	// cache the sender of the P2P message for future linkage / a reasonable gamble
+	LAST_TOOL_CALL[p2p] = this_event
+
+	// Now formulate the graph annotations
+	if fault {
+		speaks += fmt.Sprintf("  \"  (warn) execution fault\n")
+	}
+
+	if body != "{}" && len(body) > 0 {
+		speaks += AppendMessageToEvent(agent_speaking,body)
+		speaks += AppendImpositionRequests(agent_speaking,body)
+		speaks += ScanForSemanticAnomaly(body,seq)
+		
+	}
+
+	AGENT_TIMELINE[agent_speaking] = append(AGENT_TIMELINE[agent_speaking],speaks)
+
+	return speaks
+}
+
+//**************************************************************
+
+func AppendMessageToEvent(agent,node string) string {
+
+	return fmt.Sprintf("    \"  (message body) '%s' \n",node)
+}
+
+//**************************************************************
+
+func RecordToolResult(this_event,body_text string,p2p P2Pair,fault bool) string {
+
+	other_agent := LookForAgentInString(body_text)
+	p2p.To = other_agent
+
+	// Connect current event to past p2p recv, if it exists
+	previous := LAST_ACCEPT[p2p]
+
+	if len(previous) > 0 {
+		result := fmt.Sprintf("\n '%s' \n",this_event)
+		result += fmt.Sprintf("    \"   (result-of) '%s'\n",previous)
+
+		if fault {
+			result += fmt.Sprintf("    \" (warn) Tool call failed!\n\n")
+		}
+
+		// Append for later sundry
+		AGENT_REPLY = append(AGENT_REPLY,result)
+	}
+
+	return this_event
+}
+
+//**************************************************************
+
+func LookForAgentInString(s string) string {
+
+	for a := range AGENTS {
+		if strings.Contains(s,a) {
+			return a
+		}
+	}
+
+	return ""
+}
+
+//**************************************************************
+
+func AppendImpositionRequests(agent_speaking,message string) string {
+	
+	if strings.Contains(strings.ToLower(message),"request") {
+		speak := fmt.Sprintf("\n  \"  (imposes) action requested\n")
+		return speak
+	}
+
+	return ""
+}
+
+//**************************************************************
+
+func CheckAnomalies(agent string, mdfractions [][]string,seq int) string {
+
+	const small_text = 50
+	annotation := ""
+	
+	for _,sel := range mdfractions {
+		for _,s := range sel {
+			if len(s) > small_text {
+				annotation += fmt.Sprintf("\n  \" (action) %s\n",s)
+				annotation += ScanForSemanticAnomaly(s,seq)
+			}
+		}
+	}
+
+	return annotation
+}
+
 //*******************************************************************
 
 func ListSundries(fp *os.File) {
@@ -822,15 +832,6 @@ func ListSundries(fp *os.File) {
 	}
 
 
-	fmt.Fprintf(fp,"\n :: objectives, promises :: \n\n")
-
-	for a := range AGENT_OBJECTIVE {
-		ob := strings.TrimSpace(AGENT_OBJECTIVE[a])
-		if ob != "" {
-			fmt.Fprintf(fp,"\n %s (role) agent [%s]'s promised objective \n",ob,a)
-		}
-	}
-
 	fmt.Fprintf(fp,"\n :: escalation, human intervention :: \n\n")
 	
 	for a := range AGENT_ESCALATE {
@@ -847,6 +848,49 @@ func ListSundries(fp *os.File) {
 		if princ != "" {
 			fmt.Fprintf(fp,"\n %s (role) agent [%s]'s principal client / promisee \n",princ,a)
 		}
+	}
+}
+
+//*******************************************************************
+
+func TimeLines(fp *os.File) {
+
+	fmt.Fprintf(fp,"\n :: ######################################## \n")
+	fmt.Fprintf(fp,"\n :: ## Timelines \n")
+	fmt.Fprintf(fp,"\n :: ######################################## \n\n")
+
+	start := fmt.Sprintf("\n START! Agent execution launch ....\n\n")
+
+	for agent := range AGENTS {
+
+		fmt.Fprintf(fp,"\n :: agent transcript, agent trace, agent %s :: \n\n",agent)
+		
+		var opening string
+		fmt.Fprintf(fp,"%s\n",start)
+		fmt.Fprintf(fp,"\n \" (incl) %s\n",agent)
+
+		if AGENT_OPENING[agent] != "" {
+			opening = fmt.Sprintf("Agent [%s] begins with opening statement",agent)
+			fmt.Fprintf(fp,"\n \" (then) %s\n",opening)
+			fmt.Fprintf(fp,"\n %s (message body) '%s'\n",opening,AGENT_OPENING[agent])
+		}
+
+		fmt.Fprintf(fp,"\n\n +:: _sequence_ :: \n")
+
+		// Now we have accumulated a sequential line of events, with
+		// annotations elsewhere that will be added later
+
+		for n,event := range AGENT_TIMELINE[agent] {
+
+			fmt.Fprintln(fp,event)
+			
+			if n == 0 && opening != "" {
+				// link back to openings
+				fmt.Fprintf(fp," \" (from) '%s'\n",opening)
+			}
+		}
+
+		fmt.Fprintf(fp,"\n -:: _sequence_ :: \n")
 	}
 }
 
@@ -960,15 +1004,11 @@ func HandleInferences(agent,action,path,value string) {
 		if !ok {
 			AGENT_PRINCIPAL[agent] = value
 		}
+
 	case "escalat":
 		_,ok := AGENT_ESCALATE[agent]
 		if !ok {
 			AGENT_ESCALATE[agent] = value
-		}
-	case "objective":
-		_,ok := AGENT_OBJECTIVE[agent]
-		if !ok {
-			AGENT_OBJECTIVE[agent] = value
 		}
 	}
 
@@ -1047,7 +1087,7 @@ func CheckForAPICall(str string) (bool,string,[]byte) {
 // Scanning for danger
 //**************************************************************
 
-func ScanForSemanticAnomaly(str string,n int) (string,bool) {
+func ScanForSemanticAnomaly(str string,n int) string {
 
 	var scored bool
 	var warning string
@@ -1067,22 +1107,19 @@ func ScanForSemanticAnomaly(str string,n int) (string,bool) {
 			if score > 0 {
 				scored = true
 				SST_SCORES[category] += score
-				
-				switch category {
-				case "risk","anomaly","other/anomaly":
-					remember := fmt.Sprintf("event %d, %s(%s)-->(%s)",n,category,check,note)
-					SST_EVENTS = append(SST_EVENTS,remember)
-				}
+				remember := fmt.Sprintf("event %d, %s(%s)-->(%s)",n,category,check,note)
+				SST_ANOMALIES = append(SST_ANOMALIES,remember)
 			}
 		}
 		
 	}
 
 	if scored && len(warning) > 0 {
-		return CleanString(warning), true
+		speaks := fmt.Sprintf("\n  \"  (warn) 'possible warning signal containing: %s' \n",warning)
+		return speaks
 	}
 	
-	return "",false
+	return ""
 }
 
 //**************************************************************

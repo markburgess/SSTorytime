@@ -1008,7 +1008,7 @@ func HandleInferences(agent,action,path,value string) {
 	}
 
 	// the cases should be taken from var RECOGNIZE
-	
+
 	switch action {
 
 	case "opening":

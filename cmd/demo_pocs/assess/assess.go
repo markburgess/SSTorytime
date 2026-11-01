@@ -219,9 +219,9 @@ func ShowScores() {
 
 	fmt.Println("\n")
 
-	//for i := range SST_ANOMALIES {
-		//fmt.Println("\n Highlighted event .. ",i+1,SST_ANOMALIES[i])
-	//}
+	for i := range SST_ANOMALIES {
+		fmt.Println(" Highlighted event .. ",i+1,SST_ANOMALIES[i])
+	}
 
 	fmt.Println("\n")
 	

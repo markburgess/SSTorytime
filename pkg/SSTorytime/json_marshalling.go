@@ -34,14 +34,14 @@ func JSONNodeEvent(sst PoSST, nptr NodePtr,xyz Coords,orbits [ST_TOP][]Orbit) No
 
 // **************************************************************************
 
-func LinkWebPaths(sst *PoSST,cone [][]Link,nth int,chapter string,context []string,swimlanes,limit int) [][]WebPath {
+func LinkWebPaths(sst *PoSST,cone [][]Link,nth int,chapter string,context []string,swimlanes int,already map[NodePtr]bool,limit int) [][]WebPath {
 
 	// This is dealing in good faith with one of swimlanes cones, assigning equal width to all
 	// The cone is a flattened array, we can assign spatial coordinates for visualization
 
 	var conepaths [][]WebPath
 
-	directory := AssignConeCoordinates(cone,nth,swimlanes)
+	directory := AssignConeCoordinates(cone,nth,swimlanes,already)
 
 	// JSONify the cone structure, converting []Link into []WebPath
 

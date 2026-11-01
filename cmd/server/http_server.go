@@ -752,13 +752,14 @@ func PackageConeFromOrigin(sst SST.PoSST, nptr SST.NodePtr, nth int, sttype int,
 	// Package a JSON object for the nth/dimnptr causal cone , assigning each nth the same width
 
 	var wpaths [][]SST.WebPath
+	var already = make(map[SST.NodePtr]bool)
 
 	fcone, count := SST.GetFwdPathsAsLinks(&sst, nptr, sttype, limit, limit)
-	wpaths = append(wpaths, SST.LinkWebPaths(&sst, fcone, nth, chap, context, dimnptr, limit)...)
+	wpaths = append(wpaths, SST.LinkWebPaths(&sst, fcone, nth, chap, context, dimnptr, already, limit)...)
 
 	if sttype != 0 {
 		bcone, countb := SST.GetFwdPathsAsLinks(&sst, nptr, -sttype, limit, limit)
-		wpaths = append(wpaths, SST.LinkWebPaths(&sst, bcone, nth, chap, context, dimnptr, limit)...)
+		wpaths = append(wpaths, SST.LinkWebPaths(&sst, bcone, nth, chap, context, dimnptr, already, limit)...)
 		count += countb
 	}
 
@@ -776,7 +777,8 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request, sst SST.PoSST, left
 
 	chapter := search.Chapter
 	context := search.Context
-
+	var already = make(map[SST.NodePtr]bool)
+	
 	fmt.Println("HandlePathSolve(", leftptrs, ",", rightptrs, ")")
 
 	solutions := SST.GetPathsAndSymmetries(&sst,leftptrs,rightptrs,chapter,context,arrowptrs,sttype,mindepth,maxdepth)
@@ -796,7 +798,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request, sst SST.PoSST, left
 		nth := 0
 		swimlanes := 1
 
-		wpaths = append(wpaths, SST.LinkWebPaths(&sst, solutions, nth, chapter, context, swimlanes, maxdepth)...)
+		wpaths = append(wpaths, SST.LinkWebPaths(&sst, solutions, nth, chapter, context, swimlanes, already, maxdepth)...)
 
 		soln.Paths = wpaths
 		pack = append(pack, soln)

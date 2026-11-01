@@ -87,10 +87,9 @@ func SetOrbitCoords(xyz Coords,orb [ST_TOP][]Orbit) [ST_TOP][]Orbit {
 
 // **************************************************************************
 
-func AssignConeCoordinates(cone [][]Link,nth,swimlanes int) map[NodePtr]Coords {
+func AssignConeCoordinates(cone [][]Link,nth,swimlanes int,already map[NodePtr]bool) map[NodePtr]Coords {
 
 	var unique = make([][]NodePtr,0)
-	var already = make(map[NodePtr]bool)
 	var maxlen_tz int
 
 	// If we have multiple cones, each needs a separate name/graph space in X

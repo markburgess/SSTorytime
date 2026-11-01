@@ -44,6 +44,7 @@ var AGENT_PRINCIPAL = make(map[string]string)
 var AGENT_OPENING = make(map[string]string)
 var AGENT_ESCALATE = make(map[string]string)
 var AGENT_REPLY []string
+var PREVIOUS_EVENT string
 
 var AGENT_TOOL_CALLS = make(map[string][]string)
 var LAST_TOOL_CALL = make(map[P2Pair]string)
@@ -158,7 +159,7 @@ func AssessAgentRun(dir string) {
 		} 
 
 	}
-
+	
 	// Specific run files, run last so we can pick up intel first
 	
 	namedfiles := []string{"manifest.json","run.json","transcript.jsonl"}
@@ -218,9 +219,9 @@ func ShowScores() {
 
 	fmt.Println("\n")
 
-	for i := range SST_ANOMALIES {
-		fmt.Println("\n Highlighted event .. ",i+1,SST_ANOMALIES[i])
-	}
+	//for i := range SST_ANOMALIES {
+		//fmt.Println("\n Highlighted event .. ",i+1,SST_ANOMALIES[i])
+	//}
 
 	fmt.Println("\n")
 	
@@ -329,8 +330,8 @@ func AssessJsonType(fp *os.File,filename string) {
 		var previous_line []byte
 		
 		for n,this_line := range lines {
+
 			AssessSingleJsonEvent(n,alias,this_line,previous_line)
-			previous_line = this_line
 		}
 
 	// Junk?
@@ -517,32 +518,32 @@ func AssessSingleJsonEvent(n int,alias string,log_event,previous_event []byte) {
 				case "say":
 					event_type = "agent speaks to the principal in rich markdown format"
 				case "principal":
+					message_type = "principal"
 					event_type = "the user / principal / boss instructs"
 				case "world":
-					event_type = "report world state / observation"
+					message_type = "world"
+					event_type = "report world state announcement / observation"
 					// actor =?
 				}
 			}
 		}
 	}
-
-	this_event := ThisEvent(seqnr,n,event_type,agent_speaking,tool_name)
-
-	if string(log_event) == string(previous_event) {
-		fmt.Println("\n!! Retry of agent operation:",this_event)
-		SST_DUPLICATES = append(SST_DUPLICATES,this_event)
-	}
+	
+	// Skip meaningless parts
 	
 	if JunkMessage(message_type,text_body) {
 		return
 	}
 
-	// Start with tool calls
+	// Extract invariant meaning
+
+	this_event := ThisEvent(seqnr,n,event_type,agent_speaking,tool_name)
 
 	speaks += RecordEvent(agent_speaking,this_event)
 	
 	promise_direction := MakeP2P(agent_speaking,other_agent)
 
+	// Start with tool calls
 	if message_type == "tool_call" {
 		speaks := RecordToolCall(this_event,seqnr,n,event_type,promise_direction,tool_name,msg_body,is_fault)
 		AGENT_TOOL_CALLS[tool_name] = append(AGENT_TOOL_CALLS[tool_name],this_event)
@@ -557,7 +558,7 @@ func AssessSingleJsonEvent(n int,alias string,log_event,previous_event []byte) {
 	// Collect tool result
 
 	if message_type == "tool_result" {
-		speaks += RecordToolResult(this_event,text_body,promise_direction,is_fault)
+		speaks += RecordToolResult(this_event,tool_name,text_body,promise_direction,is_fault)
 		AGENT_TIMELINE[agent_speaking] = append(AGENT_TIMELINE[agent_speaking],speaks)
 		return
 	}
@@ -661,8 +662,19 @@ func ThisEvent(seq,n int,event,agent_speaking,tool_name string) string {
 	if tool_name != "" {
 		event += fmt.Sprintf(" from %s ",tool_name)
 	}
-	
-	return fmt.Sprintf("event at %d: %s [%s], ref x%x",seq,event,agent_speaking,n)
+
+	raw := fmt.Sprintf("event at %d: %s [%s]",seq,event,agent_speaking)
+	distinct := fmt.Sprintf("%s, ref x%x",raw,n)
+
+	// Check for duplicate events in case of error
+
+	if raw == PREVIOUS_EVENT {
+		fmt.Println("\n !! NB - Failure or retry of agent operation:",raw)
+		SST_DUPLICATES = append(SST_DUPLICATES,raw)
+	}
+	PREVIOUS_EVENT = raw
+
+	return distinct
 }
 
 //**************************************************************
@@ -716,26 +728,25 @@ func AppendMessageToEvent(agent,node string) string {
 
 //**************************************************************
 
-func RecordToolResult(this_event,body_text string,p2p P2Pair,fault bool) string {
+func RecordToolResult(this_event,tool,body_text string,p2p P2Pair,fault bool) string {
 
 	other_agent := LookForAgentInString(body_text)
 	p2p.To = other_agent
 
 	// Connect current event to past p2p recv, if it exists
 	previous := LAST_ACCEPT[p2p]
+	result := fmt.Sprintf("\n '%s' \n",this_event)
 
 	if len(previous) > 0 {
-		result := fmt.Sprintf("\n '%s' \n",this_event)
 		result += fmt.Sprintf("    \"   (result-of) '%s'\n",previous)
 
 		if fault {
-			result += fmt.Sprintf("    \" (warn) Tool call failed!\n\n")
+			result += fmt.Sprintf("    \" (warn) Tool call to %s failed!\n\n",tool)
 		}
-
-		// Append for later sundry
-		AGENT_REPLY = append(AGENT_REPLY,result)
 	}
 
+	// Append for later sundry
+	AGENT_REPLY = append(AGENT_REPLY,result)
 	return this_event
 }
 
@@ -814,18 +825,25 @@ func ListSundries(fp *os.File) {
 			// Message, contents, and start event
 			fmt.Fprintf(fp,"\n '%s' (p2p-init) '%s' \n",msg.ToolStart,msg.OfferEvent)
 			fmt.Fprintf(fp,"\n  \"  (message body) '%s' \n",a)
-			fmt.Fprintf(fp,"\n '%s' (sender) '%s'\n",a,msg.From)
-			fmt.Fprintf(fp,"\n   \" (receiver) '%s'\n",msg.To)
+			//fmt.Fprintf(fp,"\n '%s' (sender) '%s'\n",a,msg.From)
+			//fmt.Fprintf(fp,"\n   \" (receiver) '%s'\n",msg.To)
 
 			// p2p channel forward direction
 			fmt.Fprintf(fp,"\n '%s' (p2p-plus) '%s' \n",msg.OfferEvent,msg.AcceptEvent)
 			//fmt.Fprintf(fp,"\n  \" (message body) '%s' \n",a)
 			fmt.Fprintf(fp,"\n '%s' (p2p-minus) '%s' \n",msg.OfferEvent,msg.AcceptEvent)
-			//fmt.Fprintf(fp,"\n  \" (message body) '%s' \n",a)
+			fmt.Fprintf(fp,"\n  \" (message body) '%s' \n",a)
 		}
 	}
 
-	fmt.Fprintf(fp,"\n :: agent replies :: \n\n")
+
+	fmt.Fprintf(fp,"\n :: duplicate events, retries, retry :: \n\n")
+
+	for _,dup := range SST_DUPLICATES {
+		fmt.Fprintf(fp,"\n %s \n",dup)
+	}
+	
+	fmt.Fprintf(fp,"\n :: agent replies, tool_results :: \n\n")
 
 	for _,reply := range AGENT_REPLY {
 		fmt.Fprintf(fp,"\n %s \n",reply)
@@ -863,7 +881,7 @@ func TimeLines(fp *os.File) {
 
 	for agent := range AGENTS {
 
-		fmt.Fprintf(fp,"\n :: agent transcript, agent trace, agent %s :: \n\n",agent)
+		fmt.Fprintf(fp,"\n :: agent log transcript, agent trace, agent %s :: \n\n",agent)
 		
 		var opening string
 		fmt.Fprintf(fp,"%s\n",start)

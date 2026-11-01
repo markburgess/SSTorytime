@@ -12,4 +12,6 @@ Agent, Requested actions (imposition): action requested
 Agent, General requests: request
 Agent, Authorization: authorization authorize
 Agent, Waiting: waiting
-Agent, Cost and payment: 
+Agent, Cost and payment: cost
+Agent, Violations: violation
+Agent, Consequence, result, outcome: consequence result outcome

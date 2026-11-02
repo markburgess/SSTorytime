@@ -151,6 +151,10 @@ func AssessAgentRun(dir string) {
 	for _, entry := range entries {
 
 		_, name, isft := IsFileType(entry.Name())
+
+		if name == "transcript.md" {
+			continue
+		}
 		
 		if isft == ".md" {
 			HandleAgentMarkDown(fp,dir,name)
@@ -164,7 +168,7 @@ func AssessAgentRun(dir string) {
 
 	// Specific run files, run last so we can pick up intel first
 	
-	namedfiles := []string{"manifest.json","run.json","transcript.jsonl"}
+	namedfiles := []string{"run.json","transcript.jsonl"}
 			
 	for _,file := range namedfiles {
 		cmpt := dir+file

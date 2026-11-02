@@ -147,7 +147,7 @@ func AssessAgentRun(dir string) {
 	defer fp.Close()
 
 	// Start with defs
-	/*
+
 	for _, entry := range entries {
 
 		_, name, isft := IsFileType(entry.Name())
@@ -161,7 +161,7 @@ func AssessAgentRun(dir string) {
 		} 
 
 	}
-*/ fmt.Sprint(entries)	
+
 	// Specific run files, run last so we can pick up intel first
 	
 	namedfiles := []string{"manifest.json","run.json","transcript.jsonl"}
@@ -307,6 +307,8 @@ func HandleAgentText(fp *os.File,dir,name string) {
 }
 
 //**************************************************************
+// Assess declarative json
+//**************************************************************
 
 func AssessJsonType(fp *os.File,filename string) {
 
@@ -380,10 +382,6 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 			lhs := fmt.Sprintf("event where [%s] declares %s",agent,action)
 			rhs := item.Value.(string)
 			rhsbyte := []byte(rhs)
-
-			if JunkMessage("",rhs) {
-				return
-			}
 
 			HandleInferences(agent,action,item.Path,rhs)
 			
@@ -1008,12 +1006,6 @@ func InferPathMeaning(path string) (string,string) {
 //*******************************************************************
 
 func HandleInferences(agent,action,path,value string) {
-	
-	if action == "" || agent == "" {
-		return
-	}
-
-	// the cases should be taken from var RECOGNIZE
 
 	switch action {
 
@@ -1028,14 +1020,7 @@ func HandleInferences(agent,action,path,value string) {
 		if !ok {
 			AGENT_PRINCIPAL[agent] = CleanString(value)
 		}
-
-	case "escalat":
-		_,ok := AGENT_ESCALATE[agent]
-		if !ok {
-			AGENT_ESCALATE[agent] = CleanString(value)
-		}
 	}
-
 }
 
 //*******************************************************************

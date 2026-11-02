@@ -52,7 +52,8 @@ var LAST_ACCEPT  = make(map[P2Pair]string)
 var P2P_MESSAGE = make(map[string]P2Pair)
 
 var SST_COORDS = make(map[string][]string)
-var SST_SCORES = make(map[string]int)
+var SST_SCORES = make(map[string]float64)
+var TOTAL_SCORE float64
 var SST_ANOMALIES []string
 var SST_DUPLICATES []string
 
@@ -66,7 +67,7 @@ func main() {
 	
 	SST.InitSSTorytime()
 
-	InitDetection()
+	InitializeContextPatterns()
 	
 	// read and assess json files
 
@@ -97,26 +98,27 @@ func GetArgs() string {
 
 //**************************************************************
 
-func InitDetection() {
+func InitializeContextPatterns() {
 
 	// In the operational response to an LLM, the tooling vocabulary will be more constrained
 	// so we can try to look for "DNA" spectral coordinate basis directions
 
 	// we are looking for a subset of language characterizing important context states
+	// as a basis set for semantic coordinates
 	
-	SST_COORDS["risk"] = []string{"marginal","failed","exposure","weak-buffer-thin","not required here","no need-involve","empty","finance/financial-difficult","should-be-honest","beyond/passed/exceeded-threshold"}
+	SST_COORDS["risk"] = []string{"weak-buffer-thin","not required here","no need-involve","empty","finance/financial-difficult","should-be-honest","beyond/passed/exceeded-threshold"}
 
-	SST_COORDS["promise-failed"] = []string{"missed-deadline","removed","unable-pay","short on-cash","unable-settle","payment-not-possible","unable-cover-expense","unable-meet-obligation","insufficient-credit"}
+	SST_COORDS["promise-failed"] = []string{"marginal","failed","exposure","missed-deadline","removed","unable-pay","short on-cash","unable-settle","payment-not-possible","unable-cover-expense","unable-meet-obligation","insufficient-credit"}
 
-	SST_COORDS["future"] = []string{"expect,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value","resolve","still--before/until-deadline","still-time"}
-	
-	SST_COORDS["unexpected"] = []string{"removed","broken","unable-meet-obligation","split-multiple","tampering","miscount","misconduct"}
+	SST_COORDS["future uncertainty"] = []string{"expect,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value","resolve","still--before/until-deadline","still-time"}
 
-	SST_COORDS["other/anomaly"] = []string{"violate","competing","no need to","unable-meet-obligation","is-report-event","nonconform","asking-but"}
+	SST_COORDS["unexpected/anomaly"] = []string{"violate","competing","no need to","unable-meet-obligation","is-report-event","nonconform","asking-but","removed","broken","unable-meet-obligation","split-multiple","tampering","miscount","misconduct","altered","time/timestamp-conflict"}
 
 	SST_COORDS["conditional"] = []string{"if-missing/damaged"}
 
 	SST_COORDS["imposition_request"] = []string{"approve-authoriz"}
+
+	SST_COORDS["sensory/tool/action"] = []string{"tool","API","observe","scan","count"}
 	
 }
 
@@ -145,7 +147,7 @@ func AssessAgentRun(dir string) {
 	defer fp.Close()
 
 	// Start with defs
-
+	/*
 	for _, entry := range entries {
 
 		_, name, isft := IsFileType(entry.Name())
@@ -159,7 +161,7 @@ func AssessAgentRun(dir string) {
 		} 
 
 	}
-	
+*/ fmt.Sprint(entries)	
 	// Specific run files, run last so we can pick up intel first
 	
 	namedfiles := []string{"manifest.json","run.json","transcript.jsonl"}
@@ -219,16 +221,20 @@ func ShowScores() {
 
 	fmt.Println("\n")
 
+	const stabilization_training = 30
+
 	for i := range SST_ANOMALIES {
-		fmt.Println(" Highlighted event .. ",i+1,SST_ANOMALIES[i])
+
+		fmt.Println(" Ctx:",i+1,SST_ANOMALIES[i])
+
 	}
 
-	fmt.Println("\n")
+	fmt.Println("\n Running Averages:\n")
 	
 	for category := range SST_SCORES {
 
 		if SST_SCORES[category] > 0 {
-			fmt.Printf(" - %s score = %d\n",category,SST_SCORES[category])
+			fmt.Printf(" - %s score = %f\n",category,SST_SCORES[category]/TOTAL_SCORE)
 		}
 	}
 }
@@ -388,14 +394,14 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 					fmt.Fprintf(fp,"%s (message body) 'json:\n%s' \n\n",lhs,CleanString(rhs))
 				}
 			} else {
-				ismd,selections,notes,_ := IsMarkdownFragment(rhs,"run declaration")
+				ismd,selections,notes,L := IsMarkdownFragment(rhs,"run declaration")
 				summary = notes
 				
 				if ismd {
 					//markdown already scanned
 					fmt.Println(" - writing embedded markdown fragment")
-					//f,s,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
-					fmt.Fprintf(fp,"\n%s (message body) %s \n",agent,selections)
+					f,_,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
+					fmt.Fprintf(fp,"\n%s (message body) %s \n",agent,CheckAnomalies(agent,f,0))
 				} else {
 					// plain text
 					fmt.Fprintf(fp,"\n%s (message body) %s \n",agent,CleanString(rhs))
@@ -723,7 +729,7 @@ func RecordToolCall(this_event string,seq,n int,event_type string,p2p P2Pair,too
 
 func AppendMessageToEvent(agent,node string) string {
 
-	return fmt.Sprintf("    \"  (message body) '%s' \n",node)
+	return fmt.Sprintf("    \"  (message body) '%s' \n",CleanString(node))
 }
 
 //**************************************************************
@@ -1014,19 +1020,19 @@ func HandleInferences(agent,action,path,value string) {
 	case "opening":
 		_, ok := AGENT_OPENING[agent]
 		if !ok {
-			AGENT_OPENING[agent] = value
+			AGENT_OPENING[agent] = CleanString(value)
 		}
 
 	case "principal":
 		_,ok := AGENT_PRINCIPAL[agent]
 		if !ok {
-			AGENT_PRINCIPAL[agent] = value
+			AGENT_PRINCIPAL[agent] = CleanString(value)
 		}
 
 	case "escalat":
 		_,ok := AGENT_ESCALATE[agent]
 		if !ok {
-			AGENT_ESCALATE[agent] = value
+			AGENT_ESCALATE[agent] = CleanString(value)
 		}
 	}
 
@@ -1116,15 +1122,21 @@ func ScanForSemanticAnomaly(str string,n int) string {
 
 			score,note := ScanFractionPatterns(category,str,check)
 
+			// should we look up / xref with db here?
+
 			warning += note
 			
 			if !strings.HasSuffix(warning,"..") {
 				warning += ".."
 			}
-
+			
 			if score > 0 {
 				scored = true
-				SST_SCORES[category] += score
+			}
+
+			SST_SCORES[category] += score // RunningUpdate(category,score,SST_SCORES[category])
+
+			if PolicyAnomaly(score,SST_SCORES[category]) {
 				remember := fmt.Sprintf("event %d, %s(%s)-->(%s)",n,category,check,note)
 				SST_ANOMALIES = append(SST_ANOMALIES,remember)
 			}
@@ -1142,7 +1154,7 @@ func ScanForSemanticAnomaly(str string,n int) string {
 
 //**************************************************************
 
-func ScanFractionPatterns(category, text, check string) (int,string) {
+func ScanFractionPatterns(category, text, check string) (float64,string) {
 
 	var paths [][]string
 	var matches int
@@ -1162,6 +1174,8 @@ func ScanFractionPatterns(category, text, check string) (int,string) {
 		paths = append(paths,seq)
 		all_paths *= len(seq)
 	}
+
+	// each path through the encoding could be seen
 
 	var clock = make([]int,len(paths))
 	
@@ -1207,7 +1221,7 @@ func ScanFractionPatterns(category, text, check string) (int,string) {
 	}
 
 	
-	return matches,note
+	return float64(matches),note
 }
 
 //**************************************************************
@@ -1255,16 +1269,16 @@ func Excerpt(whole,part string) string {
 	before,after,found := strings.Cut(whole,part)
 
 	if found {
-		const bracket = 50
+		const sample_bracket = 60
 		var retval string
 
-		start := max(0, len(before)-bracket)
+		start := max(0, len(before)-sample_bracket)
 		lastbracket := before[start:]
 		retval += lastbracket
 
 		retval += "[[" + strings.ToUpper(part) + "]]"
 
-		limit := min(bracket, len(after))
+		limit := min(sample_bracket, len(after))
 		firstbracket := after[:limit]
 		retval += firstbracket
 
@@ -1330,5 +1344,31 @@ func FindJsonStructureAsPaths(prefix string, value interface{}, list *[]PathValu
 	}
 
 	return result
+}
+
+//**************************************************************
+// Cognitive updating
+//**************************************************************
+
+func RunningUpdate(category string,new,running float64) float64 {
+
+	const alpha = 0.7
+	
+	return (alpha * new + (1-alpha) * running)
+}
+
+//**************************************************************
+
+func PolicyAnomaly(new,running float64) bool {
+
+	// Policy for anomaly threshold. The new value is unlikely to be more than 1
+	// so the threshold only gets smaller for rarity
+	TOTAL_SCORE++
+
+	if new > 0 && running * 1000 < TOTAL_SCORE {
+		return true
+	}
+
+	return false
 }
 

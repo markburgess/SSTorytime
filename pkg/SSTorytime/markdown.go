@@ -257,7 +257,11 @@ func ExtractValuesFromContainer(container ast.Node, source []byte) []string {
 	for child := container.FirstChild(); child != nil; child = child.NextSibling() {
 		switch node := child.(type) {
 		case *extast.TableCell:
-			values = append(values, GetCellText(node, source))
+			str := GetCellText(node, source)
+			values = append(values, str)
+			if strings.Count(str," ") < 2 {
+				KeepProperName(str,"")
+			}
 		case *extast.TableRow:
 			return ExtractValuesFromContainer(node, source)
 		}

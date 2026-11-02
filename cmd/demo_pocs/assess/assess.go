@@ -401,7 +401,6 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 				
 				if ismd {
 					//markdown already scanned
-					fmt.Println(" - writing embedded markdown fragment")
 					f,_,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
 					fmt.Fprintf(fp,"\n%s (message body) %s \n",agent,CheckAnomalies(agent,f,0))
 				} else {
@@ -947,7 +946,7 @@ func IsMarkdownFragment(thinking string,name string) (bool,[]SST.TextRank,[]stri
 		const percentage = 100
 		rhsbyte := []byte(thinking)
 		psf,L,notes := SST.FractionateSmallMarkdown(rhsbyte,name)
-		SST.AnalyzeFractionIntent(psf)
+		//		SST.AnalyzeFractionIntent(psf)
 		ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
 		ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
 		selection := SST.MergeSelections(ranking1,ranking2)

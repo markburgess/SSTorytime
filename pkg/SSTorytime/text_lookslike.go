@@ -279,6 +279,10 @@ func KeepProperName(name,explain string) {
 		return
 	}
 
+	if LooksLikeNumber(name) {
+		return
+	}
+
 	_,ok := PROPER_NAME[name]
 
 	if IsEmptyExplainer(explain) && !ok {

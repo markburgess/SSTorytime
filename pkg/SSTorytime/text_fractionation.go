@@ -1115,8 +1115,13 @@ func GenerateOutput(fp *os.File,filealias string,selection []TextRank,L int, per
 func OutputDocumentEvent(fp *os.File, selection TextRank,alias string,part_title string) {
 
 	event := fmt.Sprintf("\n %s [%s]",SanitizeParen(selection.Fragment),alias)
-	
 	fmt.Fprintf(fp,"%s \n  \" (%s) %s \n",event,INV_CONT_NAME_S,part_title)
+	WriteEventAnnotations(fp,event)	
+}
+
+//*******************************************************************
+
+func WriteEventAnnotations(fp *os.File,event string) {
 
 	// Now add cross referencing anchors to proper names
 	

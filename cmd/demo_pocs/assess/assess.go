@@ -891,6 +891,9 @@ func TimeLines(fp *os.File) {
 				// link back to openings
 				fmt.Fprintf(fp," \" (from) '%s'\n",opening)
 			}
+
+			SST.WriteEventAnnotations(fp,event)	
+
 		}
 
 		fmt.Fprintf(fp,"\n -:: _sequence_ :: \n")

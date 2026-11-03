@@ -150,20 +150,13 @@ func AssessAgentRun(dir string) {
 
 	for _, entry := range entries {
 
-		_, name, isft := IsFileType(entry.Name())
+		_, name, ext := IsFileType(entry.Name())
 
 		if name == "transcript.md" {
 			continue
 		}
-		
-		if isft == ".md" {
-			HandleAgentMarkDown(fp,dir,name)
-		} 
 
-		if isft == ".txt" {
-			HandleAgentText(fp,dir,name)
-		} 
-
+		HandleFile(fp,dir,name,ext)
 	}
 
 	// Specific run files, run last so we can pick up intel first
@@ -245,16 +238,22 @@ func ShowScores() {
 
 //**************************************************************
 		
-func HandleAgentMarkDown(fp *os.File,dir,name string) {
+func HandleFile(fp *os.File,dir,name,ext string) {
 
 	const percentage = 100
-
-	// Don't reset the vocabulary reservoir after each document
-	// SST.SECTIONS = nil
-	// because we wan to find overlaps
-
+	var psf [][]SST.Sentence
+	var notes []string
+	var L int
+	
 	fmt.Println(" - fractionating",name)
-	psf,L,notes := SST.FractionateMarkdown(dir,name)
+	
+	switch ext {
+	case ".md": 
+		psf,L,notes = SST.FractionateMarkdown(dir,name)
+	case ".txt":
+		psf,L = SST.FractionateTextFile(dir,name)
+	}
+
 	fmt.Println(" - scanning")	
 	selection,f,s,ff,ss := SST.AnalyzeTextDecomposition(psf,L,percentage)
 
@@ -264,28 +263,6 @@ func HandleAgentMarkDown(fp *os.File,dir,name string) {
 	fmt.Println(" - writing results for",alias)
 	SST.GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
 	AddNotes(fp,notes)
-}
-
-//**************************************************************
-		
-func HandleAgentText(fp *os.File,dir,name string) {
-
-	const percentage = 100
-
-	// Don't reset the vocabulary reservoir after each document
-	// SST.SECTIONS = nil
-	// because we wan to find overlaps
-
-	fmt.Println(" - fractionating",name)
-	psf,L := SST.FractionateTextFile(dir,name)
-	fmt.Println(" - scanning")
-	selection,f,s,ff,ss := SST.AnalyzeTextDecomposition(psf,L,percentage)
-	
-	const with_title = true
-
-	alias,_ := SST.MakeTitleFromFileName(name)
-	fmt.Println(" - writing results for",alias)
-	SST.GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
 }
 
 //**************************************************************

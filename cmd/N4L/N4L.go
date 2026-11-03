@@ -2365,7 +2365,9 @@ func CleanAndSeparateString(fulltext string) (string,map[string][]string) {
 				lookup[note_symb] = append(lookup[note_symb],string(extract))
 			}
 		} else {
-			cleaned = append(cleaned,preserve_unicode[r])
+			if r < len(preserve_unicode) {
+				cleaned = append(cleaned,preserve_unicode[r])
+			}
 			continue
 		}
 		

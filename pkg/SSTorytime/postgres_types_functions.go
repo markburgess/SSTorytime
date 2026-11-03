@@ -1716,7 +1716,7 @@ func DefineStoredFunctions(sst PoSST) {
 		"  nowt      int;\n"+
 		"  f         int = 0;"+
 		"BEGIN\n"+
-		"  SELECT last,EXTRACT(EPOCH FROM NOW()-last),delta,freq INTO prev,deltat,prevdelta,f FROM LastSeen WHERE section=this;\n"+
+		"  SELECT last,EXTRACT(EPOCH FROM NOW()-last),delta,freq INTO prev,deltat,prevdelta,f FROM LastSeen WHERE section=this AND nptr='(-1,-1)'::NodePtr;\n"+
 		"  IF NOT FOUND THEN\n"+
 		"     INSERT INTO LastSeen (section,first,last,delta,freq,nptr) VALUES (this,NOW(),NOW(),0,1,'(-1,-1)');\n"+
 		"  ELSE\n"+
@@ -1724,7 +1724,7 @@ func DefineStoredFunctions(sst PoSST) {
 		"     f = f + 1;\n"+
 		      // 1 minute dead time
 		"     IF deltat > 60 THEN\n"+
-		"       UPDATE LastSeen SET last=NOW(),delta=avdeltat,freq=f WHERE section = this;\n"+
+		"       UPDATE LastSeen SET last=NOW(),delta=avdeltat,freq=f WHERE section = this AND nptr='(-1,-1)'::NodePtr;\n"+
 		"     ELSE\n"+
 		"        return false;\n"+
 		"     END IF;\n"+

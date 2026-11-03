@@ -105,19 +105,22 @@ func InitializeContextPatterns() {
 
 	// we are looking for a subset of language characterizing important context states
 	// as a basis set for semantic coordinates
+
+	// overlooking authority
 	
-	SST_COORDS["risk"] = []string{"weak-buffer-thin","not required here","no need-involve","empty","finance/financial-difficult","should-be-honest","beyond/passed/exceeded-threshold"}
+	SST_COORDS["authorization"] = []string{"weak-buffer-thin","not required here","no need-involve","empty","should-be-honest","beyond/passed/exceeded-threshold","approve-authoriz","can't/cannot/unable to-reach/contact/ask/escalate"}
 
-	SST_COORDS["promise-failed"] = []string{"marginal","failed","exposure","missed-deadline","removed","unable-pay","short on-cash","unable-settle","payment-not-possible","unable-cover-expense","unable-meet-obligation","insufficient-credit"}
-
-	SST_COORDS["future uncertainty"] = []string{"expect,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value","resolve","still--before/until-deadline","still-time"}
-
+	// unexpected policy anomalies with possible negative consequences
+	
 	SST_COORDS["unexpected/anomaly"] = []string{"violate","competing","no need to","unable-meet-obligation","is-report-event","nonconform","asking-but","removed","broken","unable-meet-obligation","split-multiple","tampering","miscount","misconduct","altered","time/timestamp-conflict"}
 
-	SST_COORDS["conditional"] = []string{"if-missing/damaged"}
+	SST_COORDS["promise-failed"] = []string{"marginal","failed","exposure","missed-deadline","removed","unable-pay","short on-cash","unable-settle","payment-not-possible","unable-cover-expense","unable-meet-obligation","insufficient-credit","finance/financial-difficult"}
 
-	SST_COORDS["imposition_request"] = []string{"approve-authoriz"}
+	// unexpected context anomalies with possible negative consequences
+	
+	SST_COORDS["negative-consequence"] = []string{"if-missing/damaged","expect,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value","resolve","still--before/until-deadline","still-time"}
 
+	// normal sensory context actions
 	SST_COORDS["sensory/tool/action"] = []string{"tool","API","observe","scan","count"}
 	
 }
@@ -202,6 +205,36 @@ func IsFileType(path string) (string,string,string) {
 }
 
 //**************************************************************
+		
+func HandleFile(fp *os.File,dir,name,ext string) {
+
+	const percentage = 100
+	var psf [][]SST.Sentence
+	var notes []string
+	var L int
+	
+	fmt.Println(" - fractionating",name)
+	
+	switch ext {
+	case ".md": 
+		psf,L,notes = SST.FractionateMarkdown(dir,name)
+	case ".txt":
+		psf,L = SST.FractionateTextFile(dir,name)
+	default: return
+	}
+
+	fmt.Println(" - scanning")	
+	selection,f,s,ff,ss := SST.AnalyzeTextDecomposition(psf,L,percentage)
+
+	const with_title = true
+
+	alias,_ := SST.MakeTitleFromFileName(name)
+	fmt.Println(" - writing results for",alias)
+	SST.GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
+	AddNotes(fp,notes)
+}
+
+//**************************************************************
 
 func ListAgents(fp *os.File) {
 
@@ -231,38 +264,9 @@ func ShowScores() {
 	for category := range SST_SCORES {
 
 		if SST_SCORES[category] > 0 {
-			fmt.Printf(" - %s score = %f\n",category,SST_SCORES[category]/TOTAL_SCORE)
+			fmt.Printf(" - %s score = %f \t --converge--> 0\n",category,SST_SCORES[category]/TOTAL_SCORE)
 		}
 	}
-}
-
-//**************************************************************
-		
-func HandleFile(fp *os.File,dir,name,ext string) {
-
-	const percentage = 100
-	var psf [][]SST.Sentence
-	var notes []string
-	var L int
-	
-	fmt.Println(" - fractionating",name)
-	
-	switch ext {
-	case ".md": 
-		psf,L,notes = SST.FractionateMarkdown(dir,name)
-	case ".txt":
-		psf,L = SST.FractionateTextFile(dir,name)
-	}
-
-	fmt.Println(" - scanning")	
-	selection,f,s,ff,ss := SST.AnalyzeTextDecomposition(psf,L,percentage)
-
-	const with_title = true
-
-	alias,_ := SST.MakeTitleFromFileName(name)
-	fmt.Println(" - writing results for",alias)
-	SST.GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
-	AddNotes(fp,notes)
 }
 
 //**************************************************************

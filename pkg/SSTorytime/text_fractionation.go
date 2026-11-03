@@ -1260,15 +1260,36 @@ func CompileTOC(fp *os.File, filealias string, sections []AuxTxtMDSentence) {
 
 func ListProperNames(fp *os.File) {
 
-	fmt.Println("\nCompiling proper names ....\n\n")
+	fmt.Println("\nCompiling proper names / concepts ....\n\n")
 
-	fmt.Fprintf(fp,"\n\n :: proper names :: \n\n")
+	var single_words []string
+	
+	for name := range PROPER_NAME {
+		if strings.Contains(name," ") {
+			single_words = append(single_words,name)
+		}
+	}
+		
+	fmt.Fprintf(fp,"\n\n :: proper names , key concepts :: \n\n")
 	
 	for name := range PROPER_NAME {
 
+		derivative := false
+
+		// Eliminate some false positives
+		
+		for _,sword := range single_words {
+			if strings.Contains(name,sword) {
+				derivative = true
+				break
+			}
+		}
+
+		// List what's left
+
 		if PROPER_NAME[name] != "" {
 			fmt.Fprintf(fp,"\n %s (is explained by) %s \n",name,PROPER_NAME[name])
-		} else {
+		} else if !derivative {
 			fmt.Fprintf(fp,"\n %s\n",name)
 		}
 		

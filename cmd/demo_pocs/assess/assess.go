@@ -396,7 +396,7 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 					fmt.Fprintf(fp,"%s (message body) 'json:\n%s' \n\n",lhs,CleanString(rhs))
 				}
 			} else {
-				ismd,selections,notes,L := IsMarkdownFragment(rhs,"run declaration")
+				ismd,selections,notes,L := SST.IsMarkdownFragment(rhs,"run declaration")
 				summary = notes
 				
 				if ismd {
@@ -575,7 +575,7 @@ func AssessSingleJsonEvent(n int,alias string,log_event,previous_event []byte) {
 	if channel == "say" {
 		// If it's an MCP the json might contain Markdown as content!!
 		
-		ismd,selections,_,L := IsMarkdownFragment(text_body,"run history")
+		ismd,selections,_,L := SST.IsMarkdownFragment(text_body,"run history")
 
 		if ismd {
 			speaks += RecordEvent(agent_speaking,this_event)
@@ -934,27 +934,6 @@ func Togetherness(fp *os.File) {
 	}
 
 	fmt.Fprintf(fp,"\n### END Table of Contents - TOGETHERNESS\n")
-}
-
-//*******************************************************************
-
-func IsMarkdownFragment(thinking string,name string) (bool,[]SST.TextRank,[]string,int) {
-
-	// Cache a lump of analyzed markdown for later, outside of a graph sequence
-
-	if strings.Contains(thinking,"\n") && strings.Contains(thinking,"**") {
-		const percentage = 100
-		rhsbyte := []byte(thinking)
-		psf,L,notes := SST.FractionateSmallMarkdown(rhsbyte,name)
-		SST.AnalyzeFractionIntent(psf)
-		ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
-		ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
-		selection := SST.MergeSelections(ranking1,ranking2)
-		return true,selection,notes,L
-	} else {
-		var dummy []SST.TextRank
-		return false,dummy,nil,0
-	}
 }
 
 //*******************************************************************

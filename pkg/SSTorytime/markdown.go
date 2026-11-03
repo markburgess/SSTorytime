@@ -48,6 +48,27 @@ var DOC_DIRECTORY = make(map[string]string)
 var SECTIONS []AuxTxtMDSentence
 var TABLES []MDTable
 
+//*******************************************************************
+
+func IsMarkdownFragment(thinking string,name string) (bool,[]TextRank,[]string,int) {
+
+	// Cache a lump of analyzed markdown for later, outside of a graph sequence
+
+	if strings.Contains(thinking,"\n") && strings.Contains(thinking,"**") {
+		const percentage = 100
+		rhsbyte := []byte(thinking)
+		psf,L,notes := FractionateSmallMarkdown(rhsbyte,name)
+		AnalyzeFractionIntent(psf)
+		ranking1 := SelectByRunningIntent(psf,L,percentage)
+		ranking2 := SelectByStaticIntent(psf,L,percentage)
+		selection := MergeSelections(ranking1,ranking2)
+		return true,selection,notes,L
+	} else {
+		var dummy []TextRank
+		return false,dummy,nil,0
+	}
+}
+
 //*****************************************************************
 
 func FractionateMarkdown(dir,filename string) ([][]Sentence, int, []string) {

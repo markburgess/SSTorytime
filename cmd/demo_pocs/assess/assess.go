@@ -257,9 +257,10 @@ func HandleAgentMarkDown(fp *os.File,dir,name string) {
 	psf,L,notes := SST.FractionateMarkdown(dir,name)
 	fmt.Println(" - scanning")	
 	selection,f,s,ff,ss := SST.AnalyzeTextDecomposition(psf,L,percentage)
-	alias,_ := SST.MakeTitleFromFileName(name)
 
 	const with_title = true
+
+	alias,_ := SST.MakeTitleFromFileName(name)
 	fmt.Println(" - writing results for",alias)
 	SST.GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
 	AddNotes(fp,notes)
@@ -280,11 +281,11 @@ func HandleAgentText(fp *os.File,dir,name string) {
 	fmt.Println(" - scanning")
 	selection,f,s,ff,ss := SST.AnalyzeTextDecomposition(psf,L,percentage)
 	
-	alias,_ := SST.MakeTitleFromFileName(name)
 	const with_title = true
+
+	alias,_ := SST.MakeTitleFromFileName(name)
 	fmt.Println(" - writing results for",alias)
 	SST.GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)
-
 }
 
 //**************************************************************

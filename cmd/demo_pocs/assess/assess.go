@@ -369,9 +369,9 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 	}
 
 	var summary []string
-	var pathList []PathValue
+	var pathList []SST.PathValue
 
-	if FindJsonStructureAsPaths("", json_file, &pathList) {
+	if SST.FindJsonStructureAsPaths("", json_file, &pathList) {
 
 		// parse the items in the runlog
 		
@@ -446,7 +446,7 @@ func AssessSingleJsonEvent(n int,alias string,log_event,previous_event []byte) {
 		return
 	}
 
-	var pathList []PathValue
+	var pathList []SST.PathValue
 	var agent_speaking string = "unknown agent"
 	var tool_name string
 	var text_body string
@@ -464,7 +464,7 @@ func AssessSingleJsonEvent(n int,alias string,log_event,previous_event []byte) {
 
 	fmt.Print(".")
 
-	if FindJsonStructureAsPaths("",json_file, &pathList) {
+	if SST.FindJsonStructureAsPaths("",json_file, &pathList) {
 
 		for _, item := range pathList {
 
@@ -946,7 +946,7 @@ func IsMarkdownFragment(thinking string,name string) (bool,[]SST.TextRank,[]stri
 		const percentage = 100
 		rhsbyte := []byte(thinking)
 		psf,L,notes := SST.FractionateSmallMarkdown(rhsbyte,name)
-		//		SST.AnalyzeFractionIntent(psf)
+		SST.AnalyzeFractionIntent(psf)
 		ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
 		ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
 		selection := SST.MergeSelections(ranking1,ranking2)
@@ -1274,64 +1274,6 @@ func Excerpt(whole,part string) string {
 	}
 
 	return ""
-}
-
-//**************************************************************
-// Json parsing
-//**************************************************************
-
-type PathValue struct {
-	Path  string
-	Value interface{}
-}
-
-//**************************************************************
-
-func FindJsonStructureAsPaths(prefix string, value interface{}, list *[]PathValue) bool {
-
-	var result bool
-
-	switch v := value.(type) {
-
-	case map[string]interface{}:
-
-		for key, child := range v {
-			newPath := key
-			if prefix != "" {
-				newPath = prefix + "." + key
-			}
-			result = FindJsonStructureAsPaths(newPath, child, list)
-		}
-
-	case []interface{}:
-
-		for i, child := range v {
-			newPath := fmt.Sprintf("%s.%d", prefix, i)
-			result = FindJsonStructureAsPaths(newPath, child, list)
-		}
-
-	default: // Reached a leaf node (string, float64, bool, nil)
-
-		if result, ok := v.(float64); ok {
-			*list = append(*list, PathValue{
-				Path:  prefix,
-				Value: fmt.Sprintf("%d",int(result)),
-			})
-
-			return true
-		}
-		
-		if result, ok := v.(string); ok {
-			*list = append(*list, PathValue{
-				Path:  prefix,
-				Value: result,
-			})
-
-			return true
-		}
-	}
-
-	return result
 }
 
 //**************************************************************

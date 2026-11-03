@@ -1269,7 +1269,7 @@ func ListProperNames(fp *os.File) {
 			single_words = append(single_words,name)
 		}
 	}
-		
+
 	fmt.Fprintf(fp,"\n\n :: proper names , key concepts :: \n\n")
 	
 	for name := range PROPER_NAME {
@@ -1279,7 +1279,7 @@ func ListProperNames(fp *os.File) {
 		// Eliminate some false positives
 		
 		for _,sword := range single_words {
-			if strings.Contains(name,sword) {
+			if strings.Contains(name," "+sword) || strings.Contains(name,sword+" ") {
 				derivative = true
 				break
 			}
@@ -1292,7 +1292,6 @@ func ListProperNames(fp *os.File) {
 		} else if !derivative {
 			fmt.Fprintf(fp,"\n %s\n",name)
 		}
-		
 	}
 }
 

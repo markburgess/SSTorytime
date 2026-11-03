@@ -78,43 +78,43 @@ was written, uploaded, or when something actually happened? The technology can't
 
   "THEME_LIM"  (def) a constant scale approximately the size of a long paragraph set to 100 sentences
 
-  a %paragraph is defined as either a text measure separated by two newlines or if we exceed the the maximum threshold %THEME_LIM
+  a ***paragraph is defined as either a text measure separated by two newlines or if we exceed the the maximum threshold %THEME_LIM
 
-  intent (means) a measure that distinguishes ad hoc or random change from %causal %change
+  intent (means) a measure that distinguishes ad hoc or random change from %causal ***change
     "    (variant) intentionality
     "    (def)  a measure of the degree to which something might be intended
 
   variant (means) a different grammatical form of the same word of phrase
   causal (variant) causality
 
-  %"Short phrases" used once are usually unique names i.e. a %"proper name"
+  ***"Short phrases" used once are usually unique names i.e. a ***"proper name"
 
   proper name (means) an ad hoc identifier without descriptive meaning
 
-  %"Longer phrases" used a limited number of times are common concepts (note) %"Longer phrases" are easier to write than short precise phrases, so people need help to break them down and summarize their intent
+  ***"Longer phrases" used a limited number of times are common concepts (note) ***"Longer phrases" are easier to write than short precise phrases, so people need help to break them down and summarize their intent
 
   The most frequently used n-grams are the least meaningful, used for padding and rhythm
 
   n-gram (means) fragment of n words as an ordered sequence (note) any sentence can be broken up into n-gram fragments, like a DNA analysis.
      " (variant) n-grams 
 
-  documents can be scanned to identify %context and %factoid parts
+  documents can be scanned to identify ***context and ***factoid parts
 
   context (means) a collection of signals that identify a scenario, like a scene description language
   factoid (means) a nugget of meaningful information contributing to knowledge
 
-  a text source of document (consists) paragraphs (consists) sentences (consists) punctuated fragments (consists) %"n-grams"
+  a text source of document (consists) paragraphs (consists) sentences (consists) punctuated fragments (consists) ***"n-grams"
 
-  punctuated fragments (used for) ranking the %intentionality or importance of text
-  sentences   (used for) %factoids and partial %knowledge (ex) factoid
+  punctuated fragments (used for) ranking the ***intentionality or importance of text
+  sentences   (used for) ***factoids and partial ***knowledge (ex) factoid
 
   Knowledge scanned from text is most likely to be in the form of paragraphs and sentences. It needs to be broken down into its constituent parts, like a DNA analysis, to understand its relationship to other notes.
 
   :: uses, use-cases ::
 
-  Making %notes (note) Notes are more concise than documents, prose, or spoken language. 
+  Making ***notes (note) Notes are more concise than documents, prose, or spoken language. 
         "      (note) Notes are condensed intent without flowery elaboration.
-        "      (note) AI and LLMs produce fluid %prose language, which is not in note form.
+        "      (note) AI and LLMs produce fluid ***prose language, which is not in note form.
 
       "  (might be used for)  Incident reporting with causal commentary
       "  (might be used for)  Risk procedure documentation
@@ -167,7 +167,7 @@ host    all             all             ::1/128                 password"
      tot_path Text;
  BEGIN
  IF depth = maxdepth THEN
-   ret_paths := Format('%s\n%s',ret_paths,path);
+   ret_paths := Format('***s\n***s',ret_paths,path);
    RETURN ret_paths;
  END IF;
  fwdlinks := GetFwdLinks(start.Dst,exclude,sttype);
@@ -175,15 +175,15 @@ host    all             all             ::1/128                 password"
     IF NOT lnk.Dst = ANY(exclude) THEN
        exclude = array_append(exclude,lnk.Dst);
        IF lnk IS NULL THEN
-         ret_paths := Format('%s\n%s',ret_paths,path);
+         ret_paths := Format('***s\n***s',ret_paths,path);
           RETURN ret_paths;
       ELSE
-          tot_path := Format('%s;%s',path,lnk::Text);
+          tot_path := Format('***s;***s',path,lnk::Text);
           appendix := SumFwdPaths(lnk,tot_path,sttype,depth+1,maxdepth,exclude);
           IF appendix IS NOT NULL THEN
-             ret_paths := Format('%s\n%s',ret_paths,appendix);
+             ret_paths := Format('***s\n***s',ret_paths,appendix);
           ELSE
-            ret_paths := Format('%s\n%s',ret_paths,tot_path);
+            ret_paths := Format('***s\n***s',ret_paths,tot_path);
          END IF;
       END IF;   
 END IF;
@@ -246,7 +246,7 @@ END;"    (ex)  A recursive search in SQL
 
  :: golang API, database upload functions, self-managed NPtr  ::
 
-"CreateDBNode(ctx PoSST, n Node) Node" (use-for) establishing a node in postgres without auto %NPtr assignment
+"CreateDBNode(ctx PoSST, n Node) Node" (use-for) establishing a node in postgres without auto ***NPtr assignment
 "UploadNodeToDB(ctx PoSST, org Node)"  (use-for) uploading an existing Node in memory to postgres
 "UploadArrowToDB(ctx PoSST,arrow ArrowPtr)" (use-for) uploading an arrow definition from memory to postgres
 "UploadInverseArrowToDB(ctx PoSST,arrow ArrowPtr)" (use-for) uploading an inverse arrow definition
@@ -261,8 +261,8 @@ END;"    (ex)  A recursive search in SQL
 
  :: golang API, searching functions ::
 
-"GetDBNodePtrMatchingName(ctx PoSST,name,chap string) []NodePtr"  (use-for) finding a list of %NPtr matching a substring by name
-"GetDBNodePtrMatchingNCCS(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr,seq bool,limit int) []NodePtr"  (use-for) Comprehensive search by %"NCCS criteria"
+"GetDBNodePtrMatchingName(ctx PoSST,name,chap string) []NodePtr"  (use-for) finding a list of ***NPtr matching a substring by name
+"GetDBNodePtrMatchingNCCS(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr,seq bool,limit int) []NodePtr"  (use-for) Comprehensive search by ***"NCCS criteria"
 "GetDBChaptersMatchingName(ctx PoSST,src string) []string"  (use-for) obtaining a list of chapters matching by name
 "GetDBContextByName(ctx PoSST,src string) (string,ContextPtr)"  (use-for) obtaining context sets that match by string name
 "GetDBContextByPtr(ctx PoSST,ptr ContextPtr) (string,ContextPtr)"  (use-for) obtaining the context set with given index pointer

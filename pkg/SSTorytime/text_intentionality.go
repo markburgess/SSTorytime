@@ -17,6 +17,25 @@ import (
 
 //**************************************************************
 
+func AnalyzeTextDecomposition(psf [][]Sentence,L int,percentage float64) ([]TextRank,[][]string,[][]string,[]string,[]string) {
+
+	fmt.Println(" - scanning")
+	AnalyzeFractionIntent(psf)
+	fmt.Println(" - ranking longitudinally")
+	ranking1 := SelectByRunningIntent(psf,L,percentage)
+	fmt.Println(" - ranking transversely")
+	ranking2 := SelectByStaticIntent(psf,L,percentage)
+	selection := MergeSelections(ranking1,ranking2)
+	
+	const minN = N_GRAM_MIN
+	const maxN = N_GRAM_MAX
+	f,s,ff,ss := ExtractIntentionalTokens(L,selection,minN,maxN)
+
+	return selection,f,s,ff,ss
+}
+
+//**************************************************************
+
 func ExtractIntentionalTokens(L int,selected []TextRank,Nmin,Nmax int) ([][]string,[][]string,[]string,[]string) {
 
 	// This function examines a fractionation of text for fractions, only for

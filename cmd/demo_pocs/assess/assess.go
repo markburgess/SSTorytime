@@ -255,19 +255,8 @@ func HandleAgentMarkDown(fp *os.File,dir,name string) {
 
 	fmt.Println(" - fractionating",name)
 	psf,L,notes := SST.FractionateMarkdown(dir,name)
-	fmt.Println(" - scanning")
-	SST.AnalyzeFractionIntent(psf)
-	fmt.Println(" - ranking longitudinally")
-	ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
-	fmt.Println(" - ranking transversely")
-	ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
-	selection := SST.MergeSelections(ranking1,ranking2)
-	
-	const minN = SST.N_GRAM_MIN
-	const maxN = SST.N_GRAM_MAX
-	
-	f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
-
+	fmt.Println(" - scanning")	
+	selection,f,s,ff,ss := SST.AnalyzeTextDecomposition(psf,L,percentage)
 	alias,_ := SST.MakeTitleFromFileName(name)
 
 	const with_title = true
@@ -288,22 +277,10 @@ func HandleAgentText(fp *os.File,dir,name string) {
 
 	fmt.Println(" - fractionating",name)
 	psf,L := SST.FractionateTextFile(dir,name)
-
 	fmt.Println(" - scanning")
-	SST.AnalyzeFractionIntent(psf)
-	fmt.Println(" - ranking longitudinally")
-	ranking1 := SST.SelectByRunningIntent(psf,L,percentage)
-	fmt.Println(" - ranking transversely")
-	ranking2 := SST.SelectByStaticIntent(psf,L,percentage)
-	selection := SST.MergeSelections(ranking1,ranking2)
+	selection,f,s,ff,ss := SST.AnalyzeTextDecomposition(psf,L,percentage)
 	
-	const minN = SST.N_GRAM_MIN
-	const maxN = SST.N_GRAM_MAX
-	
-	f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
-
 	alias,_ := SST.MakeTitleFromFileName(name)
-
 	const with_title = true
 	fmt.Println(" - writing results for",alias)
 	SST.GenerateOutput(fp,alias,selection,L,percentage,f,s,ff,ss,with_title)

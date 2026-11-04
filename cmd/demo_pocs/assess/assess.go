@@ -213,8 +213,6 @@ func HandleFile(fp *os.File,dir,name,ext string) {
 	var notes []string
 	var L int
 	
-	fmt.Println(" - fractionating",name)
-	
 	switch ext {
 	case ".md": 
 		psf,L,notes = SST.FractionateMarkdown(dir,name)
@@ -223,6 +221,7 @@ func HandleFile(fp *os.File,dir,name,ext string) {
 	default: return
 	}
 
+	fmt.Println(" - fractionating",name)
 	fmt.Println(" - scanning")	
 	selection,f,s,ff,ss := SST.AnalyzeTextDecomposition(psf,L,percentage)
 
@@ -344,6 +343,11 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 
 			lhs := fmt.Sprintf("event where [%s] declares %s",agent,action)
 			rhs := item.Value.(string)
+
+			if JunkMessage("",rhs) {
+				continue
+			}
+			
 			rhsbyte := []byte(rhs)
 
 			HandleInferences(agent,action,item.Path,rhs)

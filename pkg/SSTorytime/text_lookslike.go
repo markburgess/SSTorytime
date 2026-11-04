@@ -51,7 +51,7 @@ func LooksLikeParagraph(para string) []string {
 			
 			if isnum && ended_in_stop {
 				if len(next_part) > 0 {
-					splits = append(splits,next_part)
+					splits = append(splits,SanitizeQuotes(next_part))
 					next_part = ""
 				}
 			}
@@ -59,7 +59,7 @@ func LooksLikeParagraph(para string) []string {
 			next_part += subpart + " "
 			
 			if len(subpart) > 1 && subpart[len(subpart)-1] == '.' {
-				splits = append(splits,next_part)
+				splits = append(splits,SanitizeQuotes(next_part))
 				next_part = ""
 				ended_in_stop = true
 			} else {
@@ -68,12 +68,47 @@ func LooksLikeParagraph(para string) []string {
 		}
 
 		if len(next_part) > 0 {
-			splits = append(splits,next_part)
+			splits = append(splits,SanitizeQuotes(next_part))
 		}
 
 	}
 
 	return splits
+}
+
+// **************************************************************************
+
+func SanitizeQuotes(str string) string {
+
+	str = strings.TrimSpace(str)
+	
+	n := strings.Count(str,"\"")
+
+	if n == 1 {
+		return strings.ReplaceAll(str,"\"","")
+	}
+	
+	if n > 2 {
+		// Preserve parethetic quotes
+		if str[0] == '"' && str[len(str)-1] == '"' {
+			return "\"" + SanitizeQuotes(str[1:len(str)-1]) + "\""
+		}
+
+		// delete the last occurrence
+		if n % 2 != 0 {
+			idx := strings.LastIndex(str,"\"")
+
+			if idx != -1 {
+				return str[:idx] + str[idx+1:]
+			}
+		}
+
+		if strings.Count(str,"'") == 0 {
+			return "'" + str + "'"		
+		}
+	}
+
+	return str
 }
 
 // **************************************************************************

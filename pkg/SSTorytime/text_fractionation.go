@@ -1151,11 +1151,15 @@ func WriteCollectedContext(fp *os.File, collected_fragments map[string][]string)
 
 	fmt.Fprintf(fp,"\n #\n # Concepts by part / region \n #\n")
 
+	var done = make(map[string]bool)
 	for key := range collected_fragments {
 
 		fmt.Fprintf(fp,"\n\n %s\n",key)
 		for _,s := range collected_fragments[key] {
-			fmt.Fprintf(fp,"              \" (%s) %s\n",CONT_FRAG_S,s)
+			if !done[s]{
+				fmt.Fprintf(fp,"              \" (%s) %s\n",CONT_FRAG_S,s)
+				done[s] = true
+			}
 		}
 	}
 

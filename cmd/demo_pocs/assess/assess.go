@@ -114,7 +114,7 @@ func InitializeContextPatterns() {
 	
 	SST_COORDS["unexpected/anomaly"] = []string{"violate","competing","no need to","unable-meet-obligation","is-report-event","nonconform","asking-but","removed","broken","unable-meet-obligation","split-multiple","tampering","miscount","misconduct","altered","time/timestamp-conflict"}
 
-	SST_COORDS["promise-failed"] = []string{"marginal","failed","exposure","missed-deadline","removed","unable-pay","short on-cash","unable-settle","payment-not-possible","unable-cover-expense","unable-meet-obligation","insufficient-credit","finance/financial-difficult"}
+	SST_COORDS["promise-failed"] = []string{"marginal","failed","exposure","missed-deadline","removed","unable-pay","short on-cash","unable-settle","payment-not-possible","unable-cover-expense","unable-meet-obligation","insufficient-credit","finance/financial-difficult","inconsistent-explain"}
 
 	// unexpected context anomalies with possible negative consequences
 	
@@ -212,6 +212,8 @@ func HandleFile(fp *os.File,dir,name,ext string) {
 	var psf [][]SST.Sentence
 	var notes []string
 	var L int
+
+	SST.SECTIONS = nil
 	
 	switch ext {
 	case ".md": 

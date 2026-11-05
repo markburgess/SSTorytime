@@ -51,6 +51,8 @@ var LAST_TOOL_CALL = make(map[P2Pair]string)
 var LAST_ACCEPT  = make(map[P2Pair]string)
 var P2P_MESSAGE = make(map[string]P2Pair)
 
+
+var SST_OPCOORDS = make(map[string][]string)
 var SST_COORDS = make(map[string][]string)
 var SST_SCORES = make(map[string]float64)
 var TOTAL_SCORE float64
@@ -122,7 +124,13 @@ func InitializeContextPatterns() {
 
 	// normal sensory context actions
 	SST_COORDS["sensory/tool/action"] = []string{"tool","API","observe","scan","count"}
-	
+
+	// **********************************************
+
+	SST_OPCOORDS["missing_tooling"] = []string{"don`t have tools"}
+	SST_OPCOORDS["timestamp problem"] = []string{"timestamp conflict"}
+	SST_OPCOORDS["escalation"] = []string{"escalated"}
+	SST_OPCOORDS["request_status"] = []string{"please","request"}
 }
 
 //******************************************************************
@@ -519,7 +527,7 @@ func AssessSingleJsonEvent(n int,alias string,log_event,previous_event []byte) {
 	if message_type == "tool_call" {
 		speaks := RecordToolCall(this_event,seqnr,n,event_type,promise_direction,tool_name,msg_body,is_fault)
 		AGENT_TOOL_CALLS[tool_name] = append(AGENT_TOOL_CALLS[tool_name],this_event)
-		AGENT_TIMELINE[agent_speaking] = append(AGENT_TIMELINE[agent_speaking],speaks)
+		AgentSpeaks(agent_speaking,speaks)
 		return
 	}
 
@@ -531,7 +539,7 @@ func AssessSingleJsonEvent(n int,alias string,log_event,previous_event []byte) {
 
 	if message_type == "tool_result" {
 		speaks += RecordToolResult(this_event,tool_name,text_body,promise_direction,is_fault)
-		AGENT_TIMELINE[agent_speaking] = append(AGENT_TIMELINE[agent_speaking],speaks)
+		AgentSpeaks(agent_speaking,speaks)
 		return
 	}
 	
@@ -558,8 +566,8 @@ func AssessSingleJsonEvent(n int,alias string,log_event,previous_event []byte) {
 	speaks += ScanForSemanticAnomaly(text_body,n)
 
 	// If there is retrying in the timeline, repeated entries may occur
-	
-	AGENT_TIMELINE[agent_speaking] = append(AGENT_TIMELINE[agent_speaking],speaks)
+
+	AgentSpeaks(agent_speaking,speaks)
 }
 
 //**************************************************************
@@ -680,14 +688,14 @@ func RecordToolCall(this_event string,seq,n int,event_type string,p2p P2Pair,too
 	}
 
 	if body != "{}" && len(body) > 0 {
+		RunningContext(agent_speaking,body)
 		speaks += AppendMessageToEvent(agent_speaking,body)
 		speaks += AppendImpositionRequests(agent_speaking,body)
 		speaks += ScanForSemanticAnomaly(body,seq)
 		
 	}
 
-	AGENT_TIMELINE[agent_speaking] = append(AGENT_TIMELINE[agent_speaking],speaks)
-
+	AgentSpeaks(agent_speaking,speaks)
 	return speaks
 }
 
@@ -696,6 +704,14 @@ func RecordToolCall(this_event string,seq,n int,event_type string,p2p P2Pair,too
 func AppendMessageToEvent(agent,node string) string {
 
 	return fmt.Sprintf("    \"  (message body) '%s' \n",CleanString(node))
+}
+
+//**************************************************************
+
+func RunningContext(agent,body string) {
+
+	// check and update running context here
+	fmt.Printf("\n %s's running context: %s\n",agent,GetOperationalContextFrom(body))
 }
 
 //**************************************************************
@@ -1023,11 +1039,6 @@ func CheckForAPICall(str string) (bool,string,[]byte) {
 		return false,"",[]byte{}
 	}
 
-	// Readability
-	//	if !strings.Contains(after,"\n") {
-	//	after = strings.ReplaceAll(after,",",",\n")
-	//}
-
 	look_for_json := []byte(after[:len(after)-1])
 	
 	// Ok, looks like it has the correct shape
@@ -1246,3 +1257,58 @@ func PolicyAnomaly(new,running float64) bool {
 	return false
 }
 
+//**************************************************************
+
+func AgentSpeaks(agent_speaking,speaks string) {
+
+	AGENT_TIMELINE[agent_speaking] = append(AGENT_TIMELINE[agent_speaking],speaks)
+}
+
+//**************************************************************
+
+func GetOperationalContextFrom(state string) []string {
+
+	context := make(map[string]int)
+
+	for name := range SST.PROPER_NAME {
+		if strings.Contains(state,name) {
+			context[CanonifyName(name)]++
+		}
+	}
+
+	for category := range SST_OPCOORDS {
+		for _,check := range SST_OPCOORDS[category] {
+
+			score,_ := ScanFractionPatterns(category,state,check)
+
+			if score > 0 {
+				context[CanonifyName(category)]++
+			}
+		}
+	}
+
+	// Already done this for the n4l ... so??
+
+	for category := range SST_COORDS {
+		for _,check := range SST_COORDS[category] {
+
+			score,_ := ScanFractionPatterns(category,state,check)
+
+			if score > 0 {
+				context[CanonifyName(category)]++
+			}
+		}
+	}
+
+	return SST.Map2List(context)
+}
+
+//**************************************************************
+
+func CanonifyName(s string) string {
+
+	s = strings.ToLower(s)
+	s = strings.ReplaceAll(s," ","_")
+	s = strings.ReplaceAll(s,"/","_")
+	return s
+}

@@ -568,6 +568,7 @@ func SearchStringForProperNames(text string) []string {
 			} else {
 				if len(keep) > 1 {
 					name := strings.Join(keep," ")
+
 					KeepProperName(name,"")
 					retval[name]++
 					keep = nil

@@ -1126,7 +1126,7 @@ func WriteEventAnnotations(fp *os.File,event string) {
 	// Now add cross referencing anchors to proper names
 	
 	names := SearchStringForProperNames(event)
-	
+
 	for _,n := range names {
 		fmt.Fprintf(fp,"    \"  (refersto) %s\n",n)
 	}

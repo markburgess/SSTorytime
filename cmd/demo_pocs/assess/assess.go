@@ -213,7 +213,7 @@ func HandleFile(fp *os.File,dir,name,ext string) {
 	var notes []string
 	var L int
 
-	SST.SECTIONS = nil
+	//SST.SECTIONS = nil
 	
 	switch ext {
 	case ".md": 

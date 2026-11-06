@@ -894,6 +894,8 @@ func TimeLines(fp *os.File) {
 			if n == 0 && opening != "" {
 				// link back to openings
 				fmt.Fprintf(fp," \" (from) '%s'\n",opening)
+			} else if n == 0 {
+				fmt.Fprintf(fp," \" (from) '%s'\n",start)
 			}
 		}
 
@@ -1168,10 +1170,6 @@ func ScanFractionPatterns(category, text, check string) (float64,string) {
 		if clock[len(paths)-1] == len(paths) {
 			break
 		}
-	}
-
-	if note == "" {
-		note = text
 	}
 
 	return float64(matches),note

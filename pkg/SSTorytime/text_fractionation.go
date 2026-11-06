@@ -1274,7 +1274,7 @@ func ListProperNames(fp *os.File) {
 		}
 	}
 
-	fmt.Fprintf(fp,"\n\n :: proper names , key concepts :: \n\n")
+	fmt.Fprintf(fp,"\n\n :: dramatis personae, proper names , key concepts :: \n\n")
 	
 	for name := range PROPER_NAME {
 

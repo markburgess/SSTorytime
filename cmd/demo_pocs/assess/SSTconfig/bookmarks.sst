@@ -17,3 +17,4 @@ Agent, Violations: violation
 Agent, Consequence, result, outcome: consequence result outcome
 Agent, Escalations: escalate
 Agent, Authorizations and approvals: authorize approve \context transcript \limit 30
+Agent, Key concepts and dramatis personae: \notes \context "proper names"

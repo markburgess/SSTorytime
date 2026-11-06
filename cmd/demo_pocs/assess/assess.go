@@ -110,27 +110,27 @@ func InitializeContextPatterns() {
 
 	// overlooking authority
 	
-	SST_COORDS["authorization"] = []string{"weak-buffer-thin","not required here","no need-involve","empty","should-be-honest","beyond/passed/exceeded-threshold","approve-authoriz","can't/cannot/unable to-reach/contact/ask/escalate"}
+	SST_COORDS["authorization/capability"] = []string{"weak-buffer-thin","not required here","no need-involve","!no-empty","should be/should respond-honest/truthful","beyond/passed/exceeded-threshold","missing-approve-authoriz","can't/cannot/unable to-reach/contact/ask/escalate","have no tool","lack-necessaryrequired"}
 
 	// unexpected policy anomalies with possible negative consequences
 	
-	SST_COORDS["unexpected/anomaly"] = []string{"violate","competing","no need to","unable-meet-obligation","is-report-event","nonconform","asking-but","removed","broken","unable-meet-obligation","split-multiple","tampering","miscount","misconduct","altered","time/timestamp-conflict"}
+	SST_COORDS["unexpected/anomaly"] = []string{"!would-violate","competing","no need to","unable-meet-obligation","is-report-event","nonconform","asking-but","removed","broken","unable-meet-obligation","split-multiple","!no/!if-tampering","miscount","!no-misconduct","!no-altered","time/timestamp-conflict","should-but","timestamp conflict"}
 
-	SST_COORDS["promise-failed"] = []string{"marginal","failed","exposure","missed-deadline","removed","unable-pay","short on-cash","unable-settle","payment-not-possible","unable-cover-expense","unable-meet-obligation","insufficient-credit","finance/financial-difficult","inconsistent-explain"}
+	SST_COORDS["promise-failed"] = []string{"marginal","failed","exposure","missed-deadline","removed","unable-pay","short on-cash","unable-settle","payment-not-possible","unable-cover-expense","unable-meet-obligation","insufficient-credit","finance/financial-difficult","inconsistent-explain","is stale/is outdated"}
 
 	// unexpected context anomalies with possible negative consequences
 	
-	SST_COORDS["negative-consequence"] = []string{"if-missing/damaged","expect,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value","resolve","still--before/until-deadline","still-time"}
+	SST_COORDS["negative-consequence"] = []string{"if-missing/damaged","expect,predict,project,exposure","weak-demand-fallen/weak/contraction","high/low-value","still--before/until-deadline","still-time","ask-me-skip/delete/stop-but"}
 
 	// normal sensory context actions
-	SST_COORDS["sensory/tool/action"] = []string{"tool","API","observe","scan","count"}
+	SST_COORDS["sensory/tool/action"] = []string{"missing/don't have-tool","API","observe"}
 
 	// **********************************************
-
-	SST_OPCOORDS["missing_tooling"] = []string{"don`t have tools"}
-	SST_OPCOORDS["timestamp problem"] = []string{"timestamp conflict"}
+	// Non-serious conditions that may be relevant in policy
+	// **********************************************
+	
 	SST_OPCOORDS["escalation"] = []string{"escalated"}
-	SST_OPCOORDS["request_status"] = []string{"please","request"}
+	SST_OPCOORDS["request_status"] = []string{"please","request","send me"}
 }
 
 //******************************************************************
@@ -711,7 +711,8 @@ func AppendMessageToEvent(agent,node string) string {
 func RunningContext(agent,body string) {
 
 	// check and update running context here
-	fmt.Printf("\n %s's running context: %s\n",agent,GetOperationalContextFrom(body))
+	c,t,_ := SST.GetTimeContext()
+	fmt.Sprintf("\n %s's running context: %s, %s, %s\n",agent,t,c,GetOperationalContextFrom(body))
 }
 
 //**************************************************************
@@ -1058,33 +1059,39 @@ func ScanForSemanticAnomaly(str string,n int) string {
 
 	var scored bool
 	var warning string
+
+	// First, make sure we don't make inferences across sentence parts
+
+	clauses := strings.Split(str,". ")
 	
-	for category := range SST_COORDS {
-		
-		for _,check := range SST_COORDS[category] {
+	for _,assertion := range clauses {
 
-			score,note := ScanFractionPatterns(category,str,check)
+		for category := range SST_COORDS {
 
-			// should we look up / xref with db here?
+			for _,check := range SST_COORDS[category] {
 
-			warning += note
-			
-			if !strings.HasSuffix(warning,"..") {
-				warning += ".."
-			}
-			
-			if score > 0 {
-				scored = true
-			}
+				score,note := ScanFractionPatterns(category,assertion,check)
 
-			SST_SCORES[category] += score // RunningUpdate(category,score,SST_SCORES[category])
+				// should we look up / xref with db here?
 
-			if PolicyAnomaly(score,SST_SCORES[category]) {
-				remember := fmt.Sprintf("event %d, %s(%s)-->(%s)",n,category,check,note)
-				SST_ANOMALIES = append(SST_ANOMALIES,remember)
+				warning += note
+
+				if !strings.HasSuffix(warning,"..") {
+					warning += ".."
+				}
+
+				if score > 0 {
+					scored = true
+				}
+
+				SST_SCORES[category] += score // RunningUpdate(category,score,SST_SCORES[category])
+				
+				if PolicyAnomaly(score,SST_SCORES[category]) {
+					remember := fmt.Sprintf("event %d, %s(%s)-->(%s)",n,category,check,note)
+					SST_ANOMALIES = append(SST_ANOMALIES,remember)
+				}
 			}
 		}
-		
 	}
 
 	if scored && len(warning) > 0 {
@@ -1163,7 +1170,10 @@ func ScanFractionPatterns(category, text, check string) (float64,string) {
 		}
 	}
 
-	
+	if note == "" {
+		note = text
+	}
+
 	return float64(matches),note
 }
 
@@ -1175,14 +1185,29 @@ func PatternMatches(ref string,pattern []string) (bool,string) {
 	found_word := false
 	found := ""
 	before := ""
-	
+
 	// check the whole sequence of words in order
 	
 	for occur, word := range pattern {
 
+		negation := false
+
+		if word == "" {
+			continue
+		}
+		
+		if word[0] == '!' {
+			negation = true
+			word = word[1:]
+		}
+
 		before, working, found_word = strings.Cut(working,word)
 		
 		if !found_word {
+			return false,""
+		}
+
+		if negation {
 			return false,""
 		}
 

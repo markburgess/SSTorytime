@@ -34,3 +34,6 @@
 
  + has message sender   (sender)   - is the sender of (issend)
  + has message receiver (receiver) - is the receiver of (isrecv)
+
+ + has default reply  (reply) - is the default reply template for (isreply)
+ + has principal/promisee  (principal) - is the promisee/principal for (isprinc)

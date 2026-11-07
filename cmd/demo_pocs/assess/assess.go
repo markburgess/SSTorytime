@@ -37,11 +37,12 @@ type P2Pair struct {
 var AGENTS = make(map[string]bool)
 var AGENT_TIMELINE = make(map[string][]string)
 
-// Feature extraction
+// Feature extraction - the reduced language template
 
 var AGENT_REQUEST = make(map[string][]string)
 var AGENT_PRINCIPAL = make(map[string]string)
 var AGENT_OPENING = make(map[string]string)
+var AGENT_REPLY_TEMPLATE = make(map[string]string)
 var AGENT_ESCALATE = make(map[string]string)
 var AGENT_REPLY []string
 var PREVIOUS_EVENT string
@@ -59,7 +60,7 @@ var TOTAL_SCORE float64
 var SST_ANOMALIES []string
 var SST_DUPLICATES []string
 
-var RECOGNIZE = []string{"principal","opening","client","escalat","tool","replies","objective"}
+var RECOGNIZE = []string{"principal","opening","client","escalat","tool","replies","objective","title"}
 
 const AGENT_INSTRUCTION = "system_prompt"
 
@@ -351,18 +352,16 @@ func AssessJsonDeclaration(fp *os.File,alias string,filebytes []byte) {
 				continue
 			}
 
-			lhs := fmt.Sprintf("event where [%s] declares %s",agent,action)
+			lhs := fmt.Sprintf("declaration where [%s] declares %s",agent,action)
 			rhs := item.Value.(string)
+
+			HandleInferences(agent,action,item.Path,rhs)
 
 			if JunkMessage("",rhs) {
 				continue
 			}
 			
 			rhsbyte := []byte(rhs)
-
-			HandleInferences(agent,action,item.Path,rhs)
-			
-			// Handle different types
 			
 			if json.Valid(rhsbyte) {
 				if len(lhs) > 0 {
@@ -853,7 +852,17 @@ func ListSundries(fp *os.File) {
 	for a := range AGENT_PRINCIPAL {
 		princ := strings.TrimSpace(AGENT_PRINCIPAL[a])
 		if princ != "" {
-			fmt.Fprintf(fp,"\n %s (role) agent [%s]'s principal client / promisee \n",princ,a)
+			fmt.Fprintf(fp,"\n %s (principal) %s\n",a,princ)
+		}
+	}
+
+	fmt.Fprintf(fp,"\n :: agent reply templates :: \n\n")
+	
+	for a := range AGENT_REPLY_TEMPLATE {
+
+		reply := strings.TrimSpace(AGENT_REPLY_TEMPLATE[a])
+		if reply != "" {
+			fmt.Fprintf(fp,"\n %s (reply) %s",a,reply)
 		}
 	}
 }
@@ -933,10 +942,9 @@ func InferPathMeaning(path string) (string,string) {
 		parts = strings.Split(path,".")
 
 		for _,p := range parts {
+
 			if len(p) > 1 && !strings.Contains(p,"role") {
-				//fmt.Println("\n ** inferring agent name: ",p)
 				if AGENTS[p] {
-					//fmt.Println(" ... ( already known)")
 				} else {
 					AGENTS[p] = true
 				}
@@ -946,17 +954,21 @@ func InferPathMeaning(path string) (string,string) {
 	}
 
 	parts = strings.Split(path,".")
-
+	
 	for _,p := range parts {
-
+		
 		if AGENTS[p] {
 			agent = p
-			continue
 		}
+
+		// Keep some of the items
 		
-		for _,v := range RECOGNIZE {	
+		for _,v := range RECOGNIZE {
 			if strings.Contains(p,v) {
 				answer = v
+				if answer != "" && agent != "" {
+					return agent,answer
+				}
 				break
 			}
 		}
@@ -973,7 +985,15 @@ func InferPathMeaning(path string) (string,string) {
 
 func HandleInferences(agent,action,path,value string) {
 
+	// Collect some declarations that might be consequential
+	
 	switch action {
+
+	case "title":
+		SST.KeepProperName(agent,value)
+
+	case "replies":
+		AGENT_REPLY_TEMPLATE[agent] = value
 
 	case "opening":
 		_, ok := AGENT_OPENING[agent]
@@ -986,6 +1006,9 @@ func HandleInferences(agent,action,path,value string) {
 		if !ok {
 			AGENT_PRINCIPAL[agent] = CleanString(value)
 		}
+
+	case "roles":
+
 	}
 }
 

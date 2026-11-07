@@ -187,7 +187,7 @@ def NormalizeContext(array):
     akeys.sort()
     for index,part in enumerate(akeys):
         ordered += part
-        if index < len(part)-1:
+        if index < len(akeys)-1:
             ordered = ordered + ","
     return ordered
 

@@ -29,7 +29,7 @@ This would expand to something like this:
 Dynamic content should start with the string `Dynamic: ` and may contain functions which are
 enclosed in braces `{function_name arguments}`.
 
-- **TimeUntil** calculates the time until the specificed time.
+- **TimeUntil** calculates the time until the specified time.
 - **TimeSince** calculates the time since a specified time.
 
 Times are represented using the same class names as one uses for `:: tag ... ::` content.

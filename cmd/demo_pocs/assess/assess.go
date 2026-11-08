@@ -74,19 +74,20 @@ func main() {
 	
 	// read and assess json files
 
-	dir := GetArgs()
+	dir,scan := GetArgs()
 	
-	AssessAgentRun(dir)
+	AssessAgentRun(dir,scan)
 }
 
 //**************************************************************
 
-func GetArgs() string {
+func GetArgs() (string,bool) {
 
 	dirPtr := flag.String("dir", "none", "A directory containing the agent run transcript files")
+	boolPtr := flag.Bool("scan", false, "Whether to scan markdown and text definition files")
 	flag.Parse()
 
-	dir := "../../../../../../MIM-fuzzyrobots/AmData/runs/warehouse-none-sonnet55-s2-20261004-130935"
+	var dir string
 
 	if *dirPtr != "none" {
 		dir = *dirPtr
@@ -96,7 +97,7 @@ func GetArgs() string {
 		dir += "/"
 	}
 	
-	return dir
+	return dir,*boolPtr
 }
 
 //**************************************************************
@@ -138,7 +139,7 @@ func InitializeContextPatterns() {
 // begin
 //******************************************************************
 
-func AssessAgentRun(dir string) {
+func AssessAgentRun(dir string,doscan bool) {
 	
 	entries, err := os.ReadDir(dir)
 	
@@ -158,17 +159,19 @@ func AssessAgentRun(dir string) {
 
 	defer fp.Close()
 
-	// Start with defs
+	if doscan {
+		// Start with defs
 
-	for _, entry := range entries {
-
-		_, name, ext := IsFileType(entry.Name())
-
-		if name == "transcript.md" {
-			continue
+		for _, entry := range entries {
+			
+			_, name, ext := IsFileType(entry.Name())
+			
+			if name == "transcript.md" {
+				continue
+			}
+			
+			HandleFile(fp,dir,name,ext)
 		}
-
-		HandleFile(fp,dir,name,ext)
 	}
 
 	// Specific run files, run last so we can pick up intel first
@@ -414,7 +417,6 @@ func AssessSingleJsonEvent(n int,alias string,log_event,previous_event []byte) {
 	var json_file interface{}
 
 	if err := json.Unmarshal(log_event, &json_file); err != nil {
-		fmt.Println("\n? Error unmarshalling",n,err)
 		return
 	}
 

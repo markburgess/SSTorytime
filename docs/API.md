@@ -42,7 +42,7 @@ in links.
 ## Examples
 
 The API examples is the `cmd` directory are stripped down to the minimum, and the special
-tools llike the pathsolver and notes tool show how to make simple wrappers for the API functions too.
+tools like the pathsolver and notes tool show how to make simple wrappers for the API functions too.
 You will also find many examples of using Go(lang) code to write custom scripts
 that interact with the database through the Go API
 [here](https://github.com/markburgess/SSTorytime/tree/main/cmd/demo_pocs).

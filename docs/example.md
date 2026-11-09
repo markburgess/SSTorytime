@@ -159,7 +159,7 @@ but sometimes you might want to explicitly connect a sentence to one of its subj
 
 You can use backticks e.g. `xxx` around parts of a sentence to collect words with spaces or special characters.
 <pre>
-some text (arrow) a longer explanantion containing `a substring of importance` 
+some text (arrow) a longer explanation containing `a substring of importance` 
 
 Kubernetes (short form) K8s
            (represents) a %container %orchestration system

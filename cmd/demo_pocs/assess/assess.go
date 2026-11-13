@@ -712,8 +712,11 @@ func AppendMessageToEvent(agent,node string) string {
 func RunningContext(agent,body string) {
 
 	// check and update running context here
-	c,t,_ := SST.GetTimeContext()
-	fmt.Sprintf("\n %s's running context: %s, %s, %s\n",agent,t,c,GetOperationalContextFrom(body))
+	ctx := GetOperationalContextFrom(agent,body)
+	if len(ctx) > 0 {
+		_,t,_ := SST.GetTimeContext()
+		fmt.Printf("\n %s's running context: %s, %s\n",agent,t,ctx)
+	}
 }
 
 //**************************************************************
@@ -1314,13 +1317,15 @@ func AgentSpeaks(agent_speaking,speaks string) {
 
 //**************************************************************
 
-func GetOperationalContextFrom(state string) []string {
+func GetOperationalContextFrom(agent,state string) []string {
 
 	context := make(map[string]int)
 
+	context[CanonifyName("I am "+agent)]++
+
 	for name := range SST.PROPER_NAME {
 		if strings.Contains(state,name) {
-			context[CanonifyName(name)]++
+			context[CanonifyName("Tool to "+name)]++
 		}
 	}
 

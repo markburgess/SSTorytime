@@ -956,12 +956,9 @@ func DefineStoredFunctions(sst PoSST) {
 
 		"FOREACH ref IN ARRAY or_list LOOP\n" +
 		    // now we can look at substring partial matches
-		"   FOREACH c IN ARRAY client LOOP\n"+
-		"      pattern := Format('%s[^.]*',c);\n" +
+		"   FOREACH pattern IN ARRAY client LOOP\n"+
 		"      partial := substring(ref,pattern);\n" +
-		"      diff := length(partial) - length(c);\n" +
-		       // Only allow significant matches, since this is approx
-		"      IF partial IS NOT NULL AND length(c) >= 4 AND diff < 3 THEN \n" +
+		"      IF partial IS NOT NULL AND length(pattern) >= 3 THEN \n" +
 	        "         return true;\n" +
 		"      END IF;\n" +
 		"   END LOOP;\n"+

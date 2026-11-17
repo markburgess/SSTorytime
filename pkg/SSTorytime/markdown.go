@@ -90,7 +90,7 @@ func FractionateMarkdown(dir,filename string) ([][]Sentence, int, []string) {
 
 	var text_notes []string
 	var current *AuxTxtMDSentence
-	var title string = "introductory qprologue"
+	var title string = "introductory prologue"
 	var level int
 
 	// collect together into current to assemble in an AuxTxtMDSentence

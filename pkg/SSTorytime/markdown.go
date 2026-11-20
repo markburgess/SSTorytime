@@ -217,7 +217,6 @@ func CheckVocabulary(header,content,alias string,text_notes *[]string) {
 			ent := fmt.Sprintf("\n %s [%s] (policy) '%s'\n",header,alias,content)
 			*text_notes = append(*text_notes,ent)
 		}
-
 	}
 }
 

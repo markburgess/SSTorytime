@@ -37,3 +37,7 @@
 
  + has default reply  (reply) - is the default reply template for (isreply)
  + has principal/promisee  (principal) - is the promisee/principal for (isprinc)
+
+ + spoken by (by) - speaks (speaks)
+ + spoken to (sto) - hears (hear)
+ 

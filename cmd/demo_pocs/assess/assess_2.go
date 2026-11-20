@@ -366,6 +366,8 @@ func AssessJsonType(fp *os.File,filename string) {
 
 	alias, ext := SST.MakeTitleFromFileName(filename)
 
+	fmt.Println(" - reading",filename)
+
 	switch ext {
 
 	case ".json":
@@ -575,11 +577,11 @@ func AssignEventPromise(depth int,event AgentEvent,lhs,rhs,alias string) (AgentE
 			Promise(hidden_rhs,"refersto",rhs)
 		}
 		
+	} else {
+		last_link := path_chain[len(path_chain)-1]
+		semantics = MatchEventContext(last_link,lhs)
 	}
-
-	last_link := path_chain[len(path_chain)-1]
-	semantics = MatchEventContext(last_link,lhs)
-
+	
 	switch semantics {
 
 	case "seq_nr":
@@ -811,7 +813,7 @@ func NarrateThisEvent(number int,event AgentEvent) string {
 		tell = "\n"
 	}
 
-	tell += fmt.Sprintf("event at sequence marker %d: %s [%s]",event.Seqnr,event.Promise,event.FromAgent)
+	tell += fmt.Sprintf("event at [%s] sequence marker %d: %s",event.FromAgent,event.Seqnr,event.Promise)
 
 	distinction := fmt.Sprintf(", ref x%x\n",number)
 
@@ -864,6 +866,14 @@ func NarrateThisEvent(number int,event AgentEvent) string {
 
 	if event.ToAgent != "" {
 		this_event += fmt.Sprintf(" \" (spoken to) '%s'\n",event.ToAgent)
+	}
+
+	if event.MsgChan != "" {
+		this_event += fmt.Sprintf(" \" (refersto) '%s'\n",event.MsgChan)
+	}
+
+	if event.MsgBody != "" {
+		this_event += fmt.Sprintf(" \" (has message body) '%s'\n",event.MsgBody)
 	}
 
 	if event.WWWHW != "" {
@@ -1007,11 +1017,11 @@ func ListSundries(fp *os.File) {
 
 	for tool := range AGENT_TOOL_CALLS {
 
-		myevents := AGENT_TOOL_CALLS[tool]
-
-		for _,event := range myevents {
-			fmt.Fprintf(fp," \" (toolused) %s \n",event)
-		}
+		//myevents := AGENT_TOOL_CALLS[tool]
+		
+		//for _,event := range myevents {
+		//	fmt.Fprintf(fp," \" (toolused) %s \n",event)
+		//}
 
 		fmt.Fprintf(fp,"\n %s (role) agent API / tool \n",tool)
 	}
@@ -1064,7 +1074,7 @@ func ListSundries(fp *os.File) {
 		}
 	}
 
-	fmt.Fprintf(fp,"\n :: principal, agent client, promisee :: \n\n")
+	fmt.Fprintf(fp,"\n :: principal, agent client :: \n\n")
 	
 	for a := range AGENT_PRINCIPAL {
 		princ := strings.TrimSpace(AGENT_PRINCIPAL[a])

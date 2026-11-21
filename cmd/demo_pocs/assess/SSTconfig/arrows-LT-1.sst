@@ -17,8 +17,4 @@
   + binds to   (bind-to)       - is bound by  (bound-by)
 
   + results in   (result)      - was a result of        (result-of)
-
-  + initiate p2p channel (p2p-init)  - p2p channel iniated by   (p2pinitinv)
-  + p2p offer message    (p2p-plus)  - p2p message offered at   (p2p-pinv)
-  + p2p accept message   (p2p-minus) - p2p message accepted at  (p2p-minv)
-
+  + propagates to (prop)   - originated from (origin)

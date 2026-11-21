@@ -31,7 +31,6 @@ type AgentEvent struct {
 
 	Promise    string // decision, announcement, request imposition
 	FromAgent  string
-	ToolName   string
 	WWWHW      string
 	MsgBody    string
 	MsgChan    string
@@ -39,19 +38,15 @@ type AgentEvent struct {
 	Seqnr      int
 	IsFault    bool
 	Notes      []string
+
+	// if a tool is used
+	ToolName   string
+	ToolBody   string
 }
 
 //******************************************************************
-
-type P2Pair struct {
-	From        string // agent sender
-	To          string // agent receiver
-	ToolStart   string // the tool call that opens the channel
-	OfferEvent  string // the sender event
-	AcceptEvent string // the receiver event
-}
-
- // Spacetime structure
+// Spacetime structure
+//******************************************************************
 
 var AGENTS = make(map[string]bool)
 var AGENT_TIMELINE = make(map[string][]string)
@@ -61,16 +56,15 @@ var AGENT_TIMELINE = make(map[string][]string)
 var AGENT_PRINCIPAL = make(map[string]string)
 var AGENT_REQUEST = make(map[string][]string)
 var AGENT_ESCALATE = make(map[string]string)
+var AGENT_OPENING = make(map[string]string)
 var AGENT_REPLY []string
 var MISC_PROMISES []string
+var MSG_ORIGIN = make(map[string]string)
 
 // process helpers - state
 
 var PREVIOUS_EVENT string
 var AGENT_TOOL_CALLS = make(map[string][]string)
-var LAST_TOOL_CALL = make(map[P2Pair]string)
-var LAST_ACCEPT  = make(map[P2Pair]string)
-var P2P_MESSAGE = make(map[string]P2Pair)
 
 // assessment coordinate basis
 
@@ -168,7 +162,7 @@ func InitializeJsonPatterns() {
 
 	JSON_PATTERNS["msg_channel"] = []string{"kind","channel"}
 	JSON_PATTERNS["msg_send"] = []string{"peer_out"}
-	JSON_PATTERNS["msg_body"] = []string{"text","content"}
+	JSON_PATTERNS["msg_body"] = []string{"text","content","input.content"}
 	JSON_PATTERNS["msg_recv"] = []string{"peer_in"}
 
 	// states / introspection
@@ -177,8 +171,9 @@ func InitializeJsonPatterns() {
 	JSON_PATTERNS["emotion"] = []string{"modality","kind"}
 	JSON_PATTERNS["assessment"] = []string{"verdict","look"}	
 	JSON_PATTERNS["self_reflection"] = []string{"thinking","note","message"}
-	JSON_PATTERNS["report"] = []string{"world","say","text"}
+	JSON_PATTERNS["report"] = []string{"world","say"}
 	JSON_PATTERNS["fault"] = []string{"error"}
+	JSON_PATTERNS["opening"] = []string{"opening"}
 
 	// other
 
@@ -390,15 +385,14 @@ func AssessJsonType(fp *os.File,filename string) {
 // Declarative json
 //**************************************************************
 
-func AssessJsonDeclaration(alias string,filebytes []byte) string {
+func AssessJsonDeclaration(alias string,filebytes []byte) {
 
 	// Assess a json declaration file telling us aboout an agent deployment
 
-	var speaks string
 	var json_file interface{}
 
 	if err := json.Unmarshal(filebytes, &json_file); err != nil {
-		return ""
+		return
 	}
 
 	var event,empty AgentEvent
@@ -417,17 +411,14 @@ func AssessJsonDeclaration(alias string,filebytes []byte) string {
 
 			// this one is not an event but a declaration
 			event,depth = AssignEventPromise(depth,event,lhs,rhs,alias)
-
+			
 			if CompleteEvent(event) {
-				this_event := NarrateThisEvent(0,event)
-				speaks += this_event
+				speaks := NarrateThisEvent(0,event)
 				AgentSpeaks(event.FromAgent,speaks)
 				event = empty
 			}
 		}
 	}
-
-	return speaks
 }
 
 //*******************************************************************
@@ -462,7 +453,8 @@ func AddNotes(fp *os.File,notes []string) {
 
 func AssessJsonEvent(n int,alias string,log_event,previous_event []byte) {
 
-	// Revised version knowns a lot more about the json format than before
+	// If we have a self-contained event, everything is in one
+	// place but we still need to correlate events over tool calls
 
 	var json_file interface{}
 
@@ -474,8 +466,6 @@ func AssessJsonEvent(n int,alias string,log_event,previous_event []byte) {
 	var event AgentEvent
 
 	if SST.FindJsonStructureAsPaths("",json_file, &pathList) {
-
-		// parse the items in the runlog
 		
 		for _, item := range pathList {
 
@@ -492,29 +482,27 @@ func AssessJsonEvent(n int,alias string,log_event,previous_event []byte) {
 	if JunkMessage(event) {
 		return
 	}
-
-	// Extract invariant meaning
+	
+	event = MineAgentDiscourse(n,event)
 
 	this_event := NarrateThisEvent(n,event)
-	
-	// MCP markdown tooling?
+	AgentSpeaks(event.FromAgent,this_event)
+	RunningContext(event.FromAgent,event.ToolBody)
+}
+
+//**************************************************************
+
+func MineAgentDiscourse(n int,event AgentEvent) AgentEvent {
 	
 	ismd,selections,_,L := SST.IsMarkdownFragment(event.MsgBody,"run history")
 	
 	if ismd {
 		f,_,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
-		this_event += CheckAnomalies(f,n)
-		AgentSpeaks(event.FromAgent,this_event)
-		return
+		note := CheckAnomalies(f,n)
+		event.Notes = append(event.Notes,note)
 	}
 
-	// Default is introspective
-
-	//this_event += AppendMessageToEvent(event.FromAgent,event.MsgBody)
-	this_event += AppendImpositionRequests(event.FromAgent,event.MsgBody)
-	this_event += ScanForSemanticAnomaly(event.MsgBody,n)
-
-	AgentSpeaks(event.FromAgent,this_event)
+	return event
 }
 
 //**************************************************************
@@ -588,8 +576,9 @@ func AssignEventPromise(depth int,event AgentEvent,lhs,rhs,alias string) (AgentE
 		fmt.Sscanf(rhs,"%d",&event.Seqnr)
 
 	case "principal":
-		fmt.Println("AGENT PRINCIPAL",hidden_rhs,"==",rhs)
 		AGENT_PRINCIPAL[hidden_rhs] = rhs
+	case "opening":
+		AGENT_OPENING[hidden_rhs] = rhs		
 
 	case "agent_name":
 		event.FromAgent = rhs
@@ -597,7 +586,6 @@ func AssignEventPromise(depth int,event AgentEvent,lhs,rhs,alias string) (AgentE
 
 	case "identifier":
 		SST.KeepProperName(rhs,"")
-		event.Promise = "Introducing player " + rhs
 
 	case "questions":
 		event.WWWHW += rhs + ", "
@@ -614,7 +602,7 @@ func AssignEventPromise(depth int,event AgentEvent,lhs,rhs,alias string) (AgentE
 	case "from_node":
 		event.FromAgent = rhs
 	case "tool_name":
-		event.Promise = "Considering a tool " + rhs
+		event.Promise = "Employing a tool " + rhs
 		event.ToolName = rhs
 	case "tool_offer":
 		event.Promise = "agent invokes a tool / API call"
@@ -635,7 +623,7 @@ func AssignEventPromise(depth int,event AgentEvent,lhs,rhs,alias string) (AgentE
 	case "msg_recv":
 		event.MsgChan = "-p2p"
 		event.Promise = "peer message [-] accepted"
-		
+
 	case "msg_body":
 		rhsbyte := []byte(rhs)
 		if json.Valid(rhsbyte) {
@@ -651,6 +639,9 @@ func AssignEventPromise(depth int,event AgentEvent,lhs,rhs,alias string) (AgentE
 			} else {
 				event.MsgBody = CleanString(rhs)
 			}
+		}
+		if event.MsgChan == "tool_call" {
+			event.ToolBody = event.MsgBody
 		}
 
 	// states / introspection
@@ -670,12 +661,13 @@ func AssignEventPromise(depth int,event AgentEvent,lhs,rhs,alias string) (AgentE
 		if rhs == "true" {
 			event.IsFault = true
 		}
-		
+
 	case "unmatched":
 		// skip
 	default:
 		note := fmt.Sprintf("Note/%s (%s) %s",semantics,lhs,rhs)
 		event.Notes = append(event.Notes,note)
+		fmt.Println("NOTE ADD:",note)
 	}
 
 	return event,depth
@@ -735,51 +727,37 @@ func MatchTree(pattern string,ref []string) bool {
 
 func HandleJsonTextBundle(alias,embedded string) string {
 
-	return AssessJsonDeclaration(alias,[]byte(embedded))
-}
+	var json_file interface{}
 
-//**************************************************************
-// Exchange
-//**************************************************************
-
-func MakeP2P(start,end string) P2Pair {
-
-	var vector P2Pair
-	vector.From = start
-	vector.To = end
-	return vector
-}
-
-//**************************************************************
-
-func ConnectP2PMessages(this_event,msg_body,mt string,p2p P2Pair) {
-
-	if mt == "+p2p" || mt == "-p2p" {
-
-		// store P2P between-interaction from independent events
-		// for later, as we can't connect them yet...
-		
-		msg := P2P_MESSAGE[msg_body]
-		
-		switch mt {
-			
-		case "-p2p":
-			msg.To = p2p.From
-			msg.AcceptEvent = this_event
-			// Now we are receiving, so need to invert the promise arrow
-			var invp2p P2Pair
-			invp2p.To = p2p.From
-			invp2p.From = p2p.To
-			LAST_ACCEPT[invp2p] = this_event
-
-		case "+p2p":
-			msg.From = p2p.From
-			msg.OfferEvent = this_event
-			msg.ToolStart = LAST_TOOL_CALL[p2p]
-		}
-		
-		P2P_MESSAGE[msg_body] = msg
+	chunk := []byte(embedded)
+	
+	if err := json.Unmarshal(chunk, &json_file); err != nil {
+		return "fix me"
 	}
+
+	var pathList []SST.PathValue
+	var event AgentEvent
+
+	if SST.FindJsonStructureAsPaths("",json_file, &pathList) {
+		
+		for _, item := range pathList {
+
+			lhs := item.Path
+			rhs := item.Value.(string)
+
+			// Here we assume that the whole message is a single event
+			event,_ = AssignEventPromise(0,event,lhs,rhs,alias)
+		}
+	}
+
+	// Skip meaningless parts
+	
+	if JunkMessage(event) {
+		return "none"
+	}
+	fmt.Println("XXXXXXXXXXXXXX",event)
+
+	return "blablabla"
 }
 
 //**************************************************************
@@ -787,6 +765,10 @@ func ConnectP2PMessages(this_event,msg_body,mt string,p2p P2Pair) {
 func JunkMessage(event AgentEvent) bool {
 
 	const exposition_threshold = 50
+
+	if len(event.ToolBody) > 0 {
+		return false
+	}
 
 	if len(event.MsgBody) < exposition_threshold {
 		return  true
@@ -808,7 +790,7 @@ func NarrateThisEvent(number int,event AgentEvent) string {
 	var tell string
 	
 	if event.ToolName != "" {
-		tell = fmt.Sprintf("\nFrom tool %s, ",event.ToolName)
+		tell = fmt.Sprintf("From tool %s, ",event.ToolName)
 	} else {
 		tell = "\n"
 	}
@@ -828,25 +810,6 @@ func NarrateThisEvent(number int,event AgentEvent) string {
 
 	this_event := tell + distinction
 	
-	promise_direction := MakeP2P(event.FromAgent,event.ToAgent)
-
-	if event.MsgChan == "tool_call" {
-		this_event := RecordToolCall(this_event,event.Seqnr,number,event.Promise,promise_direction,event.ToolName,event.MsgBody,event.IsFault)
-		AGENT_TOOL_CALLS[event.ToolName] = append(AGENT_TOOL_CALLS[event.ToolName],this_event)
-		return this_event
-	}
-
-	// tool call may induce p2p communication channel
-
-	ConnectP2PMessages(this_event,event.MsgBody,event.MsgChan,promise_direction)
-
-	// Collect tool result
-
-	if event.MsgChan == "tool_result" {
-		this_event := RecordToolResult(this_event,event.ToolName,event.MsgBody,promise_direction,event.IsFault)
-		return this_event
-	}
-
 	/*
 	Promise    string // decision, announcement, request imposition
 	FromAgent  string
@@ -860,74 +823,78 @@ func NarrateThisEvent(number int,event AgentEvent) string {
 	Notes      []string
 	*/
 
+	speaking := this_event + "\n"
+	
 	if event.FromAgent != "" {
-		this_event += fmt.Sprintf(" \" (spoken by) '%s'\n",event.FromAgent)
+		speaking += fmt.Sprintf(" \" (spoken by) '%s'\n",event.FromAgent)
 	}
 
 	if event.ToAgent != "" {
-		this_event += fmt.Sprintf(" \" (spoken to) '%s'\n",event.ToAgent)
+		speaking += fmt.Sprintf(" \" (spoken to) '%s'\n",event.ToAgent)
 	}
 
 	if event.MsgChan != "" {
-		this_event += fmt.Sprintf(" \" (refersto) '%s'\n",event.MsgChan)
+		speaking += fmt.Sprintf(" \" (refersto) '%s'\n",event.MsgChan)
 	}
 
 	if event.MsgBody != "" {
-		this_event += fmt.Sprintf(" \" (has message body) '%s'\n",event.MsgBody)
+		speaking += fmt.Sprintf(" \" (has message body) '%s'\n",event.MsgBody)
+		// check where message first originated
+		_,exists := MSG_ORIGIN[event.MsgBody]
+
+		if exists {
+			speaking += fmt.Sprintf(" \" (origin) '%s'\n",MSG_ORIGIN[event.MsgBody])
+		} else {
+			cln := CleanString(this_event)
+			if cln != event.MsgBody {
+				MSG_ORIGIN[event.MsgBody] = cln
+			}
+		}
 	}
 
 	if event.WWWHW != "" {
-		this_event += fmt.Sprintf(" \" (what when where how why) '%s'\n",event.WWWHW)
+		speaking += fmt.Sprintf(" \" (what when where how why) '%s'\n",event.WWWHW)
 	}
+
+	speaking += AppendImpositionRequests(event.FromAgent,event.MsgBody)
+	speaking += ScanForSemanticAnomaly(event.MsgBody,number)
 
 	for _,note := range event.Notes {
-		this_event += fmt.Sprintf(" \" (note) '%s'\n",note)
+		speaking += fmt.Sprintf(" \" (note) '%s'\n",note)
 	}
 
-	return this_event
+	if event.ToolName != "" {
+		speaking += fmt.Sprintf("    \"   (tool) %s\n",event.ToolName)
+	}
+
+	if event.ToolBody != "{}" && len(event.ToolBody) > 0 {
+		speaking += fmt.Sprintf(" \" (has message body) '%s'\n",event.ToolBody)
+		speaking += AppendImpositionRequests(event.FromAgent,event.ToolBody)
+		speaking += ScanForSemanticAnomaly(event.ToolBody,number)
+	}
+
+	if event.IsFault {
+		speaking += fmt.Sprintf("  \"  (warn) execution fault\n")
+	}
+
+	return speaking
 }
 
 //**************************************************************
 
-func RecordToolCall(this_event string,seq,n int,event_type string,p2p P2Pair,tool,body string,fault bool) string {
+func AnnotateToolCall(event AgentEvent) string {
+	
+	fmt.Println("TOOLCALL",event.ToolName,event.ToolBody)
 
-	agent_speaking := p2p.From
-	speaks := ""
-
-	// A tool event is an access of a centrally shared tool API
-	speaks += fmt.Sprintf("\n%s\n",this_event)
-
-	// The tool acts as a hub for such interactions
-	speaks += fmt.Sprintf("    \"   (tool) %s\n",tool)
-	// The agent calling also acts as a hub for such interactions
-	speaks += fmt.Sprintf("    \"   (%s) %s\n",SST.CONT_REF_S,agent_speaking)
-
-	// cache the sender of the P2P message for future linkage / a reasonable gamble
-	LAST_TOOL_CALL[p2p] = this_event
-
-	// Now formulate the graph annotations
-
-	if fault {
-		speaks += fmt.Sprintf("  \"  (warn) execution fault\n")
-	}
-
-	if body != "{}" && len(body) > 0 {
-		RunningContext(agent_speaking,body)
-		speaks += AppendMessageToEvent(agent_speaking,body)
-		speaks += AppendImpositionRequests(agent_speaking,body)
-		speaks += ScanForSemanticAnomaly(body,seq)
-		
-	}
-
-	//AgentSpeaks(agent_speaking,speaks)
-	return speaks
+	return "TTTTT START"
 }
 
 //**************************************************************
 
-func AppendMessageToEvent(agent,node string) string {
-
-	return fmt.Sprintf("    \"  (message body) '%s' \n",CleanString(node))
+func AnnotateToolResult(event AgentEvent) string {
+	fmt.Println("TOOLCALL",event.ToolName)
+	other_agent := LookForAgentInString(event.ToolBody)
+	return "TTTT END " + other_agent
 }
 
 //**************************************************************
@@ -940,29 +907,6 @@ func RunningContext(agent,body string) {
 		_,t,_ := SST.GetTimeContext()
 		fmt.Printf("\n %s's running context: %s, %s\n",agent,t,ctx)
 	}
-}
-
-//**************************************************************
-
-func RecordToolResult(this_event,tool,body_text string,p2p P2Pair,fault bool) string {
-
-	other_agent := LookForAgentInString(body_text)
-	p2p.To = other_agent
-
-	// Connect current event to past p2p recv, if it exists
-	previous := LAST_ACCEPT[p2p]
-	result := fmt.Sprintf("\n '%s' \n",this_event)
-
-	if len(previous) > 0 {
-		result += fmt.Sprintf("    \"   (result-of) '%s'\n",previous)
-
-		if fault {
-			result += fmt.Sprintf("    \" (warn) Tool call to %s failed!\n\n",tool)
-		}
-	}
-
-	AGENT_REPLY = append(AGENT_REPLY,result)
-	return this_event
 }
 
 //**************************************************************
@@ -1017,39 +961,21 @@ func ListSundries(fp *os.File) {
 
 	for tool := range AGENT_TOOL_CALLS {
 
-		//myevents := AGENT_TOOL_CALLS[tool]
+		myevents := AGENT_TOOL_CALLS[tool]
 		
-		//for _,event := range myevents {
-		//	fmt.Fprintf(fp," \" (toolused) %s \n",event)
-		//}
+		for _,event := range myevents {
+			fmt.Fprintf(fp," \" (toolused) %s \n",event)
+		}
 
 		fmt.Fprintf(fp,"\n %s (role) agent API / tool \n",tool)
 	}
 
+	fmt.Fprintf(fp,"\n :: origin of messages :: \n\n")
 
-	fmt.Fprintf(fp,"\n :: messages, peer communication :: \n\n")
-
-	for a := range P2P_MESSAGE {
-
-		msg := P2P_MESSAGE[a]
-
-		if len(msg.From) > 0 && len(msg.To) > 0 && len(msg.OfferEvent) > 0 && len(msg.AcceptEvent) > 0 {
-
-			// Connect the p2p sub-process around a shared message
-
-			// Message, contents, and start event
-			fmt.Fprintf(fp,"\n '%s' (p2p-init) '%s' \n",msg.ToolStart,msg.OfferEvent)
-			fmt.Fprintf(fp,"\n  \"  (message body) '%s' \n",a)
-			//fmt.Fprintf(fp,"\n '%s' (sender) '%s'\n",a,msg.From)
-			//fmt.Fprintf(fp,"\n   \" (receiver) '%s'\n",msg.To)
-
-			// p2p channel forward direction
-			fmt.Fprintf(fp,"\n '%s' (p2p-plus) '%s' \n",msg.OfferEvent,msg.AcceptEvent)
-			//fmt.Fprintf(fp,"\n  \" (message body) '%s' \n",a)
-			fmt.Fprintf(fp,"\n '%s' (p2p-minus) '%s' \n",msg.OfferEvent,msg.AcceptEvent)
-			fmt.Fprintf(fp,"\n  \" (message body) '%s' \n",a)
-		}
+	for msg := range MSG_ORIGIN {
+		fmt.Fprintf(fp,"\n %s (origin) '%s' \n",msg,MSG_ORIGIN[msg])
 	}
+
 
 
 	fmt.Fprintf(fp,"\n :: duplicate events, retries, retry :: \n\n")
@@ -1078,7 +1004,7 @@ func ListSundries(fp *os.File) {
 	
 	for a := range AGENT_PRINCIPAL {
 		princ := strings.TrimSpace(AGENT_PRINCIPAL[a])
-		if princ != "" {
+		if princ != "" && a != "" {
 			fmt.Fprintf(fp,"\n %s (principal) %s\n",a,princ)
 		}
 	}
@@ -1106,6 +1032,12 @@ func TimeLines(fp *os.File) {
 		fmt.Fprintf(fp,"\n%s\n",start)
 		fmt.Fprintf(fp,"\n \" (incl) %s\n",agent)
 
+		if AGENT_OPENING[agent] != "" {
+			opening = fmt.Sprintf("Agent [%s] begins with opening statement",agent)
+			fmt.Fprintf(fp,"\n \" (then) %s\n",opening)
+			fmt.Fprintf(fp,"\n %s (message body) '%s'\n",opening,AGENT_OPENING[agent])
+		}
+
 		fmt.Fprintf(fp,"\n :: _sequence_, agent log transcript, agent trace, agent called %s :: \n\n",agent)
 
 		// Now we have accumulated a sequential line of events, with
@@ -1115,7 +1047,7 @@ func TimeLines(fp *os.File) {
 
 			fmt.Fprintf(fp,"\n%s\n",event_str)
 			
-			if n == 0 && opening != "" {
+			if n == 0 && opening != "" && opening != start {
 				// link back to openings
 				fmt.Fprintf(fp," \" (from) '%s'\n",opening)
 			} else if n == 0 {

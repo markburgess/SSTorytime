@@ -583,16 +583,16 @@ func MakeP2P(start,end string) P2Pair {
 
 //**************************************************************
 
-func ConnectP2PMessages(this_event,msg_body,mt string,p2p P2Pair) {
+func ConnectP2PMessages(this_event,msg_body,chanl string,p2p P2Pair) {
 
-	if mt == "+p2p" || mt == "-p2p" {
+	if chanl == "+p2p" || chanl == "-p2p" {
 
 		// store P2P between-interaction from independent events
 		// for later, as we can't connect them yet...
 		
 		msg := P2P_MESSAGE[msg_body]
 		
-		switch mt {
+		switch chanl {
 			
 		case "-p2p":
 			msg.To = p2p.From

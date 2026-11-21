@@ -1,9 +1,7 @@
 Agent, No need to : "no need to"
 Agent, Agent Execution trace: \from start \limit 500
-Agent, Warnings: any \arrow warn \limit 30
 Agent, Warning messages: warnings \limit 100
 Agent, Agent messages: \notes \chapter "Agent Runaround - Table Of Contents" \context messages
-Agent, Peer communications: \notes \chapter "Agent Runaround - Table Of Contents" \context "peer communication"
 Agent, Tools used: \notes \chapter "Agent Runaround - Table Of Contents" \context "tools"
 Agent, Agent promises: \notes \context "agent instructions"
 Agent, Please send ... : "please send"

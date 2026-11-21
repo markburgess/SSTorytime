@@ -42,6 +42,9 @@ type AgentEvent struct {
 	// if a tool is used
 	ToolName   string
 	ToolBody   string
+	// if ecalating
+	Escalier   string
+	EscBody    string
 }
 
 //******************************************************************
@@ -156,6 +159,7 @@ func InitializeJsonPatterns() {
 	JSON_PATTERNS["tool_offer"] = []string{"tool_call"}
 	JSON_PATTERNS["tool_accept"] = []string{"tool_reply"}
 	JSON_PATTERNS["principal_cmd"] = []string{"turns.text"}
+	JSON_PATTERNS["escalate"] = []string{"escalate_to"}
 	JSON_PATTERNS["promisee"] = []string{"counterpart"}
 
 	// messages
@@ -167,7 +171,7 @@ func InitializeJsonPatterns() {
 
 	// states / introspection
 
-	JSON_PATTERNS["reasoning_state"] = []string{"matched","why","_why"}
+	JSON_PATTERNS["reasoning"] = []string{"matched","why","_why","reasoning"}
 	JSON_PATTERNS["emotion"] = []string{"modality","kind"}
 	JSON_PATTERNS["assessment"] = []string{"verdict","look"}	
 	JSON_PATTERNS["self_reflection"] = []string{"thinking","note","message"}
@@ -413,12 +417,33 @@ func AssessJsonDeclaration(alias string,filebytes []byte) {
 			event,depth = AssignEventPromise(depth,event,lhs,rhs,alias)
 			
 			if CompleteEvent(event) {
-				speaks := NarrateThisEvent(0,event)
+				_,speaks := NarrateThisEvent(0,event)
 				AgentSpeaks(event.FromAgent,speaks)
 				event = empty
 			}
 		}
 	}
+}
+
+//**************************************************************
+
+func AssessJsonEvent(n int,alias string,log_event,previous_event []byte) {
+
+	// If we have a self-contained event, everything is in one
+	// place but we still need to correlate events over tool calls
+
+	event := JsonToEvent(log_event,alias)
+	
+	// Skip meaningless parts
+	
+	if JunkMessage(event) {
+		return
+	}
+	
+	event = MineAgentDiscourse(n,event)
+	_,speaking := NarrateThisEvent(n,event)
+	AgentSpeaks(event.FromAgent,speaking)
+	RunningContext(event.FromAgent,event.ToolBody)
 }
 
 //*******************************************************************
@@ -451,51 +476,10 @@ func AddNotes(fp *os.File,notes []string) {
 // Timeline transcript decomp/analysis
 //**************************************************************
 
-func AssessJsonEvent(n int,alias string,log_event,previous_event []byte) {
-
-	// If we have a self-contained event, everything is in one
-	// place but we still need to correlate events over tool calls
-
-	var json_file interface{}
-
-	if err := json.Unmarshal(log_event, &json_file); err != nil {
-		return
-	}
-
-	var pathList []SST.PathValue
-	var event AgentEvent
-
-	if SST.FindJsonStructureAsPaths("",json_file, &pathList) {
-		
-		for _, item := range pathList {
-
-			lhs := item.Path
-			rhs := item.Value.(string)
-
-			// Here we assume that the whole message is a single event
-			event,_ = AssignEventPromise(n,event,lhs,rhs,alias)
-		}
-	}
-
-	// Skip meaningless parts
-	
-	if JunkMessage(event) {
-		return
-	}
-	
-	event = MineAgentDiscourse(n,event)
-
-	this_event := NarrateThisEvent(n,event)
-	AgentSpeaks(event.FromAgent,this_event)
-	RunningContext(event.FromAgent,event.ToolBody)
-}
-
-//**************************************************************
-
 func MineAgentDiscourse(n int,event AgentEvent) AgentEvent {
 	
-	ismd,selections,_,L := SST.IsMarkdownFragment(event.MsgBody,"run history")
-	
+	ismd,selections,_,L := SST.IsMarkdownFragment(event.MsgBody,event.FromAgent+" consideration")
+
 	if ismd {
 		f,_,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
 		note := CheckAnomalies(f,n)
@@ -610,7 +594,9 @@ func AssignEventPromise(depth int,event AgentEvent,lhs,rhs,alias string) (AgentE
 		event.Promise = "agent accepts a tool response"
 	case "principal_cmd":
 		event.Promise = "agent makes imposition"
-
+	case "escalate":
+		event.Promise = "Agent defers by escalating "
+		event.Escalier = CleanString(rhs)
 	// messages, promise types
 
 	case "msg_channel":
@@ -627,7 +613,7 @@ func AssignEventPromise(depth int,event AgentEvent,lhs,rhs,alias string) (AgentE
 	case "msg_body":
 		rhsbyte := []byte(rhs)
 		if json.Valid(rhsbyte) {
-			event.MsgBody = HandleJsonTextBundle(alias,rhs)
+			event.MsgBody = HandleJsonTextBundle(event.FromAgent,alias,rhs)
 		} else {
 			ismd,selections,notes,L := SST.IsMarkdownFragment(rhs,"run declaration")
 			
@@ -646,8 +632,9 @@ func AssignEventPromise(depth int,event AgentEvent,lhs,rhs,alias string) (AgentE
 
 	// states / introspection
 
-	case "reasoning_state":
-		event.Promise = "introspective reasoning, think state"
+	case "reasoning":
+		event.Promise = "introspective reasoning, thinking out loud"
+		event.EscBody = CleanString(rhs)
 	case "emotion":
 		event.Promise = "introspective reasoning, emotive"
 	case "assessment":
@@ -655,7 +642,7 @@ func AssignEventPromise(depth int,event AgentEvent,lhs,rhs,alias string) (AgentE
 	case "self-reflection":
 		event.Promise = "introspective reasoning, reflect"
 	case "report":
-		event.Promise = "status report / reasoning"
+		event.Promise = "strategy/status report / reasoning"
 	case "fault":
 		event.Promise = "apparent fault occurs"
 		if rhs == "true" {
@@ -667,7 +654,6 @@ func AssignEventPromise(depth int,event AgentEvent,lhs,rhs,alias string) (AgentE
 	default:
 		note := fmt.Sprintf("Note/%s (%s) %s",semantics,lhs,rhs)
 		event.Notes = append(event.Notes,note)
-		fmt.Println("NOTE ADD:",note)
 	}
 
 	return event,depth
@@ -725,67 +711,7 @@ func MatchTree(pattern string,ref []string) bool {
 
 //**************************************************************
 
-func HandleJsonTextBundle(alias,embedded string) string {
-
-	var json_file interface{}
-
-	chunk := []byte(embedded)
-	
-	if err := json.Unmarshal(chunk, &json_file); err != nil {
-		return "fix me"
-	}
-
-	var pathList []SST.PathValue
-	var event AgentEvent
-
-	if SST.FindJsonStructureAsPaths("",json_file, &pathList) {
-		
-		for _, item := range pathList {
-
-			lhs := item.Path
-			rhs := item.Value.(string)
-
-			// Here we assume that the whole message is a single event
-			event,_ = AssignEventPromise(0,event,lhs,rhs,alias)
-		}
-	}
-
-	// Skip meaningless parts
-	
-	if JunkMessage(event) {
-		return "none"
-	}
-	fmt.Println("XXXXXXXXXXXXXX",event)
-
-	return "blablabla"
-}
-
-//**************************************************************
-
-func JunkMessage(event AgentEvent) bool {
-
-	const exposition_threshold = 50
-
-	if len(event.ToolBody) > 0 {
-		return false
-	}
-
-	if len(event.MsgBody) < exposition_threshold {
-		return  true
-	}
-
-	// Not words
-	
-	if !strings.Contains(event.MsgBody," ") {
-		return true
-	}
-
-	return false
-}
-
-//**************************************************************
-
-func NarrateThisEvent(number int,event AgentEvent) string {
+func NarrateThisEvent(number int,event AgentEvent) (string,string) {
 
 	var tell string
 	
@@ -810,7 +736,8 @@ func NarrateThisEvent(number int,event AgentEvent) string {
 
 	this_event := tell + distinction
 	
-	/*
+	/* Now narrate ...
+	
 	Promise    string // decision, announcement, request imposition
 	FromAgent  string
 	ToolName   string
@@ -840,10 +767,11 @@ func NarrateThisEvent(number int,event AgentEvent) string {
 	if event.MsgBody != "" {
 		speaking += fmt.Sprintf(" \" (has message body) '%s'\n",event.MsgBody)
 		// check where message first originated
-		_,exists := MSG_ORIGIN[event.MsgBody]
+		mb := CleanString(event.MsgBody)
+		_,exists := MSG_ORIGIN[mb]
 
-		if exists {
-			speaking += fmt.Sprintf(" \" (origin) '%s'\n",MSG_ORIGIN[event.MsgBody])
+		if exists && mb != MSG_ORIGIN[mb] { // weird
+			speaking += fmt.Sprintf(" \" (origin) '%s'\n",mb)
 		} else {
 			cln := CleanString(this_event)
 			if cln != event.MsgBody {
@@ -861,6 +789,7 @@ func NarrateThisEvent(number int,event AgentEvent) string {
 
 	for _,note := range event.Notes {
 		speaking += fmt.Sprintf(" \" (note) '%s'\n",note)
+		speaking += ScanForSemanticAnomaly(note,number)
 	}
 
 	if event.ToolName != "" {
@@ -876,8 +805,25 @@ func NarrateThisEvent(number int,event AgentEvent) string {
 	if event.IsFault {
 		speaking += fmt.Sprintf("  \"  (warn) execution fault\n")
 	}
+	
+	if event.Escalier != "" && event.EscBody != "" {
+		agent := LookForAgentInString(event.EscBody)
+		AGENT_ESCALATE[this_event] = event.EscBody
+		fmt.Println("Escalation to",agent)
+		if agent != "" {
+			speaking += fmt.Sprintf(" \" (escalate) '%s'\n",agent)
+		} else {
+			speaking += fmt.Sprintf(" \" (escalate) human in the loop \n")
+		}
+		ismd,selections,_,L := SST.IsMarkdownFragment(event.EscBody,event.FromAgent+" consideration")
+		if ismd {
+			f,_,_,_ := SST.ExtractIntentionalTokens(L,selections,SST.N_GRAM_MIN,SST.N_GRAM_MAX)
+			note := CheckAnomalies(f,0)
+			speaking += fmt.Sprintf(" \" (note) '%s'\n",note)
+		}
+	}
 
-	return speaking
+	return this_event,speaking
 }
 
 //**************************************************************
@@ -994,9 +940,9 @@ func ListSundries(fp *os.File) {
 	fmt.Fprintf(fp,"\n :: escalation, human intervention :: \n\n")
 	
 	for a := range AGENT_ESCALATE {
-		esc := strings.TrimSpace(AGENT_ESCALATE[a])
+		esc := CleanString(AGENT_ESCALATE[a])
 		if esc != "" {
-			fmt.Fprintf(fp,"\n %s (role) agent [%s]'s intended escalation \n",esc,a)
+			fmt.Fprintf(fp,"\n %s (escalate) '%s' \n",CleanString(a),esc)
 		}
 	}
 
@@ -1443,3 +1389,77 @@ func IsInt(s string) bool {
 	_, err := strconv.Atoi(s)
 	return err == nil
 }
+
+//**************************************************************
+// Json
+//**************************************************************
+
+func HandleJsonTextBundle(agent,alias,embedded string) string {
+	
+	chunk := []byte(embedded)
+	
+	event := JsonToEvent(chunk,alias)
+	
+	// Skip meaningless parts
+	
+	if JunkMessage(event) {
+		return "none"
+	}
+	
+	this_event,_ := NarrateThisEvent(666,event)
+	return this_event
+}
+
+//**************************************************************
+
+func JsonToEvent(chunk []byte,alias string) AgentEvent {
+
+	var json_file interface{}
+	var pathList []SST.PathValue
+	var event AgentEvent
+		
+	if err := json.Unmarshal(chunk, &json_file); err != nil {
+		return event
+	}
+	
+	if SST.FindJsonStructureAsPaths("",json_file, &pathList) {
+		
+		for _, item := range pathList {
+			
+			lhs := item.Path
+			rhs := item.Value.(string)
+			
+			// Here we assume that the whole message is a single event
+			event,_ = AssignEventPromise(0,event,lhs,rhs,alias)
+		}
+	}
+	return event
+}
+
+//**************************************************************
+
+func JunkMessage(event AgentEvent) bool {
+
+	const exposition_threshold = 50
+
+	if event.Notes != nil {
+		return false
+	}
+
+	if len(event.ToolBody) > 0 {
+		return false
+	}
+
+	if len(event.MsgBody) < exposition_threshold {
+		return  true
+	}
+
+	// Not words
+	
+	if !strings.Contains(event.MsgBody," ") {
+		return true
+	}
+
+	return false
+}
+

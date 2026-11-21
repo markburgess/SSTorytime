@@ -17,4 +17,6 @@
   + binds to   (bind-to)       - is bound by  (bound-by)
 
   + results in   (result)      - was a result of        (result-of)
-  + propagates to (prop)   - originated from (origin)
+  + propagates to (prop)       - originated from (origin)
+  + escalates to (escalate)    - was asked to intervene at (intervene)
+  

@@ -15,7 +15,8 @@ $ cd cmd/demo_poc/assess
 Collect the markdown definitions and json output traces of an agent into a directory and run:
 
 ```
-$ go run assess.go -dir /path/to/mydirectory
+$ go run assess_1.go -dir /path/to/mydirectory
+$ go run assess_2.go [list of directories]
 ```
 
 Then upload the files
@@ -31,3 +32,4 @@ $ ../bin/http_server
 
 ```
 Now connect to `localhost:8080` and click `TOC` for the table of contents.
+Use the table of contents (TOC) and bookmarks (BM) buttons, click, or search.

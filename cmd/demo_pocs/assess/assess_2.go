@@ -144,7 +144,7 @@ func InitializeJsonPatterns() {
 	// Attention Patterns
 
 	JSON_PATTERNS["seq_nr"] = []string{"seq"}
-	JSON_PATTERNS["identifier"] = []string{"id","run_id","rule_id","obligation_id"}
+	JSON_PATTERNS["identifier"] = []string{"id","run_id","rule_id","obligation_id","rule","hand_rule","clause"}
 
 	JSON_PATTERNS["questions"] = []string{"when","where"}
 	
@@ -161,6 +161,7 @@ func InitializeJsonPatterns() {
 	JSON_PATTERNS["principal_cmd"] = []string{"turns.text"}
 	JSON_PATTERNS["escalate"] = []string{"escalate_to"}
 	JSON_PATTERNS["promisee"] = []string{"counterpart"}
+	JSON_PATTERNS["action_sequence"] = []string{"steps"}
 
 	// messages
 
@@ -380,7 +381,7 @@ func AssessJsonType(fp *os.File,filename string) {
 		
 		for n, log_event := range lines {
 			
-			AssessJsonEvent(n,alias,log_event,previous_line)
+			AssessJsonEvent(n+1,alias,log_event,previous_line)
 		}
 	}
 }
@@ -1020,18 +1021,6 @@ func Togetherness(fp *os.File) {
 	}
 
 	fmt.Fprintf(fp,"\n### END Table of Contents - TOGETHERNESS\n")
-}
-
-//*******************************************************************
-
-func InferPathMeaning(path string) {
-
-	/*	for _,p := range parts {
-		
-		if AGENTS[p] {
-			agent = p
-		}
-	*/
 }
 
 //*******************************************************************

@@ -177,6 +177,18 @@ You can also refer to the previous line
   $mylabel.1  (eh) 脚 (hp) jiǎo (e.g.) nǐ de yòu jiǎo  (ph) 你的右脚 (he) your right foot 
 </pre>
 You can save this as a text file. It's helpful, but not necessary, to use a suffix `.n4l`.
+
+> [!TIP]
+> **Using the Docker environment?** (see [docker/README.md](../docker/README.md))
+> Run the commands of this tutorial in the workspace shell
+> (`docker compose -f docker/compose.yaml exec workspace bash`). There:
+> * call the tools by name, without a path: `N4L`, `searchN4L`;
+> * the examples are in `/src/examples` (read-only), e.g. `cd /src/examples && N4L tutorial.n4l`;
+> * instead of `cd examples; make`, load the examples with the command in
+>   [Loading the tutorial examples](../docker/README.md#loading-the-tutorial-examples);
+> * the web UI is at **https://localhost:8443** instead of `localhost:8080`, and only
+>   from this computer (not via a network address such as `192.168.0.5`).
+
 This file is already available in the distribution:
 <pre>
 $ cd SSTorytime

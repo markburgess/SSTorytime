@@ -1,0 +1,4 @@
+# docker/: scripts run inside Linux containers (Compose mode, also from
+# Windows checkouts). Keep LF regardless of core.autocrlf.
+docker/*.sh text eol=lf
+docker/Dockerfile text eol=lf

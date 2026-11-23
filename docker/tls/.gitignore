@@ -1,0 +1,4 @@
+# Local certificates and keys: never commit them.
+*
+!.gitignore
+!README.md

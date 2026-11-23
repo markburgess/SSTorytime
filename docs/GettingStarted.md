@@ -1,12 +1,59 @@
 # Setting up and getting started
 
-As we figure out how to make the project easily available, you will need to compile
-the programs by following these destructions below. You can get started with or without Docker (for those who know). You may need to install these prerequisites:
+There are two ways to get started:
+
+* **With Docker (quickest):** you only need Docker and a copy of this repository.
+  Docker builds the tools and runs the database and web server for you.
+* **Manual setup:** you install Go, Make and Postgres yourself and compile the
+  programs, as described further below.
+
+## Quick start with Docker
+
+You need:
+
+* A copy of this repository: `git clone https://github.com/markburgess/SSTorytime`,
+  or download the ZIP from GitHub and unpack it.
+* Docker with Compose v2 (the `docker compose` command), e.g. Docker Desktop,
+  with Docker Engine 25 or newer (see the
+  [platform details](../docker/README.md#platform-details)).
+
+Then, from the repository root (the `SSTorytime` folder), run:
+
+<pre>
+$ docker compose -f docker/compose.yaml run --rm start
+</pre>
+
+The first run takes a minute or two. It builds the tools, sets up the database
+and loads one small example. Then:
+
+1. Open **https://localhost:8443** (note `https`). Your browser warns about the
+   self-signed certificate; this is expected for this local address. See
+   [how to continue past the warning](../docker/README.md#first-steps), or how
+   to avoid it with a trusted local certificate.
+2. Search for `door`. Only this small example is loaded at first.
+3. To follow the [Tutorial](Tutorial.md), load its examples as shown in
+   [docker/README.md](../docker/README.md#loading-the-tutorial-examples).
+
+This is a persistent local development environment: your data survives restarts,
+and you can rebuild on every save.
+
+* **After restarting your computer or Docker,** the environment does not start
+  by itself: run the `start` command above again.
+* **Before shutting down your computer,** stop it with
+  `docker compose -f docker/compose.yaml stop`. SSTorytime's graph tables are
+  emptied if the database is not shut down cleanly; you can then reload your
+  N4L files.
+
+See [docker/README.md](../docker/README.md) for all commands and details.
+
+## Manual setup
+
+You may need to install these prerequisites:
 
 * Git
+* Go (see section 4 below)
 * Make
 * Postgres
-* Docker (optional, e.g. Docker desktop)
 
 First compile the software. From the project root, run:
 

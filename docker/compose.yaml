@@ -1,0 +1,132 @@
+# SSTorytime persistent local development environment (CLI + HTTPS web UI).
+# Needs only Docker. See docker/README.md:
+#   docker compose -f docker/compose.yaml run --rm start   (provision / resume)
+#   ... run --rm verify | rebuild [name] | watch
+#
+# Data lives in the named volumes below. `docker compose ... stop` and
+# `down` keep them; only `down -v` deletes them.
+
+name: sstorytime-install-test
+
+x-sst-env: &sst-env
+  POSTGRESQL_URI: "postgres://sstoryline:sst_1234@db:5432/sstoryline?sslmode=disable"
+  SST_CONFIG_PATH: /src/SSTconfig
+  GOCACHE: /work/cache/go-build
+  GOMODCACHE: /work/cache/gomod
+  GOFLAGS: -buildvcs=false
+  PGHOST: db
+  PGUSER: sstoryline
+  PGPASSWORD: sst_1234
+  PGDATABASE: sstoryline
+  SST_WEB_PORT: ${SST_WEB_PORT:-8443}   # host port, for messages only
+  # Built tools first, so `searchN4L door` works as in the docs (non-login shell).
+  PATH: /work/bin:/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Common settings for every container built from the local image.
+x-sst-image: &sst-image
+  build: .
+  image: sstorytime-install-test:dev
+  pull_policy: never
+  init: true
+  working_dir: /work
+  environment: *sst-env
+  volumes:
+    - ..:/src:ro
+    - work:/work
+
+# One-shot tools (docker/incontainer.sh).
+x-sst-tool: &sst-tool
+  <<: *sst-image
+  restart: "no"
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: sstoryline
+      POSTGRES_PASSWORD: sst_1234
+      POSTGRES_DB: sstoryline
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ../postgres-docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    # SSTorytime stores its graph in UNLOGGED tables, which PostgreSQL empties
+    # after an unclean shutdown. Give the server ample time to stop cleanly.
+    stop_grace_period: 120s
+    healthcheck:
+      # TCP on purpose: the image's temporary init server listens on the
+      # socket only, so this cannot pass before init scripts have finished.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U sstoryline -d sstoryline"]
+      interval: 3s
+      timeout: 5s
+      retries: 30
+
+  workspace:
+    <<: *sst-image
+    pull_policy: build
+    command: ["sleep", "infinity"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    <<: *sst-image
+    command: ["sh", "/src/docker/web-supervisor.sh"]
+    ports:
+      - "127.0.0.1:${SST_WEB_PORT:-8443}:8443"
+    healthcheck:
+      # Liveness only (static embedded UI). The verify step checks DB-backed search.
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null --cacert /work/tls/current/ca.pem https://localhost:8443/"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      # Probe every 0.5s while starting so a (re)start is reported healthy quickly.
+      start_period: 30s
+      start_interval: 500ms
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ---- Tools (`docker compose -f docker/compose.yaml run --rm <name>`) ------
+  # start: brings up db, workspace and web as dependencies, then runs setup,
+  # readiness and the baseline in the foreground with a real exit code.
+  start:
+    <<: *sst-tool
+    profiles: [tools]
+    command: ["sh", "/src/docker/incontainer.sh", "start"]
+    depends_on:
+      db:
+        condition: service_healthy
+      workspace:
+        condition: service_started
+      web:
+        condition: service_started
+
+  verify:
+    <<: *sst-tool
+    profiles: [tools]
+    command: ["sh", "/src/docker/incontainer.sh", "verify"]
+
+  rebuild:
+    <<: *sst-tool
+    profiles: [tools]
+    entrypoint: ["sh", "/src/docker/incontainer.sh", "rebuild"]
+    command: []
+
+  watch:
+    <<: *sst-tool
+    profiles: [tools]
+    command: ["sh", "/src/docker/incontainer.sh", "watch"]
+
+  # Read-only views: run --rm inspect [duplicates | search "<term>"]
+  inspect:
+    <<: *sst-tool
+    profiles: [tools]
+    entrypoint: ["sh", "/src/docker/incontainer.sh", "inspect"]
+    command: []
+
+volumes:
+  db_data:
+  work:
